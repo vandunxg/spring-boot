@@ -6,7 +6,7 @@
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **21 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **23 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu nội dung và cú pháp với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -32,12 +32,15 @@
 19. [x] `modules/reference/pages/using/packaging-for-production.adoc`
 20. [x] `modules/reference/pages/features/index.adoc`
 21. [x] `modules/reference/pages/features/spring-application.adoc`
+22. [x] `modules/reference/pages/features/external-config.adoc`
+23. [x] `modules/reference/pages/features/profiles.adoc`
 
 ## Tiếp theo
 
-22. [ ] `modules/reference/pages/features/external-config.adoc`
-23. [ ] `modules/reference/pages/features/profiles.adoc`
 24. [ ] `modules/reference/pages/features/logging.adoc`
 25. [ ] `modules/reference/pages/features/internationalization.adoc`
+26. [ ] `modules/reference/pages/features/aop.adoc`
+27. [ ] `modules/reference/pages/features/json.adoc`
+28. [ ] `modules/reference/pages/features/task-execution-and-scheduling.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
