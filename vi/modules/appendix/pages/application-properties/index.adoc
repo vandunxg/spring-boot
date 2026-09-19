@@ -1,0 +1,50 @@
+[appendix]
+[[appendix.application-properties]]
+= Application Property thông dụng
+
+Nhiều property có thể được chỉ định trong file `application.properties`, trong file `application.yaml`, hoặc dưới dạng command line switch.
+Appendix này cung cấp danh sách các Spring Boot property thông dụng cùng tham chiếu tới các class bên dưới sử dụng chúng.
+
+TIP: Spring Boot cung cấp nhiều cơ chế conversion với khả năng format value nâng cao.
+Hãy xem xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion[phần conversion của property].
+
+NOTE: Property có thể đến từ các jar file bổ sung trên classpath, nên bạn không nên coi đây là danh sách đầy đủ.
+Ngoài ra, bạn có thể tự định nghĩa property của riêng mình.
+
+include::partial$configuration-properties/actuator.adoc[]
+
+include::partial$configuration-properties/cache.adoc[]
+
+include::partial$configuration-properties/core.adoc[]
+
+include::partial$configuration-properties/data-migration.adoc[]
+
+include::partial$configuration-properties/data.adoc[]
+
+include::partial$configuration-properties/devtools.adoc[]
+
+include::partial$configuration-properties/docker-compose.adoc[]
+
+include::partial$configuration-properties/grpc.adoc[]
+
+include::partial$configuration-properties/integration.adoc[]
+
+include::partial$configuration-properties/json.adoc[]
+
+include::partial$configuration-properties/mail.adoc[]
+
+include::partial$configuration-properties/rsocket.adoc[]
+
+include::partial$configuration-properties/security.adoc[]
+
+include::partial$configuration-properties/server.adoc[]
+
+include::partial$configuration-properties/templating.adoc[]
+
+include::partial$configuration-properties/testcontainers.adoc[]
+
+include::partial$configuration-properties/testing.adoc[]
+
+include::partial$configuration-properties/transaction.adoc[]
+
+include::partial$configuration-properties/web.adoc[]

@@ -1,0 +1,6 @@
+[[appendix.test-auto-configuration.slices]]
+= Test Slice
+
+Bảng sau liệt kê các annotation `@...Test` có thể dùng để test các slice của application cùng auto-configuration mà chúng import mặc định:
+
+include::partial$slices/documented-slices.adoc[]

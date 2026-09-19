@@ -1,0 +1,5 @@
+[[cli.installation]]
+= Cài đặt CLI
+
+Spring Boot CLI (Command-Line Interface) có thể được cài thủ công bằng SDKMAN! (SDK Manager), hoặc bằng Homebrew hay MacPorts nếu bạn dùng OSX.
+Xem xref:ROOT:installing.adoc#getting-started.installing.cli[] trong phần "`Getting Started`" để có hướng dẫn cài đặt đầy đủ.

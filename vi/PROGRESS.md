@@ -1,13 +1,18 @@
 # Tiến độ dịch Spring Boot
 
 - Repository: `vandunxg/spring-boot`.
-- Nhánh: `docs/vi-translation-batch-01`.
+- Nhánh: `docs/vi-translation-batch-03`.
 - Source commit: `adbbf047320013ee42284d6957293aaf75a56ad7`.
-- Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
+- Source-root:
+  - `documentation/spring-boot-docs/src/docs/antora/` (mirror: `upstream/docs/`) cho ROOT, tutorial, reference, how-to, build-tool-plugin, cli, specification, appendix.
+  - `build-plugin/spring-boot-maven-plugin/src/docs/antora/` (mirror: `upstream/maven-plugin/`) cho module maven-plugin.
+  - `build-plugin/spring-boot-gradle-plugin/src/docs/antora/` (mirror: `upstream/gradle-plugin/`) cho module gradle-plugin.
 - Cập nhật: 2026-09-19.
-- Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **147 trang**. Chưa hoàn thành mục tiêu 200 trang.
-- Kiểm tra hiện tại: đối chiếu thủ công nội dung, anchor, macro, ví dụ và cấu trúc với nguồn; chưa chạy build website.
+- Đã dịch trọn vẹn: **172 trang**.
+- Tổng số trang khả dụng trong navigation: **172 trang**. Đã dịch hết toàn bộ trang của cả ba source-root.
+- `modules/ROOT/pages/redirect.adoc` không tính là trang dịch: file chỉ chứa bảng ánh xạ redirect anchor, không có prose.
+- Mục tiêu 200 trang đặt trước đó không đạt được vì upstream tại commit này chỉ có 172 trang nội dung (173 file `pages/` kể cả `redirect.adoc`).
+- Kiểm tra hiện tại: đối chiếu tự động số anchor, xref, include, javadoc/configprop macro, source block, bảng, danh sách, admonition giữa nguồn và bản dịch; đối chiếu định danh anchor, target macro và nội dung code block phải trùng khớp tuyệt đối. Chưa chạy build website.
 
 ## Đã dịch
 
@@ -177,12 +182,37 @@
 146. [x] `modules/gradle-plugin/pages/integrating-with-actuator.adoc`
 147. [x] `modules/gradle-plugin/pages/reacting.adoc`
 
+## Đã dịch tiếp (batch 03)
+
+148. [x] `modules/build-tool-plugin/pages/antlib.adoc`
+149. [x] `modules/build-tool-plugin/pages/other-build-systems.adoc`
+150. [x] `modules/gradle-plugin/pages/introduction.adoc`
+151. [x] `modules/cli/pages/index.adoc`
+152. [x] `modules/cli/pages/installation.adoc`
+153. [x] `modules/cli/pages/using-the-cli.adoc`
+154. [x] `modules/specification/pages/configuration-metadata/index.adoc`
+155. [x] `modules/specification/pages/configuration-metadata/format.adoc`
+156. [x] `modules/specification/pages/configuration-metadata/manual-hints.adoc`
+157. [x] `modules/specification/pages/configuration-metadata/annotation-processor.adoc`
+158. [x] `modules/specification/pages/executable-jar/index.adoc`
+159. [x] `modules/specification/pages/executable-jar/nested-jars.adoc`
+160. [x] `modules/specification/pages/executable-jar/jarfile-class.adoc`
+161. [x] `modules/specification/pages/executable-jar/launching.adoc`
+162. [x] `modules/specification/pages/executable-jar/property-launcher.adoc`
+163. [x] `modules/specification/pages/executable-jar/restrictions.adoc`
+164. [x] `modules/specification/pages/executable-jar/alternatives.adoc`
+165. [x] `modules/appendix/pages/application-properties/index.adoc`
+166. [x] `modules/appendix/pages/deprecated-application-properties/index.adoc`
+167. [x] `modules/appendix/pages/auto-configuration-classes/index.adoc`
+168. [x] `modules/appendix/pages/test-auto-configuration/index.adoc`
+169. [x] `modules/appendix/pages/test-auto-configuration/slices.adoc`
+170. [x] `modules/appendix/pages/dependency-versions/index.adoc`
+171. [x] `modules/appendix/pages/dependency-versions/coordinates.adoc`
+172. [x] `modules/appendix/pages/dependency-versions/properties.adoc`
+
 ## Tiếp theo
 
-148. [ ] `modules/build-tool-plugin/pages/antlib.adoc`
-149. [ ] `modules/build-tool-plugin/pages/other-build-systems.adoc`
-150. [ ] `modules/cli/pages/index.adoc`
-151. [ ] `modules/cli/pages/installation.adoc`
-152. [ ] `modules/cli/pages/using-the-cli.adoc`
-
-Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
+- Không còn trang nào chưa dịch tại source commit hiện tại.
+- Rà soát lại chất lượng bản dịch của các trang đã dịch trước đó, ưu tiên sửa chỗ sai ngữ nghĩa.
+- Chạy build website để kiểm tra xref, include và macro thực sự resolve được.
+- Khi sync upstream mới, dịch phần chênh lệch do `scripts/sync-spring-boot-docs.sh` báo.

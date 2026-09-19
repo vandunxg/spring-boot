@@ -1,0 +1,8 @@
+[[introduction]]
+= Giới thiệu
+
+Spring Boot Gradle Plugin cung cấp hỗ trợ Spring Boot trong https://gradle.org[Gradle].
+Nó cho phép package executable jar hoặc war archive, chạy Spring Boot application, và dùng dependency management do `spring-boot-dependencies` cung cấp.
+Gradle plugin của Spring Boot yêu cầu Gradle 8.x (8.14 trở lên) hoặc 9.x và có thể dùng với {url-gradle-docs}/configuration_cache.html[configuration cache] của Gradle.
+
+Ngoài user guide này còn có xref:api/java/index.html[API documentation].

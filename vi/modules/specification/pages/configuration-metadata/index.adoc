@@ -1,0 +1,9 @@
+[appendix]
+[[appendix.configuration-metadata]]
+= Configuration Metadata
+
+Các jar của Spring Boot bao gồm file metadata cung cấp chi tiết về mọi configuration property được hỗ trợ.
+Các file này được thiết kế để nhà phát triển IDE có thể đưa ra trợ giúp theo ngữ cảnh và "`code completion`" khi người dùng làm việc với file `application.properties` hoặc `application.yaml`.
+
+Phần lớn file metadata được sinh tự động tại compile time bằng cách xử lý mọi item được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
+Với các trường hợp đặc biệt hoặc use case nâng cao hơn, có thể xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.source[lấy metadata của type bên ngoài] hoặc xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[viết một phần metadata thủ công].
