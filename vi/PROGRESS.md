@@ -6,7 +6,7 @@
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **28 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **32 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu thủ công nội dung, anchor, macro, ví dụ và cấu trúc với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -40,11 +40,19 @@
 27. [x] `modules/reference/pages/features/json.adoc`
 28. [x] `modules/reference/pages/features/task-execution-and-scheduling.adoc`
 
+## Đã dịch tiếp
+
+29. [x] `modules/reference/pages/features/dev-services.adoc`
+30. [x] `modules/reference/pages/features/developing-auto-configuration.adoc`
+31. [x] `modules/reference/pages/features/kotlin.adoc`
+32. [x] `modules/reference/pages/features/ssl.adoc`
+
 ## Tiếp theo
 
-29. [ ] `modules/reference/pages/features/dev-services.adoc`
-30. [ ] `modules/reference/pages/features/developing-auto-configuration.adoc`
-31. [ ] `modules/reference/pages/features/kotlin.adoc`
-32. [ ] `modules/reference/pages/features/ssl.adoc`
+33. [ ] `modules/reference/pages/web/index.adoc`
+34. [ ] `modules/reference/pages/web/servlet.adoc`
+35. [ ] `modules/reference/pages/web/reactive.adoc`
+36. [ ] `modules/reference/pages/web/graceful-shutdown.adoc`
+37. [ ] `modules/reference/pages/web/spring-security.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
