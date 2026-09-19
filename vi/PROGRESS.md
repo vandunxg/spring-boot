@@ -6,7 +6,7 @@
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **67 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **97 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu thủ công nội dung, anchor, macro, ví dụ và cấu trúc với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -91,12 +91,45 @@
 66. [x] `modules/reference/pages/testing/index.adoc`
 67. [x] `modules/reference/pages/testing/test-modules.adoc`
 
+## Đã dịch tiếp
+
+68. [x] `modules/reference/pages/testing/test-scope-dependencies.adoc`
+69. [x] `modules/reference/pages/testing/spring-applications.adoc`
+70. [x] `modules/reference/pages/testing/spring-boot-applications.adoc`
+71. [x] `modules/reference/pages/testing/testcontainers.adoc`
+72. [x] `modules/reference/pages/testing/test-utilities.adoc`
+73. [x] `modules/reference/pages/packaging/index.adoc`
+74. [x] `modules/reference/pages/packaging/efficient.adoc`
+75. [x] `modules/reference/pages/packaging/aot-cache.adoc`
+76. [x] `modules/reference/pages/packaging/aot.adoc`
+77. [x] `modules/reference/pages/packaging/native-image/index.adoc`
+78. [x] `modules/reference/pages/packaging/native-image/introducing-graalvm-native-images.adoc`
+79. [x] `modules/reference/pages/packaging/native-image/advanced-topics.adoc`
+80. [x] `modules/reference/pages/packaging/checkpoint-restore.adoc`
+81. [x] `modules/reference/pages/packaging/container-images/index.adoc`
+82. [x] `modules/reference/pages/packaging/container-images/efficient-images.adoc`
+83. [x] `modules/reference/pages/packaging/container-images/dockerfiles.adoc`
+84. [x] `modules/reference/pages/packaging/container-images/cloud-native-buildpacks.adoc`
+85. [x] `modules/reference/pages/actuator/index.adoc`
+86. [x] `modules/reference/pages/actuator/enabling.adoc`
+87. [x] `modules/reference/pages/actuator/endpoints.adoc`
+88. [x] `modules/reference/pages/actuator/monitoring.adoc`
+89. [x] `modules/reference/pages/actuator/jmx.adoc`
+90. [x] `modules/reference/pages/actuator/observability.adoc`
+91. [x] `modules/reference/pages/actuator/loggers.adoc`
+92. [x] `modules/reference/pages/actuator/metrics.adoc`
+93. [x] `modules/reference/pages/actuator/tracing.adoc`
+94. [x] `modules/reference/pages/actuator/auditing.adoc`
+95. [x] `modules/reference/pages/actuator/http-exchanges.adoc`
+96. [x] `modules/reference/pages/actuator/process-monitoring.adoc`
+97. [x] `modules/reference/pages/actuator/cloud-foundry.adoc`
+
 ## Tiếp theo
 
-68. [ ] `modules/reference/pages/testing/test-scope-dependencies.adoc`
-69. [ ] `modules/reference/pages/testing/spring-applications.adoc`
-70. [ ] `modules/reference/pages/testing/spring-boot-applications.adoc`
-71. [ ] `modules/reference/pages/testing/testcontainers.adoc`
-72. [ ] `modules/reference/pages/testing/test-utilities.adoc`
+98. [ ] `modules/how-to/pages/index.adoc`
+99. [ ] `modules/how-to/pages/application.adoc`
+100. [ ] `modules/how-to/pages/properties-and-configuration.adoc`
+101. [ ] `modules/how-to/pages/webserver.adoc`
+102. [ ] `modules/how-to/pages/spring-mvc.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
