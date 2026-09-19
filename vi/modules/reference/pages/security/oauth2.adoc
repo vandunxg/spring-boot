@@ -263,7 +263,7 @@ spring:
 ----
 
 NOTE: Property `client-secret` phải ở format match được bởi javadoc:org.springframework.security.crypto.password.PasswordEncoder[] đã cấu hình.
-Default PasswordEncoder được tạo qua `PasswordEncoderFactories.createDelegatingPasswordEncoder()`.
+Default javadoc:org.springframework.security.crypto.password.PasswordEncoder[] được tạo qua `PasswordEncoderFactories.createDelegatingPasswordEncoder()`.
 
 Auto-configuration Spring Boot cho Spring Authorization Server được thiết kế để bắt đầu nhanh.
 Hầu hết application sẽ cần customization và định nghĩa bean để override auto-configuration.

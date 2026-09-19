@@ -5,7 +5,7 @@ Module `spring-boot-cloudfoundry` của Spring Boot (thuộc `spring-boot-starte
 Path `/cloudfoundryapplication` cung cấp secured route thay thế tới mọi bean javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation].
 
 Extended support cho phép Cloud Foundry management UI được bổ sung Spring Boot actuator information.
-Ví dụ application status page có thể hiển thị full health information thay vì chỉ "running" hoặc "stopped".
+Ví dụ application status page có thể hiển thị full health information thay vì chỉ "`running`" hoặc "`stopped`".
 
 NOTE: Path `/cloudfoundryapplication` không accessible trực tiếp với regular user.
 Để dùng endpoint phải truyền valid UAA token.

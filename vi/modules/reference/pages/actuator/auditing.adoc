@@ -1,7 +1,7 @@
 [[actuator.auditing]]
 = Auditing
 
-Khi Spring Security được dùng, Spring Boot Actuator có flexible audit framework publish event (mặc định: "authentication success", "failure" và exception "access denied").
+Khi Spring Security được dùng, Spring Boot Actuator có flexible audit framework publish event (mặc định: "`authentication success`", "`failure`" và exception "`access denied`").
 Feature này hữu ích cho reporting và implement lock-out policy dựa trên authentication failure.
 
 Enable auditing bằng bean javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] trong application configuration.
@@ -15,4 +15,4 @@ Production nên tạo implementation javadoc:org.springframework.boot.actuate.au
 Để customize published security event, cung cấp implementation javadoc:org.springframework.boot.actuate.security.AbstractAuthenticationAuditListener[] và javadoc:org.springframework.boot.actuate.security.AbstractAuthorizationAuditListener[] riêng.
 
 Có thể dùng audit service cho business event riêng.
-Inject AuditEventRepository vào component và dùng trực tiếp, hoặc publish javadoc:org.springframework.boot.actuate.audit.listener.AuditApplicationEvent[] bằng Spring javadoc:org.springframework.context.ApplicationEventPublisher[] (implement javadoc:org.springframework.context.ApplicationEventPublisherAware[]).
+Inject javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] vào component và dùng trực tiếp, hoặc publish javadoc:org.springframework.boot.actuate.audit.listener.AuditApplicationEvent[] bằng Spring javadoc:org.springframework.context.ApplicationEventPublisher[] (implement javadoc:org.springframework.context.ApplicationEventPublisherAware[]).

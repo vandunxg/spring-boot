@@ -202,14 +202,14 @@ Repository portion của Docker image name bỏ qua registry và version.
 
 Nếu dùng method javadoc:org.springframework.context.annotation.Bean[format=annotation], Spring Boot không gọi bean method để lấy Docker image name vì sẽ gây eager initialization issue.
 Thay vào đó return type của bean method được dùng để xác định connection detail.
-Điều này hoạt động với typed container như Neo4jContainer hoặc RabbitMQContainer.
+Điều này hoạt động với typed container như javadoc:{url-testcontainers-neo4j-javadoc}/org.testcontainers.neo4j.Neo4jContainer[] hoặc javadoc:{url-testcontainers-rabbitmq-javadoc}/org.testcontainers.rabbitmq.RabbitMQContainer[].
 Nó không hoạt động nếu dùng javadoc:org.testcontainers.containers.GenericContainer[], ví dụ Redis:
 
 include-code::MyRedisConfiguration[]
 
-Spring Boot không thể biết từ GenericContainer image nào được dùng, nên attribute `name` của javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] phải được dùng để cung cấp hint.
+Spring Boot không thể biết từ javadoc:org.testcontainers.containers.GenericContainer[] image nào được dùng, nên attribute `name` của javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] phải được dùng để cung cấp hint.
 
-Cũng có thể dùng attribute `name` của ServiceConnection để override connection detail được dùng, ví dụ custom image.
+Cũng có thể dùng attribute `name` của javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] để override connection detail được dùng, ví dụ custom image.
 Nếu dùng Docker image `registry.mycompany.com/mirror/myredis`, dùng `@ServiceConnection(name="redis")` để đảm bảo javadoc:org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails[] được tạo.
 
 [[testing.testcontainers.service-connections.ssl]]

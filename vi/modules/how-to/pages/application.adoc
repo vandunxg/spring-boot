@@ -28,7 +28,7 @@ NOTE: Nếu cần access javadoc:org.springframework.beans.factory.BeanFactory[]
 [[howto.application.troubleshoot-auto-configuration]]
 == Troubleshoot Auto-configuration
 
-Spring Boot auto-configuration cố gắng hết mức để "làm đúng", nhưng đôi khi vẫn xảy ra lỗi và khó xác định nguyên nhân.
+Spring Boot auto-configuration cố gắng hết mức để "`làm đúng`", nhưng đôi khi vẫn xảy ra lỗi và khó xác định nguyên nhân.
 
 Một javadoc:org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport[] rất hữu ích có sẵn trong mọi Spring Boot javadoc:org.springframework.context.ApplicationContext[].
 Bạn có thể xem nó khi enable `DEBUG` logging output.
@@ -62,7 +62,7 @@ Có nhiều cách register additional customization:
 * Declaratively, cho mọi application, bằng cách thêm `META-INF/spring.factories` và package một jar file mà mọi application đều dùng làm library.
 
 javadoc:org.springframework.boot.SpringApplication[] gửi một số javadoc:org.springframework.test.context.event.ApplicationEvents[] đặc biệt tới listener (một số event xảy ra ngay cả trước khi context được tạo), sau đó register listener cho event do javadoc:org.springframework.context.ApplicationContext[] publish.
-Xem xref:reference:features/spring-application.adoc#features.spring-application.application-events-and-listeners[] trong phần "Spring Boot Features" để biết danh sách đầy đủ.
+Xem xref:reference:features/spring-application.adoc#features.spring-application.application-events-and-listeners[] trong phần "`Spring Boot Features`" để biết danh sách đầy đủ.
 
 Cũng có thể customize javadoc:org.springframework.core.env.Environment[] trước khi application context được refresh bằng javadoc:org.springframework.boot.EnvironmentPostProcessor[].
 Mỗi implementation phải được register trong `META-INF/spring.factories`, như ví dụ sau:
@@ -90,7 +90,7 @@ Thời điểm này quá muộn để configure một số property như `+loggi
 == Xây dựng ApplicationContext Hierarchy (thêm Parent hoặc Root Context)
 
 Có thể dùng class javadoc:org.springframework.boot.builder.SpringApplicationBuilder[] để tạo hierarchy parent/child javadoc:org.springframework.context.ApplicationContext[].
-Xem xref:reference:features/spring-application.adoc#features.spring-application.fluent-builder-api[] trong phần "Spring Boot Features" để biết thêm.
+Xem xref:reference:features/spring-application.adoc#features.spring-application.fluent-builder-api[] trong phần "`Spring Boot Features`" để biết thêm.
 
 [[howto.application.non-web-application]]
 == Tạo Non-web Application

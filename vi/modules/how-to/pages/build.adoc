@@ -128,7 +128,7 @@ Override version có thể gây compatibility issue.
 [[howto.build.create-an-executable-jar-with-maven]]
 == Tạo Executable JAR bằng Maven
 
-`spring-boot-maven-plugin` có thể dùng để tạo executable "fat" JAR.
+`spring-boot-maven-plugin` có thể dùng để tạo executable "`fat`" JAR.
 Nếu dùng POM `spring-boot-starter-parent`, declare plugin và jar sẽ được repackage:
 
 [source,xml]

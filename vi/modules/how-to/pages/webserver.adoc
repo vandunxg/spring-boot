@@ -388,7 +388,7 @@ Ví dụ không nên để chúng depend vào javadoc:javax.sql.DataSource[] ho�
 Có thể workaround bằng cách initialize bean lazily khi lần đầu được dùng thay vì lúc initialization.
 
 Với filter và servlet, cũng có thể thêm mapping và init parameter bằng javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] thay vì hoặc bổ sung underlying component.
-Cũng có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistration[format=annotation] và javadoc:org.springframework.boot.web.servlet.FilterRegistration[format=annotation] làm annotation-based alternative cho ServletRegistrationBean và FilterRegistrationBean.
+Cũng có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistration[format=annotation] và javadoc:org.springframework.boot.web.servlet.FilterRegistration[format=annotation] làm annotation-based alternative cho javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] và javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[].
 
 [NOTE]
 ====
@@ -402,7 +402,7 @@ Giống Spring bean khác, có thể define order của servlet filter bean; xem
 ==== Disable Registration của Servlet hoặc Filter
 
 Như xref:webserver.adoc#howto.webserver.add-servlet-filter-listener.spring-bean[đã mô tả], mọi bean javadoc:jakarta.servlet.Servlet[] hoặc javadoc:jakarta.servlet.Filter[] được register tự động với servlet container.
-Để disable registration của Filter hoặc Servlet cụ thể, tạo registration bean cho nó và mark disabled:
+Để disable registration của javadoc:jakarta.servlet.Filter[] hoặc javadoc:jakarta.servlet.Servlet[] cụ thể, tạo registration bean cho nó và mark disabled:
 
 include-code::MyFilterConfiguration[]
 
@@ -410,7 +410,7 @@ include-code::MyFilterConfiguration[]
 === Thêm Servlet, Filter và Listener bằng Classpath Scanning
 
 Class annotate javadoc:jakarta.servlet.annotation.WebServlet[format=annotation], javadoc:jakarta.servlet.annotation.WebFilter[format=annotation], javadoc:jakarta.servlet.annotation.WebListener[format=annotation] có thể auto-register với embedded servlet container bằng cách annotate class javadoc:org.springframework.context.annotation.Configuration[format=annotation] bằng javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] và specify package chứa component cần register.
-Mặc định ServletComponentScan scan từ package của annotated class.
+Mặc định javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] scan từ package của annotated class.
 
 [[howto.webserver.configure-access-logs]]
 == Configure Access Logging
@@ -489,7 +489,7 @@ Trường hợp khác default là `NONE`.
 [[howto.webserver.use-behind-a-proxy-server.tomcat]]
 === Customize Proxy Configuration của Tomcat
 
-Nếu dùng Tomcat, có thể configure thêm tên header dùng để carry "forwarded" information:
+Nếu dùng Tomcat, có thể configure thêm tên header dùng để carry "`forwarded`" information:
 
 [configprops,yaml]
 ----
@@ -523,7 +523,7 @@ Có thể kiểm soát hoàn toàn configuration javadoc:org.apache.catalina.val
 [[howto.webserver.use-behind-a-proxy-server.jetty]]
 === Customize Proxy Configuration của Jetty
 
-Nếu dùng Jetty, có thể configure type của header carry "forwarded" information.
+Nếu dùng Jetty, có thể configure type của header carry "`forwarded`" information.
 Mặc định dùng format `"X-Forwarded-*"`, nhưng có thể opt in standard RFC variant:
 
 [configprops,yaml]
@@ -539,7 +539,7 @@ Với option cụ thể hơn, có thể tắt forwarded configuration bằng `se
 [[howto.webserver.use-behind-a-proxy-server.reactor-netty]]
 === Customize Proxy Configuration của Reactor Netty
 
-Nếu dùng Reactor Netty, có thể configure type của header carry "forwarded" information.
+Nếu dùng Reactor Netty, có thể configure type của header carry "`forwarded`" information.
 Mặc định dùng format `"X-Forwarded-*"`, nhưng có thể opt in standard RFC variant:
 
 [configprops,yaml]

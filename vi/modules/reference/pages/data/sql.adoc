@@ -1,7 +1,7 @@
 [[data.sql]]
 = Cơ sở dữ liệu SQL
 
-{url-spring-framework-site}[Spring Framework] hỗ trợ toàn diện khi làm việc với cơ sở dữ liệu SQL, từ truy cập JDBC trực tiếp bằng javadoc:org.springframework.jdbc.core.simple.JdbcClient[] hoặc javadoc:org.springframework.jdbc.core.JdbcTemplate[] đến các công nghệ "object relational mapping" đầy đủ như Hibernate.
+{url-spring-framework-site}[Spring Framework] hỗ trợ toàn diện khi làm việc với cơ sở dữ liệu SQL, từ truy cập JDBC trực tiếp bằng javadoc:org.springframework.jdbc.core.simple.JdbcClient[] hoặc javadoc:org.springframework.jdbc.core.JdbcTemplate[] đến các công nghệ "`object relational mapping`" đầy đủ như Hibernate.
 {url-spring-data-site}[Spring Data] cung cấp thêm functionality: tạo implementation javadoc:org.springframework.data.repository.Repository[] trực tiếp từ interface và dùng convention để generate query từ method name.
 
 [[data.sql.datasource]]
@@ -10,7 +10,7 @@
 Interface javadoc:javax.sql.DataSource[] của Java cung cấp cách chuẩn để làm việc với database connection.
 Thông thường javadoc:javax.sql.DataSource[] dùng một `URL` cùng credential để thiết lập database connection.
 
-TIP: Xem xref:how-to:data-access.adoc#howto.data-access.configure-custom-datasource[] trong "How-to Guides" để biết ví dụ nâng cao hơn khi muốn kiểm soát hoàn toàn DataSource configuration.
+TIP: Xem xref:how-to:data-access.adoc#howto.data-access.configure-custom-datasource[] trong "`How-to Guides`" để biết ví dụ nâng cao hơn khi muốn kiểm soát hoàn toàn DataSource configuration.
 
 [[data.sql.datasource.embedded]]
 === Hỗ trợ Embedded Database

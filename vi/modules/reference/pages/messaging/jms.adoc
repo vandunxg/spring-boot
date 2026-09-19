@@ -95,7 +95,7 @@ spring:
 Khi embed broker, có thể chọn bật persistence và liệt kê destination cần có.
 Có thể dùng comma-separated list với default option, hoặc định nghĩa bean javadoc:org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration[] hay javadoc:org.apache.activemq.artemis.jms.server.config.TopicConfiguration[] cho advanced queue/topic configuration.
 
-Mặc định javadoc:org.springframework.jms.connection.CachingConnectionFactory[] wrap native ConnectionFactory với setting qua `+spring.jms.*+`:
+Mặc định javadoc:org.springframework.jms.connection.CachingConnectionFactory[] wrap native javadoc:jakarta.jms.ConnectionFactory[] với setting qua `+spring.jms.*+`:
 
 [configprops,yaml]
 ----
@@ -142,7 +142,7 @@ javadoc:org.springframework.jms.core.JmsClient[] của Spring được auto-conf
 include-code::MyBean[]
 
 NOTE: javadoc:org.springframework.jms.core.JmsMessagingTemplate[] có thể inject tương tự, và cả hai dùng javadoc:org.springframework.jms.core.JmsTemplate[] truyền thống cũng có thể inject.
-Nếu bean javadoc:org.springframework.jms.support.destination.DestinationResolver[] hoặc javadoc:org.springframework.jms.support.converter.MessageConverter[] được định nghĩa, nó tự động liên kết với auto-configured JmsTemplate.
+Nếu bean javadoc:org.springframework.jms.support.destination.DestinationResolver[] hoặc javadoc:org.springframework.jms.support.converter.MessageConverter[] được định nghĩa, nó tự động liên kết với auto-configured javadoc:org.springframework.jms.core.JmsTemplate[].
 
 [[messaging.jms.receiving]]
 == Nhận Message
@@ -172,7 +172,7 @@ TIP: Xem API documentation của javadoc:org.springframework.jms.annotation.Enab
 
 Nếu cần thêm javadoc:org.springframework.jms.config.JmsListenerContainerFactory[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer[] để initialize javadoc:org.springframework.jms.config.DefaultJmsListenerContainerFactory[] với cùng setting auto-configuration.
 
-Ví dụ expose factory khác dùng MessageConverter cụ thể:
+Ví dụ expose factory khác dùng javadoc:org.springframework.jms.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyJmsConfiguration[]
 

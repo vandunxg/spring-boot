@@ -143,7 +143,7 @@ Các application source là:
 [[howto.properties-and-configuration.external-properties-location]]
 == Thay đổi location của External Properties trong application
 
-Mặc định, property từ các source khác nhau được thêm vào Spring javadoc:org.springframework.core.env.Environment[] theo order xác định trước (xem xref:reference:features/external-config.adoc[] trong phần "Spring Boot Features" để biết exact order).
+Mặc định, property từ các source khác nhau được thêm vào Spring javadoc:org.springframework.core.env.Environment[] theo order xác định trước (xem xref:reference:features/external-config.adoc[] trong phần "`Spring Boot Features`" để biết exact order).
 
 Bạn cũng có thể cung cấp các System property (hoặc environment variable) sau để thay đổi behavior:
 
@@ -209,7 +209,7 @@ spring.datasource.url=jdbc:mysql://localhost/test
 server.port=9000
 ----
 
-Xem xref:reference:features/external-config.adoc#features.external-config.yaml[] trong phần "Spring Boot Features" để biết thêm về YAML.
+Xem xref:reference:features/external-config.adoc#features.external-config.yaml[] trong phần "`Spring Boot Features`" để biết thêm về YAML.
 
 
 
@@ -236,7 +236,7 @@ spring:
 Value set theo cách này bị replace bởi System property hoặc environment variable setting, nhưng không bị replace bởi method `SpringApplicationBuilder.profiles()`.
 Do đó Java API sau có thể dùng để augment profile mà không đổi default.
 
-Xem xref:reference:features/profiles.adoc[] trong phần "Spring Boot Features" để biết thêm.
+Xem xref:reference:features/profiles.adoc[] trong phần "`Spring Boot Features`" để biết thêm.
 
 
 
@@ -255,7 +255,7 @@ spring:
     default: "dev"
 ----
 
-Xem xref:reference:features/profiles.adoc[] trong phần "Spring Boot Features" để biết thêm.
+Xem xref:reference:features/profiles.adoc[] trong phần "`Spring Boot Features`" để biết thêm.
 
 
 

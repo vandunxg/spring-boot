@@ -75,7 +75,7 @@ Ví dụ trên ngăn mọi observation có name bắt đầu bằng `denied.pref
 TIP: Nếu muốn ngăn Spring Security report observation, đặt configprop:management.observations.enable.spring.security[] thành `false`.
 
 Nếu cần kiểm soát chi tiết hơn, register bean type javadoc:io.micrometer.observation.ObservationPredicate[].
-Observation chỉ được report nếu tất cả ObservationPredicate bean trả về `true` cho observation đó.
+Observation chỉ được report nếu tất cả javadoc:io.micrometer.observation.ObservationPredicate[] bean trả về `true` cho observation đó.
 
 include-code::MyObservationPredicate[]
 
@@ -90,7 +90,7 @@ Feature này được Micrometer hỗ trợ trực tiếp.
 Xem {url-micrometer-docs-concepts}/timers.html#_the_timed_annotation[Micrometer], {url-micrometer-docs-observation}/components.html#micrometer-observation-annotations[Micrometer Observation] và {url-micrometer-tracing-docs}/api.html#_aspect_oriented_programming[Micrometer Tracing] reference docs.
 
 NOTE: Khi annotate method hoặc class đã được instrument, ví dụ xref:reference:actuator/metrics.adoc#actuator.metrics.supported.spring-data-repository[Spring Data repository] hoặc xref:reference:actuator/metrics.adoc#actuator.metrics.supported.spring-mvc[Spring MVC controller], sẽ tạo duplicate observation.
-Trong trường hợp này, có thể disable automatic instrumentation bằng xref:reference:actuator/observability.adoc#actuator.observability.preventing-observations[property] hoặc ObservationPredicate rồi dựa vào annotation, hoặc remove annotation.
+Trong trường hợp này, có thể disable automatic instrumentation bằng xref:reference:actuator/observability.adoc#actuator.observability.preventing-observations[property] hoặc javadoc:io.micrometer.observation.ObservationPredicate[] rồi dựa vào annotation, hoặc remove annotation.
 
 [[actuator.observability.semantic-conventions]]
 == Semantic Conventions

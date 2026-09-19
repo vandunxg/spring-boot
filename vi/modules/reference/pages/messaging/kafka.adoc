@@ -27,7 +27,7 @@ javadoc:org.springframework.kafka.core.KafkaTemplate[] được auto-configure v
 include-code::MyBean[]
 
 NOTE: Nếu configprop:spring.kafka.producer.transaction-id-prefix[] được định nghĩa, javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[] được cấu hình tự động.
-Nếu có bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], nó tự động liên kết với KafkaTemplate.
+Nếu có bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], nó tự động liên kết với javadoc:org.springframework.kafka.core.KafkaTemplate[].
 
 Nếu context có bean type `KafkaTemplateObservationConvention`, nó tự động register trên `KafkaTemplate`.
 
@@ -45,9 +45,9 @@ Nếu có bean javadoc:org.springframework.kafka.transaction.KafkaTransactionMan
 Tương tự với bean javadoc:org.springframework.kafka.listener.adapter.RecordFilterStrategy[], javadoc:org.springframework.kafka.listener.CommonErrorHandler[], javadoc:org.springframework.kafka.listener.AfterRollbackProcessor[] hoặc javadoc:org.springframework.kafka.listener.ConsumerAwareRebalanceListener[].
 
 Tùy listener type, bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[] hoặc javadoc:org.springframework.kafka.support.converter.BatchMessageConverter[] được liên kết với default factory.
-Nếu batch listener chỉ có RecordMessageConverter, nó được wrap trong BatchMessageConverter.
+Nếu batch listener chỉ có javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], nó được wrap trong javadoc:org.springframework.kafka.support.converter.BatchMessageConverter[].
 
-TIP: Custom javadoc:org.springframework.kafka.transaction.ChainedKafkaTransactionManager[] phải đánh dấu javadoc:org.springframework.context.annotation.Primary[format=annotation] vì thường reference auto-configured KafkaTransactionManager.
+TIP: Custom javadoc:org.springframework.kafka.transaction.ChainedKafkaTransactionManager[] phải đánh dấu javadoc:org.springframework.context.annotation.Primary[format=annotation] vì thường reference auto-configured javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[].
 
 Nếu context có bean type `KafkaListenerObservationConvention`, nó tự động register trên container factory.
 
@@ -68,7 +68,7 @@ Xem xref:messaging/kafka.adoc#messaging.kafka.additional-properties[].
 
 include-code::MyKafkaStreamsConfiguration[]
 
-Mặc định stream do StreamsBuilder quản lý tự động start.
+Mặc định stream do javadoc:org.apache.kafka.streams.StreamsBuilder[] quản lý tự động start.
 Customize bằng configprop:spring.kafka.streams.auto-startup[].
 
 TIP: Có thể register nhiều bean implement javadoc:org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer[].

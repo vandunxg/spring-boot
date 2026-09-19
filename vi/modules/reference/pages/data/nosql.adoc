@@ -30,7 +30,8 @@ TIP: Chúng tôi cũng cung cấp `spring-boot-starter-data-redis-reactive` đ�
 [[data.nosql.redis.connecting]]
 === Kết nối Redis
 
-Bạn có thể inject auto-configured javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[], javadoc:org.springframework.data.redis.core.StringRedisTemplate[] hoặc javadoc:org.springframework.data.redis.core.RedisTemplate[] như Spring Bean khác:
+Bạn có thể inject auto-configured javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[], javadoc:org.springframework.data.redis.core.StringRedisTemplate[] hoặc javadoc:org.springframework.data.redis.core.RedisTemplate[] như Spring Bean khác.
+Listing sau minh họa ví dụ về một bean như vậy:
 
 include-code::MyBean[]
 
@@ -50,7 +51,8 @@ spring:
 ----
 
 Bạn cũng có thể chỉ định URL Redis server trực tiếp.
-Khi đặt URL, host, port, username và password property bị bỏ qua:
+Khi đặt URL, host, port, username và password property bị bỏ qua.
+Ví dụ sau minh họa điều này:
 
 [configprops,yaml]
 ----
@@ -127,7 +129,8 @@ Spring Boot cung cấp các tiện ích khi làm việc với MongoDB, gồm sta
 === Kết nối MongoDB Database
 
 Để access MongoDB database, có thể inject auto-configured javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[].
-Mặc định instance kết nối `mongodb://localhost/test`:
+Mặc định instance cố kết nối MongoDB server tại `mongodb://localhost/test`.
+Ví dụ sau minh họa cách kết nối tới MongoDB database:
 
 include-code::MyBean[]
 
@@ -136,7 +139,8 @@ Nếu tự định nghĩa javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.
 Auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] được tạo bằng bean javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
 Nếu tự định nghĩa javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[], bean đó được dùng nguyên trạng và property `spring.data.mongodb` bị bỏ qua.
 Nếu không, javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[] được auto-configure và áp dụng property `spring.data.mongodb`.
-Trong cả hai trường hợp có thể khai báo một hoặc nhiều bean javadoc:org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer[] để fine-tune configuration.
+Trong cả hai trường hợp có thể khai báo một hoặc nhiều bean javadoc:org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer[] để fine-tune configuration javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
+Mỗi bean được gọi lần lượt với javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings$Builder[] dùng để build javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
 
 Có thể đặt configprop:spring.mongodb.uri[] để đổi URL và cấu hình replica set:
 
@@ -147,7 +151,8 @@ spring:
     uri: "mongodb://user:secret@mongoserver1.example.com:27017,mongoserver2.example.com:23456/test"
 ----
 
-Hoặc dùng property riêng lẻ:
+Hoặc bạn có thể chỉ định connection detail bằng các property riêng lẻ.
+Ví dụ, bạn có thể khai báo các setting sau trong `application.properties`:
 
 [configprops,yaml]
 ----
@@ -162,7 +167,7 @@ spring:
     password: "secret"
 ----
 
-Auto-configured MongoClient có thể dùng SSL:
+Auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] có thể được cấu hình để dùng SSL khi giao tiếp với server bằng cách set các property như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -173,7 +178,7 @@ spring:
       enabled: true
 ----
 
-Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle]:
+Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng cho javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -193,8 +198,8 @@ Cũng có thể chỉ định port trong host address bằng syntax `host:port`.
 Format này nên dùng khi cần đổi port của entry `additional-hosts`.
 ====
 
-TIP: Nếu không dùng Spring Data MongoDB, có thể inject bean MongoClient trực tiếp thay cho javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[].
-Nếu muốn kiểm soát hoàn toàn connection, có thể tự khai báo javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] hoặc MongoClient bean.
+TIP: Nếu không dùng Spring Data MongoDB, có thể inject bean javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] trực tiếp thay cho javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[].
+Nếu muốn kiểm soát hoàn toàn connection, có thể tự khai báo javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] hoặc javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] bean.
 
 NOTE: Nếu dùng reactive driver, Netty là bắt buộc cho SSL.
 Auto-configuration tự cấu hình factory nếu Netty có sẵn và factory chưa được customize.
@@ -236,11 +241,13 @@ Spring Boot cung cấp nhiều tiện ích, gồm starter `spring-boot-starter-d
 === Kết nối Neo4j Database
 
 Có thể inject auto-configured javadoc:org.neo4j.driver.Driver[].
-Mặc định instance kết nối Neo4j tại `localhost:7687` bằng Bolt protocol:
+Mặc định instance cố kết nối Neo4j server tại `localhost:7687` bằng Bolt protocol.
+Ví dụ sau minh họa cách inject javadoc:org.neo4j.driver.Driver[] của Neo4j, qua đó truy cập được javadoc:org.neo4j.driver.Session[] cùng nhiều thứ khác:
 
 include-code::MyBean[]
 
-Có thể cấu hình driver bằng `spring.neo4j.*`:
+Có thể cấu hình nhiều khía cạnh của driver bằng property `spring.neo4j.*`.
+Ví dụ sau minh họa cách cấu hình uri và credential cần dùng:
 
 [configprops,yaml]
 ----
@@ -253,7 +260,8 @@ spring:
 ----
 
 Auto-configured javadoc:org.neo4j.driver.Driver[] được tạo bằng `org.neo4j.driver.Config$ConfigBuilder`.
-Để fine-tune, khai báo một hoặc nhiều bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[].
+Để fine-tune configuration của nó, khai báo một hoặc nhiều bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[].
+Mỗi bean được gọi lần lượt với `org.neo4j.driver.Config$ConfigBuilder` dùng để build javadoc:org.neo4j.driver.Driver[].
 
 [[data.nosql.neo4j.repositories]]
 === Spring Data Neo4j Repository
@@ -322,7 +330,7 @@ Nếu `co.elastic.clients:elasticsearch-rest5-client` có trên classpath, Sprin
 Để fine-tune có thể register nhiều bean javadoc:org.springframework.boot.elasticsearch.autoconfigure.Rest5ClientBuilderCustomizer[].
 Để kiểm soát hoàn toàn client configuration, định nghĩa bean javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5ClientBuilder[].
 
-javadoc:co.elastic.clients.transport.rest5_client.low_level.sniffer.Sniffer[] cũng có thể được auto-configure để tự động discover node từ Elasticsearch cluster và set lên Rest5Client.
+javadoc:co.elastic.clients.transport.rest5_client.low_level.sniffer.Sniffer[] cũng có thể được auto-configure để tự động discover node từ Elasticsearch cluster và set lên javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[].
 Có thể tune:
 
 [configprops,yaml]
@@ -341,7 +349,8 @@ spring:
 
 Nếu dùng `spring-boot-starter-elasticsearch` hoặc thêm `co.elastic.clients:elasticsearch-java`, Spring Boot auto-configure bean javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[].
 
-ElasticsearchClient dùng transport phụ thuộc Rest5Client ở trên nên có thể dùng cùng property.
+javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[] dùng transport phụ thuộc vào javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[] đã mô tả ở trên.
+Do đó, các property mô tả trước đó có thể dùng để cấu hình javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[].
 Có thể định nghĩa javadoc:co.elastic.clients.transport.rest5_client.Rest5ClientOptions[] để kiểm soát thêm behavior transport.
 
 [[data.nosql.elasticsearch.connecting-using-rest.reactiveclient]]
@@ -350,18 +359,20 @@ Có thể định nghĩa javadoc:co.elastic.clients.transport.rest5_client.Rest5
 {url-spring-data-elasticsearch-site}[Spring Data Elasticsearch] cung cấp javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[] để query Elasticsearch theo reactive style.
 Nếu có Spring Data Elasticsearch và Reactor trên classpath, Spring Boot auto-configure bean này.
 
-ReactiveElasticsearchClient dùng transport phụ thuộc Rest5Client nên dùng được các property ở trên.
+javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[] dùng transport phụ thuộc vào javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[] đã mô tả ở trên.
+Do đó, các property mô tả trước đó có thể dùng để cấu hình javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[].
 Có thể định nghĩa javadoc:co.elastic.clients.transport.rest5_client.Rest5ClientOptions[] để kiểm soát transport.
 
 [[data.nosql.elasticsearch.connecting-using-spring-data]]
 === Kết nối Elasticsearch bằng Spring Data
 
 Để kết nối Elasticsearch cần bean javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[] do Spring Boot auto-configure hoặc application cung cấp.
-Khi có configuration này, có thể inject javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[]:
+Khi có configuration này, javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] có thể được inject như bất kỳ Spring bean nào khác, như ví dụ sau:
 
 include-code::MyBean[]
 
-Khi có `spring-data-elasticsearch` và Reactor, Spring Boot cũng auto-configure xref:data/nosql.adoc#data.nosql.elasticsearch.connecting-using-rest.reactiveclient[`ReactiveElasticsearchClient`] và javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[].
+Khi có `spring-data-elasticsearch` và Reactor, Spring Boot cũng có thể auto-configure xref:data/nosql.adoc#data.nosql.elasticsearch.connecting-using-rest.reactiveclient[`ReactiveElasticsearchClient`] và javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] thành bean.
+Chúng là bản reactive tương đương của các REST client còn lại.
 
 [[data.nosql.elasticsearch.repositories]]
 === Spring Data Elasticsearch Repository
@@ -378,7 +389,8 @@ Customize bằng javadoc:org.springframework.data.elasticsearch.repository.confi
 
 TIP: Xem {url-spring-data-elasticsearch-docs}[reference documentation].
 
-Spring Boot hỗ trợ classic và reactive Elasticsearch repository qua ElasticsearchTemplate hoặc ReactiveElasticsearchTemplate.
+Spring Boot hỗ trợ classic và reactive Elasticsearch repository qua javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] bean.
+Nhiều khả năng các bean đó được Spring Boot auto-configure khi có đủ dependency cần thiết.
 
 Nếu muốn custom template backing repository, thêm bean javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.core.ElasticsearchOperations[] tên `"elasticsearchTemplate"`.
 Reactive tương tự với bean name `"reactiveElasticsearchTemplate"`.
@@ -500,7 +512,7 @@ Có starter `spring-boot-starter-data-couchbase` và `spring-boot-starter-data-c
 
 Có thể lấy javadoc:com.couchbase.client.java.Cluster[] bằng cách thêm Couchbase SDK và configuration.
 Property `spring.couchbase.*` dùng customize connection.
-Thông thường cung cấp connection string và credential:
+Thông thường bạn cung cấp https://docs.couchbase.com/dotnet-sdk/current/howtos/managing-connections.html[connection string] và credential để authentication. Basic authentication với username và password có thể cấu hình như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -511,7 +523,8 @@ spring:
     password: "secret"
 ----
 
-Có thể dùng client certificate thay username/password:
+https://docs.couchbase.com/server/current/manage/manage-security/configure-client-certificates.html[Client certificate] có thể dùng để authentication thay cho username và password.
+Location và password của Java KeyStore chứa client certificate có thể cấu hình như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -527,7 +540,7 @@ spring:
         password: "secret"
 ----
 
-PEM certificate và private key:
+Certificate mã hóa PEM và private key có thể cấu hình như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -544,7 +557,7 @@ spring:
 ----
 
 Có thể customize javadoc:com.couchbase.client.java.env.ClusterEnvironment[] setting.
-Ví dụ đổi connect timeout và bật xref:features/ssl.adoc[SSL bundle]:
+Ví dụ, configuration sau đổi timeout để mở javadoc:com.couchbase.client.java.Bucket[] mới và bật hỗ trợ SSL bằng reference tới xref:features/ssl.adoc[SSL bundle] đã cấu hình:
 
 [configprops,yaml]
 ----
@@ -572,7 +585,7 @@ Customize bằng javadoc:org.springframework.data.couchbase.repository.config.En
 Xem {url-spring-data-couchbase-docs}[reference documentation].
 
 Có thể inject auto-configured javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] nếu có javadoc:org.springframework.data.couchbase.CouchbaseClientFactory[].
-Điều này xảy ra khi có Cluster và đã chỉ định bucket name:
+Điều này xảy ra khi có javadoc:com.couchbase.client.java.Cluster[] và đã chỉ định bucket name:
 
 [configprops,yaml]
 ----
@@ -582,15 +595,15 @@ spring:
       bucket-name: "my-bucket"
 ----
 
-Ví dụ inject CouchbaseTemplate:
+Ví dụ inject javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[]:
 
 include-code::MyBean[]
 
 Có thể định nghĩa các bean sau để override auto-configuration:
 
-* Bean javadoc:org.springframework.data.couchbase.core.mapping.CouchbaseMappingContext[] tên `couchbaseMappingContext`.
-* Bean javadoc:org.springframework.data.convert.CustomConversions[] tên `couchbaseCustomConversions`.
-* Bean javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] tên `couchbaseTemplate`.
+* javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.couchbase.core.mapping.CouchbaseMappingContext[] tên `couchbaseMappingContext`.
+* javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.convert.CustomConversions[] tên `couchbaseCustomConversions`.
+* javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] tên `couchbaseTemplate`.
 
 Để tránh hard-code tên, có thể dùng javadoc:org.springframework.data.couchbase.config.BeanNames[].
 Ví dụ customize converter:
@@ -623,14 +636,14 @@ spring:
 Có thể customize connection setting bằng `spring.ldap.base` và `spring.ldap.base-environment`.
 
 javadoc:org.springframework.ldap.core.support.LdapContextSource[] được auto-configure từ các setting này.
-Nếu bean javadoc:org.springframework.ldap.core.support.DirContextAuthenticationStrategy[] có sẵn, nó được liên kết với LdapContextSource.
-Nếu cần customize, ví dụ dùng javadoc:org.springframework.ldap.pool2.factory.PooledContextSource[], vẫn có thể inject auto-configured LdapContextSource.
+Nếu bean javadoc:org.springframework.ldap.core.support.DirContextAuthenticationStrategy[] có sẵn, nó được liên kết với javadoc:org.springframework.ldap.core.support.LdapContextSource[].
+Nếu cần customize, ví dụ dùng javadoc:org.springframework.ldap.pool2.factory.PooledContextSource[], vẫn có thể inject auto-configured javadoc:org.springframework.ldap.core.support.LdapContextSource[].
 Đánh dấu custom javadoc:org.springframework.ldap.core.ContextSource[] là javadoc:org.springframework.context.annotation.Primary[format=annotation] để auto-configured javadoc:org.springframework.ldap.core.LdapTemplate[] dùng nó.
 
 [[data.nosql.ldap.ssl]]
 === SSL
 
-Để kết nối bằng LDAPS, cấu hình xref:features/ssl.adoc[SSL bundle] qua configprop:spring.ldap.ssl.bundle[] và dùng URL `ldaps://`:
+Để kết nối bằng LDAPS, cấu hình xref:features/ssl.adoc[SSL bundle] cần dùng qua property configprop:spring.ldap.ssl.bundle[], và dùng URL `ldaps://` trong property configprop:spring.ldap.urls[], như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -641,21 +654,23 @@ spring:
       bundle: "example"
 ----
 
-Đặt configprop:spring.ldap.ssl.bundle[] cũng đổi default URL thành `ldaps://localhost:636`.
+Đặt configprop:spring.ldap.ssl.bundle[] cũng đổi default URL thành `ldaps://localhost:636`, nên configprop:spring.ldap.urls[] chỉ cần set khi kết nối tới host hoặc port khác.
 
 NOTE: SSL chỉ hỗ trợ khi kết nối qua `ldaps://`. Bật SSL khi URL dùng `ldap://` sẽ fail startup.
 
-Các property này không cấu hình StartTLS.
+Các property này không cấu hình StartTLS — cơ chế nâng cấp một connection `ldap://` thường thay vì dùng LDAPS, và vì vậy không thể kết hợp với SSL bundle.
 Để dùng StartTLS, định nghĩa bean javadoc:org.springframework.ldap.core.support.DirContextAuthenticationStrategy[] như javadoc:org.springframework.ldap.core.support.DefaultTlsDirContextAuthenticationStrategy[] và set SSL socket factory.
 
-Nếu cần SSL mà không customize trust/key material, đặt configprop:spring.ldap.ssl.enabled[] = `true` để dùng platform default.
+Nếu cần hỗ trợ SSL mà không customize trust và key material, đặt property configprop:spring.ldap.ssl.enabled[] thành `true` thay vì cung cấp bundle.
+Cách này dùng trust và key material mặc định của platform.
 
-WARNING: Các property này chỉ áp dụng cho auto-configured LdapContextSource.
+WARNING: Các property này chỉ áp dụng cho auto-configured javadoc:org.springframework.ldap.core.support.LdapContextSource[].
 Nếu tự định nghĩa context source, phải tự cấu hình SSL.
-Nếu tự định nghĩa javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[] bean, auto-configured context source dùng SSL bundle từ bean đó.
+Nếu tự định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[], kể cả bean do `@ServiceConnection` đóng góp, auto-configured context source sẽ dùng SSL bundle mà bean đó cung cấp.
+Một connection `ldaps://` chưa được cấp key hay trust material nào sẽ âm thầm dùng mặc định của platform thay vì fail.
 
 TIP: Các property này cấu hình LDAP client và bị bỏ qua khi dùng embedded LDAP server.
-Để bật SSL cho xref:data/nosql.adoc#data.nosql.ldap.embedded.ssl[embedded LDAP server], dùng configprop:spring.ldap.embedded.ssl.bundle[].
+Để bật SSL cho xref:data/nosql.adoc#data.nosql.ldap.embedded.ssl[embedded LDAP server], dùng property riêng configprop:spring.ldap.embedded.ssl.bundle[], property này cung cấp certificate và private key của server cũng như trust material của client.
 
 [[data.nosql.ldap.repositories]]
 === Spring Data LDAP Repository
@@ -710,7 +725,7 @@ Có thể disable validation bằng configprop:spring.ldap.embedded.validation.e
 Nếu có custom attribute, dùng configprop:spring.ldap.embedded.validation.schema[].
 
 Property `spring.ldap.embedded` cấu hình server, các property `spring.ldap` còn lại cấu hình client như mô tả trong xref:data/nosql.adoc#data.nosql.ldap[LDAP].
-Connection detail lấy từ server:
+Mọi thứ mô tả chính connection đều lấy từ server, vì chỉ server mới xác định được một connection tới nó trông như thế nào:
 
 * Client kết nối tới port và scheme server đang listen nên configprop:spring.ldap.urls[] bị bỏ qua.
 * Client dùng credential từ configprop:spring.ldap.embedded.credential.username[] và configprop:spring.ldap.embedded.credential.password[].
@@ -719,7 +734,8 @@ Connection detail lấy từ server:
 Do đó production `spring.ldap` configuration không cần unset khi test với embedded server.
 Các property còn lại như configprop:spring.ldap.base[], configprop:spring.ldap.referral[] và `spring.ldap.base-environment.*` vẫn được áp dụng.
 
-TIP: Để cấu hình client khác, định nghĩa javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[] bean riêng.
+TIP: Để cấu hình client khác đi, định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[] của riêng bạn.
+Auto-configured client khi đó dùng bean đó và bỏ qua URL, credential cũng như SSL bundle của embedded server.
 
 [[data.nosql.ldap.embedded.ssl]]
 ==== SSL

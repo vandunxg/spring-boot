@@ -29,7 +29,7 @@ Các level có thể là:
 }
 ----
 
-TIP: Để "reset" specific level của logger và dùng default configuration, truyền `null` làm `configuredLevel`.
+TIP: Để "`reset`" specific level của logger và dùng default configuration, truyền `null` làm `configuredLevel`.
 
 [[actuator.loggers.opentelemetry]]
 == OpenTelemetry

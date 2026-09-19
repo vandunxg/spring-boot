@@ -13,7 +13,7 @@ Nếu define javadoc:org.springframework.context.annotation.Configuration[format
 [[howto.security.change-user-details-service-and-add-user-accounts]]
 == Thay đổi UserDetailsService và thêm User Account
 
-Nếu cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.springframework.security.authentication.AuthenticationManager[], javadoc:org.springframework.security.authentication.AuthenticationProvider[] hoặc javadoc:org.springframework.security.core.userdetails.UserDetailsService[], default Bean cho javadoc:org.springframework.security.provisioning.InMemoryUserDetailsManager[] sẽ không được tạo.
+Nếu cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.springframework.security.authentication.AuthenticationManager[], javadoc:org.springframework.security.authentication.AuthenticationProvider[] hoặc javadoc:org.springframework.security.core.userdetails.UserDetailsService[], default javadoc:org.springframework.context.annotation.Bean[format=annotation] cho javadoc:org.springframework.security.provisioning.InMemoryUserDetailsManager[] sẽ không được tạo.
 Điều này nghĩa là toàn bộ feature set của Spring Security available, như {url-spring-security-docs}/servlet/authentication/index.html[các authentication option khác nhau].
 
 Cách dễ nhất để thêm user account là cung cấp bean javadoc:org.springframework.security.core.userdetails.UserDetailsService[] riêng.

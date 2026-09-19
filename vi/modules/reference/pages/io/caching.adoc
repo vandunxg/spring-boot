@@ -219,7 +219,7 @@ spring:
 ----
 
 Nếu bean javadoc:com.github.benmanes.caffeine.cache.CacheLoader[] được định nghĩa, nó tự động liên kết với javadoc:org.springframework.cache.caffeine.CaffeineCacheManager[].
-Vì CacheLoader áp dụng cho _tất cả_ cache do cache manager quản lý, nó phải được định nghĩa là `CacheLoader<Object, Object>`.
+Vì javadoc:com.github.benmanes.caffeine.cache.CacheLoader[] áp dụng cho _tất cả_ cache do cache manager quản lý, nó phải được định nghĩa là `CacheLoader<Object, Object>`.
 Auto-configuration bỏ qua generic type khác.
 
 
