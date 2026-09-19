@@ -1,0 +1,254 @@
+[[testing.testcontainers]]
+= Testcontainers
+
+Library https://www.testcontainers.com/[Testcontainers] cung cấp cách quản lý service chạy bên trong Docker container.
+Nó tích hợp với JUnit, cho phép viết test class có thể start container trước khi bất kỳ test nào chạy.
+Testcontainers đặc biệt hữu ích khi viết integration test giao tiếp với backend service thật như MySQL, MongoDB, Cassandra và các hệ thống khác.
+
+Trong các phần sau, chúng ta mô tả một số cách tích hợp Testcontainers với test.
+
+[[testing.testcontainers.spring-beans]]
+== Sử dụng Spring Beans
+
+Container do Testcontainers cung cấp có thể được Spring Boot quản lý như bean.
+
+Để khai báo container thành bean, thêm method javadoc:org.springframework.context.annotation.Bean[format=annotation] vào test configuration:
+
+include-code::MyTestConfiguration[]
+
+Sau đó có thể inject và dùng container bằng cách import configuration class trong test class:
+
+include-code::MyIntegrationTests[]
+
+TIP: Cách quản lý container này thường được dùng cùng xref:#testing.testcontainers.service-connections[service connection annotation].
+
+[[testing.testcontainers.junit-extension]]
+== Sử dụng JUnit Extension
+
+Testcontainers cung cấp JUnit extension để quản lý container trong test.
+Extension được activate bằng annotation javadoc:org.testcontainers.junit.jupiter.Testcontainers[format=annotation] của Testcontainers trên test class.
+
+Sau đó dùng annotation javadoc:org.testcontainers.junit.jupiter.Container[format=annotation] trên static container field.
+
+Annotation javadoc:org.testcontainers.junit.jupiter.Testcontainers[format=annotation] có thể dùng với vanilla JUnit test hoặc kết hợp javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation]:
+
+include-code::MyIntegrationTests[]
+
+Ví dụ trên start Neo4j container trước khi test chạy.
+Lifecycle container được Testcontainers quản lý như mô tả trong {url-testcontainers-docs}/test_framework_integration/junit_5/#extension[official documentation].
+
+Khi dùng JUnit extension, container instance bị stop sau khi test class chạy xong với static field, hoặc sau mỗi test method với non-static field.
+Điều này có thể gây vấn đề với Spring Boot test vì Spring TestContext Framework có thể cache javadoc:org.springframework.context.ApplicationContext[] lâu hơn và reuse nó cho test class hoặc method khác có cùng configuration.
+Nếu cached application context chứa bean phụ thuộc vào container đã stop, test sau hoặc bean destruction callback có thể fail.
+Vì vậy nên ưu tiên xref:#testing.testcontainers.spring-beans[quản lý container như Spring bean] hoặc xref:#testing.testcontainers.importing-configuration-interfaces[import container declaration] khi application context cần usable trong toàn bộ thời gian được cache.
+
+NOTE: Trong hầu hết trường hợp, bạn cũng cần cấu hình application để kết nối service chạy trong container.
+
+[[testing.testcontainers.importing-configuration-interfaces]]
+== Import Container Configuration Interface
+
+Một pattern phổ biến với Testcontainers là khai báo container instance dưới dạng static field trong interface.
+
+Ví dụ interface sau khai báo hai container: `mongo` type javadoc:{url-testcontainers-mongodb-javadoc}/org.testcontainers.mongodb.MongoDBContainer[] và `neo4j` type javadoc:{url-testcontainers-neo4j-javadoc}/org.testcontainers.neo4j.Neo4jContainer[]:
+
+include-code::MyContainers[]
+
+Khi container được khai báo theo cách này, có thể reuse configuration trong nhiều test bằng cách cho test class implement interface.
+
+Cũng có thể dùng cùng interface configuration trong Spring Boot test.
+Để làm vậy, thêm javadoc:org.springframework.boot.testcontainers.context.ImportTestcontainers[format=annotation] vào test configuration class:
+
+include-code::MyTestConfiguration[]
+
+[[testing.testcontainers.lifecycle]]
+== Lifecycle của Managed Container
+
+Nếu dùng annotation và extension do Testcontainers cung cấp, lifecycle của container instance được Testcontainers quản lý hoàn toàn.
+Xem {url-testcontainers-docs}[official Testcontainers documentation].
+
+Khi container được Spring quản lý như bean, lifecycle do Spring quản lý:
+
+* Container bean được tạo và start trước mọi bean khác.
+* Container bean được stop sau khi mọi bean khác bị destroy.
+
+Quy trình này đảm bảo bean phụ thuộc functionality từ container có thể sử dụng functionality đó.
+Nó cũng đảm bảo bean được cleanup khi container vẫn available.
+
+TIP: Khi application bean phụ thuộc functionality của container, ưu tiên cấu hình container thành Spring bean để đảm bảo đúng lifecycle behavior.
+
+NOTE: Nếu container do Testcontainers quản lý thay vì Spring bean, không có guarantee về thứ tự shutdown giữa bean và container.
+Container có thể shutdown trước khi bean phụ thuộc container được cleanup.
+Điều này có thể gây exception ở client bean, ví dụ do mất connection.
+Khi application context cần usable trong toàn bộ thời gian cache, ưu tiên quản lý container như Spring bean hoặc import container declaration bằng javadoc:org.springframework.boot.testcontainers.context.ImportTestcontainers[format=annotation].
+
+Container bean được tạo và start một lần cho mỗi application context do Spring TestContext Framework quản lý.
+Chi tiết về cách TestContext Framework quản lý application context và bean xem {url-spring-framework-docs}[Spring Framework documentation].
+
+Container bean được stop trong standard application context shutdown process của TestContext Framework.
+Khi application context shutdown, container cũng shutdown.
+Thông thường điều này xảy ra sau khi mọi test dùng cached application context tương ứng hoàn tất.
+Nó cũng có thể xảy ra sớm hơn tùy caching behavior trong TestContext Framework.
+
+NOTE: Một test container instance có thể, và thường được, giữ lại qua nhiều test class.
+
+[[testing.testcontainers.service-connections]]
+== Service Connections
+
+Service connection là connection tới remote service.
+Spring Boot auto-configuration có thể consume detail của service connection và dùng chúng để thiết lập connection tới remote service.
+Khi đó connection detail có precedence hơn connection-related configuration property.
+
+Khi dùng Testcontainers, connection detail có thể được tự động tạo cho service chạy trong container bằng cách annotate container field trong test class.
+
+include-code::MyIntegrationTests[]
+
+Nhờ javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation], configuration trên cho phép Neo4j-related bean giao tiếp với Neo4j chạy trong Docker container do Testcontainers quản lý.
+Điều này được thực hiện bằng cách tự động định nghĩa bean javadoc:org.springframework.boot.neo4j.autoconfigure.Neo4jConnectionDetails[], sau đó Neo4j auto-configuration dùng bean này, override mọi connection-related configuration property.
+
+NOTE: Cần thêm module `spring-boot-testcontainers` làm test dependency để dùng service connection với Testcontainers.
+
+Service connection annotation được xử lý bởi class javadoc:org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory[] register qua `spring.factories`.
+Một javadoc:org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory[] có thể tạo bean javadoc:org.springframework.boot.autoconfigure.service.connection.ConnectionDetails[] dựa trên subclass javadoc:org.testcontainers.containers.Container[] cụ thể hoặc Docker image name.
+
+Các service connection factory sau được cung cấp trong jar `spring-boot-testcontainers`:
+
+|===
+| Connection Details | Match với
+
+| javadoc:org.springframework.boot.activemq.autoconfigure.ActiveMQConnectionDetails[]
+| Container tên "symptoma/activemq" hoặc javadoc:org.testcontainers.activemq.ActiveMQContainer[]
+
+| javadoc:org.springframework.boot.amqp.autoconfigure.AmqpConnectionDetails[]
+| Container type javadoc:{url-testcontainers-rabbitmq-javadoc}/org.testcontainers.rabbitmq.RabbitMQContainer[] hoặc javadoc:org.testcontainers.activemq.ActiveMQContainer[] hoặc javadoc:org.testcontainers.activemq.ArtemisContainer[]
+
+| javadoc:org.springframework.boot.artemis.autoconfigure.ArtemisConnectionDetails[]
+| Container type javadoc:org.testcontainers.activemq.ArtemisContainer[]
+
+| javadoc:org.springframework.boot.cassandra.autoconfigure.CassandraConnectionDetails[]
+| Container type javadoc:org.testcontainers.cassandra.CassandraContainer[]
+
+| javadoc:org.springframework.boot.couchbase.autoconfigure.CouchbaseConnectionDetails[]
+| Container type javadoc:org.testcontainers.couchbase.CouchbaseContainer[]
+
+| javadoc:org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails[]
+| Container type javadoc:org.testcontainers.elasticsearch.ElasticsearchContainer[]
+
+| javadoc:org.springframework.boot.flyway.autoconfigure.FlywayConnectionDetails[]
+| Container type javadoc:{url-testcontainers-jdbc-javadoc}/org.testcontainers.containers.JdbcDatabaseContainer[]
+
+| javadoc:org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails[]
+| Container type javadoc:{url-testcontainers-jdbc-javadoc}/org.testcontainers.containers.JdbcDatabaseContainer[]
+
+| javadoc:org.springframework.boot.kafka.autoconfigure.KafkaConnectionDetails[]
+| Container type javadoc:org.testcontainers.kafka.KafkaContainer[], javadoc:org.testcontainers.kafka.ConfluentKafkaContainer[] hoặc javadoc:org.testcontainers.redpanda.RedpandaContainer[]
+
+| javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[]
+| Container tên "osixia/openldap" hoặc type javadoc:org.testcontainers.ldap.LLdapContainer[]
+
+| javadoc:org.springframework.boot.liquibase.autoconfigure.LiquibaseConnectionDetails[]
+| Container type javadoc:{url-testcontainers-jdbc-javadoc}/org.testcontainers.containers.JdbcDatabaseContainer[]
+
+| javadoc:org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails[]
+| Container type javadoc:{url-testcontainers-mongodb-javadoc}/org.testcontainers.mongodb.MongoDBContainer[] hoặc javadoc:{url-testcontainers-mongodb-javadoc}/org.testcontainers.mongodb.MongoDBAtlasLocalContainer[]
+
+| javadoc:org.springframework.boot.neo4j.autoconfigure.Neo4jConnectionDetails[]
+| Container type javadoc:{url-testcontainers-neo4j-javadoc}/org.testcontainers.neo4j.Neo4jContainer[]
+
+| javadoc:org.springframework.boot.opentelemetry.autoconfigure.logging.otlp.OtlpLoggingConnectionDetails[]
+| Container tên "otel/opentelemetry-collector-contrib" hoặc type javadoc:org.testcontainers.grafana.LgtmStackContainer[]
+
+| javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.export.otlp.OtlpMetricsConnectionDetails[]
+| Container tên "otel/opentelemetry-collector-contrib" hoặc type javadoc:org.testcontainers.grafana.LgtmStackContainer[]
+
+| javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpTracingConnectionDetails[]
+| Container tên "otel/opentelemetry-collector-contrib" hoặc type javadoc:org.testcontainers.grafana.LgtmStackContainer[]
+
+| javadoc:org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails[]
+| Container type javadoc:{url-testcontainers-pulsar-javadoc}/org.testcontainers.pulsar.PulsarContainer[]
+
+| javadoc:org.springframework.boot.r2dbc.autoconfigure.R2dbcConnectionDetails[]
+| Container type
+javadoc:org.testcontainers.clickhouse.ClickHouseContainer[],
+javadoc:{url-testcontainers-mariadb-javadoc}/org.testcontainers.mariadb.MariaDBContainer[], javadoc:{url-testcontainers-mssqlserver-javadoc}/org.testcontainers.mssqlserver.MSSQLServerContainer[], javadoc:{url-testcontainers-mysql-javadoc}/org.testcontainers.mysql.MySQLContainer[],
+javadoc:org.testcontainers.oracle.OracleContainer[OracleContainer (free)], javadoc:{url-testcontainers-oracle-xe-javadoc}/org.testcontainers.containers.OracleContainer[OracleContainer (XE)] hoặc javadoc:{url-testcontainers-postgresql-javadoc}/org.testcontainers.postgresql.PostgreSQLContainer[]
+
+| javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitConnectionDetails[]
+| Container type javadoc:{url-testcontainers-rabbitmq-javadoc}/org.testcontainers.rabbitmq.RabbitMQContainer[]
+
+| javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamConnectionDetails[]
+| Container type javadoc:{url-testcontainers-rabbitmq-javadoc}/org.testcontainers.rabbitmq.RabbitMQContainer[] khi attribute `type` của `@ServiceConnection` include javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamConnectionDetails[]
+
+| javadoc:org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails[]
+| Container type javadoc:com.redis.testcontainers.RedisContainer[] hoặc javadoc:com.redis.testcontainers.RedisStackContainer[], hoặc container tên "redis", "redis/redis-stack" hoặc "redis/redis-stack-server"
+
+| javadoc:org.springframework.boot.zipkin.autoconfigure.ZipkinConnectionDetails[]
+| Container tên "openzipkin/zipkin"
+|===
+
+[TIP]
+====
+Mặc định, ngoại trừ javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamConnectionDetails[], mọi applicable connection detail bean được tạo cho một javadoc:org.testcontainers.containers.Container[].
+Ví dụ javadoc:{url-testcontainers-postgresql-javadoc}/org.testcontainers.postgresql.PostgreSQLContainer[] tạo cả javadoc:org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails[] và javadoc:org.springframework.boot.r2dbc.autoconfigure.R2dbcConnectionDetails[].
+
+Nếu chỉ muốn tạo subset của applicable type, dùng attribute `type` của javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation].
+
+Để tạo bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamConnectionDetails[] từ javadoc:{url-testcontainers-rabbitmq-javadoc}/org.testcontainers.rabbitmq.RabbitMQContainer[], phải opt in bằng attribute `type` của javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation].
+Container cũng phải expose port 5552, hoặc 5551 khi cấu hình SSL, cho RabbitMQ Streams.
+====
+
+Mặc định `Container.getDockerImageName().getRepository()` được dùng để lấy name khi tìm connection detail.
+Repository portion của Docker image name bỏ qua registry và version.
+Điều này hoạt động miễn là Spring Boot lấy được instance javadoc:org.testcontainers.containers.Container[], như khi dùng static field.
+
+Nếu dùng method javadoc:org.springframework.context.annotation.Bean[format=annotation], Spring Boot không gọi bean method để lấy Docker image name vì sẽ gây eager initialization issue.
+Thay vào đó return type của bean method được dùng để xác định connection detail.
+Điều này hoạt động với typed container như Neo4jContainer hoặc RabbitMQContainer.
+Nó không hoạt động nếu dùng javadoc:org.testcontainers.containers.GenericContainer[], ví dụ Redis:
+
+include-code::MyRedisConfiguration[]
+
+Spring Boot không thể biết từ GenericContainer image nào được dùng, nên attribute `name` của javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] phải được dùng để cung cấp hint.
+
+Cũng có thể dùng attribute `name` của ServiceConnection để override connection detail được dùng, ví dụ custom image.
+Nếu dùng Docker image `registry.mycompany.com/mirror/myredis`, dùng `@ServiceConnection(name="redis")` để đảm bảo javadoc:org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails[] được tạo.
+
+[[testing.testcontainers.service-connections.ssl]]
+=== SSL với Service Connections
+
+Có thể dùng annotation javadoc:org.springframework.boot.testcontainers.service.connection.Ssl[format=annotation], javadoc:org.springframework.boot.testcontainers.service.connection.JksKeyStore[format=annotation], javadoc:org.springframework.boot.testcontainers.service.connection.JksTrustStore[format=annotation], javadoc:org.springframework.boot.testcontainers.service.connection.PemKeyStore[format=annotation] và javadoc:org.springframework.boot.testcontainers.service.connection.PemTrustStore[format=annotation] trên supported container để enable SSL support cho service connection.
+Lưu ý vẫn phải tự enable SSL trên service chạy bên trong Testcontainer; annotation chỉ cấu hình SSL phía client trong application.
+
+include-code::MyRedisWithSslIntegrationTests[]
+
+Code trên dùng javadoc:org.springframework.boot.testcontainers.service.connection.PemKeyStore[format=annotation] để load client certificate và key vào keystore, và javadoc:org.springframework.boot.testcontainers.service.connection.PemTrustStore[format=annotation] để load CA certificate vào truststore.
+Điều này authenticate client với server, đồng thời CA certificate trong truststore đảm bảo server certificate valid và trusted.
+
+`SecureRedisContainer` trong ví dụ là custom subclass của `RedisContainer`, copy certificate tới đúng location và invoke `redis-server` với command-line parameter enable SSL.
+
+SSL annotation được hỗ trợ cho service connection:
+
+* Cassandra
+* Couchbase
+* Elasticsearch
+* Kafka
+* LDAP
+* MongoDB
+* OpenTelemetry (OTLP logging, metrics và tracing)
+* RabbitMQ
+* RabbitMQ Streams
+* Redis
+
+`ElasticsearchContainer` còn hỗ trợ automatic detection server-side SSL.
+Để dùng feature này, annotate container bằng javadoc:org.springframework.boot.testcontainers.service.connection.Ssl[format=annotation] và Spring Boot sẽ xử lý client-side SSL configuration:
+
+include-code::MyElasticsearchWithSslIntegrationTests[]
+
+[[testing.testcontainers.dynamic-properties]]
+== Dynamic Properties
+
+Một alternative verbose hơn nhưng flexible hơn service connection là javadoc:org.springframework.test.context.DynamicPropertySource[format=annotation].
+Static method javadoc:org.springframework.test.context.DynamicPropertySource[format=annotation] cho phép thêm dynamic property value vào Spring Environment.
+
+include-code::MyIntegrationTests[]
+
+Configuration trên cho phép Neo4j-related bean trong application giao tiếp với Neo4j chạy bên trong Docker container do Testcontainers quản lý.
