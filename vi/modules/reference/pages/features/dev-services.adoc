@@ -1,0 +1,516 @@
+[[features.dev-services]]
+= Dịch vụ trong thời gian phát triển
+
+Các dịch vụ trong thời gian phát triển cung cấp những dependency bên ngoài cần thiết để chạy ứng dụng trong quá trình phát triển.
+Chúng chỉ được dùng khi phát triển và bị vô hiệu hóa khi ứng dụng được deploy.
+
+Spring Boot hỗ trợ hai dịch vụ dùng trong thời gian phát triển là Docker Compose và Testcontainers.
+Các phần tiếp theo cung cấp thêm chi tiết về chúng.
+
+[[features.dev-services.docker-compose]]
+== Hỗ trợ Docker Compose
+
+Docker Compose là công nghệ phổ biến có thể dùng để định nghĩa và quản lý nhiều container cho các dịch vụ mà ứng dụng cần.
+Một file `compose.yml` thường được tạo cạnh ứng dụng để định nghĩa và cấu hình các service container.
+
+Workflow điển hình với Docker Compose là chạy `docker compose up`, phát triển ứng dụng trong khi ứng dụng kết nối tới các dịch vụ đã được khởi động, sau đó chạy `docker compose down` khi hoàn tất.
+
+Module `spring-boot-docker-compose` có thể được thêm vào project để hỗ trợ làm việc với container bằng Docker Compose.
+Thêm dependency của module vào build như các ví dụ Maven và Gradle sau:
+
+.Maven
+[source,xml]
+----
+<dependencies>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-docker-compose</artifactId>
+		<optional>true</optional>
+	</dependency>
+</dependencies>
+----
+
+.Gradle
+[source,gradle]
+----
+dependencies {
+	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+}
+----
+
+Khi module này được thêm dưới dạng dependency, Spring Boot sẽ:
+
+* Tìm `compose.yml` và các tên file compose phổ biến khác trong working directory
+* Gọi `docker compose up` với `compose.yml` đã tìm thấy
+* Tạo các service connection bean cho từng container được hỗ trợ
+* Gọi `docker compose stop` khi ứng dụng shutdown
+
+Nếu các dịch vụ Docker Compose đã chạy khi ứng dụng khởi động, Spring Boot chỉ tạo các service connection bean cho từng container được hỗ trợ.
+Nó sẽ không gọi lại `docker compose up` và cũng không gọi `docker compose stop` khi ứng dụng shutdown.
+
+TIP: Repackaged archive mặc định không chứa Docker Compose support của Spring Boot.
+Nếu muốn dùng hỗ trợ này, bạn cần đưa nó vào.
+Khi dùng Maven plugin, đặt property `excludeDockerCompose` thành `false`.
+Khi dùng Gradle plugin, xref:gradle-plugin:packaging.adoc#packaging-executable.configuring.including-development-only-dependencies[cấu hình classpath của task để bao gồm configuration `developmentOnly`].
+
+
+
+[[features.dev-services.docker-compose.prerequisites]]
+=== Điều kiện tiên quyết
+
+Bạn cần có các ứng dụng CLI `docker` và `docker compose` (hoặc `docker-compose`) trong path.
+Phiên bản Docker Compose tối thiểu được hỗ trợ là 2.2.0.
+
+
+
+[[features.dev-services.docker-compose.service-connections]]
+=== Service Connections
+
+Service connection là kết nối tới một remote service bất kỳ.
+Auto-configuration của Spring Boot có thể sử dụng chi tiết của service connection để thiết lập kết nối tới remote service.
+Khi đó, connection details được ưu tiên hơn mọi configuration property liên quan tới kết nối.
+
+Khi dùng Docker Compose support của Spring Boot, service connection được thiết lập tới port mà container đã map.
+
+NOTE: Docker Compose thường được dùng theo cách các port bên trong container được map tới các ephemeral port trên máy của bạn.
+Ví dụ, một Postgres server có thể chạy trong container ở port 5432 nhưng được map tới một port hoàn toàn khác trên máy local.
+Service connection sẽ luôn phát hiện và sử dụng port đã được map ở local.
+
+Service connection được thiết lập dựa trên image name của container.
+Hiện tại hỗ trợ các service connection sau:
+
+
+|===
+| Connection Details | Khớp với
+
+| javadoc:org.springframework.boot.activemq.autoconfigure.ActiveMQConnectionDetails[]
+| Container có tên "symptoma/activemq", "apache/activemq-classic" hoặc "apache/activemq"
+
+| javadoc:org.springframework.boot.amqp.autoconfigure.AmqpConnectionDetails[]
+| Container có tên "rabbitmq", "apache/activemq-classic" hoặc "apache/activemq-artemis"
+
+| javadoc:org.springframework.boot.artemis.autoconfigure.ArtemisConnectionDetails[]
+| Container có tên "apache/activemq-artemis" hoặc "apache/artemis"
+
+| javadoc:org.springframework.boot.cassandra.autoconfigure.CassandraConnectionDetails[]
+| Container có tên "cassandra"
+
+| javadoc:org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails[]
+| Container có tên "elasticsearch" hoặc "elasticsearch/elasticsearch"
+
+| javadoc:org.springframework.boot.hazelcast.autoconfigure.HazelcastConnectionDetails[]
+| Container có tên "hazelcast/hazelcast".
+
+| javadoc:org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails[]
+| Container có tên "clickhouse/clickhouse-server", "gvenzl/oracle-free", "gvenzl/oracle-xe", "mariadb", "mssql/server", "mysql" hoặc "postgres"
+
+| javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[]
+| Container có tên "osixia/openldap", "lldap/lldap"
+
+| javadoc:org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails[]
+| Container có tên "mongo"
+
+| javadoc:org.springframework.boot.neo4j.autoconfigure.Neo4jConnectionDetails[]
+| Container có tên "neo4j"
+
+| javadoc:org.springframework.boot.opentelemetry.autoconfigure.logging.otlp.OtlpLoggingConnectionDetails[]
+| Container có tên "otel/opentelemetry-collector-contrib", "grafana/otel-lgtm"
+
+| javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.export.otlp.OtlpMetricsConnectionDetails[]
+| Container có tên "otel/opentelemetry-collector-contrib", "grafana/otel-lgtm"
+
+| javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpTracingConnectionDetails[]
+| Container có tên "otel/opentelemetry-collector-contrib", "grafana/otel-lgtm"
+
+| javadoc:org.springframework.boot.pulsar.autoconfigure.PulsarConnectionDetails[]
+| Container có tên "apachepulsar/pulsar"
+
+| javadoc:org.springframework.boot.r2dbc.autoconfigure.R2dbcConnectionDetails[]
+| Container có tên "clickhouse/clickhouse-server", "gvenzl/oracle-free", "gvenzl/oracle-xe", "mariadb", "mssql/server", "mysql" hoặc "postgres"
+
+| javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitConnectionDetails[]
+| Container có tên "rabbitmq" với container port 5672 được map
+
+| javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamConnectionDetails[]
+| Container có tên "rabbitmq" với container port 5552 được map, hoặc port 5551 được map khi SSL được cấu hình
+
+| javadoc:org.springframework.boot.data.redis.autoconfigure.DataRedisConnectionDetails[]
+| Container có tên "redis", "redis/redis-stack" hoặc "redis/redis-stack-server"
+
+| javadoc:org.springframework.boot.zipkin.autoconfigure.ZipkinConnectionDetails[]
+| Container có tên "openzipkin/zipkin".
+|===
+
+
+
+[[features.dev-services.docker-compose.ssl]]
+=== Hỗ trợ SSL
+
+Một số image được bật SSL sẵn, hoặc bạn có thể muốn bật SSL cho container để giống với môi trường production.
+Spring Boot hỗ trợ cấu hình SSL cho các service connection được hỗ trợ.
+Lưu ý rằng bạn vẫn phải tự bật SSL trên service đang chạy bên trong container; tính năng này chỉ cấu hình SSL ở phía client trong ứng dụng.
+
+SSL được hỗ trợ cho các service connection sau:
+
+* Cassandra
+* Elasticsearch
+* LDAP
+* MongoDB
+* OpenTelemetry (OTLP logging, metrics và tracing)
+* RabbitMQ
+* RabbitMQ Streams
+* Redis
+
+Để bật SSL support cho một service, bạn có thể dùng https://docs.docker.com/reference/compose-file/services/#labels[service label].
+
+Với keystore và truststore dựa trên JKS, bạn có thể dùng các container label sau:
+
+* `org.springframework.boot.sslbundle.jks.key.alias`
+* `org.springframework.boot.sslbundle.jks.key.password`
+* `org.springframework.boot.sslbundle.jks.options.ciphers`
+* `org.springframework.boot.sslbundle.jks.options.enabled-protocols`
+* `org.springframework.boot.sslbundle.jks.protocol`
+
+* `org.springframework.boot.sslbundle.jks.keystore.type`
+* `org.springframework.boot.sslbundle.jks.keystore.provider`
+* `org.springframework.boot.sslbundle.jks.keystore.location`
+* `org.springframework.boot.sslbundle.jks.keystore.password`
+
+* `org.springframework.boot.sslbundle.jks.truststore.type`
+* `org.springframework.boot.sslbundle.jks.truststore.provider`
+* `org.springframework.boot.sslbundle.jks.truststore.location`
+* `org.springframework.boot.sslbundle.jks.truststore.password`
+
+Các label này tương ứng với những property có sẵn cho xref:reference:features/ssl.adoc#features.ssl.jks[SSL bundle].
+
+Với keystore và truststore dựa trên PEM, bạn có thể dùng các container label sau:
+
+* `org.springframework.boot.sslbundle.pem.key.alias`
+* `org.springframework.boot.sslbundle.pem.key.password`
+* `org.springframework.boot.sslbundle.pem.options.ciphers`
+* `org.springframework.boot.sslbundle.pem.options.enabled-protocols`
+* `org.springframework.boot.sslbundle.pem.protocol`
+
+* `org.springframework.boot.sslbundle.pem.keystore.type`
+* `org.springframework.boot.sslbundle.pem.keystore.certificate`
+* `org.springframework.boot.sslbundle.pem.keystore.private-key`
+* `org.springframework.boot.sslbundle.pem.keystore.private-key-password`
+
+* `org.springframework.boot.sslbundle.pem.truststore.type`
+* `org.springframework.boot.sslbundle.pem.truststore.certificate`
+* `org.springframework.boot.sslbundle.pem.truststore.private-key`
+* `org.springframework.boot.sslbundle.pem.truststore.private-key-password`
+
+Các label này tương ứng với những property có sẵn cho xref:reference:features/ssl.adoc#features.ssl.pem[SSL bundle].
+
+Ví dụ sau bật SSL cho một Redis container:
+
+[source,yaml,]
+----
+services:
+  redis:
+    image: 'redis:latest'
+    ports:
+      - '6379'
+    secrets:
+      - ssl-ca
+      - ssl-key
+      - ssl-cert
+    command: 'redis-server --tls-port 6379 --port 0 --tls-cert-file /run/secrets/ssl-cert --tls-key-file /run/secrets/ssl-key --tls-ca-cert-file /run/secrets/ssl-ca'
+    labels:
+      - 'org.springframework.boot.sslbundle.pem.keystore.certificate=client.crt'
+      - 'org.springframework.boot.sslbundle.pem.keystore.private-key=client.key'
+      - 'org.springframework.boot.sslbundle.pem.truststore.certificate=ca.crt'
+secrets:
+  ssl-ca:
+    file: 'ca.crt'
+  ssl-key:
+    file: 'server.key'
+  ssl-cert:
+    file: 'server.crt'
+----
+
+[[features.dev-services.docker-compose.custom-images]]
+=== Custom Image
+
+Đôi khi bạn cần dùng phiên bản image riêng để cung cấp một service.
+Bạn có thể dùng bất kỳ custom image nào miễn là nó hoạt động giống standard image.
+Cụ thể, mọi environment variable mà standard image hỗ trợ cũng phải được dùng trong custom image.
+
+Nếu image của bạn dùng tên khác, bạn có thể dùng label trong file `compose.yml` để Spring Boot có thể cung cấp service connection.
+Dùng label tên `org.springframework.boot.service-connection` để cung cấp tên service.
+
+Ví dụ:
+
+[source,yaml,]
+----
+services:
+  redis:
+    image: 'mycompany/mycustomredis:7.0'
+    ports:
+      - '6379'
+    labels:
+      org.springframework.boot.service-connection: redis
+----
+
+
+
+[[features.dev-services.docker-compose.skipping]]
+=== Bỏ qua container cụ thể
+
+Nếu có container image được định nghĩa trong `compose.yml` mà bạn không muốn kết nối với ứng dụng, bạn có thể dùng label để bỏ qua nó.
+Mọi container được gắn label `org.springframework.boot.ignore` sẽ bị Spring Boot bỏ qua.
+
+Ví dụ:
+
+[source,yaml]
+----
+services:
+  redis:
+    image: 'redis:7.0'
+    ports:
+      - '6379'
+    labels:
+      org.springframework.boot.ignore: true
+----
+
+
+
+[[features.dev-services.docker-compose.specific-file]]
+=== Sử dụng Compose file cụ thể
+
+Nếu compose file không nằm cùng directory với ứng dụng, hoặc có tên khác, bạn có thể dùng configprop:spring.docker.compose.file[] trong `application.properties` hoặc `application.yaml` để trỏ tới file khác.
+Property có thể được định nghĩa bằng exact path hoặc path tương đối so với ứng dụng.
+
+Ví dụ:
+
+[configprops,yaml]
+----
+spring:
+  docker:
+    compose:
+      file: "../my-compose.yml"
+----
+
+
+
+[[features.dev-services.docker-compose.readiness]]
+=== Chờ container sẵn sàng
+
+Các container do Docker Compose khởi động có thể cần một khoảng thời gian để sẵn sàng hoàn toàn.
+Cách được khuyến nghị để kiểm tra readiness là thêm section `healthcheck` dưới định nghĩa service trong file `compose.yml`.
+
+Vì cấu hình `healthcheck` thường bị bỏ qua trong file `compose.yml`, Spring Boot cũng trực tiếp kiểm tra service readiness.
+Mặc định, container được coi là sẵn sàng khi có thể thiết lập kết nối TCP/IP tới port đã map.
+
+Bạn có thể tắt kiểm tra này theo từng container bằng cách thêm label `org.springframework.boot.readiness-check.tcp.disable` trong file `compose.yml`.
+
+Ví dụ:
+
+[source,yaml]
+----
+services:
+  redis:
+    image: 'redis:7.0'
+    ports:
+      - '6379'
+    labels:
+      org.springframework.boot.readiness-check.tcp.disable: true
+----
+
+Bạn cũng có thể thay đổi timeout trong `application.properties` hoặc `application.yaml`:
+
+[configprops,yaml]
+----
+spring:
+  docker:
+    compose:
+      readiness:
+        tcp:
+          connect-timeout: 10s
+          read-timeout: 5s
+----
+
+Overall timeout có thể được cấu hình bằng configprop:spring.docker.compose.readiness.timeout[].
+
+
+
+[[features.dev-services.docker-compose.lifecycle]]
+=== Kiểm soát lifecycle của Docker Compose
+
+Mặc định Spring Boot gọi `docker compose up` khi ứng dụng khởi động và `docker compose stop` khi ứng dụng shutdown.
+Nếu muốn lifecycle management khác, bạn có thể dùng property configprop:spring.docker.compose.lifecycle-management[].
+
+Hỗ trợ các giá trị sau:
+
+* `none` - Không start hoặc stop Docker Compose
+* `start-only` - Start Docker Compose khi ứng dụng khởi động và giữ nó chạy
+* `start-and-stop` - Start Docker Compose khi ứng dụng khởi động và stop khi JVM thoát
+
+Ngoài ra, bạn có thể dùng property configprop:spring.docker.compose.start.command[] để thay đổi việc sử dụng `docker compose up` hay `docker compose start`.
+configprop:spring.docker.compose.stop.command[] cho phép cấu hình sử dụng `docker compose down` hay `docker compose stop`.
+
+Bạn cũng có thể truyền thêm argument cho các command Docker Compose.
+Property configprop:spring.docker.compose.arguments[] cho phép chỉ định argument được truyền cho mọi command Docker Compose.
+Property configprop:spring.docker.compose.start.arguments[] cho phép chỉ định argument chỉ được truyền cho command up (hoặc start), trong khi configprop:spring.docker.compose.stop.arguments[] cho phép chỉ định argument chỉ được truyền cho command down (hoặc stop).
+
+Ví dụ sau cho thấy cách cấu hình lifecycle management:
+
+[configprops,yaml]
+----
+spring:
+  docker:
+    compose:
+      lifecycle-management: start-and-stop
+      arguments:
+        - "--project-name=myapp"
+        - "--progress=auto"
+      start:
+        command: up
+        arguments:
+          - "--build"
+          - "--force-recreate"
+      stop:
+        command: down
+        timeout: 1m
+        arguments:
+          - "--volumes"
+          - "--remove-orphans"
+----
+
+
+
+[[features.dev-services.docker-compose.profiles]]
+=== Kích hoạt Docker Compose Profile
+
+Docker Compose profile tương tự Spring profile ở chỗ chúng cho phép điều chỉnh cấu hình Docker Compose cho từng môi trường cụ thể.
+Nếu muốn kích hoạt một Docker Compose profile cụ thể, bạn có thể dùng property configprop:spring.docker.compose.profiles.active[] trong `application.properties` hoặc `application.yaml`:
+
+[configprops,yaml]
+----
+spring:
+  docker:
+    compose:
+      profiles:
+        active: "myprofile"
+----
+
+
+
+[[features.dev-services.docker-compose.tests]]
+=== Sử dụng Docker Compose trong test
+
+Mặc định, Docker Compose support của Spring Boot bị vô hiệu hóa khi chạy test.
+
+Để bật Docker Compose support trong test, đặt configprop:spring.docker.compose.skip.in-tests[] thành `false`.
+
+Khi dùng Gradle, bạn cũng cần đổi configuration của dependency `spring-boot-docker-compose` từ `developmentOnly` sang `testAndDevelopmentOnly`:
+
+.Gradle
+[source,gradle,indent=0,subs="verbatim"]
+----
+	dependencies {
+		testAndDevelopmentOnly("org.springframework.boot:spring-boot-docker-compose")
+	}
+----
+
+
+
+[[features.dev-services.testcontainers]]
+== Hỗ trợ Testcontainers
+
+Ngoài việc xref:testing/testcontainers.adoc#testing.testcontainers[sử dụng Testcontainers cho integration test], bạn cũng có thể dùng chúng trong thời gian phát triển.
+Các phần tiếp theo cung cấp thêm chi tiết.
+
+
+
+[[features.dev-services.testcontainers.at-development-time]]
+=== Sử dụng Testcontainers trong thời gian phát triển
+
+Cách tiếp cận này cho phép developer nhanh chóng khởi động các container cho những service mà ứng dụng phụ thuộc vào, loại bỏ nhu cầu phải tự provision những thứ như database server.
+Dùng Testcontainers theo cách này cung cấp chức năng tương tự Docker Compose, ngoại trừ việc cấu hình container nằm trong Java thay vì YAML.
+
+Để dùng Testcontainers trong thời gian phát triển, bạn cần launch ứng dụng bằng classpath `test` thay vì `main`.
+Điều này cho phép truy cập tất cả test dependency đã khai báo và cung cấp vị trí tự nhiên để viết test configuration.
+
+Để tạo phiên bản ứng dụng có thể launch cho test, bạn nên tạo một class `Application` trong directory `src/test`.
+Ví dụ, nếu ứng dụng chính nằm ở `src/main/java/com/example/MyApplication.java`, bạn nên tạo `src/test/java/com/example/TestMyApplication.java`.
+
+Class `TestMyApplication` có thể dùng method `SpringApplication.from(...)` để launch ứng dụng thật:
+
+include-code::launch/TestMyApplication[]
+
+Bạn cũng cần định nghĩa các instance javadoc:org.testcontainers.containers.Container[] muốn khởi động cùng ứng dụng.
+Để làm vậy, hãy đảm bảo module `spring-boot-testcontainers` đã được thêm dưới dạng dependency `test`.
+Sau đó, bạn có thể tạo class javadoc:org.springframework.boot.test.context.TestConfiguration[format=annotation] khai báo các method javadoc:org.springframework.context.annotation.Bean[format=annotation] cho những container muốn khởi động.
+
+Bạn cũng có thể annotate các method javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] để tạo các bean javadoc:org.springframework.boot.autoconfigure.service.connection.ConnectionDetails[].
+Xem phần xref:testing/testcontainers.adoc#testing.testcontainers.service-connections[service connection] để biết các công nghệ được hỗ trợ.
+
+Một cấu hình Testcontainers điển hình như sau:
+
+include-code::test/MyContainersConfiguration[]
+
+NOTE: Lifecycle của các bean javadoc:org.testcontainers.containers.Container[] được Spring Boot tự động quản lý.
+Container sẽ tự động được start và stop.
+
+TIP: Bạn có thể dùng property configprop:spring.testcontainers.beans.startup[] để thay đổi cách container được start.
+Mặc định dùng startup `sequential`, nhưng bạn cũng có thể chọn `parallel` nếu muốn start nhiều container song song.
+
+Sau khi định nghĩa test configuration, bạn có thể dùng method `with(...)` để gắn nó vào test launcher:
+
+include-code::test/TestMyApplication[]
+
+Bây giờ bạn có thể launch `TestMyApplication` như mọi ứng dụng Java có method `main` thông thường để khởi động ứng dụng cùng các container mà nó cần.
+
+TIP: Bạn có thể dùng Maven goal `spring-boot:test-run` hoặc Gradle task `bootTestRun` để thực hiện việc này từ command line.
+
+
+
+[[features.dev-services.testcontainers.at-development-time.dynamic-properties]]
+==== Cung cấp Dynamic Property trong thời gian phát triển
+
+Nếu muốn cung cấp dynamic property trong thời gian phát triển từ các method bean javadoc:org.testcontainers.containers.Container[] javadoc:org.springframework.context.annotation.Bean[format=annotation], hãy định nghĩa thêm một bean javadoc:org.springframework.test.context.DynamicPropertyRegistrar[].
+Registrar nên được định nghĩa bằng method javadoc:org.springframework.context.annotation.Bean[format=annotation] nhận container mà property sẽ lấy từ đó làm parameter.
+Cách sắp xếp này đảm bảo container đã được start trước khi property được sử dụng.
+
+Một cấu hình điển hình như sau:
+
+include-code::MyContainersConfiguration[]
+
+NOTE: Nên sử dụng javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] bất cứ khi nào có thể; tuy nhiên dynamic property có thể là fallback hữu ích cho các công nghệ chưa hỗ trợ javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation].
+
+
+
+[[features.dev-services.testcontainers.at-development-time.importing-container-declarations]]
+==== Import class khai báo Testcontainers
+
+Một pattern phổ biến khi dùng Testcontainers là khai báo các instance javadoc:org.testcontainers.containers.Container[] dưới dạng static field.
+Các field này thường được định nghĩa trực tiếp trên test class.
+Chúng cũng có thể được khai báo trên parent class hoặc interface mà test implement.
+
+Ví dụ, interface `MyContainers` sau khai báo container `mongo` và `neo4j`:
+
+include-code::MyContainers[]
+
+Nếu đã định nghĩa container theo cách này, hoặc đơn giản bạn thích style này, bạn có thể import các declaration class thay vì định nghĩa container bằng các method javadoc:org.springframework.context.annotation.Bean[format=annotation].
+Để làm vậy, thêm annotation javadoc:org.springframework.boot.testcontainers.context.ImportTestcontainers[format=annotation] vào test configuration class:
+
+include-code::MyContainersConfiguration[]
+
+TIP: Nếu không định dùng xref:testing/testcontainers.adoc#testing.testcontainers.service-connections[tính năng service connection] mà muốn dùng xref:testing/testcontainers.adoc#testing.testcontainers.dynamic-properties[`@DynamicPropertySource`] thay vào đó, hãy bỏ annotation javadoc:org.springframework.boot.testcontainers.service.connection.ServiceConnection[format=annotation] khỏi các field javadoc:org.testcontainers.containers.Container[].
+Bạn cũng có thể thêm các method được annotate bằng javadoc:org.springframework.test.context.DynamicPropertySource[format=annotation] vào declaration class.
+
+
+
+[[features.dev-services.testcontainers.at-development-time.devtools]]
+==== Sử dụng DevTools với Testcontainers trong thời gian phát triển
+
+Khi dùng devtools, bạn có thể annotate bean và bean method bằng javadoc:org.springframework.boot.devtools.restart.RestartScope[format=annotation].
+Các bean này sẽ không được tạo lại khi devtools restart ứng dụng.
+Điều này đặc biệt hữu ích với các bean javadoc:org.testcontainers.containers.Container[], vì chúng giữ nguyên state sau khi ứng dụng restart.
+
+include-code::MyContainersConfiguration[]
+
+WARNING: Nếu dùng Gradle và muốn sử dụng tính năng này, bạn cần đổi configuration của dependency `spring-boot-devtools` từ `developmentOnly` sang `testAndDevelopmentOnly`.
+Với scope mặc định `developmentOnly`, task `bootTestRun` sẽ không nhận thay đổi trong code vì devtools không active.
