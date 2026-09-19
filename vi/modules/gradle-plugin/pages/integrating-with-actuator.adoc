@@ -1,0 +1,114 @@
+[[integrating-with-actuator]]
+= Integrating with Actuator
+
+[[integrating-with-actuator.build-info]]
+== Generating Build Information
+
+Endpoint `info` của Spring Boot Actuator tự động publish build information khi có file `META-INF/build-info.properties`.
+Task {apiref-gradle-plugin-boot-build-info}[`BuildInfo`] được cung cấp để generate file này.
+Cách dễ nhất dùng task là qua plugin DSL:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-basic.gradle[tags=build-info]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-basic.gradle.kts[tags=build-info]
+----
+======
+
+Điều này configure task BuildInfo tên `bootBuildInfo`.
+Destination directory là `build/bootBuildInfo` và filename `META-INF/build-info.properties`.
+Nếu main source set tồn tại, resource của nó configure dùng output của task `bootBuildInfo` làm src dir.
+
+Mặc định generated build information derive từ project:
+
+|===
+| Property | Default value
+
+| `build.artifact`
+| Base name của task `bootJar` hoặc `bootWar`
+
+| `build.group`
+| Group của project
+
+| `build.name`
+| Name của project
+
+| `build.version`
+| Version của project
+
+| `build.time`
+| Time project được build
+
+|===
+
+Property có thể customize bằng DSL:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-custom-values.gradle[tags=custom-values]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-custom-values.gradle.kts[tags=custom-values]
+----
+======
+
+Để exclude default property khỏi generated build information, add name vào excludes.
+Ví dụ exclude property `time`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-exclude-time.gradle[tags=exclude-time]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-exclude-time.gradle.kts[tags=exclude-time]
+----
+======
+
+Default value cho `build.time` là instant project được build.
+Side effect là task không bao giờ up-to-date.
+Kết quả là build lâu hơn vì nhiều task, gồm project test, phải execute.
+Side effect khác là task output luôn change nên build không thực sự repeatable.
+Nếu coi trọng build performance hoặc repeatability hơn accuracy của `build.time`, exclude property `time` như ví dụ trên.
+
+Additional property cũng có thể add vào build information:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-additional.gradle[tags=additional]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$integrating-with-actuator/build-info-additional.gradle.kts[tags=additional]
+----
+======
+
+Value additional property có thể compute lazily bằng `Provider`.
