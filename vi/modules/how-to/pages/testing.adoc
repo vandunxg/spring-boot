@@ -1,0 +1,39 @@
+[[howto.testing]]
+= Testing
+
+Spring Boot gồm một số testing utility, support class và dedicated starter cung cấp common test dependency.
+Phần này trả lời các câu hỏi phổ biến về testing.
+
+[[howto.testing.with-spring-security]]
+== Testing với Spring Security
+
+Spring Security hỗ trợ chạy test dưới một user cụ thể.
+Ví dụ test trong snippet dưới chạy với authenticated user có role `ADMIN`.
+
+include-code::MySecurityTests[]
+
+Spring Security cung cấp integration toàn diện với Spring MVC Test, và cũng có thể dùng khi test controller bằng slice javadoc:org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest[format=annotation] và javadoc:org.springframework.test.web.servlet.MockMvc[].
+
+Chi tiết thêm về testing support của Spring Security xem {url-spring-security-docs}/servlet/test/index.html[reference documentation].
+
+[[howto.testing.slice-tests]]
+== Structure class javadoc:org.springframework.context.annotation.Configuration[format=annotation] để include trong Slice Tests
+
+Slice test hoạt động bằng cách giới hạn component scanning của Spring Framework tới tập component hạn chế dựa trên type.
+Với bean không được tạo qua component scanning, ví dụ bean tạo bằng annotation javadoc:org.springframework.context.annotation.Bean[format=annotation], slice test không thể include/exclude chúng khỏi application context.
+Xem ví dụ:
+
+include-code::MyConfiguration[]
+
+Với javadoc:org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest[format=annotation] cho application có class javadoc:org.springframework.context.annotation.Configuration[format=annotation] ở trên, bạn có thể mong đợi bean javadoc:org.springframework.security.web.SecurityFilterChain[] có trong application context để test controller endpoint có secure đúng không.
+Tuy nhiên `MyConfiguration` không được component scanning filter của @WebMvcTest pick up vì không match type nào được filter chỉ định.
+Có thể explicit include configuration bằng cách annotate test class với `@Import(MyConfiguration.class)`.
+Điều này load mọi bean trong `MyConfiguration`, gồm cả bean javadoc:com.zaxxer.hikari.HikariDataSource[] không cần khi test web tier.
+Tách configuration class thành hai class cho phép chỉ import security configuration.
+
+include-code::MySecurityConfiguration[]
+
+include-code::MyDatasourceConfiguration[]
+
+Một configuration class duy nhất có thể không hiệu quả khi bean từ domain cụ thể cần được include trong slice test.
+Thay vào đó, structure application configuration thành nhiều granular class với bean cho domain cụ thể giúp chỉ import chúng vào slice test cần thiết.
