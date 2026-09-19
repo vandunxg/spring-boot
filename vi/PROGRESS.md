@@ -6,7 +6,7 @@
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **32 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **37 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu thủ công nội dung, anchor, macro, ví dụ và cấu trúc với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -47,12 +47,20 @@
 31. [x] `modules/reference/pages/features/kotlin.adoc`
 32. [x] `modules/reference/pages/features/ssl.adoc`
 
+## Đã dịch tiếp
+
+33. [x] `modules/reference/pages/web/index.adoc`
+34. [x] `modules/reference/pages/web/servlet.adoc`
+35. [x] `modules/reference/pages/web/reactive.adoc`
+36. [x] `modules/reference/pages/web/graceful-shutdown.adoc`
+37. [x] `modules/reference/pages/web/spring-security.adoc`
+
 ## Tiếp theo
 
-33. [ ] `modules/reference/pages/web/index.adoc`
-34. [ ] `modules/reference/pages/web/servlet.adoc`
-35. [ ] `modules/reference/pages/web/reactive.adoc`
-36. [ ] `modules/reference/pages/web/graceful-shutdown.adoc`
-37. [ ] `modules/reference/pages/web/spring-security.adoc`
+38. [ ] `modules/reference/pages/web/spring-session.adoc`
+39. [ ] `modules/reference/pages/web/spring-graphql.adoc`
+40. [ ] `modules/reference/pages/web/spring-hateoas.adoc`
+41. [ ] `modules/reference/pages/data/index.adoc`
+42. [ ] `modules/reference/pages/data/sql.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
