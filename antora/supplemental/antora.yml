@@ -1,0 +1,9 @@
+# Second content source for the `boot` component.
+#
+# `upstream/nav.adoc` includes navigation partials that the Spring Boot Gradle
+# build contributes from sources this documentation-only fork does not mirror
+# (the Maven/Gradle plugin docs and the generated Actuator REST API and
+# auto-configuration listings). Empty placeholders are supplied here so the
+# English navigation renders without unresolved include directives.
+name: boot
+version: true

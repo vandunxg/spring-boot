@@ -1,0 +1,10 @@
+{{!--
+  Overrides the toolbar of the Spring Antora UI bundle to add the language
+  switcher. Keep in sync with partials/toolbar.hbs of the bundle version pinned
+  by the playbook when that bundle is upgraded.
+--}}
+<div class="toolbar" role="navigation">
+  <button id="nav-toggle-1" class="nav-toggle"></button>
+{{> nav-search}}
+{{> language-switcher}}
+</div>

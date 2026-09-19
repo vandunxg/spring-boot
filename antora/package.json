@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "antora": "node npm/antora.js"
+    "build": "antora ../antora-playbook.yml"
   },
   "dependencies": {
     "@antora/cli": "3.2.0",

@@ -1,0 +1,45 @@
+{{!--
+  Language switcher. The counterpart URL is resolved at build time by
+  antora/extensions/language-switcher-extension.js and falls back to the home
+  page of the other locale when the page has no counterpart there. `relativize`
+  turns the root relative URL into a page relative one so the site also works
+  under a path prefix such as the GitHub Pages project path.
+--}}
+{{#if page.attributes.[alt-locale-url]}}
+<nav class="language-switcher" aria-label="Language">
+  <span class="language-switcher-option is-current" aria-current="true" lang="{{page.attributes.[locale]}}">{{page.attributes.[locale-label]}}</span>
+  <a class="language-switcher-option" href="{{{relativize page.attributes.[alt-locale-url]}}}" hreflang="{{page.attributes.[alt-locale]}}" lang="{{page.attributes.[alt-locale]}}">{{page.attributes.[alt-locale-label]}}</a>
+</nav>
+<style>
+.language-switcher {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0 0.75rem;
+  gap: 0.125rem;
+  font-size: calc(13 / var(--rem-base) * 1rem);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.language-switcher-option {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--panel-border-color);
+  color: var(--link-font-color);
+  text-decoration: none;
+  border-radius: 3px;
+}
+.language-switcher-option + .language-switcher-option {
+  margin-left: -1px;
+}
+.language-switcher-option.is-current {
+  background-color: var(--panel-background-color);
+  border-color: var(--panel-border-color);
+  color: var(--body-font-color);
+  cursor: default;
+}
+.language-switcher-option:not(.is-current):hover {
+  border-color: var(--color-accent-1);
+  color: var(--link_hover-font-color);
+}
+</style>
+{{/if}}

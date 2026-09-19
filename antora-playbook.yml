@@ -1,0 +1,298 @@
+# Antora playbook for this documentation-only fork of Spring Boot.
+#
+# Two locales are built into a single site:
+#
+#   English (default)  from upstream/  ->  /, /reference/..., /how-to/..., ...
+#   Vietnamese         from vi/        ->  /vi/, /vi/reference/..., ...
+#
+# Each locale is an Antora component. The English component is declared as the
+# root component so its name is stripped from the published URLs; the Vietnamese
+# component keeps its name, which is what puts it under /vi/.
+#
+# Build from the repository root:
+#
+#   ./antora/node_modules/.bin/antora antora-playbook.yml
+#
+# Paths below are resolved against the directory holding this file, so the build
+# does not depend on the current working directory.
+
+antora:
+  extensions:
+  # Spring navigation builder: supports the role based icons used by nav-root.adoc.
+  - require: '@springio/antora-extensions/override-navigation-builder-extension'
+  # Provides the "All Docs..." page the UI footer links to.
+  - require: '@springio/antora-extensions/static-page-extension'
+  # upstream/docs/antora.yml is a read-only mirror and carries no title or nav
+  # key, because the Spring Boot Gradle build injects them. Supply them here.
+  - require: ./antora/extensions/component-descriptor-extension.js
+    # Both locales are built from the upstream revision in .upstream-version;
+    # without this the sidebar would show the branch name instead.
+    display_version: '4.2.0-SNAPSHOT'
+    components:
+    - name: boot
+      title: Spring Boot
+      nav:
+      - nav.adoc
+    - name: vi
+  # Unresolved references fall back to the source locale, then to the official
+  # documentation for content this fork does not mirror.
+  - require: ./antora/extensions/reference-fallback-extension.js
+    component_fallbacks:
+    - component: vi
+      fallback: boot
+    external_modules:
+    - module: api
+      url: 'https://docs.spring.io/spring-boot/api'
+    - module: appendix
+      url: 'https://docs.spring.io/spring-boot/appendix'
+    - module: maven-plugin
+      url: 'https://docs.spring.io/spring-boot/maven-plugin'
+    - module: gradle-plugin
+      url: 'https://docs.spring.io/spring-boot/gradle-plugin'
+  - require: ./antora/extensions/language-switcher-extension.js
+    locales:
+    - code: en
+      label: English
+      component: boot
+    - code: vi
+      label: Tiếng Việt
+      component: vi
+  # Must stay last: it rewrites the URLs the language switcher hands to the UI.
+  - require: '@springio/antora-extensions/root-component-extension'
+    root_component_name: boot
+
+site:
+  title: Spring Boot
+  # site.url is deliberately unset so every link is relative and the site works
+  # both from the file system and under a path prefix such as
+  # https://vandunxg.github.io/spring-boot/.
+
+content:
+  sources:
+  # English. upstream/ is a read-only mirror overwritten by
+  # scripts/sync-spring-boot-docs.sh, so it offers no "Edit this Page" link.
+  # The three component roots all declare the component `boot` and merge.
+  - url: .
+    branches: HEAD
+    edit_url: false
+    start_paths:
+    - upstream/docs
+    - upstream/maven-plugin
+    - upstream/gradle-plugin
+    # Placeholders for upstream content this fork does not mirror.
+    - antora/supplemental
+  # Vietnamese.
+  - url: .
+    branches: HEAD
+    start_paths:
+    - vi
+
+urls:
+  # Both components are versioned by branch name (antora.yml has version: true).
+  # Dropping the segment of the latest version keeps the locale prefix directly
+  # below the site root.
+  latest_version_segment: ''
+
+asciidoc:
+  sourcemap: true
+  extensions:
+  - '@asciidoctor/tabs'
+  - '@springio/asciidoctor-extensions'
+  - '@springio/asciidoctor-extensions/javadoc-extension'
+  - '@springio/asciidoctor-extensions/configuration-properties-extension'
+  attributes:
+    chomp: all
+    hide-uri-scheme: '@'
+    page-pagination: ''
+    page-stackoverflow-url: https://stackoverflow.com/tags/spring-boot
+    tabs-sync-option: '@'
+
+    # -- Sample code --
+    # Where include-code:: looks for the snippets mirrored into
+    # upstream/docs/modules/ROOT/examples by scripts/sync-spring-boot-docs.sh.
+    include-java: 'ROOT:example$java/org/springframework/boot/docs'
+    include-kotlin: 'ROOT:example$kotlin/org/springframework/boot/docs'
+
+    # -- Javadoc --
+    # The API documentation is generated from sources this fork does not hold,
+    # so javadoc: macros deliberately link to the official published javadoc.
+    javadoc-location: 'https://docs.spring.io/spring-boot/api/java'
+    url-javase-javadoc: 'https://docs.oracle.com/en/java/javase/17/docs/api'
+    javadoc-location-java: '{url-javase-javadoc}/java.base'
+    javadoc-location-java-beans: '{url-javase-javadoc}/java.desktop'
+    javadoc-location-java-sql: '{url-javase-javadoc}/java.sql'
+    javadoc-location-javax: '{url-javase-javadoc}/java.base'
+    javadoc-location-javax-management: '{url-javase-javadoc}/java.management'
+    javadoc-location-javax-net: '{url-javase-javadoc}/java.base'
+    javadoc-location-javax-sql: '{url-javase-javadoc}/java.sql'
+    javadoc-location-javax-xml: '{url-javase-javadoc}/java.xml'
+
+    # -- GitHub --
+    github-repo: 'spring-projects/spring-boot'
+    github-ref: 'main'
+
+    # The attributes below are the static ones the Spring Boot Gradle build
+    # contributes from antora-asciidoc-attributes.properties. The ones it
+    # derives from the dependency BOM are not available to this fork.
+
+    # -- URLs --
+    url-ant-docs: 'https://ant.apache.org/manual'
+    url-buildpacks-docs: 'https://buildpacks.io/docs'
+    url-cyclonedx-docs-gradle-plugin: 'https://github.com/CycloneDX/cyclonedx-gradle-plugin'
+    url-cyclonedx-docs-maven-plugin: 'https://github.com/CycloneDX/cyclonedx-maven-plugin'
+    url-git-commit-id-maven-plugin: 'https://github.com/git-commit-id/git-commit-id-maven-plugin'
+    url-download-liberica-nik: 'https://bell-sw.com/pages/downloads/native-image-kit/#/nik-22-17'
+    url-dynatrace-docs: 'https://docs.dynatrace.com/docs'
+    url-dynatrace-docs-shortlink: '{url-dynatrace-docs}/shortlink'
+    url-github-raw: 'https://raw.githubusercontent.com/{github-repo}/{github-ref}'
+    url-github-issues: 'https://github.com/{github-repo}/issues'
+    url-github-wiki: 'https://github.com/{github-repo}/wiki'
+    url-github: 'https://github.com/{github-repo}'
+    url-gradle-docs: 'https://docs.gradle.org/current/userguide'
+    url-gradle-docs-application-plugin: '{url-gradle-docs}/application_plugin.html'
+    url-gradle-docs-groovy-plugin: '{url-gradle-docs}/groovy_plugin.html'
+    url-gradle-docs-java-plugin: '{url-gradle-docs}/java_plugin.html'
+    url-gradle-docs-war-plugin: '{url-gradle-docs}/war_plugin.html'
+    url-gradle-dsl: 'https://docs.gradle.org/current/dsl'
+    url-gradle-javadoc: 'https://docs.gradle.org/current/javadoc'
+    url-paketo-docs: 'https://paketo.io/docs'
+    url-paketo-docs-java-buildpack: '{url-paketo-docs}/buildpacks/language-family-buildpacks/java'
+    url-protobuf-docs-gradle-plugin: 'https://github.com/google/protobuf-gradle-plugin'
+
+    # -- Versions --
+    # Read from gradle.properties and the dependency BOM of the mirrored
+    # upstream revision recorded in .upstream-version. Re-check after a sync.
+    version-spring-boot: '4.2.0-SNAPSHOT'
+    version-spring-framework: '7.1.0-SNAPSHOT'
+    version-graal: '25'
+    version-native-build-tools: '1.1.14'
+    version-protobuf-gradle-plugin: '0.9.6'
+    version-dependency-management-plugin: '1.1.7'
+
+    # -- Library URLs --
+    # The Spring Boot build derives these from the dependency BOM, which this
+    # fork does not mirror. They are pinned to the current published location of
+    # each project instead, so they stay valid across upstream syncs.
+    url-artifact-repository: 'https://repo.spring.io/snapshot'
+    url-spring-boot-layers-xsd: 'https://www.springframework.org/schema/boot/layers/layers-4.2.xsd'
+
+    url-spring-framework-site: 'https://spring.io/projects/spring-framework'
+    url-spring-framework-docs: 'https://docs.spring.io/spring-framework/reference'
+    url-spring-framework-javadoc: 'https://docs.spring.io/spring-framework/docs/current/javadoc-api'
+    url-spring-security-site: 'https://spring.io/projects/spring-security'
+    url-spring-security-docs: 'https://docs.spring.io/spring-security/reference'
+    url-spring-graphql-site: 'https://spring.io/projects/spring-graphql'
+    url-spring-graphql-docs: 'https://docs.spring.io/spring-graphql/reference'
+    url-spring-pulsar-site: 'https://spring.io/projects/spring-pulsar'
+    url-spring-pulsar-docs: 'https://docs.spring.io/spring-pulsar/reference'
+    url-spring-grpc-docs: 'https://docs.spring.io/spring-grpc/reference'
+    url-spring-kafka-docs: 'https://docs.spring.io/spring-kafka/reference'
+    url-spring-amqp-docs: 'https://docs.spring.io/spring-amqp/reference'
+    url-spring-batch-site: 'https://spring.io/projects/spring-batch'
+    url-spring-batch-docs: 'https://docs.spring.io/spring-batch/reference'
+    url-spring-integration-site: 'https://spring.io/projects/spring-integration'
+    url-spring-integration-docs: 'https://docs.spring.io/spring-integration/reference'
+    url-spring-restdocs-site: 'https://spring.io/projects/spring-restdocs'
+    url-spring-session-site: 'https://spring.io/projects/spring-session'
+    url-spring-webservices-docs: 'https://docs.spring.io/spring-ws/docs/current/reference'
+
+    url-spring-data-site: 'https://spring.io/projects/spring-data'
+    url-spring-data-cassandra-site: 'https://spring.io/projects/spring-data-cassandra'
+    url-spring-data-cassandra-docs: 'https://docs.spring.io/spring-data/cassandra/reference'
+    url-spring-data-couchbase-site: 'https://spring.io/projects/spring-data-couchbase'
+    url-spring-data-couchbase-docs: 'https://docs.spring.io/spring-data/couchbase/reference'
+    url-spring-data-elasticsearch-site: 'https://spring.io/projects/spring-data-elasticsearch'
+    url-spring-data-elasticsearch-docs: 'https://docs.spring.io/spring-data/elasticsearch/reference'
+    url-spring-data-jpa-site: 'https://spring.io/projects/spring-data-jpa'
+    url-spring-data-jpa-docs: 'https://docs.spring.io/spring-data/jpa/reference'
+    url-spring-data-ldap-site: 'https://spring.io/projects/spring-data-ldap'
+    url-spring-data-ldap-docs: 'https://docs.spring.io/spring-data/ldap/reference'
+    url-spring-data-mongodb-site: 'https://spring.io/projects/spring-data-mongodb'
+    url-spring-data-mongodb-docs: 'https://docs.spring.io/spring-data/mongodb/reference'
+    url-spring-data-neo4j-site: 'https://spring.io/projects/spring-data-neo4j'
+    url-spring-data-neo4j-docs: 'https://docs.spring.io/spring-data/neo4j/reference'
+    url-spring-data-redis-site: 'https://spring.io/projects/spring-data-redis'
+    url-spring-data-relational-docs: 'https://docs.spring.io/spring-data/relational/reference'
+
+    url-micrometer-site: 'https://micrometer.io'
+    url-micrometer-docs: 'https://docs.micrometer.io/micrometer/reference'
+    url-micrometer-docs-concepts: '{url-micrometer-docs}/concepts'
+    url-micrometer-docs-implementations: '{url-micrometer-docs}/implementations'
+    url-micrometer-docs-observation: '{url-micrometer-docs}/observation'
+    url-micrometer-tracing-docs: 'https://docs.micrometer.io/tracing/reference'
+
+    url-graal-docs: 'https://www.graalvm.org/jdk{version-graal}/reference-manual'
+    url-graal-docs-native-image: '{url-graal-docs}/native-image'
+    url-native-build-tools-docs: 'https://graalvm.github.io/native-build-tools/{version-native-build-tools}'
+    url-native-build-tools-docs-gradle-plugin: '{url-native-build-tools-docs}/gradle-plugin.html'
+    url-native-build-tools-docs-maven-plugin: '{url-native-build-tools-docs}/maven-plugin.html'
+
+    url-kotlin-docs: 'https://kotlinlang.org/docs/reference'
+    url-kotlin-docs-kotlin-plugin: '{url-kotlin-docs}/using-gradle.html'
+    url-dependency-management-plugin-site: 'https://github.com/spring-gradle-plugins/dependency-management-plugin'
+    url-dependency-management-plugin-docs: 'https://docs.spring.io/dependency-management-plugin/docs/{version-dependency-management-plugin}/reference/html'
+    url-tomcat-docs: 'https://tomcat.apache.org/tomcat-11.0-doc'
+    url-hibernate-docs: 'https://docs.hibernate.org/orm/7.4/userguide/html_single/'
+    url-jooq-docs: 'https://www.jooq.org/doc/latest/manual-single-page'
+    url-log4j2-docs: 'https://logging.apache.org/log4j/2.x/manual'
+    url-lettuce-docs: 'https://redis.github.io/lettuce'
+    url-liquibase-javadoc: 'https://javadoc.io/doc/org.liquibase/liquibase-core/latest'
+    url-lombok-javadoc: 'https://projectlombok.org/api'
+    url-quartz-javadoc: 'https://javadoc.io/doc/org.quartz-scheduler/quartz/latest'
+    url-graphql-java-javadoc: 'https://javadoc.io/doc/com.graphql-java/graphql-java/latest'
+    url-mongodb-driver-core-javadoc: 'https://mongodb.github.io/mongo-java-driver/5.11/apidocs/driver-core'
+    url-mongodb-driver-sync-javadoc: 'https://mongodb.github.io/mongo-java-driver/5.11/apidocs/driver-sync'
+
+    url-testcontainers-docs: 'https://java.testcontainers.org'
+    url-testcontainers-jdbc-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-jdbc/latest'
+    url-testcontainers-mariadb-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-mariadb/latest'
+    url-testcontainers-mongodb-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-mongodb/latest'
+    url-testcontainers-mssqlserver-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-mssqlserver/latest'
+    url-testcontainers-mysql-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-mysql/latest'
+    url-testcontainers-neo4j-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-neo4j/latest'
+    url-testcontainers-oracle-xe-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-oracle-xe/latest'
+    url-testcontainers-postgresql-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-postgresql/latest'
+    url-testcontainers-pulsar-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-pulsar/latest'
+    url-testcontainers-rabbitmq-javadoc: 'https://javadoc.io/doc/org.testcontainers/testcontainers-rabbitmq/latest'
+
+    # -- API references --
+    apiref-gradle-plugin-boot-build-image: 'https://docs.spring.io/spring-boot/gradle-plugin/api/java/org/springframework/boot/gradle/tasks/bundling/BootBuildImage.html'
+    apiref-gradle-plugin-boot-jar: 'https://docs.spring.io/spring-boot/gradle-plugin/api/java/org/springframework/boot/gradle/tasks/bundling/BootJar.html'
+    apiref-gradle-plugin-boot-run: 'https://docs.spring.io/spring-boot/gradle-plugin/api/java/org/springframework/boot/gradle/tasks/run/BootRun.html'
+    apiref-gradle-plugin-boot-war: 'https://docs.spring.io/spring-boot/gradle-plugin/api/java/org/springframework/boot/gradle/tasks/bundling/BootWar.html'
+    apiref-gradle-plugin-boot-build-info: 'https://docs.spring.io/spring-boot/gradle-plugin/api/java/org/springframework/boot/gradle/tasks/buildinfo/BuildInfo.html'
+    apiref-openjdk: 'https://docs.oracle.com/en/java/javase/17/docs/api'
+
+    # -- Code links --
+    code-spring-boot: 'https://github.com/{github-repo}/tree/{github-ref}'
+    code-spring-boot-autoconfigure-src: '{code-spring-boot}/core/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure'
+    code-spring-boot-batch-data-mongodb-src: '{code-spring-boot}/module/spring-boot-batch-data-mongodb/src/main/java/org/springframework/boot/batch/mongodb'
+    code-spring-boot-batch-jdbc-src: '{code-spring-boot}/module/spring-boot-batch-jdbc/src/main/java/org/springframework/boot/batch/jdbc'
+    code-spring-boot-batch-src: '{code-spring-boot}/module/spring-boot-batch/src/main/java/org/springframework/boot/batch'
+    code-spring-boot-freemarker-src: '{code-spring-boot}/module/spring-boot-freemarker/src/main/java/org/springframework/boot/freemarker'
+    code-spring-boot-groovy-templates-src: '{code-spring-boot}/module/spring-boot-groovy-templates/src/main/java/org/springframework/boot/groovy/template'
+    code-spring-boot-hibernate-src: '{code-spring-boot}/module/spring-boot-hibernate/src/main/java/org/springframework/boot/hibernate'
+    code-spring-boot-integration-src: '{code-spring-boot}/module/spring-boot-integration/src/main/java/org/springframework/boot/integration'
+    code-spring-boot-jdbc-src: '{code-spring-boot}/module/spring-boot-jdbc/src/main/java/org/springframework/boot/jdbc'
+    code-spring-boot-jooq-src: '{code-spring-boot}/module/spring-boot-jooq/src/main/java/org/springframework/boot/jooq'
+    code-spring-boot-jpa-src: '{code-spring-boot}/module/spring-boot-jpa/src/main/java/org/springframework/boot/jpa'
+    code-spring-boot-latest: 'https://github.com/{github-repo}/tree/main'
+    code-spring-boot-servlet-src: '{code-spring-boot}/module/spring-boot-servlet/src/main/java/org/springframework/boot/servlet'
+    code-spring-boot-thymeleaf-src: '{code-spring-boot}/module/spring-boot-thymeleaf/src/main/java/org/springframework/boot/thymeleaf'
+    code-spring-boot-webmvc-src: '{code-spring-boot}/module/spring-boot-webmvc/src/main/java/org/springframework/boot/webmvc'
+
+ui:
+  bundle:
+    url: https://github.com/spring-io/antora-ui-spring/releases/download/v0.4.26/ui-bundle.zip
+  supplemental_files: ./antora/ui
+
+output:
+  dir: ./build/site
+
+runtime:
+  log:
+    format: pretty
+    # Content generated by the Spring Boot build (code samples, javadoc, the
+    # configuration property appendices) is not part of this fork, so the build
+    # reports errors for it. Do not fail on them.
+    failure_level: fatal

@@ -1,0 +1,16 @@
+{{!--
+  Overrides the default layout of the Spring Antora UI bundle so each page
+  declares the language of its locale. Keep in sync with layouts/default.hbs of
+  the bundle version pinned by the playbook when that bundle is upgraded.
+--}}
+<!DOCTYPE html>
+<html lang="{{#if page.attributes.[locale]}}{{page.attributes.[locale]}}{{else}}en{{/if}}">
+  <head>
+{{> head defaultPageTitle='Untitled'}}
+  </head>
+  <body class="article{{#with (or page.attributes.role page.role)}} {{{this}}}{{/with}}">
+{{> header}}
+{{> body}}
+{{> footer}}
+  </body>
+</html>

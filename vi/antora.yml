@@ -1,0 +1,11 @@
+# Vietnamese translation of the Spring Boot documentation.
+#
+# The component name is what puts every page of this locale under `/vi/`.
+# `version: true` mirrors `upstream/antora.yml` so both locales are versioned by
+# branch name and stay aligned; the playbook drops the segment from the URL of
+# the latest version.
+name: vi
+title: Spring Boot (Tiếng Việt)
+version: true
+nav:
+- nav.adoc
