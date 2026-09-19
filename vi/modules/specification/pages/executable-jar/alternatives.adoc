@@ -1,0 +1,9 @@
+[[appendix.executable-jar.alternatives]]
+= Giải pháp Single Jar thay thế
+
+Nếu các hạn chế ở trên khiến bạn không dùng được Spring Boot Loader, hãy cân nhắc các lựa chọn thay thế sau:
+
+* https://maven.apache.org/plugins/maven-shade-plugin/[Maven Shade Plugin]
+* http://www.jdotsoft.com/JarClassLoader.php[JarClassLoader]
+* https://sourceforge.net/projects/one-jar/[OneJar]
+* https://gradleup.com/shadow/[Gradle Shadow Plugin]

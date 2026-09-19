@@ -85,9 +85,9 @@ Vanilla usage của Spring javadoc:org.springframework.web.servlet.DispatcherSer
 Nếu application có feature khác, ví dụ servlet hoặc filter khác, có thể cần thêm configuration vào context `Application` để replace element từ `web.xml`:
 
 * Bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:jakarta.servlet.Servlet[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] install bean vào container như `<servlet/>` và `<servlet-mapping/>` trong `web.xml`.
-* Bean type javadoc:jakarta.servlet.Filter[] hoặc javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] behavior tương tự như `<filter/>` và `<filter-mapping/>`.
+* javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:jakarta.servlet.Filter[] hoặc javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] behavior tương tự như `<filter/>` và `<filter-mapping/>`.
 * javadoc:org.springframework.context.ApplicationContext[] trong XML file có thể thêm qua javadoc:org.springframework.context.annotation.ImportResource[format=annotation] trong `+Application+`.
-  Ngoài ra case đã dùng nhiều annotation configuration có thể recreate trong vài dòng Bean definition.
+  Ngoài ra case đã dùng nhiều annotation configuration có thể recreate trong vài dòng javadoc:org.springframework.context.annotation.Bean[format=annotation] definition.
 
 Khi war file đã hoạt động, có thể làm executable bằng cách thêm method `main` vào `Application`:
 

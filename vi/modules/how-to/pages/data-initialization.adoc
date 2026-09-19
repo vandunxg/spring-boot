@@ -47,10 +47,10 @@ Mặc định Spring Boot enable fail-fast của script-based database initializ
 Nếu script gây exception, application fail start.
 Tune behavior bằng configprop:spring.sql.init.continue-on-error[].
 
-Script-based DataSource initialization mặc định thực hiện trước khi bất kỳ JPA javadoc:jakarta.persistence.EntityManagerFactory[] bean nào được tạo.
+Script-based javadoc:javax.sql.DataSource[] initialization mặc định thực hiện trước khi bất kỳ JPA javadoc:jakarta.persistence.EntityManagerFactory[] bean nào được tạo.
 `schema.sql` có thể dùng tạo schema cho JPA-managed entity và `data.sql` populate data.
-Dù không khuyến nghị dùng nhiều data source initialization technology, nếu muốn script-based DataSource initialization build trên schema Hibernate tạo, set configprop:spring.jpa.defer-datasource-initialization[] thành `true`.
-Điều này defer data source initialization cho tới sau khi mọi EntityManagerFactory bean đã được tạo và initialize.
+Dù không khuyến nghị dùng nhiều data source initialization technology, nếu muốn script-based javadoc:javax.sql.DataSource[] initialization build trên schema Hibernate tạo, set configprop:spring.jpa.defer-datasource-initialization[] thành `true`.
+Điều này defer data source initialization cho tới sau khi mọi javadoc:jakarta.persistence.EntityManagerFactory[] bean đã được tạo và initialize.
 Khi đó `schema.sql` có thể bổ sung vào schema Hibernate tạo và `data.sql` populate nó.
 
 NOTE: Initialization script support `--` cho single-line comment và `/++*++ ++*++/` cho block comment.
@@ -125,7 +125,7 @@ javadoc:org.springframework.boot.flyway.autoconfigure.FlywayProperties[] cung c�
 Nếu cần control configuration nhiều hơn, register bean javadoc:org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer[].
 
 Spring Boot gọi `Flyway.migrate()` để perform database migration.
-Nếu muốn nhiều control hơn, cung cấp Bean implement javadoc:org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy[].
+Nếu muốn nhiều control hơn, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy[].
 
 Flyway hỗ trợ SQL và Java https://documentation.red-gate.com/fd/callbacks-275218509.html[callback].
 Để dùng SQL-based callback, đặt callback script trong directory `classpath:db/migration`.
@@ -134,10 +134,10 @@ Các bean đó tự động register với javadoc:org.flywaydb.core.Flyway[].
 Có thể order bằng javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc implement javadoc:org.springframework.core.Ordered[].
 
 Mặc định Flyway autowire javadoc:javax.sql.DataSource[] `@Primary` trong context và dùng cho migration.
-Nếu muốn dùng DataSource khác, tạo một bean và mark Bean bằng javadoc:org.springframework.boot.flyway.autoconfigure.FlywayDataSource[format=annotation].
-Nếu muốn hai data source, ví dụ giữ main auto-configured DataSource, nhớ set attribute `defaultCandidate` của Bean thành `false`.
-Ngoài ra có thể dùng native DataSource của Flyway bằng external property `spring.flyway.[url,user,password]`.
-Set `spring.flyway.url` hoặc `spring.flyway.user` là đủ khiến Flyway dùng DataSource riêng.
+Nếu muốn dùng javadoc:javax.sql.DataSource[] khác, tạo một bean và mark javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.flyway.autoconfigure.FlywayDataSource[format=annotation].
+Nếu muốn hai data source, ví dụ giữ main auto-configured javadoc:javax.sql.DataSource[], nhớ set attribute `defaultCandidate` của javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
+Ngoài ra có thể dùng native javadoc:javax.sql.DataSource[] của Flyway bằng external property `spring.flyway.[url,user,password]`.
+Set `spring.flyway.url` hoặc `spring.flyway.user` là đủ khiến Flyway dùng javadoc:javax.sql.DataSource[] riêng.
 Nếu một trong ba property chưa set, value từ equivalent `spring.datasource` property được dùng.
 
 Cũng có thể dùng Flyway cung cấp data cho specific scenario.
@@ -169,11 +169,11 @@ Không thể dùng hai cách initialize database khác nhau, ví dụ Liquibase 
 Mặc định master change log được đọc từ `db/changelog/db.changelog-master.yaml`, nhưng có thể đổi bằng `spring.liquibase.change-log`.
 Ngoài YAML, Liquibase cũng hỗ trợ JSON, XML và SQL change log.
 
-Mặc định Liquibase autowire DataSource `@Primary` trong context và dùng cho migration.
-Nếu cần DataSource khác, tạo bean và mark Bean bằng javadoc:org.springframework.boot.liquibase.autoconfigure.LiquibaseDataSource[format=annotation].
-Nếu muốn hai data source, nhớ set attribute `defaultCandidate` của Bean thành `false`.
-Ngoài ra có thể dùng native DataSource của Liquibase bằng external property `spring.liquibase.[driver-class-name,url,user,password]`.
-Set `spring.liquibase.url` hoặc `spring.liquibase.user` là đủ khiến Liquibase dùng DataSource riêng.
+Mặc định Liquibase autowire javadoc:javax.sql.DataSource[] `@Primary` trong context và dùng cho migration.
+Nếu cần javadoc:javax.sql.DataSource[] khác, tạo bean và mark javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.liquibase.autoconfigure.LiquibaseDataSource[format=annotation].
+Nếu muốn hai data source, nhớ set attribute `defaultCandidate` của javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
+Ngoài ra có thể dùng native javadoc:javax.sql.DataSource[] của Liquibase bằng external property `spring.liquibase.[driver-class-name,url,user,password]`.
+Set `spring.liquibase.url` hoặc `spring.liquibase.user` là đủ khiến Liquibase dùng javadoc:javax.sql.DataSource[] riêng.
 Nếu một trong ba property chưa set, value của equivalent `spring.datasource` property được dùng.
 
 Xem javadoc:org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties[] để biết setting available như context, default schema, v.v.
@@ -243,4 +243,4 @@ Spring Boot tự động detect bean các type sau depend vào database initiali
 
 Nếu dùng third-party starter data access library, nó có thể cung cấp detector để bean type khác detect tự động.
 Để bean khác được detect, register implementation javadoc:org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitializationDetector[] trong `META-INF/spring.factories`.
-Ngoài ra annotate bean class hoặc Bean method bằng javadoc:org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization[format=annotation].
+Ngoài ra annotate bean class hoặc javadoc:org.springframework.context.annotation.Bean[format=annotation] method bằng javadoc:org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization[format=annotation].

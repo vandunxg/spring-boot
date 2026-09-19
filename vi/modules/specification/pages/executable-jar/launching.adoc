@@ -1,0 +1,39 @@
+[[appendix.executable-jar.launching]]
+= Khởi chạy Executable Jar
+
+Class javadoc:org.springframework.boot.loader.launch.Launcher[] là một bootstrap class đặc biệt, được dùng làm main entry point của executable jar.
+Nó chính là `Main-Class` thực sự trong jar file của bạn, và được dùng để thiết lập javadoc:java.lang.ClassLoader[] phù hợp rồi cuối cùng gọi method `main()` của bạn.
+
+Có ba launcher subclass (javadoc:org.springframework.boot.loader.launch.JarLauncher[], javadoc:org.springframework.boot.loader.launch.WarLauncher[] và javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[]).
+Mục đích của chúng là load resource (file `.class` và các file khác) từ nested jar file hoặc war file trong thư mục (khác với những file nằm tường minh trên classpath).
+Với javadoc:org.springframework.boot.loader.launch.JarLauncher[] và javadoc:org.springframework.boot.loader.launch.WarLauncher[], các nested path là cố định.
+javadoc:org.springframework.boot.loader.launch.JarLauncher[] tìm trong `BOOT-INF/lib/`, còn javadoc:org.springframework.boot.loader.launch.WarLauncher[] tìm trong `WEB-INF/lib/` và `WEB-INF/lib-provided/`.
+Bạn có thể thêm jar vào các location đó nếu muốn có thêm.
+
+javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] mặc định tìm trong `BOOT-INF/lib/` của application archive.
+Bạn có thể thêm location khác bằng cách set environment variable tên `LOADER_PATH` hoặc `loader.path` trong `loader.properties` (là danh sách thư mục, archive, hoặc thư mục bên trong archive, phân tách bằng dấu phẩy).
+
+[[appendix.executable-jar.launching.manifest]]
+== Launcher Manifest
+
+Bạn cần chỉ định javadoc:org.springframework.boot.loader.launch.Launcher[] phù hợp làm attribute `Main-Class` của `META-INF/MANIFEST.MF`.
+Class thực sự bạn muốn khởi chạy (tức class chứa method `main`) nên được chỉ định trong attribute `Start-Class`.
+
+Ví dụ sau minh họa một `MANIFEST.MF` điển hình cho executable jar file:
+
+[source,manifest]
+----
+Main-Class: org.springframework.boot.loader.launch.JarLauncher
+Start-Class: com.mycompany.project.MyApplication
+----
+
+Với war file, nó sẽ như sau:
+
+[source,manifest]
+----
+Main-Class: org.springframework.boot.loader.launch.WarLauncher
+Start-Class: com.mycompany.project.MyApplication
+----
+
+NOTE: Bạn không cần chỉ định entry `Class-Path` trong manifest file.
+Classpath được suy ra từ các nested jar.

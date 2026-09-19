@@ -1,0 +1,332 @@
+[[appendix.configuration-metadata.format]]
+= Metadata Format
+
+File configuration metadata nằm trong jar tại `META-INF/spring-configuration-metadata.json`.
+Chúng dùng format JSON với các item được phân loại vào "`groups`" hoặc "`properties`", các value hint bổ sung được phân loại vào "`hints`", và các item bị bỏ qua nằm trong "`ignored`", như ví dụ sau:
+
+[source,json]
+----
+{"groups": [
+	{
+		"name": "server",
+		"type": "org.springframework.boot.web.server.autoconfigure.ServerProperties",
+		"sourceType": "org.springframework.boot.web.server.autoconfigure.ServerProperties"
+	},
+	{
+		"name": "spring.jpa.hibernate.naming",
+		"type": "org.springframework.boot.hibernate.autoconfigure.HibernateProperties$Naming",
+		"sourceType": "org.springframework.boot.hibernate.autoconfigure.HibernateProperties",
+		"sourceMethod": "getNaming()"
+	}
+	...
+],"properties": [
+	{
+		"name": "server.port",
+		"type": "java.lang.Integer",
+		"sourceType": "org.springframework.boot.web.server.autoconfigure.ServerProperties"
+	},
+	{
+		"name": "server.address",
+		"type": "java.net.InetAddress",
+		"sourceType": "org.springframework.boot.web.server.autoconfigure.ServerProperties"
+	},
+	{
+		  "name": "spring.jpa.hibernate.ddl-auto",
+		  "type": "java.lang.String",
+		  "description": "DDL mode. This is actually a shortcut for the \"hibernate.hbm2ddl.auto\" property.",
+		  "sourceType": "org.springframework.boot.hibernate.autoconfigure.HibernateProperties"
+	}
+	...
+],"hints": [
+	{
+		"name": "spring.jpa.hibernate.ddl-auto",
+		"values": [
+			{
+				"value": "none",
+				"description": "Disable DDL handling."
+			},
+			{
+				"value": "validate",
+				"description": "Validate the schema, make no changes to the database."
+			},
+			{
+				"value": "update",
+				"description": "Update the schema if necessary."
+			},
+			{
+				"value": "create",
+				"description": "Create the schema and destroy previous data."
+			},
+			{
+				"value": "create-drop",
+				"description": "Create and then destroy the schema at the end of the session."
+			}
+		]
+	}
+	...
+],"ignored": {
+	"properties": [
+		{
+			"name": "server.ignored"
+		}
+		...
+	]
+}}
+----
+
+Mỗi "`property`" là một configuration item mà người dùng chỉ định kèm một value.
+Ví dụ, `server.port` và `server.address` có thể được chỉ định trong `application.properties`/`application.yaml` như sau:
+
+[configprops,yaml]
+----
+server:
+  port: 9090
+  address: 127.0.0.1
+----
+
+Các "`groups`" là item ở mức cao hơn, bản thân chúng không chỉ định value mà cung cấp nhóm ngữ cảnh cho property.
+Ví dụ, property `server.port` và `server.address` thuộc group `server`.
+
+NOTE: Không bắt buộc mọi "`property`" đều phải có "`group`".
+Một số property có thể tồn tại độc lập.
+
+Các "`hints`" là thông tin bổ sung dùng để hỗ trợ người dùng cấu hình một property.
+Ví dụ, khi developer cấu hình property configprop:spring.jpa.hibernate.ddl-auto[], tool có thể dùng hint để gợi ý auto-completion cho các value `none`, `validate`, `update`, `create` và `create-drop`.
+
+Cuối cùng, "`ignored`" dành cho các item bị cố ý bỏ qua.
+Nội dung của phần này thường đến từ xref:specification:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[additional metadata].
+
+[[appendix.configuration-metadata.format.group]]
+== Group Attribute
+
+JSON object nằm trong array `groups` có thể chứa các attribute trong bảng sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `name`
+| String
+| Tên đầy đủ của group.
+  Attribute này bắt buộc.
+
+| `type`
+| String
+| Class name của kiểu dữ liệu của group.
+  Ví dụ, nếu group dựa trên một class được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute sẽ chứa fully qualified name của class đó.
+  Nếu group dựa trên một method javadoc:org.springframework.context.annotation.Bean[format=annotation], nó sẽ là return type của method đó.
+  Nếu không biết type, có thể bỏ qua attribute này.
+
+| `description`
+| String
+| Mô tả ngắn về group để hiển thị cho người dùng.
+  Nếu không có mô tả, có thể bỏ qua.
+  Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
+  Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
+
+| `sourceType`
+| String
+| Class name của nguồn đóng góp group này.
+  Ví dụ, nếu group dựa trên một method javadoc:org.springframework.context.annotation.Bean[format=annotation] được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute này sẽ chứa fully qualified name của class javadoc:org.springframework.context.annotation.Configuration[format=annotation] chứa method đó.
+  Nếu không biết source type, có thể bỏ qua attribute này.
+
+| `sourceMethod`
+| String
+| Tên đầy đủ của method (gồm cả dấu ngoặc và kiểu argument) đã đóng góp group này (ví dụ, tên của một method javadoc:org.springframework.context.annotation.Bean[format=annotation] được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation]).
+  Nếu không biết source method, có thể bỏ qua.
+|===
+
+[[appendix.configuration-metadata.format.property]]
+== Property Attribute
+
+JSON object nằm trong array `properties` có thể chứa các attribute được mô tả trong bảng sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `name`
+| String
+| Tên đầy đủ của property.
+  Tên ở dạng chữ thường, phân tách bằng dấu chấm (ví dụ, `server.address`).
+  Attribute này bắt buộc.
+
+| `type`
+| String
+| Signature đầy đủ của kiểu dữ liệu của property (ví dụ, javadoc:java.lang.String[]) và cũng có thể là generic type đầy đủ (chẳng hạn `java.util.Map<java.lang.String,com.example.MyEnum>`).
+  Bạn có thể dùng attribute này để hướng dẫn người dùng về kiểu value có thể nhập.
+  Để nhất quán, kiểu của primitive được chỉ định bằng wrapper tương ứng (ví dụ, `boolean` thành javadoc:java.lang.Boolean[]).
+  Lưu ý class này có thể là complex type được convert từ javadoc:java.lang.String[] khi value được bind.
+  Nếu không biết type, có thể bỏ qua.
+
+| `description`
+| String
+| Mô tả ngắn về property để hiển thị cho người dùng.
+  Nếu không có mô tả, có thể bỏ qua.
+  Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
+  Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
+
+| `sourceType`
+| String
+| Class name của nguồn đóng góp property này.
+  Ví dụ, nếu property đến từ một class được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute này sẽ chứa fully qualified name của class đó.
+  Nếu không biết source type, có thể bỏ qua.
+
+| `defaultValue`
+| Object
+| Default value, được dùng nếu property không được chỉ định.
+  Nếu kiểu của property là array, nó có thể là array của các value.
+  Nếu không biết default value, có thể bỏ qua.
+
+| `deprecation`
+| Deprecation
+| Chỉ định property có deprecated hay không.
+  Nếu field không deprecated hoặc không biết thông tin đó, có thể bỏ qua.
+  Bảng tiếp theo cung cấp thêm chi tiết về attribute `deprecation`.
+|===
+
+JSON object nằm trong attribute `deprecation` của mỗi phần tử `properties` có thể chứa các attribute sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `level`
+| String
+| Mức deprecation, có thể là `warning` (mặc định) hoặc `error`.
+  Khi property có deprecation level `warning`, nó vẫn nên được bind trong environment.
+  Tuy nhiên, khi có deprecation level `error`, property không còn được quản lý và không được bind.
+
+| `reason`
+| String
+| Mô tả ngắn về lý do property bị deprecated.
+  Nếu không có lý do, có thể bỏ qua.
+  Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
+  Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
+
+| `replacement`
+| String
+| Tên đầy đủ của property _thay thế_ property deprecated này.
+  Nếu không có property thay thế, có thể bỏ qua.
+
+| `since`
+| String
+| Version mà property bắt đầu bị deprecated.
+  Có thể bỏ qua.
+|===
+
+NOTE: Trước Spring Boot 1.3, có thể dùng một attribute boolean `deprecated` duy nhất thay cho element `deprecation`.
+Cách này vẫn được hỗ trợ ở dạng deprecated và không nên dùng nữa.
+Nếu không có reason và replacement, nên set một object `deprecation` rỗng.
+
+Deprecation cũng có thể được chỉ định khai báo trong code bằng cách thêm annotation javadoc:org.springframework.boot.context.properties.DeprecatedConfigurationProperty[format=annotation] vào getter expose property deprecated.
+Ví dụ, giả sử property `my.app.target` gây nhầm lẫn và được đổi tên thành `my.app.name`.
+Ví dụ sau minh họa cách xử lý tình huống đó:
+
+include-code::MyProperties[]
+
+NOTE: Không có cách nào để set `level`.
+`warning` luôn được mặc định, vì code vẫn đang xử lý property.
+
+Đoạn code trên đảm bảo property deprecated vẫn hoạt động (delegate sang property `name` ở phía sau).
+Khi method `getTarget` và `setTarget` có thể được bỏ khỏi public API, hint deprecation tự động trong metadata cũng biến mất theo.
+Nếu muốn giữ hint, thêm metadata thủ công với deprecation level `error` đảm bảo người dùng vẫn được thông báo về property đó.
+Cách này đặc biệt hữu ích khi có cung cấp `replacement`.
+
+[[appendix.configuration-metadata.format.hints]]
+== Hint Attribute
+
+JSON object nằm trong array `hints` có thể chứa các attribute trong bảng sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `name`
+| String
+| Tên đầy đủ của property mà hint này đề cập tới.
+  Tên ở dạng chữ thường, phân tách bằng dấu chấm (chẳng hạn `spring.mvc.servlet.path`).
+  Nếu property đề cập tới một map (chẳng hạn `system.contexts`), hint áp dụng cho _key_ của map (`system.contexts.keys`) hoặc _value_ (`system.contexts.values`) của map.
+  Attribute này bắt buộc.
+
+| `values`
+| ValueHint[]
+| Danh sách value hợp lệ được định nghĩa bởi object `ValueHint` (mô tả trong bảng tiếp theo).
+  Mỗi entry định nghĩa value và có thể có mô tả.
+
+| `providers`
+| ValueProvider[]
+| Danh sách provider được định nghĩa bởi object `ValueProvider` (mô tả ở phần sau của tài liệu này).
+  Mỗi entry định nghĩa tên provider và các parameter của nó, nếu có.
+|===
+
+JSON object nằm trong attribute `values` của mỗi phần tử `hint` có thể chứa các attribute được mô tả trong bảng sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `value`
+| Object
+| Một value hợp lệ cho element mà hint đề cập tới.
+  Nếu kiểu của property là array, nó cũng có thể là array của các value.
+  Attribute này bắt buộc.
+
+| `description`
+| String
+| Mô tả ngắn về value để hiển thị cho người dùng.
+  Nếu không có mô tả, có thể bỏ qua.
+  Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
+  Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
+|===
+
+JSON object nằm trong attribute `providers` của mỗi phần tử `hint` có thể chứa các attribute được mô tả trong bảng sau:
+
+[cols="1,1,4"]
+|===
+|Tên | Kiểu |Mục đích
+
+| `name`
+| String
+| Tên của provider dùng để cung cấp hỗ trợ nội dung bổ sung cho element mà hint đề cập tới.
+
+| `parameters`
+| JSON object
+| Mọi parameter bổ sung mà provider hỗ trợ (xem tài liệu của provider để biết thêm chi tiết).
+|===
+
+[[appendix.configuration-metadata.format.ignored]]
+== Ignored Attribute
+
+Object `ignored` có thể chứa các attribute trong bảng sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `properties`
+| ItemIgnore[]
+| Danh sách property bị bỏ qua được định nghĩa bởi object ItemIgnore (mô tả trong bảng tiếp theo). Mỗi entry định nghĩa tên của property bị bỏ qua.
+
+|===
+
+JSON object nằm trong attribute `properties` của mỗi phần tử `ignored` có thể chứa các attribute được mô tả trong bảng sau:
+
+[cols="1,1,4"]
+|===
+| Tên | Kiểu | Mục đích
+
+| `name`
+| String
+| Tên đầy đủ của property cần bỏ qua.
+Tên ở dạng chữ thường, phân tách bằng dấu chấm (chẳng hạn `spring.mvc.servlet.path`).
+Attribute này bắt buộc.
+
+|===
+
+[[appendix.configuration-metadata.format.repeated-items]]
+== Metadata Item lặp lại
+
+Object có cùng tên "`property`" và "`group`" có thể xuất hiện nhiều lần trong một file metadata.
+Ví dụ, bạn có thể bind hai class riêng biệt vào cùng một prefix, mỗi class có thể có tên property trùng nhau.
+Dù việc cùng một tên xuất hiện nhiều lần trong metadata không phổ biến, bên tiêu thụ metadata nên cẩn thận đảm bảo có hỗ trợ trường hợp này.

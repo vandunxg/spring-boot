@@ -9,14 +9,14 @@ Nếu thích imperative API, có thể dùng javadoc:org.springframework.web.cli
 == WebClient
 
 Nếu Spring WebFlux có trên classpath, chúng tôi khuyến nghị dùng javadoc:org.springframework.web.reactive.function.client.WebClient[] để gọi remote REST service.
-Interface WebClient cung cấp functional-style API và hoàn toàn reactive.
-Xem {url-spring-framework-docs}/web/webflux-webclient.html[phần WebClient trong Spring Framework docs].
+Interface javadoc:org.springframework.web.reactive.function.client.WebClient[] cung cấp functional-style API và hoàn toàn reactive.
+Xem {url-spring-framework-docs}/web/webflux-webclient.html[phần javadoc:org.springframework.web.reactive.function.client.WebClient[] trong Spring Framework docs].
 
-TIP: Nếu không viết reactive Spring WebFlux application, có thể dùng xref:io/rest-client.adoc#io.rest-client.restclient[`RestClient`] thay cho WebClient.
+TIP: Nếu không viết reactive Spring WebFlux application, có thể dùng xref:io/rest-client.adoc#io.rest-client.restclient[`RestClient`] thay cho javadoc:org.springframework.web.reactive.function.client.WebClient[].
 Nó cung cấp functional API tương tự nhưng imperative thay vì reactive.
 
 Spring Boot tạo và pre-configure prototype bean javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[].
-Nên inject builder này vào component và dùng để tạo WebClient instance.
+Nên inject builder này vào component và dùng để tạo javadoc:org.springframework.web.reactive.function.client.WebClient[] instance.
 Spring Boot cấu hình builder để share HTTP resource và phản ánh codec setup giống server (xem xref:web/reactive.adoc#web.reactive.webflux.httpcodecs[WebFlux HTTP codec auto-configuration]) cùng các thiết lập khác.
 
 Ví dụ:
@@ -26,7 +26,7 @@ include-code::MyService[]
 [[io.rest-client.webclient.runtime]]
 === WebClient Runtime
 
-Spring Boot auto-detect javadoc:org.springframework.http.client.reactive.ClientHttpConnector[] dùng cho WebClient dựa trên library trên classpath.
+Spring Boot auto-detect javadoc:org.springframework.http.client.reactive.ClientHttpConnector[] dùng cho javadoc:org.springframework.web.reactive.function.client.WebClient[] dựa trên library trên classpath.
 Thứ tự ưu tiên:
 
 . Reactor Netty
@@ -49,8 +49,8 @@ Xem {url-spring-framework-docs}/web/webflux-webclient/client-builder.html[`WebCl
 [[io.rest-client.webclient.configuration]]
 === Global HTTP Connector Configuration
 
-Nếu auto-detected ClientHttpConnector không phù hợp, dùng configprop:spring.http.clients.reactive.connector[] để chọn connector cụ thể.
-Ví dụ có Reactor Netty nhưng muốn dùng Jetty HttpClient:
+Nếu auto-detected javadoc:org.springframework.http.client.reactive.ClientHttpConnector[] không phù hợp, dùng configprop:spring.http.clients.reactive.connector[] để chọn connector cụ thể.
+Ví dụ có Reactor Netty nhưng muốn dùng Jetty javadoc:org.eclipse.jetty.client.HttpClient[]:
 
 [configprops,yaml]
 ----
@@ -73,23 +73,23 @@ include-code::MyConnectorHttpConfiguration[]
 [[io.rest-client.webclient.customization]]
 === WebClient Customization
 
-Có ba cách chính để customize WebClient tùy phạm vi cần áp dụng.
+Có ba cách chính để customize javadoc:org.springframework.web.reactive.function.client.WebClient[] tùy phạm vi cần áp dụng.
 
-Để scope hẹp nhất, inject auto-configured WebClient.Builder rồi gọi method cần thiết.
+Để scope hẹp nhất, inject auto-configured javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[] rồi gọi method cần thiết.
 Builder là stateful: mọi thay đổi trên builder ảnh hưởng tới client tạo sau đó.
 Nếu tạo nhiều client từ cùng builder, có thể clone bằng `WebClient.Builder other = builder.clone();`.
 
-Để application-wide additive customization cho mọi WebClient.Builder, khai báo bean javadoc:org.springframework.boot.webclient.WebClientCustomizer[] và thay đổi builder tại injection point.
+Để application-wide additive customization cho mọi javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[], khai báo bean javadoc:org.springframework.boot.webclient.WebClientCustomizer[] và thay đổi builder tại injection point.
 
 Cuối cùng có thể dùng API gốc `WebClient.create()`.
-Khi đó không có auto-configuration hoặc WebClientCustomizer được áp dụng.
+Khi đó không có auto-configuration hoặc javadoc:org.springframework.boot.webclient.WebClientCustomizer[] được áp dụng.
 
 [[io.rest-client.webclient.ssl]]
 === Hỗ trợ SSL cho WebClient
 
-Nếu cần custom SSL configuration trên javadoc:org.springframework.http.client.reactive.ClientHttpConnector[] dùng bởi WebClient, inject javadoc:org.springframework.boot.webclient.autoconfigure.WebClientSsl[] và dùng với method `apply` của builder.
+Nếu cần custom SSL configuration trên javadoc:org.springframework.http.client.reactive.ClientHttpConnector[] dùng bởi javadoc:org.springframework.web.reactive.function.client.WebClient[], inject javadoc:org.springframework.boot.webclient.autoconfigure.WebClientSsl[] và dùng với method `apply` của builder.
 
-Interface WebClientSsl cho phép access các xref:features/ssl.adoc#features.ssl.bundles[SSL bundle] đã định nghĩa trong `application.properties` hoặc `application.yaml`.
+Interface javadoc:org.springframework.boot.webclient.autoconfigure.WebClientSsl[] cho phép access các xref:features/ssl.adoc#features.ssl.bundles[SSL bundle] đã định nghĩa trong `application.properties` hoặc `application.yaml`.
 
 Ví dụ:
 
@@ -100,10 +100,10 @@ include-code::MyService[]
 
 Nếu application không dùng Spring WebFlux hoặc Project Reactor, chúng tôi khuyến nghị dùng javadoc:org.springframework.web.client.RestClient[] để gọi remote REST service.
 
-RestClient cung cấp functional-style imperative API.
+javadoc:org.springframework.web.client.RestClient[] cung cấp functional-style imperative API.
 
 Spring Boot tạo và pre-configure prototype bean javadoc:org.springframework.web.client.RestClient$Builder[].
-Nên inject builder này và dùng để tạo RestClient instance.
+Nên inject builder này và dùng để tạo javadoc:org.springframework.web.client.RestClient[] instance.
 Spring Boot cấu hình builder với javadoc:org.springframework.http.converter.HttpMessageConverters[] và javadoc:org.springframework.http.client.ClientHttpRequestFactory[] phù hợp.
 
 Ví dụ:
@@ -113,25 +113,25 @@ include-code::MyService[]
 [[io.rest-client.restclient.customization]]
 === RestClient Customization
 
-Có ba cách chính để customize RestClient.
+Có ba cách chính để customize javadoc:org.springframework.web.client.RestClient[].
 
-Để scope hẹp nhất, inject auto-configured RestClient.Builder và gọi method cần thiết.
+Để scope hẹp nhất, inject auto-configured javadoc:org.springframework.web.client.RestClient$Builder[] và gọi method cần thiết.
 Builder stateful: thay đổi phản ánh lên client được tạo sau đó.
 Nếu cần tạo nhiều client với cùng builder, có thể clone bằng `RestClient.Builder other = builder.clone();`.
 
 Để application-wide additive customization, khai báo bean javadoc:org.springframework.boot.restclient.RestClientCustomizer[].
 
 Cuối cùng có thể dùng `RestClient.create()`.
-Khi đó không có auto-configuration hoặc RestClientCustomizer.
+Khi đó không có auto-configuration hoặc javadoc:org.springframework.boot.restclient.RestClientCustomizer[].
 
 TIP: Cũng có thể thay đổi xref:io/rest-client.adoc#io.rest-client.clienthttprequestfactory.configuration[global HTTP client configuration].
 
 [[io.rest-client.restclient.ssl]]
 === Hỗ trợ SSL cho RestClient
 
-Nếu cần custom SSL configuration trên javadoc:org.springframework.http.client.ClientHttpRequestFactory[] dùng bởi RestClient, inject javadoc:org.springframework.boot.restclient.autoconfigure.RestClientSsl[] và dùng với method `apply` của builder.
+Nếu cần custom SSL configuration trên javadoc:org.springframework.http.client.ClientHttpRequestFactory[] dùng bởi javadoc:org.springframework.web.client.RestClient[], inject javadoc:org.springframework.boot.restclient.autoconfigure.RestClientSsl[] và dùng với method `apply` của builder.
 
-RestClientSsl cho phép access xref:features/ssl.adoc#features.ssl.bundles[SSL bundle] đã định nghĩa trong application configuration.
+javadoc:org.springframework.boot.restclient.autoconfigure.RestClientSsl[] cho phép access xref:features/ssl.adoc#features.ssl.bundles[SSL bundle] đã định nghĩa trong application configuration.
 
 Ví dụ:
 
@@ -144,7 +144,7 @@ include-code::settings/MyService[]
 [[io.rest-client.clienthttprequestfactory]]
 == HTTP Client Detection cho RestClient
 
-Spring Boot auto-detect HTTP client dùng với RestClient dựa trên library trên classpath.
+Spring Boot auto-detect HTTP client dùng với javadoc:org.springframework.web.client.RestClient[] dựa trên library trên classpath.
 Thứ tự ưu tiên:
 
 . Apache HttpClient
@@ -159,7 +159,7 @@ Nếu có nhiều client và không có global configuration, client ưu tiên c
 === Global HTTP Client Configuration
 
 Nếu auto-detected HTTP client không phù hợp, dùng configprop:spring.http.clients.imperative.factory[] để chọn factory.
-Ví dụ muốn Jetty dù Apache HttpClient có trên classpath:
+Ví dụ muốn Jetty dù Apache javadoc:org.eclipse.jetty.client.HttpClient[] có trên classpath:
 
 [configprops,yaml]
 ----
@@ -173,8 +173,9 @@ spring:
 TIP: Cũng có thể dùng xref:io/rest-client.adoc#io.rest-client.global-configuration[global configuration property].
 
 Với customization phức tạp hơn, dùng javadoc:org.springframework.boot.http.client.autoconfigure.ClientHttpRequestFactoryBuilderCustomizer[] hoặc khai báo bean javadoc:org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder[] riêng khiến auto-configuration back off.
+Cách này hữu ích khi bạn cần customize một số phần nội bộ của HTTP library bên dưới.
 
-Ví dụ dùng JDK client với ProxySelector cụ thể:
+Ví dụ dùng JDK client với javadoc:java.net.ProxySelector[] cụ thể:
 
 include-code::MyClientHttpConfiguration[]
 
@@ -195,11 +196,11 @@ Client cần API versioning strategy, thường cho testing, phải cấu hình 
 [[io.rest-client.httpservice]]
 == HTTP Service Interface Client
 
-Thay vì dùng trực tiếp RestClient hoặc WebClient để gọi HTTP service, có thể gọi bằng annotated Java interface.
+Thay vì dùng trực tiếp javadoc:org.springframework.web.client.RestClient[] hoặc javadoc:org.springframework.web.reactive.function.client.WebClient[] để gọi HTTP service, có thể gọi bằng annotated Java interface.
 
 HTTP Service interface định nghĩa service contract bằng method annotate javadoc:org.springframework.web.service.annotation.HttpExchange[format=annotation], hoặc các variant cụ thể như javadoc:org.springframework.web.service.annotation.GetExchange[format=annotation], javadoc:org.springframework.web.service.annotation.PostExchange[format=annotation], javadoc:org.springframework.web.service.annotation.DeleteExchange[format=annotation].
 
-Ví dụ HTTP Service cho API "echo":
+Ví dụ HTTP Service cho API "`echo`":
 
 include-code::EchoService[]
 
@@ -364,7 +365,7 @@ Kỹ thuật này đặc biệt hữu ích khi harden application chống Server
 Để giới hạn address, dùng javadoc:org.springframework.boot.http.client.InetAddressFilter[] chỉ cho phép outgoing call tới address match filter.
 Filter là functional interface; có thể tự implement hoặc dùng convenient factory method.
 
-Filter có thể áp dụng vào HttpClientSettings khi build client:
+Filter có thể áp dụng vào javadoc:org.springframework.boot.http.client.HttpClientSettings[] khi build client:
 
 include-code::MyService[]
 

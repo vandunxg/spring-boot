@@ -39,7 +39,7 @@ javadoc:org.springframework.amqp.client.AmqpClient[] của Spring được auto-
 
 include-code::MyBean[]
 
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với AmqpClient.
+Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với javadoc:org.springframework.amqp.client.AmqpClient[].
 Nếu không có converter và Jackson có sẵn, dùng javadoc:org.springframework.amqp.support.converter.JacksonJsonMessageConverter[].
 
 Client-specific setting:
@@ -53,7 +53,7 @@ spring:
       completion-timeout: "500ms"
 ----
 
-Để cấu hình thêm AmqpClient, định nghĩa bean javadoc:org.springframework.boot.amqp.autoconfigure.AmqpClientCustomizer[].
+Để cấu hình thêm javadoc:org.springframework.amqp.client.AmqpClient[], định nghĩa bean javadoc:org.springframework.boot.amqp.autoconfigure.AmqpClientCustomizer[].
 
 [[messaging.amqp.generic.receiving]]
 === Nhận Message
@@ -68,13 +68,13 @@ include-code::MyBean[]
 
 TIP: Xem javadoc:org.springframework.amqp.client.config.EnableAmqp[format=annotation].
 
-Nếu cần thêm MethodAmqpMessageListenerContainerFactory hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.autoconfigure.AmqpMessageListenerContainerFactoryConfigurer[] để initialize factory mới với cùng setting auto-configuration.
+Nếu cần thêm javadoc:org.springframework.amqp.client.config.MethodAmqpMessageListenerContainerFactory[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.autoconfigure.AmqpMessageListenerContainerFactoryConfigurer[] để initialize factory mới với cùng setting auto-configuration.
 
-Ví dụ factory khác dùng MessageConverter cụ thể:
+Ví dụ factory khác dùng javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyAmqpConfiguration[]
 
-Sau đó dùng factory trong method annotate AmqpListener:
+Sau đó dùng factory trong method annotate javadoc:org.springframework.amqp.client.annotation.AmqpListener[format=annotation]:
 
 include-code::custom/MyBean[]
 
@@ -126,7 +126,7 @@ javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[] và javado
 
 include-code::MyBean[]
 
-Nếu có bean MessageConverter, nó tự động liên kết với RabbitAmqpTemplate.
+Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[].
 
 Có thể đặt template property:
 
@@ -141,14 +141,14 @@ spring:
         default-receive-queue: "my-queue"
 ----
 
-Để cấu hình thêm RabbitAmqpTemplate, khai báo bean javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpTemplateCustomizer[].
+Để cấu hình thêm javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[], khai báo bean javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpTemplateCustomizer[].
 
 [[messaging.amqp.rabbitmq.receiving]]
 === Nhận Message
 
 Khi RabbitMQ AMQP 1.0 infrastructure có mặt, bean có thể annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation].
 Nếu chưa định nghĩa javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[], default factory được cấu hình tự động.
-Nếu có bean MessageConverter, nó tự động liên kết với default factory.
+Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với default factory.
 
 Ví dụ listener trên queue `someQueue`:
 
@@ -156,13 +156,13 @@ include-code::MyBean[]
 
 TIP: Xem javadoc:org.springframework.amqp.rabbit.annotation.EnableRabbit[format=annotation].
 
-Nếu cần thêm RabbitAmqpListenerContainerFactory hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpListenerContainerFactoryConfigurer[] để initialize factory với cùng setting auto-configuration.
+Nếu cần thêm javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpListenerContainerFactoryConfigurer[] để initialize factory với cùng setting auto-configuration.
 
 Ví dụ:
 
 include-code::custom/MyRabbitAmqpConfiguration[]
 
-Sau đó dùng factory trong method annotate RabbitListener:
+Sau đó dùng factory trong method annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation]:
 
 include-code::custom/MyBean[]
 
@@ -215,11 +215,11 @@ javadoc:org.springframework.amqp.core.AmqpTemplate[] và javadoc:org.springframe
 include-code::MyBean[]
 
 NOTE: javadoc:org.springframework.amqp.rabbit.core.RabbitMessagingTemplate[] có thể inject tương tự.
-Nếu bean MessageConverter được định nghĩa, nó tự động liên kết với auto-configured AmqpTemplate.
+Nếu bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] được định nghĩa, nó tự động liên kết với auto-configured javadoc:org.springframework.amqp.core.AmqpTemplate[].
 
 Nếu cần, mọi bean javadoc:org.springframework.amqp.core.Queue[] tự động được dùng để declare queue tương ứng trên RabbitMQ.
 
-Để retry operation, bật retry trên AmqpTemplate:
+Để retry operation, bật retry trên javadoc:org.springframework.amqp.core.AmqpTemplate[]:
 
 [configprops,yaml]
 ----
@@ -234,9 +234,9 @@ spring:
 Retry mặc định bị disable.
 Có thể customize javadoc:org.springframework.core.retry.RetryTemplate[] programmatically bằng bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateRetrySettingsCustomizer[].
 
-Nếu cần thêm RabbitTemplate hoặc override default, Spring Boot cung cấp bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateConfigurer[] để initialize RabbitTemplate với cùng setting auto-configuration.
+Nếu cần thêm javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] hoặc override default, Spring Boot cung cấp bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateConfigurer[] để initialize javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] với cùng setting auto-configuration.
 
-Nếu context có bean javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitTemplateObservationConvention[], nó tự động được configure trên RabbitTemplate.
+Nếu context có bean javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitTemplateObservationConvention[], nó tự động được configure trên javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[].
 
 [[messaging.amqp.rabbitmq09.sending-stream]]
 === Gửi Message tới Stream
@@ -253,7 +253,7 @@ spring:
 
 Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], javadoc:org.springframework.rabbit.stream.support.converter.StreamMessageConverter[], javadoc:org.springframework.rabbit.stream.producer.ProducerCustomizer[] hoặc javadoc:org.springframework.rabbit.stream.micrometer.RabbitStreamTemplateObservationConvention[], chúng tự động liên kết với auto-configured javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[].
 
-Nếu cần thêm RabbitStreamTemplate hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamTemplateConfigurer[].
+Nếu cần thêm javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamTemplateConfigurer[].
 
 [[messaging.amqp.rabbitmq09.sending-stream.ssl]]
 ==== SSL
@@ -265,7 +265,7 @@ Nếu cần thêm RabbitStreamTemplate hoặc override default, Spring Boot cung
 
 Khi Rabbit infrastructure có mặt, bean có thể annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation].
 Nếu chưa định nghĩa javadoc:org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory[], default javadoc:org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory[] được cấu hình tự động và có thể chuyển sang direct container bằng configprop:spring.rabbitmq.listener.type[].
-Nếu có bean MessageConverter, javadoc:org.springframework.amqp.rabbit.retry.MessageRecoverer[] hoặc javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitListenerObservationConvention[], chúng tự động liên kết với default factory.
+Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], javadoc:org.springframework.amqp.rabbit.retry.MessageRecoverer[] hoặc javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitListenerObservationConvention[], chúng tự động liên kết với default factory.
 
 Ví dụ listener trên queue `someQueue`:
 
@@ -278,11 +278,11 @@ Nếu cần thêm factory hoặc override default, Spring Boot cung cấp javado
 TIP: Không quan trọng chọn container type nào.
 Cả hai bean đều được auto-configuration expose.
 
-Ví dụ custom factory dùng MessageConverter cụ thể:
+Ví dụ custom factory dùng javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyRabbitConfiguration[]
 
-Sau đó dùng factory trong method annotate RabbitListener:
+Sau đó dùng factory trong method annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation]:
 
 include-code::custom/MyBean[]
 

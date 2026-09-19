@@ -1,0 +1,144 @@
+[[appendix.executable-jar.nested-jars]]
+= Nested JAR
+
+Java không cung cấp cách chuẩn nào để load nested jar file (tức là jar file nằm bên trong một jar khác).
+Điều này gây khó khăn khi bạn cần phân phối một application self-contained có thể chạy từ command line mà không cần giải nén.
+
+Để giải quyết vấn đề này, nhiều developer dùng jar "`shaded`".
+Jar shaded package mọi class từ mọi jar vào một "`uber jar`" duy nhất.
+Vấn đề của jar shaded là khó nhìn ra library nào thực sự có trong application.
+Nó cũng gây rắc rối khi cùng một tên file được dùng (nhưng với nội dung khác nhau) ở nhiều jar.
+Spring Boot dùng cách tiếp cận khác, cho phép bạn nest jar trực tiếp.
+
+[[appendix.executable-jar.nested-jars.jar-structure]]
+== Cấu trúc Executable Jar File
+
+Jar file tương thích Spring Boot Loader nên có cấu trúc như sau:
+
+[source]
+----
+example.jar
+ |
+ +-META-INF
+ |  +-MANIFEST.MF
+ +-org
+ |  +-springframework
+ |     +-boot
+ |        +-loader
+ |           +-<spring boot loader classes>
+ +-BOOT-INF
+    +-classes
+    |  +-mycompany
+    |     +-project
+    |        +-YourClasses.class
+    +-lib
+       +-dependency1.jar
+       +-dependency2.jar
+----
+
+Application class nên được đặt trong thư mục nested `BOOT-INF/classes`.
+Dependency nên được đặt trong thư mục nested `BOOT-INF/lib`.
+
+[[appendix.executable-jar.nested-jars.war-structure]]
+== Cấu trúc Executable War File
+
+War file tương thích Spring Boot Loader nên có cấu trúc như sau:
+
+[source]
+----
+example.war
+ |
+ +-META-INF
+ |  +-MANIFEST.MF
+ +-org
+ |  +-springframework
+ |     +-boot
+ |        +-loader
+ |           +-<spring boot loader classes>
+ +-WEB-INF
+    +-classes
+    |  +-com
+    |     +-mycompany
+    |        +-project
+    |           +-YourClasses.class
+    +-lib
+    |  +-dependency1.jar
+    |  +-dependency2.jar
+    +-lib-provided
+       +-servlet-api.jar
+       +-dependency3.jar
+----
+
+Dependency nên được đặt trong thư mục nested `WEB-INF/lib`.
+Mọi dependency cần thiết khi chạy embedded nhưng không cần khi deploy vào web container truyền thống nên được đặt trong `WEB-INF/lib-provided`.
+
+[[appendix.executable-jar.nested-jars.index-files]]
+== Index File
+
+Jar và war archive tương thích Spring Boot Loader có thể chứa thêm các index file trong thư mục `BOOT-INF/`.
+File `classpath.idx` có thể được cung cấp cho cả jar lẫn war, và nó quy định thứ tự các jar được thêm vào classpath.
+File `layers.idx` chỉ dùng được cho jar, và nó cho phép chia jar thành các layer logic để tạo Docker/OCI image.
+
+Index file theo cú pháp tương thích YAML để các tool bên thứ ba dễ parse.
+Tuy nhiên, các file này _không_ được parse nội bộ dưới dạng YAML và phải được viết đúng chính xác theo format mô tả bên dưới thì mới dùng được.
+
+[[appendix.executable-jar.nested-jars.classpath-index]]
+== Classpath Index
+
+File classpath index có thể được cung cấp tại `BOOT-INF/classpath.idx`.
+Thông thường, nó được sinh tự động bởi Maven và Gradle build plugin của Spring Boot.
+Nó cung cấp danh sách tên jar (gồm cả thư mục) theo thứ tự chúng được thêm vào classpath.
+Khi được sinh bởi build plugin, thứ tự classpath này khớp với thứ tự mà build system dùng để chạy và test application.
+Mỗi dòng phải bắt đầu bằng dấu gạch ngang và dấu cách (`"-&#183;"`) và tên phải nằm trong dấu nháy kép.
+
+Ví dụ, với jar sau:
+
+[source]
+----
+example.jar
+ |
+ +-META-INF
+ |  +-...
+ +-BOOT-INF
+    +-classes
+    |  +...
+    +-lib
+       +-dependency1.jar
+       +-dependency2.jar
+----
+
+Index file sẽ trông như sau:
+
+[source]
+----
+- "BOOT-INF/lib/dependency2.jar"
+- "BOOT-INF/lib/dependency1.jar"
+----
+
+NOTE: Spring Boot chỉ dùng file classpath index khi jar hoặc war file được chạy bằng `java -jar`.
+Nó không được dùng khi chạy application từ IDE hoặc khi dùng `spring-boot:run` của Maven hay `bootRun` của Gradle.
+
+NOTE: Khi bật reproducible build, các entry trong file classpath index được sắp xếp theo thứ tự chữ cái.
+
+[[appendix.executable-jar.nested-jars.layer-index]]
+== Layer Index
+
+File layer index có thể được cung cấp tại `BOOT-INF/layers.idx`.
+Nó cung cấp danh sách các layer và những phần của jar thuộc về từng layer.
+Layer được viết theo thứ tự chúng được thêm vào Docker/OCI image.
+Tên layer được viết dưới dạng chuỗi trong nháy, có tiền tố là dấu gạch ngang và dấu cách (`"-&#183;"`) và hậu tố là dấu hai chấm (`":"`).
+Nội dung layer là tên file hoặc tên thư mục viết dưới dạng chuỗi trong nháy, có tiền tố là dấu cách dấu cách gạch ngang dấu cách (`"&#183;&#183;-&#183;"`).
+Tên thư mục kết thúc bằng `/`, tên file thì không.
+Khi dùng tên thư mục, điều đó nghĩa là mọi file bên trong thư mục đó đều thuộc cùng một layer.
+
+Một ví dụ điển hình của layer index:
+
+[source]
+----
+- "dependencies":
+  - "BOOT-INF/lib/dependency1.jar"
+  - "BOOT-INF/lib/dependency2.jar"
+- "application":
+  - "BOOT-INF/classes/"
+  - "META-INF/"
+----

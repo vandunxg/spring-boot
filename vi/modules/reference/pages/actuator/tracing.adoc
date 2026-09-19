@@ -17,7 +17,7 @@ Spring Boot cung cấp auto-configuration cho:
 == Getting Started
 
 Cần một example application để bắt đầu với tracing.
-Web application "Hello World!" đơn giản trong xref:tutorial:first-application/index.adoc[] là đủ.
+Web application "`Hello World!`" đơn giản trong xref:tutorial:first-application/index.adoc[] là đủ.
 Ở đây dùng Brave tracer với Zipkin làm trace backend.
 
 Main application code:

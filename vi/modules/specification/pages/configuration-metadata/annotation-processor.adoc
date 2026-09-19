@@ -1,0 +1,209 @@
+[[appendix.configuration-metadata.annotation-processor]]
+= Sinh metadata riêng bằng Annotation Processor
+
+Bạn có thể dễ dàng sinh file configuration metadata riêng từ các item được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] nhờ jar `spring-boot-configuration-processor`.
+Jar này chứa một Java annotation processor được gọi khi project của bạn được compile.
+
+[[appendix.configuration-metadata.annotation-processor.configuring]]
+== Cấu hình Annotation Processor
+
+Khi build bằng Maven, cấu hình compiler plugin (3.12.0 trở lên) để thêm `spring-boot-configuration-processor` vào annotation processor path:
+
+[source,xml]
+----
+<project>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-configuration-processor</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+----
+
+Với Gradle, dependency nên được khai báo trong configuration `annotationProcessor`, như ví dụ sau:
+
+[source,gradle]
+----
+dependencies {
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+}
+----
+
+Nếu bạn dùng file `additional-spring-configuration-metadata.json`, task `compileJava` nên được cấu hình để depend vào task `processResources`, như ví dụ sau:
+
+[source,gradle]
+----
+tasks.named('compileJava') {
+	inputs.files(tasks.named('processResources'))
+}
+----
+
+Dependency này đảm bảo metadata bổ sung khả dụng khi annotation processor chạy trong quá trình compile.
+
+[NOTE]
+====
+Nếu bạn dùng AspectJ trong project, bạn cần đảm bảo annotation processor chỉ chạy một lần.
+Có vài cách để làm điều này.
+Với Maven, bạn có thể cấu hình `maven-apt-plugin` một cách tường minh và chỉ thêm dependency tới annotation processor ở đó.
+Bạn cũng có thể để AspectJ plugin chạy toàn bộ quá trình xử lý và tắt annotation processing trong configuration của `maven-compiler-plugin`, như sau:
+
+[source,xml]
+----
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-compiler-plugin</artifactId>
+	<configuration>
+		<proc>none</proc>
+	</configuration>
+</plugin>
+----
+====
+
+[NOTE]
+====
+Nếu bạn dùng Lombok trong project, bạn cần đảm bảo annotation processor của Lombok chạy trước `spring-boot-configuration-processor`.
+Để làm vậy với Maven, liệt kê các annotation processor theo đúng thứ tự bằng attribute `annotationProcessors` của Maven compiler plugin.
+Với Gradle, khai báo các dependency trong configuration `annotationProcessor` theo đúng thứ tự.
+====
+
+[[appendix.configuration-metadata.annotation-processor.automatic-metadata-generation]]
+== Sinh metadata tự động
+
+Processor nhận cả class và method được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation]. Nó cũng nhận các class được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationPropertiesSource[format=annotation]
+
+NOTE: Custom annotation được meta-annotate bằng một trong hai annotation đó không được hỗ trợ.
+
+Nếu class có một constructor có tham số duy nhất, mỗi constructor parameter sẽ tạo ra một property, trừ khi constructor được annotate bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation].
+Nếu class có constructor được annotate tường minh bằng javadoc:org.springframework.boot.context.properties.bind.ConstructorBinding[format=annotation], mỗi constructor parameter của constructor đó sẽ tạo ra một property.
+Ngược lại, property được phát hiện qua sự hiện diện của getter và setter chuẩn, với xử lý đặc biệt cho kiểu collection và map (được phát hiện ngay cả khi chỉ có getter).
+Annotation processor cũng hỗ trợ dùng các lombok annotation javadoc:{url-lombok-javadoc}/lombok.Data[format=annotation], javadoc:{url-lombok-javadoc}/lombok.Value[format=annotation], javadoc:{url-lombok-javadoc}/lombok.Getter[format=annotation] và javadoc:{url-lombok-javadoc}/lombok.Setter[format=annotation].
+
+Xét ví dụ sau:
+
+include-code::MyServerProperties[]
+
+Đoạn này expose ba property, trong đó `my.server.name` không có default còn `my.server.ip` và `my.server.port` lần lượt mặc định là `"127.0.0.1"` và `9797`.
+Javadoc trên field được dùng để điền vào attribute `description`.
+Ví dụ, description của `my.server.ip` là "IP address to listen to.".
+
+Attribute `description` chỉ có thể được điền khi type khả dụng dưới dạng source code đang được compile.
+Nó sẽ không được điền khi type chỉ khả dụng dưới dạng class đã compile từ một dependency.
+Với những trường hợp đó, bạn có thể xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.source[lấy metadata từ nguồn] hoặc xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[cung cấp entry thủ công].
+
+NOTE: Bạn chỉ nên dùng plain text trong Javadoc của field javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], vì chúng không được xử lý trước khi thêm vào JSON.
+
+Nếu bạn dùng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] với record class thì description của record component nên được cung cấp qua Javadoc tag `@param` ở mức class (record class không có instance field tường minh để đặt Javadoc mức field thông thường).
+
+Annotation processor áp dụng một số heuristic để trích xuất default value từ source model.
+Default value chỉ có thể được trích xuất khi type khả dụng dưới dạng source code đang được compile.
+Chúng sẽ không được trích xuất khi type chỉ khả dụng dưới dạng class đã compile từ một dependency.
+Hơn nữa, default value phải được cung cấp tĩnh.
+Cụ thể, không tham chiếu tới constant được định nghĩa trong class khác.
+Ngoài ra, annotation processor không thể tự phát hiện default value cho ``Collections``s.
+
+Với các trường hợp không phát hiện được default value, nên cung cấp xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[metadata thủ công].
+Xét ví dụ sau:
+
+include-code::MyMessagingProperties[]
+
+Để tài liệu hóa default value cho property trong class trên, bạn có thể thêm nội dung sau vào xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[metadata thủ công của module]:
+
+[source,json]
+----
+{"properties": [
+	{
+		"name": "my.messaging.addresses",
+		"defaultValue": ["a", "b"]
+	},
+	{
+		"name": "my.messaging.container-type",
+		"defaultValue": "simple"
+	}
+]}
+----
+
+NOTE: Chỉ cần `name` của property để tài liệu hóa metadata bổ sung cho property đã tồn tại.
+
+[[appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.nested-properties]]
+=== Nested Property
+
+Annotation processor tự động coi inner class là nested property.
+Thay vì tài liệu hóa `ip` và `port` ở gốc namespace, chúng ta có thể tạo một sub-namespace cho chúng.
+Xét ví dụ đã cập nhật:
+
+include-code::MyServerProperties[]
+
+Ví dụ trên sinh thông tin metadata cho các property `my.server.name`, `my.server.host.ip` và `my.server.host.port`.
+Bạn có thể dùng annotation javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation] trên field hoặc getter method để chỉ ra rằng một class thông thường (không phải inner class) nên được xử lý như thể nó là nested.
+
+TIP: Điều này không ảnh hưởng tới collection và map, vì các type đó được nhận diện tự động và mỗi loại chỉ sinh ra một metadata property duy nhất.
+
+[[appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.source]]
+=== Configuration Properties Source
+
+Nếu một type nằm ở module khác được dùng trong một type được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], một số metadata element không thể được phát hiện tự động.
+Dùng lại ví dụ trên, nếu `Host` nằm ở module khác, metadata đầy đủ sẽ không khả dụng vì annotation processor không truy cập được source của `Host`.
+
+Để xử lý use case này, thêm annotation processor vào module chứa type `Host` và annotate nó bằng javadoc:org.springframework.boot.context.properties.ConfigurationPropertiesSource[format=annotation]:
+
+include-code::Host[]
+
+Cách này sinh metadata cho `Host` trong `META-INF/spring/configuration-metadata/com.example.Host.json` và được annotation processor tái sử dụng tự động khi xử lý type đó.
+
+Bạn cũng có thể annotate một parent class nằm ở module khác mà một type được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] kế thừa từ đó.
+
+TIP: Nếu bạn cần tái sử dụng metadata cho một type mà bạn không kiểm soát, hãy tạo file đặt tên theo pattern trên và nó sẽ được dùng miễn là có trên classpath.
+
+[[appendix.configuration-metadata.annotation-processor.adding-additional-metadata]]
+== Thêm metadata bổ sung
+
+Cách Spring Boot xử lý configuration file khá linh hoạt, và thường sẽ có những property không bind vào bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
+Bạn cũng có thể cần tinh chỉnh một số attribute của key đã có hoặc bỏ qua hoàn toàn key đó.
+Để hỗ trợ các trường hợp này và cho phép bạn cung cấp "hint" tùy chỉnh, annotation processor tự động merge các item từ `META-INF/additional-spring-configuration-metadata.json` vào file metadata chính.
+
+Khi sinh source metadata cho một type, bạn cũng có thể tạo metadata tùy chỉnh cho type đó, ví dụ `com.example.SomeType`, trong `META-INF/spring/configuration/metadata/com.example.SomeType.json`.
+
+Nếu bạn tham chiếu tới một property đã được phát hiện tự động, thì description, default value và thông tin deprecation sẽ bị override nếu được chỉ định.
+Nếu khai báo property thủ công không được nhận diện trong module hiện tại, nó sẽ được thêm vào như một property mới.
+
+Format của file metadata bổ sung hoàn toàn giống với `spring-configuration-metadata.json` thông thường.
+Các item nằm trong phần "`ignored.properties`" sẽ bị loại khỏi phần "`properties`" của file `spring-configuration-metadata.json` được sinh ra.
+
+File property bổ sung là tùy chọn.
+Nếu bạn không có property bổ sung nào, đừng thêm file này.
+
+Maven plugin và Gradle plugin của Spring Boot loại `additional-spring-configuration-metadata.json` khỏi artifact được package.
+Nếu bạn không dùng một trong hai plugin để build library, bạn nên cấu hình build để loại file này.
+Với Maven, bạn có thể cấu hình `maven-jar-plugin` như sau:
+
+[source,xml]
+----
+<plugin>
+	<artifactId>maven-jar-plugin</artifactId>
+	<configuration>
+		<excludes>
+			<exclude>META-INF/additional-spring-configuration-metadata.json</exclude>
+		</excludes>
+	</configuration>
+</plugin>
+----
+
+Với Gradle, bạn có thể cấu hình task `jar` như sau:
+
+[source,gradle]
+----
+tasks.named('jar') {
+	exclude('META-INF/additional-spring-configuration-metadata.json')
+}
+----

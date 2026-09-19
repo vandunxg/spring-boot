@@ -1,0 +1,5 @@
+[appendix]
+[[appendix.test-auto-configuration]]
+= Test Auto-configuration Annotation
+
+Appendix này mô tả các auto-configuration annotation `@...Test` mà Spring Boot cung cấp để test các slice của application.

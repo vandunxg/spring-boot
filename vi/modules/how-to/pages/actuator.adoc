@@ -11,7 +11,7 @@ Trong standalone application, Actuator HTTP port mặc định giống main HTTP
 Để application listen trên port khác, set external property configprop:management.server.port[].
 Để listen trên network address hoàn toàn khác, ví dụ internal network cho management và external network cho user application, có thể set `management.server.address` thành valid IP address mà server có thể bind.
 
-Chi tiết xem source code javadoc:org.springframework.boot.actuate.autoconfigure.web.server.ManagementServerProperties[] và xref:reference:actuator/monitoring.adoc#actuator.monitoring.customizing-management-server-port[Customizing the Management Server Port] trong phần "Production-Ready Features".
+Chi tiết xem source code javadoc:org.springframework.boot.actuate.autoconfigure.web.server.ManagementServerProperties[] và xref:reference:actuator/monitoring.adoc#actuator.monitoring.customizing-management-server-port[Customizing the Management Server Port] trong phần "`Production-Ready Features`".
 
 [[howto.actuator.customizing-sanitization]]
 == Customize Sanitization
@@ -19,14 +19,14 @@ Chi tiết xem source code javadoc:org.springframework.boot.actuate.autoconfigur
 Để kiểm soát sanitization, define bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[].
 javadoc:org.springframework.boot.actuate.endpoint.SanitizableData[] được truyền vào function cung cấp access tới key, value và javadoc:org.springframework.core.env.PropertySource[] nơi chúng xuất phát.
 Điều này cho phép, ví dụ, sanitize mọi value đến từ một property source cụ thể.
-Mỗi SanitizingFunction được gọi theo order cho tới khi một function thay đổi value của sanitizable data.
+Mỗi javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] được gọi theo order cho tới khi một function thay đổi value của sanitizable data.
 
 [[howto.actuator.map-health-indicators-to-metrics]]
 == Map Health Indicators sang Micrometer Metrics
 
 Spring Boot health indicator trả javadoc:org.springframework.boot.health.contributor.Status[] để chỉ overall system health.
 Nếu muốn monitor hoặc alert theo health level của application cụ thể, có thể export status này thành metric với Micrometer.
-Mặc định Spring Boot dùng status code "UP", "DOWN", "OUT_OF_SERVICE" và "UNKNOWN".
+Mặc định Spring Boot dùng status code "`UP`", "`DOWN`", "`OUT_OF_SERVICE`" và "`UNKNOWN`".
 Để export, cần convert state này sang một tập number để dùng với Micrometer javadoc:io.micrometer.core.instrument.Gauge[].
 
 Ví dụ sau minh họa một cách viết exporter:

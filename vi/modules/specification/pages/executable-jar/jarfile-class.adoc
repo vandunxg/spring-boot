@@ -1,0 +1,34 @@
+[[appendix.executable-jar.jarfile-class]]
+= Class "`NestedJarFile`" của Spring Boot
+
+Class cốt lõi dùng để hỗ trợ load nested jar là javadoc:org.springframework.boot.loader.jar.NestedJarFile[].
+Nó cho phép bạn load nội dung jar từ dữ liệu của jar con lồng bên trong.
+Khi được load lần đầu, vị trí của mỗi javadoc:java.util.jar.JarEntry[] được map tới một file offset vật lý của jar bên ngoài, như ví dụ sau:
+
+[source]
+----
+myapp.jar
++-------------------+-------------------------+
+| /BOOT-INF/classes | /BOOT-INF/lib/mylib.jar |
+|+-----------------+||+-----------+----------+|
+||     A.class      |||  B.class  |  C.class ||
+|+-----------------+||+-----------+----------+|
++-------------------+-------------------------+
+ ^                    ^           ^
+ 0063                 3452        3980
+----
+
+Ví dụ trên cho thấy `A.class` có thể được tìm thấy trong `/BOOT-INF/classes` của `myapp.jar` tại vị trí `0063`.
+`B.class` từ nested jar thực ra nằm trong `myapp.jar` tại vị trí `3452`, còn `C.class` ở vị trí `3980`.
+
+Với thông tin này, chúng ta có thể load các nested entry cụ thể bằng cách seek tới đúng phần của jar bên ngoài.
+Chúng ta không cần giải nén archive, và không cần đọc toàn bộ dữ liệu entry vào memory.
+
+[[appendix.executable-jar.jarfile-class.compatibility]]
+== Tương thích với "`JarFile`" chuẩn của Java
+
+Spring Boot Loader cố gắng giữ tương thích với code và library hiện có.
+javadoc:org.springframework.boot.loader.jar.NestedJarFile[] kế thừa javadoc:java.util.jar.JarFile[] và có thể thay thế trực tiếp.
+
+Nested JAR URL dạng `jar:nested:/path/myjar.jar/!BOOT-INF/lib/mylib.jar!/B.class` được hỗ trợ và mở một connection tương thích javadoc:java.net.JarURLConnection[].
+Chúng có thể dùng với javadoc:java.net.URLClassLoader[] của Java.

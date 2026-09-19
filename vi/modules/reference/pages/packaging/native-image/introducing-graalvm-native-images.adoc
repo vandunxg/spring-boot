@@ -74,13 +74,13 @@ include-code::MyConfiguration[]
 
 Bean definition được tạo bằng cách parse class javadoc:org.springframework.context.annotation.Configuration[format=annotation] và tìm method javadoc:org.springframework.context.annotation.Bean[format=annotation].
 Trong ví dụ trên, một javadoc:org.springframework.beans.factory.config.BeanDefinition[] được định nghĩa cho singleton bean tên `myBean`.
-Một BeanDefinition khác cũng được tạo cho class `MyConfiguration`.
+Một javadoc:org.springframework.beans.factory.config.BeanDefinition[] khác cũng được tạo cho class `MyConfiguration`.
 
 Khi cần instance `myBean`, Spring biết phải invoke method `myBean()` và dùng result.
-Khi chạy trên JVM, parsing Configuration class diễn ra lúc application start và Bean method được invoke bằng reflection.
+Khi chạy trên JVM, parsing javadoc:org.springframework.context.annotation.Configuration[format=annotation] class diễn ra lúc application start và javadoc:org.springframework.context.annotation.Bean[format=annotation] method được invoke bằng reflection.
 
 Khi tạo native image, Spring hoạt động khác.
-Thay vì parse Configuration class và generate bean definition runtime, Spring làm ở build-time.
+Thay vì parse javadoc:org.springframework.context.annotation.Configuration[format=annotation] class và generate bean definition runtime, Spring làm ở build-time.
 Sau khi bean definition được discover, chúng được process và convert thành source code GraalVM compiler có thể analyze.
 
 Spring AOT process sẽ convert configuration class ở trên thành code như:
@@ -89,7 +89,7 @@ include-code::MyConfiguration__BeanDefinitions[]
 
 NOTE: Exact generated code có thể khác tùy bản chất bean definition.
 
-Generated code tạo equivalent bean definition với Configuration class nhưng theo cách trực tiếp GraalVM hiểu được.
+Generated code tạo equivalent bean definition với javadoc:org.springframework.context.annotation.Configuration[format=annotation] class nhưng theo cách trực tiếp GraalVM hiểu được.
 
 Có bean definition cho `myConfiguration` và một cho `myBean`.
 Khi cần instance `myBean`, javadoc:org.springframework.beans.factory.aot.BeanInstanceSupplier[] được gọi.

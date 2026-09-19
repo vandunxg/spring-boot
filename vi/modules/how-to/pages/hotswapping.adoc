@@ -49,7 +49,7 @@ Xem {code-spring-boot-groovy-templates-src}/autoconfigure/GroovyTemplateAutoConf
 == Fast Application Restarts
 
 Module `spring-boot-devtools` có support cho automatic application restart.
-Dù không nhanh bằng technology như https://www.jrebel.com/products/jrebel[JRebel], nó thường nhanh hơn đáng kể so với "cold start".
+Dù không nhanh bằng technology như https://www.jrebel.com/products/jrebel[JRebel], nó thường nhanh hơn đáng kể so với "`cold start`".
 Nên thử cách này trước khi xem các reload option phức tạp hơn được thảo luận sau.
 
 Chi tiết xem xref:reference:using/devtools.adoc[].

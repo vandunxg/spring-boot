@@ -6,9 +6,9 @@ Nếu muốn xây dựng servlet-based web application, bạn có thể tận d�
 
 
 [[web.servlet.spring-mvc]]
-== "Spring Web MVC Framework"
+== "`Spring Web MVC Framework`"
 
-{url-spring-framework-docs}/web/webmvc.html[Spring Web MVC framework] (thường được gọi là "Spring MVC") là một web framework "model view controller" đầy đủ tính năng.
+{url-spring-framework-docs}/web/webmvc.html[Spring Web MVC framework] (thường được gọi là "`Spring MVC`") là một web framework "`model view controller`" đầy đủ tính năng.
 Spring MVC cho phép bạn tạo các bean javadoc:org.springframework.stereotype.Controller[format=annotation] hoặc javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] đặc biệt để xử lý HTTP request đến.
 Các method trong controller được map tới HTTP bằng annotation javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
 
@@ -16,7 +16,7 @@ Code sau cho thấy một javadoc:org.springframework.web.bind.annotation.RestCo
 
 include-code::MyRestController[]
 
-"WebMvc.fn", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
+"`WebMvc.fn`", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
 
 include-code::MyRoutingConfiguration[]
 
@@ -140,7 +140,7 @@ spring:
 Bạn cũng có thể customize static resource location bằng property configprop:spring.web.resources.static-locations[] (thay default value bằng danh sách directory location).
 Root servlet context path `"/"` cũng tự động được thêm làm location.
 
-Ngoài các static resource location "standard" ở trên, https://www.webjars.org/[Webjars content] được xử lý như trường hợp đặc biệt.
+Ngoài các static resource location "`standard`" ở trên, https://www.webjars.org/[Webjars content] được xử lý như trường hợp đặc biệt.
 Mặc định, mọi resource có path `+/webjars/**+` được phục vụ từ jar file nếu chúng được package theo Webjars format.
 Path có thể customize bằng property configprop:spring.mvc.webjars-path-pattern[].
 
@@ -326,9 +326,9 @@ Nếu gặp vấn đề này, bạn có thể reorder classpath trong IDE để 
 [[web.servlet.spring-mvc.error-handling]]
 === Error Handling
 
-Mặc định, Spring Boot cung cấp mapping `/error` xử lý mọi error theo cách hợp lý và được register như một "global" error page trong servlet container.
+Mặc định, Spring Boot cung cấp mapping `/error` xử lý mọi error theo cách hợp lý và được register như một "`global`" error page trong servlet container.
 Với machine client, nó tạo JSON response chứa chi tiết error, HTTP status và exception message.
-Với browser client, có một "whitelabel" error view render cùng data ở HTML format (để customize, thêm javadoc:org.springframework.web.servlet.View[] resolve tới `error`).
+Với browser client, có một "`whitelabel`" error view render cùng data ở HTML format (để customize, thêm javadoc:org.springframework.web.servlet.View[] resolve tới `error`).
 
 Có một số property `spring.web.error` có thể đặt nếu muốn customize default error handling behavior.
 Xem phần xref:appendix:application-properties/index.adoc#appendix.application-properties.web[Web Properties] trong Appendix.
@@ -717,7 +717,7 @@ include-code::MyTomcatWebServerFactoryCustomizer[]
 Với advanced use case yêu cầu extend javadoc:org.springframework.boot.web.server.servlet.ServletWebServerFactory[], bạn có thể tự expose bean type đó.
 
 Setter được cung cấp cho nhiều configuration option.
-Một số protected method "hook" cũng có sẵn nếu cần behavior đặc biệt hơn.
+Một số protected method "`hook`" cũng có sẵn nếu cần behavior đặc biệt hơn.
 Xem API documentation của javadoc:org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory[] để biết chi tiết.
 
 NOTE: Auto-configured customizer vẫn được áp dụng lên custom factory của bạn, vì vậy hãy dùng option này cẩn thận.

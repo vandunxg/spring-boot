@@ -1,0 +1,8 @@
+[[appendix.dependency-versions.properties]]
+= Version Property
+
+Bảng sau cung cấp toàn bộ property có thể dùng để override các version do Spring Boot quản lý.
+Xem {code-spring-boot}/platform/spring-boot-dependencies/build.gradle[`spring-boot-dependencies` build.gradle] để có danh sách dependency đầy đủ.
+Bạn có thể tìm hiểu cách tùy chỉnh những version này trong application ở tài liệu xref:build-tool-plugin:index.adoc[].
+
+include::partial$dependency-versions/documented-properties.adoc[]

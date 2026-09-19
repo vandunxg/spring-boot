@@ -1,0 +1,17 @@
+[[appendix.executable-jar.restrictions]]
+= Hạn chế của Executable Jar
+
+Bạn cần lưu ý các hạn chế sau khi làm việc với application được package bằng Spring Boot Loader:
+
+[[appendix.executable-jar-zip-entry-compression]]
+* Nén zip entry:
+javadoc:java.util.zip.ZipEntry[] của một nested jar phải được lưu bằng method javadoc:java.util.zip.ZipEntry#STORED[].
+Điều này là bắt buộc để chúng ta có thể seek trực tiếp tới từng nội dung bên trong nested jar.
+Bản thân nội dung của nested jar file vẫn có thể được nén, cũng như mọi entry khác trong jar bên ngoài.
+
+[[appendix.executable-jar-system-classloader]]
+* System classLoader:
+Application được khởi chạy nên dùng `Thread.getContextClassLoader()` khi load class (phần lớn library và framework mặc định làm vậy).
+Cố load class của nested jar bằng `ClassLoader.getSystemClassLoader()` sẽ thất bại.
+`java.util.Logging` luôn dùng system classloader.
+Vì lý do đó, bạn nên cân nhắc một logging implementation khác.

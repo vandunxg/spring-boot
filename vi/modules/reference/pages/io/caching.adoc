@@ -187,10 +187,11 @@ spring:
 NOTE: Mặc định key prefix được thêm để nếu hai cache riêng dùng cùng key, Redis không bị overlapping key và trả invalid value.
 Nên giữ setting này nếu tự tạo javadoc:org.springframework.data.redis.cache.RedisCacheManager[].
 
-TIP: Có thể kiểm soát hoàn toàn default configuration bằng custom bean javadoc:org.springframework.data.redis.cache.RedisCacheConfiguration[].
+TIP: Có thể kiểm soát hoàn toàn default configuration bằng custom javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.redis.cache.RedisCacheConfiguration[].
 Điều này hữu ích khi customize default serialization strategy.
 
-Nếu cần kiểm soát nhiều hơn, register bean javadoc:org.springframework.boot.cache.autoconfigure.RedisCacheManagerBuilderCustomizer[]:
+Nếu cần kiểm soát configuration nhiều hơn, cân nhắc register bean javadoc:org.springframework.boot.cache.autoconfigure.RedisCacheManagerBuilderCustomizer[].
+Ví dụ sau minh họa một customizer cấu hình time to live riêng cho `cache1` và `cache2`:
 
 include-code::MyRedisCacheManagerConfiguration[]
 
@@ -219,7 +220,7 @@ spring:
 ----
 
 Nếu bean javadoc:com.github.benmanes.caffeine.cache.CacheLoader[] được định nghĩa, nó tự động liên kết với javadoc:org.springframework.cache.caffeine.CaffeineCacheManager[].
-Vì CacheLoader áp dụng cho _tất cả_ cache do cache manager quản lý, nó phải được định nghĩa là `CacheLoader<Object, Object>`.
+Vì javadoc:com.github.benmanes.caffeine.cache.CacheLoader[] áp dụng cho _tất cả_ cache do cache manager quản lý, nó phải được định nghĩa là `CacheLoader<Object, Object>`.
 Auto-configuration bỏ qua generic type khác.
 
 

@@ -4,7 +4,7 @@
 Nếu bạn làm việc trong một công ty phát triển shared library, hoặc làm việc với một open-source hay commercial library, bạn có thể muốn phát triển auto-configuration riêng.
 Các class auto-configuration có thể được đóng gói trong external jar và vẫn được Spring Boot phát hiện.
 
-Auto-configuration có thể được gắn với một "starter" cung cấp code auto-configuration cũng như các library điển hình mà bạn sẽ dùng cùng nó.
+Auto-configuration có thể được gắn với một "`starter`" cung cấp code auto-configuration cũng như các library điển hình mà bạn sẽ dùng cùng nó.
 Trước tiên, chúng tôi trình bày những gì bạn cần biết để xây dựng auto-configuration riêng, sau đó chuyển sang xref:features/developing-auto-configuration.adoc#features.developing-auto-configuration.custom-starter[các bước điển hình cần thiết để tạo custom starter].
 
 
@@ -131,7 +131,7 @@ Khác biệt duy nhất giữa việc dùng condition ở class level và đánh
 
 TIP: Khi khai báo method javadoc:org.springframework.context.annotation.Bean[format=annotation], hãy cung cấp càng nhiều type information càng tốt trong return type của method.
 Ví dụ, nếu concrete class của bean implement interface, return type của bean method nên là concrete class chứ không phải interface.
-Việc cung cấp càng nhiều type information càng tốt đặc biệt quan trọng khi dùng bean condition, vì quá trình evaluate chỉ có thể dựa vào type information có sẵn trong method signature.
+Việc cung cấp càng nhiều type information càng tốt đặc biệt quan trọng khi dùng javadoc:org.springframework.context.annotation.Bean[format=annotation] condition, vì quá trình evaluate chỉ có thể dựa vào type information có sẵn trong method signature.
 
 
 
@@ -302,7 +302,7 @@ Dùng starter của bạn trong IDE tương thích cũng là cách tốt để v
 
 
 [[features.developing-auto-configuration.custom-starter.autoconfigure-module]]
-=== Module "autoconfigure"
+=== Module "`autoconfigure`"
 
 Module `autoconfigure` chứa mọi thứ cần thiết để bắt đầu với library.
 Nó cũng có thể chứa definition của configuration key, như javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], và callback interface dùng để customize thêm cách component được initialize.

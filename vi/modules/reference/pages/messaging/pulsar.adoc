@@ -109,7 +109,7 @@ Spring Boot auto-configuration cung cấp component cần cho javadoc:org.spring
 Có thể cấu hình bằng property prefix `spring.pulsar.listener.*` và `spring.pulsar.consumer.*`.
 
 Nếu cần kiểm soát consumer factory nhiều hơn, register bean javadoc:org.springframework.pulsar.core.ConsumerBuilderCustomizer[].
-Customizer áp dụng cho mọi consumer do factory tạo, vì vậy cho mọi PulsarListener.
+Customizer áp dụng cho mọi consumer do factory tạo, vì vậy cho mọi javadoc:org.springframework.pulsar.annotation.PulsarListener[format=annotation].
 Có thể customize riêng listener bằng attribute `consumerCustomizer` của annotation.
 
 Nếu cần kiểm soát actual container factory, register một hoặc nhiều `PulsarContainerFactoryCustomizer<ConcurrentPulsarListenerContainerFactory<?>>`.
@@ -144,19 +144,20 @@ Spring for Apache Pulsar hỗ trợ transaction khi dùng javadoc:org.springfram
 Đặt configprop:spring.pulsar.transaction.enabled[] thành `true` sẽ:
 
 * Configure bean javadoc:org.springframework.pulsar.transaction.PulsarTransactionManager[]
-* Enable transaction support cho PulsarTemplate
-* Enable transaction support cho method PulsarListener
+* Enable transaction support cho javadoc:org.springframework.pulsar.core.PulsarTemplate[]
+* Enable transaction support cho method javadoc:org.springframework.pulsar.annotation.PulsarListener[format=annotation]
 
 Attribute `transactional` của javadoc:org.springframework.pulsar.annotation.PulsarListener[format=annotation] có thể dùng fine-tune khi nào transaction được dùng.
 
 Để kiểm soát transaction feature nhiều hơn, tự định nghĩa bean javadoc:org.springframework.pulsar.core.PulsarTemplate[] và/hoặc javadoc:org.springframework.pulsar.config.ConcurrentPulsarListenerContainerFactory[].
-Cũng có thể định nghĩa bean javadoc:org.springframework.pulsar.transaction.PulsarAwareTransactionManager[] nếu default PulsarTransactionManager không phù hợp.
+Cũng có thể định nghĩa bean javadoc:org.springframework.pulsar.transaction.PulsarAwareTransactionManager[] nếu default javadoc:org.springframework.pulsar.transaction.PulsarTransactionManager[] không phù hợp.
 
 [[messaging.pulsar.additional-properties]]
 == Pulsar Property bổ sung
 
 Property được auto-configuration hỗ trợ nằm trong xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties].
-Phần lớn property map trực tiếp tới Apache Pulsar configuration property.
+Lưu ý rằng phần lớn các property này (dạng hyphen hoặc camelCase) map trực tiếp tới Apache Pulsar configuration property.
+Xem tài liệu Apache Pulsar để biết chi tiết.
 
 Chỉ subset property được expose trực tiếp qua javadoc:org.springframework.boot.pulsar.autoconfigure.PulsarProperties[].
 Nếu muốn tune auto-configured component với property khác, dùng customizer tương ứng của từng component.

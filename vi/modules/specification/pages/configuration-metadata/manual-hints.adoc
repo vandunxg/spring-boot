@@ -1,0 +1,360 @@
+[[appendix.configuration-metadata.manual-hints]]
+= Cung cấp Hint thủ công
+
+Để cải thiện trải nghiệm người dùng và hỗ trợ thêm khi cấu hình một property, bạn có thể cung cấp metadata bổ sung nhằm:
+
+* Mô tả danh sách value khả dĩ cho một property.
+* Gắn một provider, để đính kèm ngữ nghĩa rõ ràng cho property, giúp tool khám phá danh sách value khả dĩ dựa trên ngữ cảnh của project.
+
+[[appendix.configuration-metadata.manual-hints.value-hint]]
+== Value Hint
+
+Attribute `name` của mỗi hint tham chiếu tới `name` của một property.
+Trong xref:configuration-metadata/format.adoc[ví dụ ban đầu đã trình bày trước đó], chúng ta cung cấp năm value cho property `spring.jpa.hibernate.ddl-auto`: `none`, `validate`, `update`, `create` và `create-drop`.
+Mỗi value cũng có thể có mô tả.
+
+Nếu property của bạn có kiểu javadoc:java.util.Map[], bạn có thể cung cấp hint cho cả key lẫn value (nhưng không cho chính map đó).
+Hậu tố đặc biệt `.keys` và `.values` lần lượt tham chiếu tới key và value.
+
+Giả sử `my.contexts` map các value javadoc:java.lang.String[] đặc biệt sang integer, như ví dụ sau:
+
+include-code::MyProperties[]
+
+Các value đặc biệt (trong ví dụ này) là `sample1` và `sample2`.
+Để cung cấp hỗ trợ nội dung bổ sung cho các key, bạn có thể thêm JSON sau vào xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[metadata thủ công của module]:
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "my.contexts.keys",
+		"values": [
+			{
+				"value": "sample1"
+			},
+			{
+				"value": "sample2"
+			}
+		]
+	}
+]}
+----
+
+NOTE: Hint cũng có thể được thêm cho xref:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.source[type bên ngoài] và được áp dụng mỗi khi type đó được dùng.
+
+TIP: Chúng tôi khuyến nghị dùng javadoc:java.lang.Enum[] cho hai value đó thay vì cách trên.
+Nếu IDE của bạn hỗ trợ, đây là cách hiệu quả nhất để auto-completion.
+
+[[appendix.configuration-metadata.manual-hints.value-providers]]
+== Value Provider
+
+Provider là cách mạnh mẽ để gắn ngữ nghĩa cho property.
+Trong phần này, chúng tôi định nghĩa các provider chính thức mà bạn có thể dùng cho hint của riêng mình.
+Tuy nhiên, IDE yêu thích của bạn có thể implement một số trong đó hoặc không implement cái nào.
+Ngoài ra, IDE cuối cùng có thể cung cấp provider riêng.
+
+NOTE: Vì đây là feature mới, nhà cung cấp IDE cần thời gian để bắt kịp cách nó hoạt động.
+Thời gian áp dụng đương nhiên khác nhau.
+
+Bảng sau tóm tắt danh sách provider được hỗ trợ:
+
+[cols="2,4"]
+|===
+| Tên | Mô tả
+
+| `any`
+| Cho phép cung cấp bất kỳ value bổ sung nào.
+
+| `class-reference`
+| Auto-complete các class khả dụng trong project.
+  Thường bị giới hạn bởi một base class được chỉ định qua parameter `target`.
+
+| `handle-as`
+| Xử lý property như thể nó được định nghĩa bằng type chỉ định qua parameter bắt buộc `target`.
+
+| `logger-name`
+| Auto-complete các logger name hợp lệ và xref:reference:features/logging.adoc#features.logging.log-groups[logger group].
+  Thông thường, package name và class name khả dụng trong project hiện tại có thể được auto-complete, cũng như các group đã định nghĩa.
+
+| `spring-bean-reference`
+| Auto-complete các bean name khả dụng trong project hiện tại.
+  Thường bị giới hạn bởi một base class được chỉ định qua parameter `target`.
+
+| `spring-profile-name`
+| Auto-complete các Spring profile name khả dụng trong project.
+|===
+
+TIP: Chỉ một provider được active cho một property, nhưng bạn có thể chỉ định nhiều provider nếu tất cả đều có thể xử lý property đó _theo cách nào đó_.
+Hãy đặt provider mạnh nhất lên đầu, vì IDE phải dùng provider đầu tiên trong phần JSON mà nó xử lý được.
+Nếu không provider nào cho property đó được hỗ trợ, cũng sẽ không có hỗ trợ nội dung đặc biệt nào.
+
+[[appendix.configuration-metadata.manual-hints.value-providers.any]]
+=== Any
+
+Value provider đặc biệt **any** cho phép cung cấp bất kỳ value bổ sung nào.
+Việc validate value thông thường dựa trên kiểu của property vẫn nên được áp dụng nếu điều đó được hỗ trợ.
+
+Provider này thường được dùng khi bạn có một danh sách value nhưng mọi value ngoài danh sách vẫn phải được coi là hợp lệ.
+
+Ví dụ sau cung cấp `on` và `off` làm value auto-completion cho `system.state`:
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "system.state",
+		"values": [
+			{
+				"value": "on"
+			},
+			{
+				"value": "off"
+			}
+		],
+		"providers": [
+			{
+				"name": "any"
+			}
+		]
+	}
+]}
+----
+
+Lưu ý rằng trong ví dụ trên, mọi value khác cũng được cho phép.
+
+[[appendix.configuration-metadata.manual-hints.value-providers.class-reference]]
+=== Class Reference
+
+Provider **class-reference** auto-complete các class khả dụng trong project.
+Provider này hỗ trợ các parameter sau:
+
+[cols="1,1,2,4"]
+|===
+| Parameter | Kiểu | Default value | Mô tả
+
+| `target`
+| javadoc:java.lang.String[] (`Class`)
+| _không có_
+| Fully qualified name của class mà value được chọn phải assignable tới.
+  Thường dùng để lọc bỏ các class không phải ứng viên.
+  Lưu ý thông tin này có thể do chính type cung cấp bằng cách expose một class với upper bound phù hợp.
+
+| `concrete`
+| `boolean`
+| true
+| Chỉ định có chỉ coi concrete class là ứng viên hợp lệ hay không.
+|===
+
+Đoạn metadata sau tương ứng với property chuẩn `server.servlet.jsp.class-name`, định nghĩa rằng class name cần dùng phải là javadoc:jakarta.servlet.http.HttpServlet[]:
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "server.servlet.jsp.class-name",
+		"providers": [
+			{
+				"name": "class-reference",
+				"parameters": {
+					"target": "jakarta.servlet.http.HttpServlet"
+				}
+			}
+		]
+	}
+]}
+----
+
+[[appendix.configuration-metadata.manual-hints.value-providers.handle-as]]
+=== Handle As
+
+Provider **handle-as** cho phép thay thế type của property bằng một type ở mức cao hơn.
+Điều này thường xảy ra khi property có kiểu javadoc:java.lang.String[], vì bạn không muốn configuration class phụ thuộc vào class có thể không có trên classpath.
+Provider này hỗ trợ các parameter sau:
+
+[cols="1,1,2,4"]
+|===
+| Parameter | Kiểu | Default value | Mô tả
+
+| **`target`**
+| javadoc:java.lang.String[] (`Class`)
+| _không có_
+| Fully qualified name của type cần xét cho property.
+  Parameter này bắt buộc.
+|===
+
+Có thể dùng các type sau:
+
+* Bất kỳ javadoc:java.lang.Enum[] nào: Liệt kê các value khả dĩ cho property.
+  (Chúng tôi khuyến nghị định nghĩa property với kiểu javadoc:java.lang.Enum[], vì khi đó IDE không cần thêm hint nào để auto-complete value)
+* javadoc:java.nio.charset.Charset[]: Hỗ trợ auto-completion cho value charset/encoding (chẳng hạn `UTF-8`)
+* javadoc:java.util.Locale[]: auto-completion cho locale (chẳng hạn `en_US`)
+* javadoc:org.springframework.util.MimeType[]: Hỗ trợ auto-completion cho value content type (chẳng hạn `text/plain`)
+* javadoc:org.springframework.core.io.Resource[]: Hỗ trợ auto-completion cho Resource abstraction của Spring để trỏ tới file trên filesystem hoặc trên classpath (chẳng hạn `classpath:/sample.properties`)
+
+TIP: Nếu có thể cung cấp nhiều value, dùng kiểu javadoc:java.util.Collection[] hoặc _Array_ để IDE biết điều đó.
+
+Đoạn metadata sau tương ứng với property chuẩn `spring.liquibase.change-log`, định nghĩa path tới changelog cần dùng.
+Thực tế nó được dùng nội bộ như một javadoc:org.springframework.core.io.Resource[] nhưng không thể expose như vậy, vì chúng ta cần giữ String value gốc để truyền cho Liquibase API.
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "spring.liquibase.change-log",
+		"providers": [
+			{
+				"name": "handle-as",
+				"parameters": {
+					"target": "org.springframework.core.io.Resource"
+				}
+			}
+		]
+	}
+]}
+----
+
+[[appendix.configuration-metadata.manual-hints.value-providers.logger-name]]
+=== Logger Name
+
+Provider **logger-name** auto-complete các logger name hợp lệ và xref:reference:features/logging.adoc#features.logging.log-groups[logger group].
+Thông thường, package name và class name khả dụng trong project hiện tại có thể được auto-complete.
+Nếu group được bật (mặc định) và nếu một custom logger group được nhận diện trong configuration, cần cung cấp auto-completion cho group đó.
+Một số framework cụ thể có thể có thêm logger name đặc biệt cũng được hỗ trợ.
+
+Provider này hỗ trợ các parameter sau:
+
+[cols="1,1,2,4"]
+|===
+| Parameter | Kiểu | Default value | Mô tả
+
+| `group`
+| `boolean`
+| `true`
+| Chỉ định có xét các group đã biết hay không.
+|===
+
+Vì logger name có thể là tên tùy ý, provider này nên cho phép mọi value nhưng có thể làm nổi bật các package name và class name hợp lệ không có trên classpath của project.
+
+Đoạn metadata sau tương ứng với property chuẩn `logging.level`.
+Key là _logger name_, và value tương ứng với các log level chuẩn hoặc bất kỳ custom level nào.
+Vì Spring Boot định nghĩa sẵn một vài logger group, các value hint riêng đã được thêm cho chúng.
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "logging.level.keys",
+		"values": [
+			{
+				"value": "root",
+				"description": "Root logger used to assign the default logging level."
+			},
+			{
+				"value": "sql",
+				"description": "SQL logging group including Hibernate SQL logger."
+			},
+			{
+				"value": "web",
+				"description": "Web logging group including codecs."
+			}
+		],
+		"providers": [
+			{
+				"name": "logger-name"
+			}
+		]
+	},
+	{
+		"name": "logging.level.values",
+		"values": [
+			{
+				"value": "trace"
+			},
+			{
+				"value": "debug"
+			},
+			{
+				"value": "info"
+			},
+			{
+				"value": "warn"
+			},
+			{
+				"value": "error"
+			},
+			{
+				"value": "fatal"
+			},
+			{
+				"value": "off"
+			}
+
+		],
+		"providers": [
+			{
+				"name": "any"
+			}
+		]
+	}
+]}
+----
+
+[[appendix.configuration-metadata.manual-hints.value-providers.spring-bean-reference]]
+=== Spring Bean Reference
+
+Provider **spring-bean-reference** auto-complete các bean được định nghĩa trong configuration của project hiện tại.
+Provider này hỗ trợ các parameter sau:
+
+[cols="1,1,2,4"]
+|===
+| Parameter | Kiểu | Default value | Mô tả
+
+| `target`
+| javadoc:java.lang.String[] (`Class`)
+| _không có_
+| Fully qualified name của bean class mà ứng viên phải assignable tới.
+  Thường dùng để lọc bỏ các bean không phải ứng viên.
+|===
+
+Đoạn metadata sau tương ứng với property chuẩn `spring.jmx.server`, định nghĩa tên của bean javadoc:javax.management.MBeanServer[] cần dùng:
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "spring.jmx.server",
+		"providers": [
+			{
+				"name": "spring-bean-reference",
+				"parameters": {
+					"target": "javax.management.MBeanServer"
+				}
+			}
+		]
+	}
+]}
+----
+
+NOTE: Binder không biết gì về metadata.
+Nếu bạn cung cấp hint đó, bạn vẫn cần chuyển bean name thành Bean reference thực tế thông qua javadoc:org.springframework.context.ApplicationContext[].
+
+[[appendix.configuration-metadata.manual-hints.value-providers.spring-profile-name]]
+=== Spring Profile Name
+
+Provider **spring-profile-name** auto-complete các Spring profile được định nghĩa trong configuration của project hiện tại.
+
+Đoạn metadata sau tương ứng với property chuẩn `spring.profiles.active`, định nghĩa tên của các Spring profile cần enable:
+
+[source,json]
+----
+{"hints": [
+	{
+		"name": "spring.profiles.active",
+		"providers": [
+			{
+				"name": "spring-profile-name"
+			}
+		]
+	}
+]}
+----

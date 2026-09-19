@@ -1,0 +1,144 @@
+[[build-tool-plugins.antlib]]
+= Spring Boot AntLib Module
+
+Spring Boot AntLib module cung cấp hỗ trợ Spring Boot cơ bản cho Apache Ant.
+Bạn có thể dùng module này để tạo executable jar.
+Để dùng module, cần khai báo thêm namespace `spring-boot` trong `build.xml`, như ví dụ sau:
+
+[source,xml]
+----
+<project xmlns:ivy="antlib:org.apache.ivy.ant"
+	xmlns:spring-boot="antlib:org.springframework.boot.ant"
+	name="myapp" default="build">
+	...
+</project>
+----
+
+Bạn cần nhớ khởi động Ant với option `-lib`, như ví dụ sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ ant -lib <directory containing spring-boot-antlib-{version-spring-boot}.jar>
+----
+
+TIP: Phần "`Using Spring Boot`" có ví dụ đầy đủ hơn về xref:reference:using/build-systems.adoc#using.build-systems.ant[dùng Apache Ant với `spring-boot-antlib`].
+
+[[build-tool-plugins.antlib.tasks]]
+== Spring Boot Ant Task
+
+Sau khi namespace `spring-boot-antlib` được khai báo, các task bổ sung sau sẽ khả dụng:
+
+* xref:antlib.adoc#build-tool-plugins.antlib.tasks.exejar[]
+* xref:antlib.adoc#build-tool-plugins.antlib.findmainclass[]
+
+[[build-tool-plugins.antlib.tasks.exejar]]
+=== Dùng task "`exejar`"
+
+Bạn có thể dùng task `exejar` để tạo Spring Boot executable jar.
+Task hỗ trợ các attribute sau:
+
+[cols="1,2,2"]
+|====
+| Attribute | Mô tả | Bắt buộc
+
+| `destfile`
+| File jar đích cần tạo
+| Có
+
+| `classes`
+| Thư mục gốc của các file Java class
+| Có
+
+| `start-class`
+| Main application class cần chạy
+| Không _(mặc định là class đầu tiên tìm được có khai báo method `main`)_
+|====
+
+Có thể dùng các nested element sau với task:
+
+[cols="1,4"]
+|====
+| Element | Mô tả
+
+| `resources`
+| Một hoặc nhiều {url-ant-docs}/Types/resources.html#collection[Resource Collection] mô tả tập {url-ant-docs}/Types/resources.html[Resource] sẽ được thêm vào nội dung file +jar+ được tạo.
+
+| `lib`
+| Một hoặc nhiều {url-ant-docs}/Types/resources.html#collection[Resource Collection] sẽ được thêm vào tập jar library tạo nên runtime dependency classpath của application.
+|====
+
+[[build-tool-plugins.antlib.tasks.examples]]
+=== Ví dụ
+
+Phần này trình bày hai ví dụ về Ant task.
+
+.Chỉ định +start-class+
+[source,xml]
+----
+<spring-boot:exejar destfile="target/my-application.jar"
+		classes="target/classes" start-class="com.example.MyApplication">
+	<resources>
+		<fileset dir="src/main/resources" />
+	</resources>
+	<lib>
+		<fileset dir="lib" />
+	</lib>
+</spring-boot:exejar>
+----
+
+.Tự phát hiện +start-class+
+[source,xml]
+----
+<exejar destfile="target/my-application.jar" classes="target/classes">
+	<lib>
+		<fileset dir="lib" />
+	</lib>
+</exejar>
+----
+
+[[build-tool-plugins.antlib.findmainclass]]
+== Dùng task "`findmainclass`"
+
+Task `findmainclass` được `exejar` dùng nội bộ để tìm class khai báo `main`.
+Nếu cần, bạn cũng có thể dùng trực tiếp task này trong build.
+Các attribute sau được hỗ trợ:
+
+[cols="1,2,2"]
+|====
+| Attribute | Mô tả | Bắt buộc
+
+| `classesroot`
+| Thư mục gốc của các file Java class
+| Có _(trừ khi `mainclass` được chỉ định)_
+
+| `mainclass`
+| Có thể dùng để bỏ qua bước tìm `main` class
+| Không
+
+| `property`
+| Ant property sẽ được set bằng kết quả
+| Không _(nếu không chỉ định, kết quả sẽ được log)_
+|====
+
+[[build-tool-plugins.antlib.findmainclass.examples]]
+=== Ví dụ
+
+Phần này chứa ba ví dụ dùng `findmainclass`.
+
+.Tìm và log
+[source,xml]
+----
+<findmainclass classesroot="target/classes" />
+----
+
+.Tìm và set
+[source,xml]
+----
+<findmainclass classesroot="target/classes" property="main-class" />
+----
+
+.Override và set
+[source,xml]
+----
+<findmainclass mainclass="com.example.MainClass" property="main-class" />
+----

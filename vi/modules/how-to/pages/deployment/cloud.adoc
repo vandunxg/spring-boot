@@ -2,10 +2,10 @@
 = Deploy lên Cloud
 
 Executable jar của Spring Boot đã sẵn sàng cho hầu hết popular cloud PaaS (Platform-as-a-Service) provider.
-Các provider này thường yêu cầu bạn "bring your own container".
+Các provider này thường yêu cầu bạn "`bring your own container`".
 Chúng manage application process, không riêng Java application, nên cần một intermediary layer adapt _application của bạn_ với notion về running process của _cloud_.
 
-Hai cloud provider phổ biến, Heroku và Cloud Foundry, dùng approach "buildpack".
+Hai cloud provider phổ biến, Heroku và Cloud Foundry, dùng approach "`buildpack`".
 Buildpack wrap deployed code với mọi thứ cần để _start_ application.
 Đó có thể là JDK và call tới `java`, embedded web server, hoặc full-fledged application server.
 Buildpack có thể plug-in, nhưng lý tưởng là chỉ cần ít customization nhất có thể.
@@ -14,7 +14,7 @@ Nó cũng giảm divergence giữa development và production environment.
 
 Lý tưởng nhất, application, giống Spring Boot executable jar, đã package mọi thứ cần để chạy bên trong nó.
 
-Trong phần này, chúng ta xem cần làm gì để đưa xref:tutorial:first-application/index.adoc[application đã phát triển] trong phần "Getting Started" lên Cloud và chạy.
+Trong phần này, chúng ta xem cần làm gì để đưa xref:tutorial:first-application/index.adoc[application đã phát triển] trong phần "`Getting Started`" lên Cloud và chạy.
 
 [[howto.deployment.cloud.security]]
 == Security Considerations
@@ -270,7 +270,7 @@ Có thể override detection bằng configprop:spring.main.cloud-platform[].
 === AWS Elastic Beanstalk
 
 Như mô tả trong official https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_Java.html[Elastic Beanstalk Java guide], có hai option chính để deploy Java application.
-Có thể dùng "Tomcat Platform" hoặc "Java SE platform".
+Có thể dùng "`Tomcat Platform`" hoặc "`Java SE platform`".
 
 [[howto.deployment.cloud.aws.beanstalk.tomcat-platform]]
 ==== Dùng Tomcat Platform

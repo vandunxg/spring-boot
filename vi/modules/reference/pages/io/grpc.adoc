@@ -442,7 +442,7 @@ NOTE: Với reactive match dùng javadoc:org.springframework.boot.grpc.server.au
 https://oauth.net/2/[OAuth2] là authorization framework phổ biến.
 OAuth2 Resource Server support của Spring Boot tương thích với gRPC và có thể cấu hình theo cách thông thường.
 
-Xem xref:security/oauth2.adoc#security.oauth2.server[phần "OAuth2" trong "Security"] để biết chi tiết.
+Xem xref:security/oauth2.adoc#security.oauth2.server[phần "`OAuth2`" trong "`Security`"] để biết chi tiết.
 
 [[io.grpc.server.observability]]
 === Observability
@@ -462,7 +462,7 @@ TIP: Nếu dùng Micrometer nhưng không muốn cho gRPC, đặt configprop:spr
 
 Spring Boot cung cấp module `spring-boot-grpc-client` và starter POM `spring-boot-starter-grpc-client` cho client application.
 
-Client có thể gọi remote gRPC service bằng import một hoặc nhiều class "stub" generate từ file `.proto`.
+Client có thể gọi remote gRPC service bằng import một hoặc nhiều class "`stub`" generate từ file `.proto`.
 Dùng annotation javadoc:org.springframework.grpc.client.ImportGrpcClients[format=annotation] để import stub class cần dùng.
 
 Mỗi import có `target`, có thể là logical channel name hoặc base URL remote server.

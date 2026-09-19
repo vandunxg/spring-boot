@@ -66,7 +66,7 @@ Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitiza
   Cần một hoặc nhiều bean javadoc:{url-liquibase-javadoc}/liquibase.Liquibase[].
 
 | `metrics`
-| Hiển thị "metrics" information cho current application để diagnose metric application đã record.
+| Hiển thị "`metrics`" information cho current application để diagnose metric application đã record.
 
 | `mappings`
 | Hiển thị collated list mọi path javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
@@ -228,7 +228,7 @@ Dùng configprop:management.endpoints.web.exposure.include[] để configure end
 NOTE: Trước khi set `management.endpoints.web.exposure.include`, đảm bảo actuator được expose không chứa sensitive information, được protect sau firewall hoặc secure bằng Spring Security.
 
 Nếu Spring Security trên classpath và không có bean javadoc:org.springframework.security.web.SecurityFilterChain[] khác, mọi actuator ngoài `/health` được Spring Boot auto-configuration secure.
-Nếu define custom SecurityFilterChain bean, Spring Boot auto-configuration back off và bạn kiểm soát hoàn toàn actuator access rule.
+Nếu define custom javadoc:org.springframework.security.web.SecurityFilterChain[] bean, Spring Boot auto-configuration back off và bạn kiểm soát hoàn toàn actuator access rule.
 
 Nếu muốn custom security cho HTTP endpoint, ví dụ chỉ role cụ thể được access, Spring Boot cung cấp convenient javadoc:org.springframework.security.web.util.matcher.RequestMatcher[] dùng với Spring Security.
 
@@ -259,7 +259,7 @@ Nếu Spring Security có mặt, cần thêm custom security configuration cho u
 include-code::exposeall/MySecurityConfiguration[]
 
 NOTE: Trong hai ví dụ trên, configuration chỉ áp dụng actuator endpoint.
-Vì Spring Boot security configuration back off hoàn toàn khi có bất kỳ SecurityFilterChain bean nào, cần configure thêm SecurityFilterChain bean với rule cho phần còn lại của application.
+Vì Spring Boot security configuration back off hoàn toàn khi có bất kỳ javadoc:org.springframework.security.web.SecurityFilterChain[] bean nào, cần configure thêm javadoc:org.springframework.security.web.SecurityFilterChain[] bean với rule cho phần còn lại của application.
 
 [[actuator.endpoints.security.csrf]]
 === Cross Site Request Forgery Protection
@@ -328,7 +328,7 @@ NOTE: Ví dụ này giả định không có bean xref:how-to:actuator.adoc#howt
 [[actuator.endpoints.hypermedia]]
 == Hypermedia cho Actuator Web Endpoints
 
-Một "discovery page" được thêm với link tới tất cả endpoint.
+Một "`discovery page`" được thêm với link tới tất cả endpoint.
 Mặc định discovery page available tại `/actuator`.
 
 Để disable discovery page:
@@ -390,7 +390,7 @@ include-code::MyEndpoint[tag=read]
 
 Cũng có thể viết technology-specific endpoint bằng javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation].
 Endpoint này giới hạn ở technology tương ứng.
-Ví dụ WebEndpoint chỉ expose qua HTTP, không qua JMX.
+Ví dụ javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation] chỉ expose qua HTTP, không qua JMX.
 
 Có thể viết technology-specific extension bằng javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.EndpointJmxExtension[format=annotation].
 Annotation này cho phép cung cấp technology-specific operation để augment existing endpoint.
@@ -487,7 +487,7 @@ Với mọi operation khác, clause `consumes` rỗng.
 [[actuator.endpoints.implementing-custom.web.produces-predicates]]
 ==== Produces
 
-Clause `produces` có thể được xác định bởi attribute `produces` của annotation DeleteOperation, ReadOperation và WriteOperation.
+Clause `produces` có thể được xác định bởi attribute `produces` của annotation javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation].
 Attribute optional.
 Nếu không dùng, `produces` được xác định tự động.
 
@@ -500,10 +500,10 @@ Với operation khác, clause là `application/vnd.spring-boot.actuator.v2+json,
 
 Default response status phụ thuộc operation type và value operation trả về.
 
-Nếu ReadOperation trả value, response status 200 (OK).
+Nếu javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation] trả value, response status 200 (OK).
 Nếu không trả value, status 404 (Not Found).
 
-Nếu WriteOperation hoặc DeleteOperation trả value, response status 200 (OK).
+Nếu javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation] trả value, response status 200 (OK).
 Nếu không trả value, status 204 (No Content).
 
 Nếu operation invoke thiếu required parameter hoặc parameter không convert được sang required type, operation method không được gọi và response status 400 (Bad Request).
@@ -553,16 +553,16 @@ Configure role bằng configprop:management.endpoint.health.roles[].
 NOTE: Nếu application đã secure và muốn dùng `always`, security configuration phải permit access health endpoint cho cả authenticated và unauthenticated user.
 
 Health information được collect từ javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[]; mặc định là mọi instance javadoc:org.springframework.boot.health.contributor.HealthContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
-Spring Boot có nhiều auto-configured HealthContributor bean, và bạn cũng có thể viết riêng.
+Spring Boot có nhiều auto-configured javadoc:org.springframework.boot.health.contributor.HealthContributor[] bean, và bạn cũng có thể viết riêng.
 
-HealthContributor có thể là javadoc:org.springframework.boot.health.contributor.HealthIndicator[] hoặc javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
-HealthIndicator cung cấp actual health information gồm javadoc:org.springframework.boot.health.contributor.Status[].
-CompositeHealthContributor cung cấp composite của HealthContributor khác.
+javadoc:org.springframework.boot.health.contributor.HealthContributor[] có thể là javadoc:org.springframework.boot.health.contributor.HealthIndicator[] hoặc javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+javadoc:org.springframework.boot.health.contributor.HealthIndicator[] cung cấp actual health information gồm javadoc:org.springframework.boot.health.contributor.Status[].
+javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[] cung cấp composite của javadoc:org.springframework.boot.health.contributor.HealthContributor[] khác.
 Together, contributor tạo tree structure biểu diễn overall system health.
 
-Mặc định final system health derive bởi javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], sort status từ mỗi HealthIndicator dựa trên ordered list status.
+Mặc định final system health derive bởi javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], sort status từ mỗi javadoc:org.springframework.boot.health.contributor.HealthIndicator[] dựa trên ordered list status.
 Status đầu tiên trong sorted list được dùng làm overall health status.
-Nếu không HealthIndicator nào trả status được StatusAggregator biết, dùng `UNKNOWN`.
+Nếu không javadoc:org.springframework.boot.health.contributor.HealthIndicator[] nào trả status được javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] biết, dùng `UNKNOWN`.
 
 TIP: Có thể dùng javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[] để register/unregister health indicator runtime.
 
@@ -642,9 +642,9 @@ TIP: Có thể disable toàn bộ bằng configprop:management.health.defaults.e
 
 TIP: `ssl` javadoc:org.springframework.boot.health.contributor.HealthIndicator[] có property "warning threshold" tên configprop:management.health.ssl.certificate-validity-warning-threshold[].
 Có thể dùng threshold để đủ lead time rotate certificate sắp expire.
-Nếu SSL certificate sắp invalid trong period định nghĩa bởi threshold, HealthIndicator report trong detail response nơi `details.validChains.certificates.[*].validity.status` có value `WILL_EXPIRE_SOON`.
+Nếu SSL certificate sắp invalid trong period định nghĩa bởi threshold, javadoc:org.springframework.boot.health.contributor.HealthIndicator[] report trong detail response nơi `details.validChains.certificates.[*].validity.status` có value `WILL_EXPIRE_SOON`.
 
-Các HealthIndicator bean bổ sung mặc định enable:
+Các javadoc:org.springframework.boot.health.contributor.HealthIndicator[] bean bổ sung mặc định enable:
 
 [cols="3,4,6"]
 |===
@@ -666,22 +666,22 @@ Có thể disable bằng configprop:management.endpoint.health.probes.enabled[].
 
 Để cung cấp custom health information, register Spring bean implement interface javadoc:org.springframework.boot.health.contributor.HealthIndicator[].
 Cần implement method `health()` và trả javadoc:org.springframework.boot.health.contributor.Health[].
-Health response nên include status và optional additional detail.
+javadoc:org.springframework.boot.health.contributor.Health[] response nên include status và optional additional detail.
 Ví dụ:
 
 include-code::MyHealthIndicator[]
 
-NOTE: Identifier của HealthIndicator là bean name bỏ suffix `HealthIndicator` nếu có.
+NOTE: Identifier của javadoc:org.springframework.boot.health.contributor.HealthIndicator[] là bean name bỏ suffix javadoc:org.springframework.boot.health.contributor.HealthIndicator[] nếu có.
 Trong ví dụ trên, health information available trong entry tên `my`.
 
 TIP: Health indicator thường được gọi qua HTTP và cần response trước connection timeout.
 Spring Boot log warning nếu health indicator mất hơn 10 giây.
 Configure threshold bằng configprop:management.endpoint.health.logging.slow-indicator-threshold[].
 
-Ngoài predefined javadoc:org.springframework.boot.health.contributor.Status[] type, Health có thể trả custom Status đại diện system state mới.
+Ngoài predefined javadoc:org.springframework.boot.health.contributor.Status[] type, javadoc:org.springframework.boot.health.contributor.Health[] có thể trả custom javadoc:org.springframework.boot.health.contributor.Status[] đại diện system state mới.
 Khi đó cũng cần custom implementation javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], hoặc configure default bằng configprop:management.endpoint.health.status.order[].
 
-Ví dụ có Status code `FATAL`.
+Ví dụ có javadoc:org.springframework.boot.health.contributor.Status[] code `FATAL`.
 Configure severity order:
 
 [configprops,yaml]
@@ -738,13 +738,14 @@ Default status mapping:
 === Reactive Health Indicators
 
 Với reactive application như Spring WebFlux, javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] cung cấp non-blocking contract để lấy application health.
-Tương tự regular HealthContributor, health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[]; mặc định gồm mọi javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] trong ApplicationContext.
-Regular HealthContributor không check qua reactive API được execute trên elastic scheduler.
+Tương tự regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[]; mặc định gồm mọi javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
+Regular javadoc:org.springframework.boot.health.contributor.HealthContributor[] không check qua reactive API được execute trên elastic scheduler.
 
 TIP: Trong reactive application, nên dùng javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[] để register/unregister health indicator runtime.
-Nếu cần register regular HealthContributor, wrap bằng `ReactiveHealthContributor#adapt`.
+Nếu cần register regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], wrap bằng `ReactiveHealthContributor#adapt`.
 
-Để cung cấp custom health information từ reactive API, register Spring bean implement javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[]:
+Để cung cấp custom health information từ reactive API, bạn có thể register Spring bean implement javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[].
+Đoạn code sau minh họa một implementation javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] mẫu:
 
 include-code::MyReactiveHealthIndicator[]
 
@@ -753,7 +754,7 @@ TIP: Để tự động handle error, cân nhắc extend javadoc:org.springframe
 [[actuator.endpoints.health.auto-configured-reactive-health-indicators]]
 === Auto-configured ReactiveHealthIndicators
 
-Khi phù hợp, Spring Boot auto-configure các ReactiveHealthIndicator sau:
+Khi phù hợp, Spring Boot auto-configure các javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] sau:
 
 [cols="2,4,6"]
 |===
@@ -785,7 +786,7 @@ Khi phù hợp, Spring Boot auto-configure các ReactiveHealthIndicator sau:
 |===
 
 TIP: Khi cần, reactive indicator replace regular indicator.
-Mọi HealthIndicator không explicit handle cũng tự động được wrap.
+Mọi javadoc:org.springframework.boot.health.contributor.HealthIndicator[] không explicit handle cũng tự động được wrap.
 
 [[actuator.endpoints.health.groups]]
 === Health Groups
@@ -842,10 +843,11 @@ management:
               out-of-service: 500
 ----
 
-TIP: Dùng `@Qualifier("groupname")` nếu cần register custom StatusAggregator hoặc HttpCodeStatusMapper bean cho group.
+TIP: Dùng `@Qualifier("groupname")` nếu cần register custom javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] hoặc javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] bean cho group.
 
 Health group cũng có thể include/exclude javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
-Có thể include/exclude chỉ component cụ thể của CompositeHealthContributor bằng fully qualified name:
+Bạn cũng có thể include/exclude chỉ một component nhất định của javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+Việc này thực hiện bằng fully qualified name của component như sau:
 
 [source,properties]
 ----
@@ -853,8 +855,8 @@ management.endpoint.health.group.custom.include="test/primary"
 management.endpoint.health.group.custom.exclude="test/primary/b"
 ----
 
-Trong ví dụ, group `custom` include HealthContributor tên `primary`, component của composite `test`.
-`primary` cũng là composite và HealthContributor tên `b` bị exclude.
+Trong ví dụ, group `custom` include javadoc:org.springframework.boot.health.contributor.HealthContributor[] tên `primary`, component của composite `test`.
+`primary` cũng là composite và javadoc:org.springframework.boot.health.contributor.HealthContributor[] tên `b` bị exclude.
 
 Health group có thể available tại additional path trên main hoặc management port.
 Điều này hữu ích trong cloud environment như Kubernetes, nơi thường dùng separate management port cho actuator endpoint vì security.
@@ -885,7 +887,7 @@ Application deploy trên Kubernetes có thể cung cấp internal state qua http
 Tùy https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes configuration], kubelet gọi probe và react theo result.
 
 Mặc định Spring Boot manage xref:features/spring-application.adoc#features.spring-application.application-availability[Application Availability] state.
-Nếu deploy trong Kubernetes environment, actuator collect "Liveness" và "Readiness" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và dùng trong dedicated xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator]: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
+Nếu deploy trong Kubernetes environment, actuator collect "`Liveness`" và "`Readiness`" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và dùng trong dedicated xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator]: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
 Các indicator hiển thị trên global health endpoint (`"/actuator/health"`).
 Chúng cũng expose thành separate HTTP Probe qua xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health group]: `"/actuator/health/liveness"` và `"/actuator/health/readiness"`.
 
@@ -923,7 +925,8 @@ Xem phần xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes.lif
 
 Nếu Actuator endpoint deploy trên separate management context, endpoint không dùng cùng web infrastructure (port, connection pool, framework component) với main application.
 Trong trường hợp này probe check có thể success dù main application không hoạt động đúng, ví dụ không accept new connection.
-Vì vậy nên expose health group `liveness` và `readiness` trên main server port:
+Vì vậy nên expose health group `liveness` và `readiness` trên main server port.
+Việc này thực hiện bằng cách set property sau:
 
 [source,properties]
 ----
@@ -936,7 +939,7 @@ Path có thể customize bằng property `additional-path` trên từng group; x
 [[actuator.endpoints.kubernetes-probes.external-state]]
 === Kiểm tra External State bằng Kubernetes Probes
 
-Actuator configure probe `"liveness"` và `"readiness"` như Health Groups.
+Actuator configure probe `"`liveness`"` và `"`readiness`"` như Health Groups.
 Do đó mọi xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health groups feature] đều available.
 Ví dụ configure additional Health Indicator:
 
@@ -952,11 +955,11 @@ management:
 
 Mặc định Spring Boot không thêm health indicator khác vào các group này.
 
-Probe `"liveness"` không nên depend vào health check của external system.
+Probe `"`liveness`"` không nên depend vào health check của external system.
 Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.liveness[liveness state của application] broken, Kubernetes cố solve bằng restart application instance.
 Nếu external system như database, Web API hoặc external cache fail, Kubernetes có thể restart mọi application instance và tạo cascading failure.
 
-Với probe `"readiness"`, việc check external system cần được developer cân nhắc kỹ.
+Với probe `"`readiness`"`, việc check external system cần được developer cân nhắc kỹ.
 Vì vậy Spring Boot không include additional health check nào trong readiness probe.
 Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.readiness[readiness state của application instance] là unready, Kubernetes không route traffic tới instance đó.
 Một số external system không shared giữa application instance, khi đó có thể include trong readiness probe.
@@ -966,7 +969,7 @@ External system shared giữa mọi application instance là case phổ biến v
 NOTE: Nếu mọi instance của application đều unready, Kubernetes Service với `type=ClusterIP` hoặc `NodePort` không accept incoming connection.
 Không có HTTP error response như 503 vì không có connection.
 Service `type=LoadBalancer` có thể accept hoặc không tùy provider.
-Service có explicit https://kubernetes.io/docs/concepts/services-networking/ingress/[ingress] cũng response tùy implementation; ingress service phải quyết định cách handle `"connection refused"` từ downstream.
+Service có explicit https://kubernetes.io/docs/concepts/services-networking/ingress/[ingress] cũng response tùy implementation; ingress service phải quyết định cách handle `"`connection refused`"` từ downstream.
 HTTP 503 khá có khả năng xảy ra với load balancer và ingress.
 
 Ngoài ra nếu application dùng Kubernetes https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/[autoscaling], behavior khi application bị remove khỏi load balancer phụ thuộc autoscaler configuration.
@@ -978,9 +981,9 @@ Aspect quan trọng của Kubernetes Probes support là consistency với applic
 Có khác biệt đáng kể giữa javadoc:org.springframework.boot.availability.AvailabilityState[] (in-memory internal state) và actual probe expose state đó.
 Tùy phase lifecycle, probe có thể chưa available.
 
-Spring Boot publish xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[application event trong startup và shutdown], và probe có thể listen event để expose AvailabilityState information.
+Spring Boot publish xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[application event trong startup và shutdown], và probe có thể listen event để expose javadoc:org.springframework.boot.availability.AvailabilityState[] information.
 
-Các table sau cho biết AvailabilityState và HTTP connector state ở từng stage.
+Các table sau cho biết javadoc:org.springframework.boot.availability.AvailabilityState[] và HTTP connector state ở từng stage.
 
 Khi Spring Boot application start:
 
@@ -1040,12 +1043,12 @@ TIP: Xem xref:how-to:deployment/cloud.adoc#howto.deployment.cloud.kubernetes.con
 == Application Information
 
 Application information expose information collect từ mọi bean javadoc:org.springframework.boot.actuate.info.InfoContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
-Spring Boot có nhiều auto-configured InfoContributor bean và bạn có thể viết riêng.
+Spring Boot có nhiều auto-configured javadoc:org.springframework.boot.actuate.info.InfoContributor[] bean và bạn có thể viết riêng.
 
 [[actuator.endpoints.info.auto-configured-info-contributors]]
 === Auto-configured InfoContributors
 
-Khi phù hợp, Spring auto-configure các InfoContributor sau:
+Khi phù hợp, Spring auto-configure các javadoc:org.springframework.boot.actuate.info.InfoContributor[] sau:
 
 [cols="1,4,8,4"]
 |===
@@ -1103,7 +1106,7 @@ Hoặc disable mọi contributor thường default enable bằng configprop:mana
 === Custom Application Information
 
 Khi contributor `env` enable, có thể customize data expose bởi endpoint `info` bằng Spring property `+info.*+`.
-Mọi property Environment dưới key `info` tự động expose.
+Mọi property javadoc:org.springframework.core.env.Environment[] dưới key `info` tự động expose.
 Ví dụ:
 
 [configprops,yaml]
@@ -1139,7 +1142,7 @@ info:
 Feature hữu ích khác của endpoint `info` là publish information về state của `git` source code repository khi project được build.
 Nếu bean javadoc:org.springframework.boot.info.GitProperties[] available, endpoint `info` có thể expose property này.
 
-TIP: Bean GitProperties được auto-configure nếu file `git.properties` available ở root classpath.
+TIP: Bean javadoc:org.springframework.boot.info.GitProperties[] được auto-configure nếu file `git.properties` available ở root classpath.
 Xem xref:how-to:build.adoc#howto.build.generate-git-info[].
 
 Mặc định endpoint expose property `git.branch`, `git.commit.id`, và `git.commit.time` nếu có.

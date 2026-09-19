@@ -6,7 +6,7 @@ Spring Boot đơn giản hóa việc phát triển reactive web application bằ
 
 
 [[web.reactive.webflux]]
-== "Spring WebFlux Framework"
+== "`Spring WebFlux Framework`"
 
 Spring WebFlux là reactive web framework mới được giới thiệu trong Spring Framework 5.0.
 Khác Spring MVC, nó không yêu cầu servlet API, hoàn toàn asynchronous và non-blocking, đồng thời implement specification https://www.reactive-streams.org/[Reactive Streams] thông qua https://projectreactor.io/[Reactor project].
@@ -18,13 +18,13 @@ include-code::MyRestController[]
 
 WebFlux là một phần của Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webflux.html[reference documentation].
 
-"WebFlux.fn", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
+"`WebFlux.fn`", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
 
 include-code::MyRoutingConfiguration[]
 
 include-code::MyUserHandler[]
 
-"WebFlux.fn" là một phần của Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webflux-functional.html[reference documentation].
+"`WebFlux.fn`" là một phần của Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webflux-functional.html[reference documentation].
 
 TIP: Bạn có thể định nghĩa bao nhiêu bean javadoc:org.springframework.web.reactive.function.server.RouterFunction[] tùy ý để modularize định nghĩa router.
 Các bean có thể được sắp thứ tự nếu cần áp dụng precedence.
@@ -120,7 +120,7 @@ Việc này thay default value bằng danh sách directory location.
 Nếu làm vậy, default welcome page detection sẽ chuyển sang custom location của bạn.
 Do đó, nếu có `index.html` trong bất kỳ location nào khi startup, nó sẽ là home page của application.
 
-Ngoài các static resource location "standard" ở trên, https://www.webjars.org/[Webjars content] được xử lý như trường hợp đặc biệt.
+Ngoài các static resource location "`standard`" ở trên, https://www.webjars.org/[Webjars content] được xử lý như trường hợp đặc biệt.
 Mặc định, mọi resource có path `+/webjars/**+` được phục vụ từ jar file nếu chúng được package theo Webjars format.
 Path có thể customize bằng property configprop:spring.webflux.webjars-path-pattern[].
 
@@ -178,7 +178,7 @@ Khi dùng một trong các templating engine này với default configuration, t
 Spring Boot cung cấp javadoc:org.springframework.web.server.WebExceptionHandler[] xử lý mọi error theo cách hợp lý.
 Vị trí của nó trong processing order nằm ngay trước các handler do WebFlux cung cấp, vốn được xem là cuối cùng.
 Với machine client, nó tạo JSON response chứa chi tiết error, HTTP status và exception message.
-Với browser client, có "whitelabel" error handler render cùng data ở HTML format.
+Với browser client, có "`whitelabel`" error handler render cùng data ở HTML format.
 Bạn cũng có thể cung cấp HTML template riêng để hiển thị error (xem xref:web/reactive.adoc#web.reactive.webflux.error-handling.error-pages[phần tiếp theo]).
 
 Trước khi customize trực tiếp error handling trong Spring Boot, bạn có thể tận dụng hỗ trợ {url-spring-framework-docs}/web/webflux/ann-rest-exceptions.html[RFC 9457 Problem Details] của Spring WebFlux.
@@ -360,7 +360,7 @@ include-code::MyNettyWebServerFactoryCustomizer[]
 Với advanced use case yêu cầu extend javadoc:org.springframework.boot.web.server.reactive.ReactiveWebServerFactory[], bạn có thể tự expose bean type đó.
 
 Setter được cung cấp cho nhiều configuration option.
-Một số protected method "hook" cũng có sẵn nếu cần behavior đặc biệt hơn.
+Một số protected method "`hook`" cũng có sẵn nếu cần behavior đặc biệt hơn.
 Xem API documentation của javadoc:org.springframework.boot.web.server.reactive.ConfigurableReactiveWebServerFactory[] để biết chi tiết.
 
 NOTE: Auto-configured customizer vẫn được áp dụng lên custom factory của bạn, vì vậy hãy dùng option này cẩn thận.
