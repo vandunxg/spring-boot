@@ -1,0 +1,551 @@
+[[getting-started.first-application]]
+= Phát triển ứng dụng Spring Boot đầu tiên
+
+Phần này mô tả cách phát triển một ứng dụng web "`Hello World!`" nhỏ, minh họa một số tính năng chính của Spring Boot.
+Bạn có thể chọn Maven hoặc Gradle làm build system.
+
+[TIP]
+====
+Website https://spring.io[spring.io] có nhiều https://spring.io/guides[bài hướng dẫn] "`Bắt đầu`" sử dụng Spring Boot.
+Nếu cần giải quyết một vấn đề cụ thể, hãy tìm ở đó trước.
+
+Bạn có thể rút ngắn các bước dưới đây bằng cách truy cập https://start.spring.io và chọn starter "Web" trong công cụ tìm dependency.
+Thao tác này tạo cấu trúc project mới để bạn có thể xref:tutorial:first-application/index.adoc#getting-started.first-application.code[bắt đầu viết code ngay].
+Xem https://github.com/spring-io/start.spring.io/blob/main/USING.adoc[hướng dẫn sử dụng start.spring.io] để biết thêm chi tiết.
+====
+
+NOTE: Bài hướng dẫn này cung cấp các bước để bạn xây dựng ứng dụng Spring Boot đầu tiên.
+Bạn không cần biết Java, nhưng nếu thích học kiến thức nền tảng trước, bạn có thể xem https://dev.java/learn/ trước khi bắt đầu.
+
+
+
+[[getting-started.first-application.prerequisites]]
+== Điều kiện tiên quyết
+
+Trước khi bắt đầu, hãy mở terminal và chạy các lệnh sau để bảo đảm đã cài một phiên bản Java phù hợp:
+
+[source,shell]
+----
+$ java -version
+openjdk version "17.0.18" 2026-01-20 LTS
+OpenJDK Runtime Environment (build 17.0.18+10-LTS)
+OpenJDK 64-Bit Server VM (build 17.0.18+10-LTS, mixed mode, sharing)
+----
+
+NOTE: Ví dụ này cần được tạo trong thư mục riêng.
+Các hướng dẫn tiếp theo giả định bạn đã tạo một thư mục phù hợp và đang làm việc trong thư mục đó.
+
+
+
+[[getting-started.first-application.prerequisites.maven]]
+=== Maven
+
+Để sử dụng Maven, hãy bảo đảm bạn đã cài Maven:
+
+[source,shell]
+----
+$ mvn -v
+Apache Maven 3.9.12 (848fbb4bf2d427b72bdb2471c22fced7ebd9a7a1)
+Maven home: /Users/developer/.sdkman/candidates/maven/current
+Java version: 17.0.18, vendor: BellSoft, runtime: /Users/developer/.sdkman/candidates/java/17.0.18-librca
+----
+
+
+
+[[getting-started.first-application.prerequisites.gradle]]
+=== Gradle
+
+Để sử dụng Gradle, hãy bảo đảm bạn đã cài Gradle:
+
+[source,shell]
+----
+$ gradle --version
+
+------------------------------------------------------------
+Gradle 8.14.4
+------------------------------------------------------------
+
+Build time:    2026-01-23 16:30:23 UTC
+Revision:      ad5ff774b4b0e9a8a0cf1a14ca70d7230003c3ad
+
+Kotlin:        2.0.21
+Groovy:        3.0.25
+Ant:           Apache Ant(TM) version 1.10.15 compiled on August 25 2024
+Launcher JVM:  17.0.18 (BellSoft 17.0.18+10-LTS)
+Daemon JVM:    /Users/developer/.sdkman/candidates/java/17.0.18-librca (no JDK specified, using current Java home)
+OS:            Mac OS X 26.3 aarch64
+----
+
+
+
+[[getting-started.first-application.pom]]
+== Thiết lập project với Maven
+
+Chúng ta cần bắt đầu bằng việc tạo file Maven `pom.xml`.
+`pom.xml` mô tả cách build project.
+Mở trình soạn thảo văn bản bạn thích và thêm nội dung sau:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+    <parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>{version-spring-boot}</version>
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>myproject</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<!-- Các dòng bổ sung sẽ được thêm tại đây... -->
+
+ifeval::["{build-and-artifact-release-type}" == "opensource-snapshot"]
+    <!-- không cần phần này nếu bạn sử dụng phiên bản release -->
+    <repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+endif::[]
+</project>
+----
+
+ifeval::["{build-type}" == "opensource"]
+Cấu hình trên sẽ cho phép bạn build project.
+endif::[]
+
+ifeval::["{build-type}" == "commercial"]
+Bạn cũng cần cấu hình build để truy cập Spring Commercial repository.
+Việc này thường được thực hiện thông qua một artifact repository cục bộ mirror nội dung của Spring Commercial repository.
+Ngoài ra, dù không được khuyến nghị, bạn cũng có thể truy cập trực tiếp Spring Commercial repository.
+Trong cả hai trường hợp, xem https://docs.vmware.com/en/Tanzu-Spring-Runtime/Commercial/Tanzu-Spring-Runtime/spring-enterprise-subscription.html[tài liệu Tanzu Spring Runtime] để biết chi tiết.
+
+Sau khi thêm cấu hình repository cần thiết, cấu hình trên sẽ cho phép bạn build project.
+endif::[]
+
+Bạn có thể kiểm tra bằng cách chạy `mvn package` (hiện tại, bạn có thể bỏ qua cảnh báo "`jar will be empty - no content was marked for inclusion!`").
+
+NOTE: Lúc này, bạn có thể import project vào IDE (hầu hết Java IDE hiện đại đều hỗ trợ Maven sẵn).
+Để đơn giản, chúng ta tiếp tục dùng trình soạn thảo văn bản thông thường cho ví dụ này.
+
+
+
+[[getting-started.first-application.gradle]]
+== Thiết lập project với Gradle
+
+Chúng ta cần bắt đầu bằng việc tạo file Gradle `build.gradle`.
+`build.gradle` là build script dùng để build project.
+Mở trình soạn thảo văn bản bạn thích và thêm nội dung sau:
+
+[source,gradle,subs="verbatim,attributes"]
+----
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '{version-spring-boot}'
+	id 'io.spring.dependency-management' version '{version-dependency-management-plugin}'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+ifeval::["{build-and-artifact-release-type}" == "opensource-snapshot"]
+	// không cần phần này nếu bạn sử dụng phiên bản release
+	maven { url 'https://repo.spring.io/snapshot' }
+endif::[]
+}
+
+dependencies {
+}
+----
+
+Cấu hình trên sẽ cho phép bạn build project.
+Bạn có thể kiểm tra bằng cách chạy `gradle classes`.
+
+NOTE: Lúc này, bạn có thể import project vào IDE (hầu hết Java IDE hiện đại đều hỗ trợ Gradle sẵn).
+Để đơn giản, chúng ta tiếp tục dùng trình soạn thảo văn bản thông thường cho ví dụ này.
+
+
+
+[[getting-started.first-application.dependencies]]
+== Thêm dependency vào classpath
+
+Spring Boot cung cấp nhiều starter giúp bạn thêm jar vào classpath.
+Starter cung cấp các dependency bạn có thể cần khi phát triển một loại ứng dụng cụ thể.
+
+
+
+[[getting-started.first-application.dependencies.maven]]
+=== Maven
+
+Hầu hết ứng dụng Spring Boot sử dụng `spring-boot-starter-parent` trong phần `parent` của POM.
+`spring-boot-starter-parent` là starter đặc biệt cung cấp các giá trị mặc định hữu ích cho Maven.
+Nó cũng cung cấp phần xref:reference:using/build-systems.adoc#using.build-systems.dependency-management[`dependency-management`] để bạn có thể bỏ thẻ `version` đối với các dependency "`đã được lựa chọn và quản lý`".
+
+Vì đang phát triển ứng dụng web, chúng ta thêm dependency `spring-boot-starter-webmvc`.
+Trước đó, có thể xem các dependency hiện có bằng lệnh sau:
+
+[source,shell]
+----
+$ mvn dependency:tree
+
+[INFO] com.example:myproject:jar:0.0.1-SNAPSHOT
+----
+
+Lệnh `mvn dependency:tree` in cấu trúc cây các dependency của project.
+Bạn có thể thấy bản thân `spring-boot-starter-parent` không cung cấp dependency nào.
+Để thêm các dependency cần thiết, sửa `pom.xml` và thêm dependency `spring-boot-starter-webmvc` ngay bên dưới phần `parent`:
+
+[source,xml]
+----
+<dependencies>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-webmvc</artifactId>
+	</dependency>
+</dependencies>
+----
+
+Nếu chạy lại `mvn dependency:tree`, bạn sẽ thấy nhiều dependency mới, bao gồm Tomcat web server và chính Spring Boot.
+
+
+
+[[getting-started.first-application.dependencies.gradle]]
+=== Gradle
+
+Hầu hết ứng dụng Spring Boot sử dụng Gradle plugin `org.springframework.boot`.
+Plugin này cung cấp các giá trị mặc định và Gradle task hữu ích.
+Gradle plugin `io.spring.dependency-management` cung cấp xref:reference:using/build-systems.adoc#using.build-systems.dependency-management[dependency management] để bạn có thể bỏ thẻ `version` đối với các dependency "`đã được lựa chọn và quản lý`".
+
+Vì đang phát triển ứng dụng web, chúng ta thêm dependency `spring-boot-starter-webmvc`.
+Trước đó, có thể xem các dependency hiện có bằng lệnh sau:
+
+[source,shell]
+----
+$ gradle dependencies
+
+> Task :dependencies
+
+------------------------------------------------------------
+Root project 'myproject'
+------------------------------------------------------------
+----
+
+Lệnh `gradle dependencies` in cấu trúc cây các dependency của project.
+Hiện tại, project chưa có dependency nào.
+Để thêm các dependency cần thiết, sửa `build.gradle` và thêm dependency `spring-boot-starter-webmvc` vào phần `dependencies`:
+
+[source,gradle]
+----
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+}
+----
+
+Nếu chạy lại `gradle dependencies`, bạn sẽ thấy nhiều dependency mới, bao gồm Tomcat web server và chính Spring Boot.
+
+
+
+[[getting-started.first-application.code]]
+== Viết code
+
+Để hoàn thiện ứng dụng, chúng ta cần tạo một file Java duy nhất.
+Theo mặc định, Maven và Gradle biên dịch source từ `src/main/java`, nên bạn cần tạo cấu trúc thư mục đó, rồi thêm file `src/main/java/com/example/MyApplication.java` chứa code sau:
+
+[chomp_package_replacement=com.example]
+include-code::MyApplication[]
+
+Dù lượng code không nhiều, có khá nhiều việc đang diễn ra.
+Chúng ta sẽ đi qua các phần quan trọng trong những mục tiếp theo.
+
+
+
+[[getting-started.first-application.code.mvc-annotations]]
+=== Annotation @RestController và @RequestMapping
+
+Annotation đầu tiên trên class `MyApplication` là javadoc:org.springframework.web.bind.annotation.RestController[format=annotation].
+Đây được gọi là một _stereotype_ annotation.
+Nó gợi ý cho người đọc code và cho Spring rằng class đảm nhiệm một vai trò cụ thể.
+Trong trường hợp này, class là một web javadoc:org.springframework.stereotype.Controller[format=annotation], nên Spring xét tới nó khi xử lý web request gửi đến.
+
+Annotation javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation] cung cấp thông tin "`routing`".
+Nó cho Spring biết mọi HTTP request có path `/` phải được ánh xạ tới method `home`.
+Annotation javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] yêu cầu Spring trả thẳng chuỗi kết quả về bên gọi.
+
+TIP: Các annotation javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] và javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation] thuộc Spring MVC (không riêng Spring Boot).
+Xem {url-spring-framework-docs}/web/webmvc.html[phần MVC] trong tài liệu tham khảo Spring để biết thêm chi tiết.
+
+
+
+[[getting-started.first-application.code.spring-boot-application]]
+=== Annotation @SpringBootApplication
+
+Annotation thứ hai ở cấp class là javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation].
+Annotation này được gọi là _meta-annotation_; nó kết hợp javadoc:org.springframework.boot.SpringBootConfiguration[format=annotation], javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation].
+
+Trong số đó, annotation chúng ta quan tâm nhất ở đây là javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation].
+javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] yêu cầu Spring Boot "`suy đoán`" cách bạn muốn cấu hình Spring dựa trên các jar dependency đã thêm.
+Vì `spring-boot-starter-webmvc` đã thêm Tomcat và Spring MVC, auto-configuration giả định bạn đang phát triển ứng dụng web và thiết lập Spring tương ứng.
+
+.Starter và auto-configuration
+****
+Auto-configuration được thiết kế để hoạt động tốt với starter, nhưng hai khái niệm này không ràng buộc trực tiếp với nhau.
+Bạn có thể tự chọn jar dependency ngoài các starter.
+Spring Boot vẫn cố gắng auto-configure ứng dụng của bạn.
+****
+
+
+
+[[getting-started.first-application.code.main-method]]
+=== Method "`main`"
+
+Phần cuối cùng của ứng dụng là method `main`.
+Đây là method tiêu chuẩn tuân theo quy ước Java về entry point của ứng dụng.
+Method main ủy quyền cho class javadoc:org.springframework.boot.SpringApplication[] của Spring Boot bằng cách gọi `run`.
+javadoc:org.springframework.boot.SpringApplication[] khởi tạo ứng dụng và khởi động Spring; đến lượt mình, Spring khởi động Tomcat web server đã được auto-configure.
+Chúng ta cần truyền `MyApplication.class` làm đối số cho method `run` để cho javadoc:org.springframework.boot.SpringApplication[] biết đâu là Spring component chính.
+Mảng `args` cũng được truyền tiếp để cung cấp các đối số dòng lệnh.
+
+
+
+[[getting-started.first-application.run]]
+== Chạy ví dụ
+
+
+
+[[getting-started.first-application.run.maven]]
+=== Maven
+
+Lúc này, ứng dụng đã có thể hoạt động.
+Vì đã sử dụng POM `spring-boot-starter-parent`, bạn có goal `run` hữu ích để khởi động ứng dụng.
+Gõ `mvn spring-boot:run` từ thư mục gốc project để khởi động ứng dụng.
+Bạn sẽ thấy output tương tự như sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ mvn spring-boot:run
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v{version-spring-boot})
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 0.906 seconds (process running for 6.514)
+----
+
+Nếu mở trình duyệt tới `http://localhost:8080`, bạn sẽ thấy output sau:
+
+[source]
+----
+Hello World!
+----
+
+Để thoát ứng dụng một cách có kiểm soát, nhấn `ctrl-c`.
+
+
+
+[[getting-started.first-application.run.gradle]]
+=== Gradle
+
+Lúc này, ứng dụng đã có thể hoạt động.
+Vì đã sử dụng Gradle plugin `org.springframework.boot`, bạn có goal `bootRun` hữu ích để khởi động ứng dụng.
+Gõ `gradle bootRun` từ thư mục gốc project để khởi động ứng dụng.
+Bạn sẽ thấy output tương tự như sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ gradle bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v{version-spring-boot})
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 0.906 seconds (process running for 6.514)
+----
+
+Nếu mở trình duyệt tới `http://localhost:8080`, bạn sẽ thấy output sau:
+
+[source]
+----
+Hello World!
+----
+
+Để thoát ứng dụng một cách có kiểm soát, nhấn `ctrl-c`.
+
+
+
+[[getting-started.first-application.executable-jar]]
+== Tạo executable jar
+
+Chúng ta kết thúc ví dụ bằng cách tạo file executable jar hoàn toàn tự chứa, có thể chạy trên production.
+Executable jar (đôi khi được gọi là "`uber jar`" hoặc "`fat jar`") là archive chứa các class đã biên dịch cùng tất cả jar dependency cần thiết để code chạy.
+
+.Executable jar và Java
+****
+Java không cung cấp cách tiêu chuẩn để load các jar lồng nhau (file jar nằm bên trong một jar khác).
+Điều này có thể gây khó khăn khi bạn muốn phân phối ứng dụng tự chứa.
+
+Để giải quyết vấn đề, nhiều developer dùng "`uber`" jar.
+Uber jar đóng gói tất cả class từ mọi dependency của ứng dụng vào một archive duy nhất.
+Vấn đề của cách này là khó xác định những thư viện nào có trong ứng dụng.
+Nó cũng có thể gây vấn đề nếu nhiều jar chứa file cùng tên nhưng khác nội dung.
+
+Spring Boot sử dụng xref:specification:executable-jar/index.adoc[cách tiếp cận khác] và cho phép lồng jar trực tiếp.
+****
+
+
+
+[[getting-started.first-application.executable-jar.maven]]
+=== Maven
+
+Để tạo executable jar, chúng ta cần thêm `spring-boot-maven-plugin` vào `pom.xml`.
+Hãy chèn các dòng sau ngay bên dưới phần `dependencies`:
+
+[source,xml]
+----
+<build>
+	<plugins>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+		</plugin>
+	</plugins>
+</build>
+----
+
+NOTE: POM `spring-boot-starter-parent` có cấu hình `<executions>` để bind goal `repackage`.
+Nếu không sử dụng parent POM, bạn cần tự khai báo cấu hình này.
+Xem xref:maven-plugin:getting-started.adoc[tài liệu plugin] để biết chi tiết.
+
+Lưu `pom.xml` và chạy `mvn package` từ dòng lệnh như sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ mvn package
+
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building myproject 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] .... ..
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ myproject ---
+[INFO] Building jar: /Users/developer/example/spring-boot-example/target/myproject-0.0.1-SNAPSHOT.jar
+[INFO]
+[INFO] --- spring-boot-maven-plugin:{version-spring-boot}:repackage (default) @ myproject ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+----
+
+Trong thư mục `target`, bạn sẽ thấy `myproject-0.0.1-SNAPSHOT.jar`.
+File này có kích thước khoảng 18 MB.
+Để xem bên trong, bạn có thể dùng `jar tvf` như sau:
+
+[source,shell]
+----
+$ jar tvf target/myproject-0.0.1-SNAPSHOT.jar
+----
+
+Bạn cũng sẽ thấy file nhỏ hơn nhiều tên `myproject-0.0.1-SNAPSHOT.jar.original` trong thư mục `target`.
+Đây là jar gốc Maven tạo trước khi được Spring Boot đóng gói lại.
+
+Để chạy ứng dụng, dùng lệnh `java -jar` như sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ java -jar target/myproject-0.0.1-SNAPSHOT.jar
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v{version-spring-boot})
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 0.497 seconds (process running for 0.651)
+----
+
+Như trước, nhấn `ctrl-c` để thoát ứng dụng.
+
+
+
+[[getting-started.first-application.executable-jar.gradle]]
+=== Gradle
+
+Để tạo executable jar, chúng ta cần chạy `gradle bootJar` từ dòng lệnh như sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ gradle bootJar
+
+BUILD SUCCESSFUL in 639ms
+3 actionable tasks: 3 executed
+----
+
+Trong thư mục `build/libs`, bạn sẽ thấy `myproject-0.0.1-SNAPSHOT.jar`.
+File này có kích thước khoảng 18 MB.
+Để xem bên trong, bạn có thể dùng `jar tvf` như sau:
+
+[source,shell]
+----
+$ jar tvf build/libs/myproject-0.0.1-SNAPSHOT.jar
+----
+
+Để chạy ứng dụng, dùng lệnh `java -jar` như sau:
+
+[source,shell]
+----
+$ java -jar build/libs/myproject-0.0.1-SNAPSHOT.jar
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v{version-spring-boot})
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 0.484 seconds (process running for 0.642)
+----
+
+Như trước, nhấn `ctrl-c` để thoát ứng dụng.
