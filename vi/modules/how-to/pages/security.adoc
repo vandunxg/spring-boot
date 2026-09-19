@@ -1,0 +1,43 @@
+[[howto.security]]
+= Security
+
+Phần này giải đáp các câu hỏi về security khi làm việc với Spring Boot, gồm cả các câu hỏi phát sinh khi dùng Spring Security với Spring Boot.
+
+Để biết thêm về Spring Security, xem {url-spring-security-site}[Spring Security project page].
+
+[[howto.security.switch-off-spring-boot-configuration]]
+== Tắt Spring Boot Security Configuration
+
+Nếu define javadoc:org.springframework.context.annotation.Configuration[format=annotation] với bean javadoc:org.springframework.security.web.SecurityFilterChain[] trong application, hành động này sẽ tắt default webapp security setting của Spring Boot.
+
+[[howto.security.change-user-details-service-and-add-user-accounts]]
+== Thay đổi UserDetailsService và thêm User Account
+
+Nếu cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.springframework.security.authentication.AuthenticationManager[], javadoc:org.springframework.security.authentication.AuthenticationProvider[] hoặc javadoc:org.springframework.security.core.userdetails.UserDetailsService[], default Bean cho javadoc:org.springframework.security.provisioning.InMemoryUserDetailsManager[] sẽ không được tạo.
+Điều này nghĩa là toàn bộ feature set của Spring Security available, như {url-spring-security-docs}/servlet/authentication/index.html[các authentication option khác nhau].
+
+Cách dễ nhất để thêm user account là cung cấp bean javadoc:org.springframework.security.core.userdetails.UserDetailsService[] riêng.
+
+[[howto.security.enable-https]]
+== Enable HTTPS khi chạy sau Proxy Server
+
+Đảm bảo mọi main endpoint chỉ available qua HTTPS là nhiệm vụ quan trọng với mọi application.
+Nếu dùng Tomcat làm servlet container, Spring Boot tự động thêm javadoc:org.apache.catalina.valves.RemoteIpValve[] của Tomcat nếu detect một số environment setting, cho phép dựa vào javadoc:jakarta.servlet.http.HttpServletRequest[] để report request có secure hay không, ngay cả phía sau proxy server xử lý actual SSL termination.
+Standard behavior được xác định bởi sự có mặt hoặc vắng mặt của một số request header (`x-forwarded-for` và `x-forwarded-proto`), với name theo convention nên hoạt động với phần lớn front-end proxy.
+Có thể bật valve bằng cách thêm các entry vào `application.properties`:
+
+[configprops,yaml]
+----
+server:
+  tomcat:
+    remoteip:
+      remote-ip-header: "x-forwarded-for"
+      protocol-header: "x-forwarded-proto"
+----
+
+(Sự có mặt của một trong hai property trên sẽ bật valve.
+Ngoài ra có thể thêm javadoc:org.apache.catalina.valves.RemoteIpValve[] bằng cách customize javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] thông qua bean javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].)
+
+Để configure Spring Security yêu cầu secure channel cho tất cả hoặc một số request, cân nhắc thêm bean javadoc:org.springframework.security.web.SecurityFilterChain[] riêng với configuration javadoc:org.springframework.security.config.annotation.web.builders.HttpSecurity[] sau:
+
+include-code::MySecurityConfig[]
