@@ -1,0 +1,19 @@
+[[packaging.container-images.buildpacks]]
+= Cloud Native Buildpacks
+
+Docker image có thể build trực tiếp từ Maven hoặc Gradle plugin bằng https://buildpacks.io[Cloud Native Buildpacks].
+Nếu từng dùng platform như Cloud Foundry hoặc Heroku, có thể bạn đã dùng buildpack.
+Buildpack là phần của platform nhận application và convert thành thứ platform thực sự chạy được.
+Ví dụ Java buildpack của Cloud Foundry nhận biết file `.jar` và tự động thêm JRE phù hợp.
+
+Với Cloud Native Buildpacks, có thể tạo Docker-compatible image chạy ở bất kỳ đâu.
+Spring Boot tích hợp buildpack support trực tiếp cho Maven và Gradle.
+Chỉ cần một command để nhanh chóng tạo image hợp lý trong local Docker daemon.
+
+Xem plugin documentation về buildpack với xref:maven-plugin:build-image.adoc#build-image[Maven] và xref:gradle-plugin:packaging-oci-image.adoc[Gradle].
+
+NOTE: https://github.com/paketo-buildpacks/spring-boot[Paketo Spring Boot buildpack] hỗ trợ file `layers.idx`, nên mọi xref:packaging/container-images/efficient-images.adoc#packaging.container-images.efficient-images.layering[layer customization] sẽ phản ánh vào image tạo bởi buildpack.
+
+NOTE: Để đạt reproducible build và container image caching, buildpack có thể thay đổi application resource metadata (như "last modified").
+Đảm bảo application không phụ thuộc metadata đó ở runtime.
+Spring Boot có thể dùng thông tin này khi serve static resource, nhưng có thể disable bằng configprop:spring.web.resources.cache.use-last-modified[].
