@@ -874,3 +874,251 @@ Mặc định repository invocation metric được tag:
 
 | `state`
 | Result state (`SUCCESS`, `ERROR`, `CANCELED`, hoặc `RUNNING`).
+
+| `exception`
+| Simple class name của exception throw từ invocation.
+|===
+
+Để replace default tag, cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.boot.data.metrics.RepositoryTagsProvider[].
+
+[[actuator.metrics.supported.rabbitmq]]
+=== RabbitMQ Metrics
+
+Auto-configuration enable instrumentation mọi available RabbitMQ connection factory với metric name `rabbitmq`.
+
+[[actuator.metrics.supported.spring-integration]]
+=== Spring Integration Metrics
+
+Spring Integration tự động cung cấp {url-spring-integration-docs}/metrics.html#micrometer-integration[Micrometer support] khi bean javadoc:io.micrometer.core.instrument.MeterRegistry[] available.
+Metric publish dưới meter name `spring.integration.`.
+
+[[actuator.metrics.supported.kafka]]
+=== Kafka Metrics
+
+Auto-configuration register javadoc:org.springframework.kafka.core.MicrometerConsumerListener[] và javadoc:org.springframework.kafka.core.MicrometerProducerListener[] lần lượt cho auto-configured consumer factory và producer factory.
+Nó cũng register javadoc:org.springframework.kafka.streams.KafkaStreamsMicrometerListener[] cho javadoc:org.springframework.kafka.config.StreamsBuilderFactoryBean[].
+Chi tiết xem phần {url-spring-kafka-docs}/kafka/micrometer.html#micrometer-native[Micrometer Native Metrics] trong Spring Kafka documentation.
+
+[[actuator.metrics.supported.mongodb]]
+=== MongoDB Metrics
+
+Phần này mô tả ngắn các metric available cho MongoDB.
+
+[[actuator.metrics.supported.mongodb.command]]
+==== MongoDB Command Metrics
+
+Auto-configuration register javadoc:io.micrometer.core.instrument.binder.mongodb.MongoMetricsCommandListener[] với auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[].
+
+Timer metric tên `mongodb.driver.commands` được tạo cho mỗi command gửi tới underlying MongoDB driver.
+Mỗi metric mặc định tag:
+
+|===
+| Tag | Mô tả
+
+| `command`
+| Tên command được issue.
+
+| `cluster.id`
+| Identifier của cluster nơi command được gửi.
+
+| `server.address`
+| Address của server nơi command được gửi.
+
+| `status`
+| Outcome của command (`SUCCESS` hoặc `FAILED`).
+|===
+
+Để replace default metric tag, define bean javadoc:io.micrometer.core.instrument.binder.mongodb.MongoCommandTagsProvider[]:
+
+include-code::MyCommandTagsProviderConfiguration[]
+
+Để disable auto-configured command metric:
+
+[configprops,yaml]
+----
+management:
+  metrics:
+    mongodb:
+      command:
+        enabled: false
+----
+
+[[actuator.metrics.supported.mongodb.connection-pool]]
+==== MongoDB Connection Pool Metrics
+
+Auto-configuration register javadoc:io.micrometer.core.instrument.binder.mongodb.MongoMetricsConnectionPoolListener[] với auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[].
+
+Các gauge metric được tạo cho connection pool:
+
+* `mongodb.driver.pool.size` report current size của connection pool, gồm idle và in-use member.
+* `mongodb.driver.pool.checkedout` report số connection hiện đang in use.
+* `mongodb.driver.pool.waitqueuesize` report current size của wait queue chờ connection từ pool.
+
+Mỗi metric mặc định tag:
+
+|===
+| Tag | Mô tả
+
+| `cluster.id`
+| Identifier của cluster tương ứng connection pool.
+
+| `server.address`
+| Address của server tương ứng connection pool.
+|===
+
+Để replace default metric tag, define bean javadoc:io.micrometer.core.instrument.binder.mongodb.MongoConnectionPoolTagsProvider[]:
+
+include-code::MyConnectionPoolTagsProviderConfiguration[]
+
+Để disable auto-configured connection pool metric:
+
+[configprops,yaml]
+----
+management:
+  metrics:
+    mongodb:
+      connectionpool:
+        enabled: false
+----
+
+[[actuator.metrics.supported.neo4j]]
+=== Neo4j Metrics
+
+Auto-configuration register javadoc:org.neo4j.driver.observation.micrometer.MicrometerObservationProvider[] cho auto-configured javadoc:org.neo4j.driver.Driver[].
+
+Để override behavior này, register bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[] với order lớn hơn 0.
+
+[[actuator.metrics.supported.jetty]]
+=== Jetty Metrics
+
+Auto-configuration bind metric cho javadoc:org.eclipse.jetty.util.thread.ThreadPool[] của Jetty bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettyServerThreadPoolMetrics[] của Micrometer.
+Metric cho instance javadoc:org.eclipse.jetty.server.Connector[] được bind bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettyConnectionMetrics[] và, khi configprop:server.ssl.enabled[] = `true`, bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettySslHandshakeMetrics[].
+
+[[actuator.metrics.supported.redis]]
+=== Redis Metrics
+
+Auto-configuration register javadoc:io.lettuce.core.tracing.MicrometerTracing[] cho auto-configured javadoc:org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory[].
+Chi tiết xem phần {url-lettuce-docs}/advanced-usage/observability[Observability] trong Lettuce documentation.
+
+[[actuator.metrics.registering-custom]]
+== Register Custom Metrics
+
+Để register custom metric, inject javadoc:io.micrometer.core.instrument.MeterRegistry[] vào component:
+
+include-code::MyBean[]
+
+Nếu metric phụ thuộc bean khác, khuyến nghị dùng javadoc:io.micrometer.core.instrument.binder.MeterBinder[] để register:
+
+include-code::MyMeterBinderConfiguration[]
+
+Dùng MeterBinder đảm bảo correct dependency relationship được setup và bean available khi metric value được retrieve.
+Implementation MeterBinder cũng hữu ích nếu thường xuyên instrument cùng một suite metric qua nhiều component hoặc application.
+
+NOTE: Mặc định metric từ mọi bean MeterBinder tự động bind vào Spring-managed MeterRegistry.
+
+[[actuator.metrics.customizing]]
+== Customize Individual Metrics
+
+Nếu cần apply customization cho specific instance javadoc:io.micrometer.core.instrument.Meter[], dùng interface javadoc:io.micrometer.core.instrument.config.MeterFilter[].
+
+Ví dụ rename tag `mytag.region` thành `mytag.area` cho mọi meter ID bắt đầu bằng `com.example`:
+
+include-code::MyMetricsFilterConfiguration[]
+
+NOTE: Mặc định mọi bean MeterFilter tự động bind vào Spring-managed MeterRegistry.
+Hãy register metric bằng Spring-managed MeterRegistry, không dùng static method trên javadoc:io.micrometer.core.instrument.Metrics[].
+Static method dùng global registry không do Spring manage.
+
+[[actuator.metrics.customizing.common-tags]]
+=== Common Tags
+
+Common tag thường dùng để dimensional drill-down operating environment như host, instance, region, stack, v.v.
+Common tag được apply cho mọi meter và có thể configure:
+
+[configprops,yaml]
+----
+management:
+  metrics:
+    tags:
+      region: "us-east-1"
+      stack: "prod"
+----
+
+Ví dụ thêm tag `region=us-east-1` và `stack=prod` vào mọi meter.
+
+NOTE: Order của common tag quan trọng nếu dùng Graphite.
+Vì cách này không guarantee common tag order, user Graphite được khuyến nghị define custom javadoc:io.micrometer.core.instrument.config.MeterFilter[].
+
+[[actuator.metrics.customizing.per-meter-properties]]
+=== Per-meter Properties
+
+Ngoài bean MeterFilter, có thể apply một limited set customization theo từng meter bằng property.
+Per-meter customization được apply qua javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.PropertiesMeterFilter[] tới mọi meter ID bắt đầu với name được cho.
+Ví dụ filter mọi meter có ID bắt đầu bằng `example.remote`:
+
+[configprops,yaml]
+----
+management:
+  metrics:
+    enable:
+      example:
+        remote: false
+----
+
+Các property hỗ trợ per-meter customization:
+
+.Per-meter customizations
+|===
+| Property | Mô tả
+
+| configprop:management.metrics.enable[]
+| Có accept meter với ID nhất định hay không.
+  Meter không accepted bị filter khỏi javadoc:io.micrometer.core.instrument.MeterRegistry[].
+
+| configprop:management.metrics.distribution.percentiles-histogram[]
+| Có publish histogram phù hợp để compute aggregable percentile approximation qua dimension hay không.
+
+| configprop:management.metrics.distribution.minimum-expected-value[], configprop:management.metrics.distribution.maximum-expected-value[]
+| Publish ít histogram bucket hơn bằng cách clamp range expected value.
+
+| configprop:management.metrics.distribution.percentiles[]
+| Publish percentile value compute trong application.
+
+| configprop:management.metrics.distribution.expiry[], configprop:management.metrics.distribution.buffer-length[]
+| Tăng trọng số recent sample bằng cách accumulate chúng trong ring buffer rotate sau configurable expiry, với configurable buffer length.
+
+| configprop:management.metrics.distribution.slo[]
+| Publish cumulative histogram với bucket định nghĩa bởi service-level objective.
+|===
+
+Để biết thêm về concept phía sau `percentiles-histogram`, `percentiles`, và `slo`, xem phần {url-micrometer-docs-concepts}/histogram-quantiles.html[Histograms and percentiles] trong Micrometer documentation.
+
+[[actuator.metrics.endpoint]]
+== Metrics Endpoint
+
+Spring Boot cung cấp endpoint `metrics` dùng diagnostically để examine metric application collect.
+Endpoint mặc định không available và phải expose.
+Xem xref:actuator/endpoints.adoc#actuator.endpoints.exposing[exposing endpoints].
+
+Đi tới `/actuator/metrics` hiển thị list available meter name.
+Có thể drill down để xem information của meter cụ thể bằng name làm selector, ví dụ `/actuator/metrics/jvm.memory.max`.
+
+[TIP]
+====
+Name dùng ở đây phải match name dùng trong code, không phải name sau khi normalized theo naming convention của monitoring system nơi metric được ship.
+Nói cách khác, nếu `jvm.memory.max` xuất hiện thành `jvm_memory_max` trong Prometheus do snake case naming convention, vẫn dùng `jvm.memory.max` làm selector khi inspect meter trong endpoint `metrics`.
+====
+
+Có thể thêm bất kỳ số lượng query parameter `tag=KEY:VALUE` nào vào cuối URL để dimensional drill down, ví dụ `/actuator/metrics/jvm.memory.max?tag=area:nonheap`.
+
+[TIP]
+====
+Measurement report là _sum_ statistic của mọi meter match meter name và tag đã apply.
+Trong ví dụ trên, statistic `Value` trả về là tổng maximum memory footprint của area `"Code Cache"`, `"Compressed Class Space"`, và `"Metaspace"` của heap.
+Nếu chỉ muốn maximum size cho `"Metaspace"`, thêm `tag=id:Metaspace`, tức `/actuator/metrics/jvm.memory.max?tag=area:nonheap&tag=id:Metaspace`.
+====
+
+[[actuator.metrics.micrometer-observation]]
+== Integration với Micrometer Observation
+
+javadoc:io.micrometer.core.instrument.observation.DefaultMeterObservationHandler[] tự động register trên javadoc:io.micrometer.observation.ObservationRegistry[], tạo metric cho mỗi completed observation.
