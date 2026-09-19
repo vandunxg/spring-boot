@@ -1,0 +1,103 @@
+[[howto.application]]
+= Spring Boot Application
+
+Phần này gồm các chủ đề liên quan trực tiếp đến Spring Boot application.
+
+[[howto.application.failure-analyzer]]
+== Tạo FailureAnalyzer riêng
+
+javadoc:org.springframework.boot.diagnostics.FailureAnalyzer[] là cách hiệu quả để intercept exception khi startup và chuyển nó thành message dễ đọc, được wrap trong javadoc:org.springframework.boot.diagnostics.FailureAnalysis[].
+Spring Boot cung cấp các analyzer như vậy cho exception liên quan đến application context, JSR-303 validation và nhiều trường hợp khác.
+Bạn cũng có thể tạo analyzer riêng.
+
+javadoc:org.springframework.boot.diagnostics.AbstractFailureAnalyzer[] là extension tiện lợi của javadoc:org.springframework.boot.diagnostics.FailureAnalyzer[], kiểm tra sự hiện diện của một exception type cụ thể trong exception cần xử lý.
+Bạn có thể extend class này để implementation chỉ có cơ hội xử lý exception khi exception đó thực sự xuất hiện.
+Nếu vì bất kỳ lý do nào bạn không thể xử lý exception, hãy trả về `null` để implementation khác có cơ hội xử lý.
+
+Implementation của javadoc:org.springframework.boot.diagnostics.FailureAnalyzer[] phải được register trong `META-INF/spring.factories`.
+Ví dụ sau register `ProjectConstraintViolationFailureAnalyzer`:
+
+[source,properties]
+----
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+com.example.ProjectConstraintViolationFailureAnalyzer
+----
+
+NOTE: Nếu cần access javadoc:org.springframework.beans.factory.BeanFactory[] hoặc javadoc:org.springframework.core.env.Environment[], hãy khai báo chúng làm constructor argument trong implementation javadoc:org.springframework.boot.diagnostics.FailureAnalyzer[].
+
+[[howto.application.troubleshoot-auto-configuration]]
+== Troubleshoot Auto-configuration
+
+Spring Boot auto-configuration cố gắng hết mức để "làm đúng", nhưng đôi khi vẫn xảy ra lỗi và khó xác định nguyên nhân.
+
+Một javadoc:org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport[] rất hữu ích có sẵn trong mọi Spring Boot javadoc:org.springframework.context.ApplicationContext[].
+Bạn có thể xem nó khi enable `DEBUG` logging output.
+Nếu dùng `spring-boot-actuator` (xem phần xref:actuator.adoc[]), endpoint `conditions` cũng render report dưới dạng JSON.
+Dùng endpoint này để debug application và xem feature nào đã được Spring Boot thêm vào runtime (và feature nào chưa).
+
+Nhiều câu hỏi khác có thể được giải đáp bằng cách xem source code và API documentation.
+Khi đọc code, hãy nhớ các quy tắc kinh nghiệm sau:
+
+* Tìm các class có tên `+*AutoConfiguration+` và đọc source của chúng.
+  Đặc biệt chú ý các annotation `+@Conditional*+` để biết chúng enable feature nào và khi nào.
+  Thêm `--debug` vào command line hoặc System property `-Ddebug` để nhận log trên console về mọi auto-configuration decision đã được thực hiện trong application.
+  Với running application đã enable actuator, xem endpoint `conditions` (`/actuator/conditions` hoặc JMX tương đương) để lấy cùng thông tin.
+* Tìm các class có javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] (như javadoc:org.springframework.boot.web.server.autoconfigure.ServerProperties[]) và đọc các external configuration option available từ đó.
+  Annotation javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] có attribute `name` đóng vai trò prefix cho external property.
+  Vì vậy javadoc:org.springframework.boot.web.server.autoconfigure.ServerProperties[] có `prefix="server"` và configuration property gồm `server.port`, `server.address` và các property khác.
+  Trong running application đã enable actuator, xem endpoint `configprops`.
+* Tìm việc sử dụng method `bind` trên javadoc:org.springframework.boot.context.properties.bind.Binder[] để explicit lấy configuration value từ javadoc:org.springframework.core.env.Environment[] theo relaxed binding.
+  Nó thường được dùng cùng prefix.
+* Tìm annotation javadoc:org.springframework.beans.factory.annotation.Value[format=annotation] bind trực tiếp tới javadoc:org.springframework.core.env.Environment[].
+* Tìm annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnExpression[format=annotation] bật/tắt feature dựa trên SpEL expression, thường được evaluate sau khi placeholder từ javadoc:org.springframework.core.env.Environment[] được resolve.
+
+[[howto.application.customize-the-environment-or-application-context]]
+== Customize Environment hoặc ApplicationContext trước khi start
+
+javadoc:org.springframework.boot.SpringApplication[] có các implementation javadoc:org.springframework.context.ApplicationListener[] và javadoc:org.springframework.context.ApplicationContextInitializer[] dùng để apply customization cho context hoặc environment.
+Spring Boot load một số customization như vậy từ `META-INF/spring.factories` để dùng nội bộ.
+Có nhiều cách register additional customization:
+
+* Programmatically, theo từng application, bằng cách gọi method `addListeners` và `addInitializers` trên javadoc:org.springframework.boot.SpringApplication[] trước khi run.
+* Declaratively, cho mọi application, bằng cách thêm `META-INF/spring.factories` và package một jar file mà mọi application đều dùng làm library.
+
+javadoc:org.springframework.boot.SpringApplication[] gửi một số javadoc:org.springframework.test.context.event.ApplicationEvents[] đặc biệt tới listener (một số event xảy ra ngay cả trước khi context được tạo), sau đó register listener cho event do javadoc:org.springframework.context.ApplicationContext[] publish.
+Xem xref:reference:features/spring-application.adoc#features.spring-application.application-events-and-listeners[] trong phần "Spring Boot Features" để biết danh sách đầy đủ.
+
+Cũng có thể customize javadoc:org.springframework.core.env.Environment[] trước khi application context được refresh bằng javadoc:org.springframework.boot.EnvironmentPostProcessor[].
+Mỗi implementation phải được register trong `META-INF/spring.factories`, như ví dụ sau:
+
+[source]
+----
+org.springframework.boot.EnvironmentPostProcessor=com.example.YourEnvironmentPostProcessor
+----
+
+Implementation có thể load file tùy ý và thêm chúng vào javadoc:org.springframework.core.env.Environment[].
+Ví dụ sau load YAML configuration file từ classpath:
+
+include-code::MyEnvironmentPostProcessor[]
+
+TIP: javadoc:org.springframework.core.env.Environment[] đã được chuẩn bị với mọi property source thông thường mà Spring Boot load mặc định.
+Vì vậy có thể lấy location của file từ environment.
+Ví dụ trên thêm property source `custom-resource` ở cuối list để key được định nghĩa tại bất kỳ location thông thường nào khác có precedence.
+Custom implementation có thể định nghĩa order khác.
+
+CAUTION: Mặc dù dùng javadoc:org.springframework.context.annotation.PropertySource[format=annotation] trên javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] có vẻ là cách tiện lợi để load custom resource vào javadoc:org.springframework.core.env.Environment[], chúng tôi không khuyến nghị cách này.
+Các property source như vậy chỉ được thêm vào javadoc:org.springframework.core.env.Environment[] khi application context đang được refresh.
+Thời điểm này quá muộn để configure một số property như `+logging.*+` và `+spring.main.*+`, vốn được đọc trước khi refresh bắt đầu.
+
+[[howto.application.context-hierarchy]]
+== Xây dựng ApplicationContext Hierarchy (thêm Parent hoặc Root Context)
+
+Có thể dùng class javadoc:org.springframework.boot.builder.SpringApplicationBuilder[] để tạo hierarchy parent/child javadoc:org.springframework.context.ApplicationContext[].
+Xem xref:reference:features/spring-application.adoc#features.spring-application.fluent-builder-api[] trong phần "Spring Boot Features" để biết thêm.
+
+[[howto.application.non-web-application]]
+== Tạo Non-web Application
+
+Không phải mọi Spring application đều phải là web application (hoặc web service).
+Nếu muốn execute code trong method `main` nhưng vẫn bootstrap Spring application để setup infrastructure cần dùng, bạn có thể dùng các feature của javadoc:org.springframework.boot.SpringApplication[].
+javadoc:org.springframework.boot.SpringApplication[] thay đổi class javadoc:org.springframework.context.ApplicationContext[] tùy theo việc nó xác định có cần web application hay không.
+Điều đầu tiên có thể làm để hỗ trợ là loại các server-related dependency (như servlet API) khỏi classpath.
+Nếu không thể làm vậy (ví dụ chạy hai application từ cùng code base), có thể explicit gọi `setWebApplicationType(WebApplicationType.NONE)` trên instance javadoc:org.springframework.boot.SpringApplication[] hoặc set property `applicationContextClass` (qua Java API hoặc external property).
+Application code muốn chạy làm business logic có thể implement javadoc:org.springframework.boot.CommandLineRunner[] và được đưa vào context dưới dạng definition javadoc:org.springframework.context.annotation.Bean[format=annotation].
