@@ -1,0 +1,27 @@
+# Tiến độ dịch Spring Boot
+
+- Repository: `vandunxg/spring-boot`.
+- Nhánh: `docs/vi-translation-batch-01`.
+- Source commit: `adbbf047320013ee42284d6957293aaf75a56ad7`.
+- Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
+- Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
+- Đã dịch trọn vẹn: **7 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Kiểm tra hiện tại: đối chiếu nội dung và cú pháp với nguồn; chưa chạy build website.
+
+## Đã dịch
+
+1. [x] `modules/ROOT/pages/index.adoc`
+2. [x] `modules/ROOT/pages/documentation.adoc`
+3. [x] `modules/ROOT/pages/community.adoc`
+4. [x] `modules/ROOT/pages/system-requirements.adoc`
+5. [x] `modules/ROOT/pages/installing.adoc`
+6. [x] `modules/ROOT/pages/upgrading.adoc`
+7. [x] `modules/tutorial/pages/index.adoc`
+
+## Tiếp theo
+
+8. [ ] `modules/tutorial/pages/first-application/index.adoc`
+9. [ ] `modules/reference/pages/index.adoc`
+10. [ ] `modules/reference/pages/using/index.adoc`
+
+Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.

@@ -1,0 +1,62 @@
+[[getting-started.system-requirements]]
+= Yêu cầu hệ thống
+
+Spring Boot {version-spring-boot} yêu cầu tối thiểu https://www.java.com[Java 17] và tương thích với các phiên bản đến hết Java 27.
+{url-spring-framework-docs}/[Spring Framework {version-spring-framework}] trở lên cũng là yêu cầu bắt buộc.
+
+Phần hỗ trợ các dự án bên thứ ba có thể có thêm yêu cầu hoặc yêu cầu cao hơn.
+Hãy tham khảo tài liệu của phần hỗ trợ đó để biết chi tiết.
+
+Các build tool sau được hỗ trợ trực tiếp:
+
+|===
+| Build Tool | Phiên bản
+
+| Maven
+| 3.6.3 trở lên
+
+| Gradle
+| Gradle 8.x (8.14 trở lên) và 9.x
+|===
+
+
+
+[[getting-started.system-requirements.servlet-containers]]
+== Servlet Container
+
+Spring Boot hỗ trợ các embedded servlet container sau:
+
+|===
+| Tên | Phiên bản Servlet
+
+| Tomcat 11.0.x
+| 6.1
+
+| Jetty 12.1.x
+| 6.1
+
+|===
+
+Bạn cũng có thể deploy ứng dụng Spring Boot lên bất kỳ container nào tương thích Servlet 6.1+.
+
+
+
+[[getting-started.system-requirements.graal]]
+== GraalVM Native Image
+
+Ứng dụng Spring Boot có thể được xref:reference:packaging/native-image/introducing-graalvm-native-images.adoc[chuyển thành Native Image] bằng GraalVM {version-graal} trở lên.
+
+Image có thể được tạo bằng Gradle/Maven plugin của https://github.com/graalvm/native-build-tools[native build tools] hoặc tool `native-image` do GraalVM cung cấp.
+Bạn cũng có thể tạo native image bằng https://github.com/paketo-buildpacks/native-image[native-image Paketo buildpack].
+
+Các phiên bản sau được hỗ trợ:
+
+|===
+| Tên | Phiên bản
+
+| GraalVM Community
+| {version-graal}
+
+| Native Build Tools
+| {version-native-build-tools}
+|===

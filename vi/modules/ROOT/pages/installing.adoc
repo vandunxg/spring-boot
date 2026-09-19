@@ -1,0 +1,209 @@
+[[getting-started.installing]]
+= Cài đặt Spring Boot
+
+Spring Boot có thể được sử dụng với các công cụ phát triển Java "`truyền thống`" hoặc được cài đặt như một công cụ dòng lệnh.
+Dù theo cách nào, bạn cũng cần https://www.java.com[Java SDK v17] trở lên.
+Trước khi bắt đầu, bạn nên kiểm tra bản Java hiện được cài bằng lệnh sau:
+
+[source,shell]
+----
+$ java -version
+----
+
+Nếu bạn mới phát triển Java hoặc muốn thử Spring Boot, bạn có thể thử xref:installing.adoc#getting-started.installing.cli[Spring Boot CLI] (Command Line Interface) trước.
+Nếu không, hãy đọc tiếp hướng dẫn cài đặt "`truyền thống`".
+
+
+
+[[getting-started.installing.java]]
+== Hướng dẫn cài đặt cho Java developer
+
+Bạn có thể dùng Spring Boot như bất kỳ thư viện Java thông thường nào.
+Để làm vậy, hãy thêm các file `+spring-boot-*.jar+` phù hợp vào classpath.
+Spring Boot không yêu cầu tích hợp công cụ đặc biệt, nên bạn có thể dùng bất kỳ IDE hoặc trình soạn thảo văn bản nào.
+Ứng dụng Spring Boot cũng không có gì đặc biệt về mặt này, nên bạn có thể chạy và debug như bất kỳ chương trình Java nào khác.
+
+Mặc dù bạn _có thể_ sao chép các jar của Spring Boot, chúng tôi thường khuyến nghị dùng build tool hỗ trợ dependency management (như Maven hoặc Gradle).
+
+
+
+[[getting-started.installing.java.maven]]
+=== Cài đặt Maven
+
+Spring Boot tương thích với Apache Maven 3.6.3 trở lên.
+Nếu chưa cài Maven, bạn có thể làm theo hướng dẫn tại https://maven.apache.org.
+
+TIP: Trên nhiều hệ điều hành, Maven có thể được cài bằng package manager.
+Nếu dùng OSX Homebrew, hãy thử `brew install maven`.
+Người dùng Ubuntu có thể chạy `sudo apt-get install maven`.
+Người dùng Windows có https://chocolatey.org/[Chocolatey] có thể chạy `choco install maven` từ cửa sổ dòng lệnh có quyền administrator.
+
+Các dependency của Spring Boot sử dụng group id `org.springframework.boot`.
+Thông thường, file Maven POM kế thừa từ project `spring-boot-starter-parent` và khai báo dependency tới một hoặc nhiều xref:reference:using/build-systems.adoc#using.build-systems.starters[starter].
+Spring Boot cũng cung cấp một xref:maven-plugin:index.adoc[Maven plugin] tùy chọn để tạo executable jar.
+
+Bạn có thể tìm thêm chi tiết về cách bắt đầu với Spring Boot và Maven trong phần xref:maven-plugin:getting-started.adoc[] của tài liệu tham khảo Maven plugin.
+
+
+
+[[getting-started.installing.java.gradle]]
+=== Cài đặt Gradle
+
+Spring Boot tương thích với Gradle 8.x (8.14 trở lên) hoặc 9.x.
+Nếu chưa cài Gradle, bạn có thể làm theo hướng dẫn tại https://gradle.org.
+
+Các dependency của Spring Boot có thể được khai báo bằng `group` `org.springframework.boot`.
+Thông thường, project khai báo dependency tới một hoặc nhiều xref:reference:using/build-systems.adoc#using.build-systems.starters[starter].
+Spring Boot cung cấp một xref:gradle-plugin:index.adoc[Gradle plugin] hữu ích để đơn giản hóa việc khai báo dependency và tạo executable jar.
+
+.Gradle Wrapper
+****
+Gradle Wrapper cung cấp một cách thuận tiện để "`lấy`" Gradle khi cần build project.
+Đó là một script nhỏ và thư viện được commit cùng code để khởi tạo quá trình build.
+Xem {url-gradle-docs}/gradle_wrapper.html để biết chi tiết.
+****
+
+Bạn có thể tìm thêm chi tiết về cách bắt đầu với Spring Boot và Gradle trong phần xref:gradle-plugin:getting-started.adoc[] của tài liệu tham khảo Gradle plugin.
+
+
+
+[[getting-started.installing.cli]]
+== Cài đặt Spring Boot CLI
+
+Spring Boot CLI (Command Line Interface) là công cụ dòng lệnh giúp bạn nhanh chóng tạo prototype với Spring.
+
+Bạn không bắt buộc phải dùng CLI để làm việc với Spring Boot, nhưng đây là cách nhanh để bắt đầu một ứng dụng Spring mà không cần IDE.
+
+
+
+[[getting-started.installing.cli.manual-installation]]
+=== Cài đặt thủ công
+
+ifeval::["{artifact-release-type}" == "snapshot"]
+Bạn có thể tải một trong các file `spring-boot-cli-\*-bin.zip` hoặc `spring-boot-cli-*-bin.tar.gz` từ {url-artifact-repository}/org/springframework/boot/spring-boot-cli/{version-spring-boot}/[Spring software repository].
+endif::[]
+ifeval::["{artifact-release-type}" != "snapshot"]
+Bạn có thể tải bản phân phối Spring CLI từ một trong các địa chỉ sau:
+
+* {url-artifact-repository}/org/springframework/boot/spring-boot-cli/{version-spring-boot}/spring-boot-cli-{version-spring-boot}-bin.zip[spring-boot-cli-{version-spring-boot}-bin.zip]
+* {url-artifact-repository}/org/springframework/boot/spring-boot-cli/{version-spring-boot}/spring-boot-cli-{version-spring-boot}-bin.tar.gz[spring-boot-cli-{version-spring-boot}-bin.tar.gz]
+endif::[]
+
+
+Sau khi tải, hãy làm theo hướng dẫn {url-github-raw}/cli/spring-boot-cli/src/main/content/INSTALL.txt[INSTALL.txt] trong archive đã giải nén.
+Tóm lại, file `.zip` có một script `spring` (`spring.bat` trên Windows) trong thư mục `bin/`.
+Bạn cũng có thể dùng `java -jar` với file `.jar` (script giúp bảo đảm classpath được thiết lập đúng).
+
+
+
+[[getting-started.installing.cli.sdkman]]
+=== Cài đặt bằng SDKMAN!
+
+SDKMAN! (The Software Development Kit Manager) có thể quản lý nhiều phiên bản của các binary SDK khác nhau, bao gồm Groovy và Spring Boot CLI.
+Tải SDKMAN! từ https://sdkman.io và cài Spring Boot bằng các lệnh sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ sdk install springboot
+$ spring --version
+Spring CLI v{version-spring-boot}
+----
+
+Nếu bạn phát triển tính năng cho CLI và muốn sử dụng phiên bản đã build, hãy dùng các lệnh sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ sdk install springboot dev /path/to/spring-boot/spring-boot-cli/target/spring-boot-cli-{version-spring-boot}-bin/spring-{version-spring-boot}/
+$ sdk default springboot dev
+$ spring --version
+Spring CLI v{version-spring-boot}
+----
+
+Các lệnh trên cài một instance `spring` cục bộ có tên `dev`.
+Instance này trỏ tới vị trí build đích, nên mỗi lần bạn build lại Spring Boot, `spring` cũng được cập nhật.
+
+Bạn có thể xem bằng lệnh sau:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ sdk ls springboot
+
+================================================================================
+Available Springboot Versions
+================================================================================
+> + dev
+* {version-spring-boot}
+
+================================================================================
++ - local version
+* - installed
+> - currently in use
+================================================================================
+----
+
+
+
+[[getting-started.installing.cli.homebrew]]
+=== Cài đặt bằng OSX Homebrew
+
+Nếu dùng Mac và https://brew.sh/[Homebrew], bạn có thể cài Spring Boot CLI bằng các lệnh sau:
+
+[source,shell]
+----
+$ brew tap spring-io/tap
+$ brew install spring-boot
+----
+
+Homebrew cài `spring` vào `/usr/local/bin`.
+
+NOTE: Nếu không thấy formula, bản cài brew có thể đã cũ.
+Trong trường hợp đó, hãy chạy `brew update` rồi thử lại.
+
+
+
+[[getting-started.installing.cli.macports]]
+=== Cài đặt bằng MacPorts
+
+Nếu dùng Mac và https://www.macports.org/[MacPorts], bạn có thể cài Spring Boot CLI bằng lệnh sau:
+
+[source,shell]
+----
+$ sudo port install spring-boot-cli
+----
+
+
+
+[[getting-started.installing.cli.completion]]
+=== Tự động hoàn thành dòng lệnh
+
+Spring Boot CLI có các script hỗ trợ tự động hoàn thành lệnh cho shell https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29[BASH] và https://en.wikipedia.org/wiki/Z_shell[zsh].
+Bạn có thể `source` script tên `spring` (`_spring` với zsh), hoặc đưa nó vào phần khởi tạo bash completion của cá nhân hay toàn hệ thống.
+Trên Debian, các script toàn hệ thống nằm tại `<installation location>/shell-completion/<bash|zsh>` và mọi script trong thư mục đó được thực thi khi một shell mới khởi động.
+Ví dụ, để chạy script thủ công khi đã cài bằng SDKMAN!, hãy dùng các lệnh sau:
+
+[source,shell]
+----
+$ . ~/.sdkman/candidates/springboot/current/shell-completion/bash/spring
+$ spring <HIT TAB HERE>
+  encodepassword  help  init  shell  version
+----
+
+NOTE: Nếu cài Spring Boot CLI bằng Homebrew hoặc MacPorts, các script tự động hoàn thành dòng lệnh sẽ được đăng ký tự động với shell.
+
+
+
+[[getting-started.installing.cli.scoop]]
+=== Cài đặt bằng Windows Scoop
+
+Nếu dùng Windows và https://scoop.sh/[Scoop], bạn có thể cài Spring Boot CLI bằng các lệnh sau:
+
+[source,shell]
+----
+$ scoop bucket add extras
+$ scoop install springboot
+----
+
+Scoop cài `spring` vào `~/scoop/apps/springboot/current/bin`.
+
+NOTE: Nếu không thấy app manifest, bản cài scoop có thể đã cũ.
+Trong trường hợp đó, hãy chạy `scoop update` rồi thử lại.
