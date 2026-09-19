@@ -1,0 +1,27 @@
+[[using.configuration-classes]]
+= Class cấu hình
+
+Spring Boot ưu tiên cấu hình bằng Java.
+Mặc dù có thể dùng javadoc:org.springframework.boot.SpringApplication[] với source XML, chúng tôi thường khuyến nghị source chính là một class javadoc:org.springframework.context.annotation.Configuration[format=annotation] duy nhất.
+Thông thường, class định nghĩa method `main` là lựa chọn phù hợp cho javadoc:org.springframework.context.annotation.Configuration[format=annotation] chính.
+
+TIP: Nhiều ví dụ cấu hình Spring trên Internet sử dụng XML.
+Khi có thể, hãy luôn thử dùng cấu hình Java tương đương.
+Tìm các annotation `+Enable*+` là một điểm bắt đầu phù hợp.
+
+
+
+[[using.configuration-classes.importing-additional-configuration]]
+== Import thêm class cấu hình
+
+Bạn không cần đặt toàn bộ javadoc:org.springframework.context.annotation.Configuration[format=annotation] trong một class.
+Annotation javadoc:org.springframework.context.annotation.Import[format=annotation] có thể được dùng để import thêm class cấu hình.
+Ngoài ra, bạn có thể dùng javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] để tự động tìm mọi Spring component, bao gồm các class javadoc:org.springframework.context.annotation.Configuration[format=annotation].
+
+
+
+[[using.configuration-classes.importing-xml-configuration]]
+== Import cấu hình XML
+
+Nếu bắt buộc phải dùng cấu hình XML, chúng tôi khuyến nghị vẫn bắt đầu bằng một class javadoc:org.springframework.context.annotation.Configuration[format=annotation].
+Sau đó, bạn có thể dùng annotation javadoc:org.springframework.context.annotation.ImportResource[format=annotation] để load các file cấu hình XML.

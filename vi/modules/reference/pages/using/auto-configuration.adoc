@@ -1,0 +1,49 @@
+[[using.auto-configuration]]
+= Auto-configuration
+
+Auto-configuration của Spring Boot cố gắng tự động cấu hình ứng dụng Spring dựa trên các jar dependency bạn đã thêm.
+Ví dụ, nếu `HSQLDB` có trên classpath và bạn chưa tự cấu hình bean kết nối database nào, Spring Boot sẽ auto-configure một in-memory database.
+
+Bạn cần bật auto-configuration bằng cách thêm annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] vào một trong các class javadoc:org.springframework.context.annotation.Configuration[format=annotation].
+
+TIP: Bạn chỉ nên thêm một annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation].
+Chúng tôi thường khuyến nghị chỉ thêm một trong hai vào class javadoc:org.springframework.context.annotation.Configuration[format=annotation] chính.
+
+
+
+[[using.auto-configuration.replacing]]
+== Thay thế dần auto-configuration
+
+Auto-configuration không xâm lấn.
+Bất kỳ lúc nào, bạn cũng có thể bắt đầu định nghĩa cấu hình riêng để thay thế những phần cụ thể của auto-configuration.
+Ví dụ, nếu thêm bean javadoc:javax.sql.DataSource[] riêng, phần hỗ trợ embedded database mặc định sẽ không còn được áp dụng.
+
+Để biết auto-configuration nào đang được áp dụng và vì sao, hãy khởi động ứng dụng với tùy chọn `--debug`.
+Thao tác này bật debug log cho một số core logger và ghi báo cáo điều kiện ra console.
+
+
+
+[[using.auto-configuration.disabling-specific]]
+== Vô hiệu hóa class auto-configuration cụ thể
+
+Nếu thấy các class auto-configuration không mong muốn đang được áp dụng, bạn có thể dùng thuộc tính exclude của javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] để vô hiệu hóa chúng, như ví dụ sau:
+
+include-code::MyApplication[]
+
+Nếu class không có trên classpath, bạn có thể dùng thuộc tính `excludeName` của annotation và chỉ định tên đầy đủ của class.
+Nếu thích dùng javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] thay cho javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], các thuộc tính `exclude` và `excludeName` cũng có sẵn.
+Cuối cùng, bạn cũng có thể kiểm soát danh sách class auto-configuration bị loại trừ bằng property configprop:spring.autoconfigure.exclude[].
+
+TIP: Bạn có thể khai báo loại trừ cả ở cấp annotation lẫn bằng property.
+
+NOTE: Dù class auto-configuration là `public`, phần duy nhất được xem là public API là tên class, dùng để vô hiệu hóa auto-configuration.
+Nội dung thực tế của các class đó, như class cấu hình lồng nhau hoặc bean method, chỉ dành cho sử dụng nội bộ và chúng tôi không khuyến nghị dùng trực tiếp.
+
+
+
+[[using.auto-configuration.packages]]
+== Package auto-configuration
+
+Package auto-configuration là các package mà những tính năng được auto-configure mặc định tìm kiếm khi scan các thành phần như entity và Spring Data repository.
+Annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] (dùng trực tiếp hoặc thông qua javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation]) xác định package auto-configuration mặc định.
+Có thể cấu hình thêm package bằng annotation javadoc:org.springframework.boot.autoconfigure.AutoConfigurationPackage[format=annotation].
