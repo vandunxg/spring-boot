@@ -4,8 +4,9 @@
 - Nhánh: `docs/vi-translation-batch-01`.
 - Source commit: `adbbf047320013ee42284d6957293aaf75a56ad7`.
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
+- Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **20 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **21 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu nội dung và cú pháp với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -30,10 +31,10 @@
 18. [x] `modules/reference/pages/using/devtools.adoc`
 19. [x] `modules/reference/pages/using/packaging-for-production.adoc`
 20. [x] `modules/reference/pages/features/index.adoc`
+21. [x] `modules/reference/pages/features/spring-application.adoc`
 
 ## Tiếp theo
 
-21. [ ] `modules/reference/pages/features/spring-application.adoc`
 22. [ ] `modules/reference/pages/features/external-config.adoc`
 23. [ ] `modules/reference/pages/features/profiles.adoc`
 24. [ ] `modules/reference/pages/features/logging.adoc`
