@@ -1,0 +1,48 @@
+[[packaging.container-images.efficient-images]]
+= Efficient Container Images
+
+Có thể dễ dàng đóng gói Spring Boot uber jar thành Docker image.
+Tuy nhiên copy và chạy nguyên uber jar trong Docker image có nhiều nhược điểm.
+Chạy uber jar mà không unpack luôn có overhead nhất định, dễ nhận thấy trong containerized environment.
+Ngoài ra đặt application code và mọi dependency vào một Docker image layer không tối ưu.
+Vì code thường được recompile thường xuyên hơn việc upgrade Spring Boot, nên tách chúng ra sẽ tốt hơn.
+Nếu jar file nằm ở layer trước application class, Docker thường chỉ cần thay layer dưới cùng và reuse các layer khác từ cache.
+
+[[packaging.container-images.efficient-images.layering]]
+== Layering Docker Images
+
+Để dễ tạo optimized Docker image, Spring Boot hỗ trợ thêm layer index file vào jar.
+File cung cấp danh sách layer và phần của jar thuộc từng layer.
+Danh sách được order theo thứ tự layer cần thêm vào Docker/OCI image.
+Mặc định hỗ trợ:
+
+* `dependencies` (regular released dependency)
+* `spring-boot-loader` (mọi thứ dưới `org/springframework/boot/loader`)
+* `snapshot-dependencies` (snapshot dependency)
+* `application` (application class và resource)
+
+Ví dụ `layers.idx`:
+
+[source,yaml]
+----
+- "dependencies":
+  - BOOT-INF/lib/library1.jar
+  - BOOT-INF/lib/library2.jar
+- "spring-boot-loader":
+  - org/springframework/boot/loader/launch/JarLauncher.class
+  - ... <other classes>
+- "snapshot-dependencies":
+  - BOOT-INF/lib/library3-SNAPSHOT.jar
+- "application":
+  - META-INF/MANIFEST.MF
+  - BOOT-INF/classes/a/b/C.class
+----
+
+Layering này tách code dựa trên khả năng thay đổi giữa các application build.
+Library code ít thay đổi nên đặt trong layer riêng để tooling reuse từ cache.
+Application code dễ thay đổi hơn nên được isolate trong layer riêng.
+
+Spring Boot cũng hỗ trợ layering cho war file với `layers.idx`.
+
+Với Maven, xem xref:maven-plugin:packaging.adoc#packaging.layers[packaging layered jar or war section].
+Với Gradle, xem xref:gradle-plugin:packaging.adoc#packaging-executable.configuring.layered-archives[packaging layered jar or war section].
