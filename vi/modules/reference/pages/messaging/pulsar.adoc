@@ -156,7 +156,8 @@ Cũng có thể định nghĩa bean javadoc:org.springframework.pulsar.transacti
 == Pulsar Property bổ sung
 
 Property được auto-configuration hỗ trợ nằm trong xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties].
-Phần lớn property map trực tiếp tới Apache Pulsar configuration property.
+Lưu ý rằng phần lớn các property này (dạng hyphen hoặc camelCase) map trực tiếp tới Apache Pulsar configuration property.
+Xem tài liệu Apache Pulsar để biết chi tiết.
 
 Chỉ subset property được expose trực tiếp qua javadoc:org.springframework.boot.pulsar.autoconfigure.PulsarProperties[].
 Nếu muốn tune auto-configured component với property khác, dùng customizer tương ứng của từng component.

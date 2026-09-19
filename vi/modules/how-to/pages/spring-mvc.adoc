@@ -106,7 +106,7 @@ Customizer bean có thể order; customizer của Boot có order 0, cho phép ap
 Ngoài ra `JsonFactory` mà builder dùng và mapper nó tạo có thể customize bằng một hoặc nhiều bean javadoc:org.springframework.boot.jackson.autoconfigure.JsonFactoryBuilderCustomizer[].
 Các property `spring.jackson.factory` cũng có thể dùng configure factory.
 
-Mọi bean type javadoc:tools.jackson.databind.JacksonModule[] tự động register với auto-configured JsonMapper.Builder và apply vào mọi instance javadoc:tools.jackson.databind.json.JsonMapper[] nó tạo.
+Mọi bean type javadoc:tools.jackson.databind.JacksonModule[] tự động register với auto-configured javadoc:tools.jackson.databind.json.JsonMapper$Builder[] và apply vào mọi instance javadoc:tools.jackson.databind.json.JsonMapper[] nó tạo.
 Điều này cung cấp application-wide mechanism để contribute custom module khi thêm feature mới.
 
 Mọi module tham gia Java `ServiceLoader` mechanism mặc định được find và add vào auto-configured JsonMapper.Builder.
@@ -180,7 +180,7 @@ Làm vậy để toàn bộ MVC configuration trong tay bạn.
 == Customize ViewResolvers
 
 javadoc:org.springframework.web.servlet.ViewResolver[] là core component của Spring MVC, translate view name trong javadoc:org.springframework.stereotype.Controller[format=annotation] thành implementation javadoc:org.springframework.web.servlet.View[].
-javadoc:org.springframework.web.servlet.View[] resolver chủ yếu dùng trong UI application thay vì REST-style service; View không dùng để render javadoc:org.springframework.web.bind.annotation.ResponseBody[format=annotation].
+View resolver chủ yếu dùng trong UI application thay vì REST-style service; javadoc:org.springframework.web.servlet.View[] không dùng để render javadoc:org.springframework.web.bind.annotation.ResponseBody[format=annotation].
 Có nhiều implementation javadoc:org.springframework.web.servlet.ViewResolver[] và Spring tự nó không opinionated về loại nên dùng.
 Spring Boot cài một hoặc hai resolver tùy classpath và application context.
 javadoc:org.springframework.web.servlet.DispatcherServlet[] dùng mọi resolver tìm thấy trong application context, thử lần lượt cho tới khi có result.
@@ -240,7 +240,7 @@ Override error page phụ thuộc templating technology.
 Ví dụ nếu dùng Thymeleaf, thêm template `error.html`.
 Nếu dùng FreeMarker, thêm template `error.ftlh`.
 Nhìn chung cần javadoc:org.springframework.web.servlet.View[] resolve với name `error` hoặc javadoc:org.springframework.stereotype.Controller[format=annotation] handle path `/error`.
-Trừ khi replace một số default configuration, application context sẽ có javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[], nên javadoc:org.springframework.context.annotation.Bean[format=annotation] tên `error` là một cách thực hiện.
+Trừ khi replace một số default configuration, javadoc:org.springframework.context.ApplicationContext[] sẽ có javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[], nên javadoc:org.springframework.context.annotation.Bean[format=annotation] tên `error` là một cách thực hiện.
 Xem {code-spring-boot-webmvc-src}/autoconfigure/error/ErrorMvcAutoConfiguration.java[`ErrorMvcAutoConfiguration`] để biết thêm option.
 
 Xem thêm xref:reference:web/servlet.adoc#web.servlet.spring-mvc.error-handling[] để biết cách register handler trong servlet container.

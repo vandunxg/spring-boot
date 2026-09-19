@@ -12,7 +12,7 @@
 - Tổng số trang khả dụng trong navigation: **172 trang**. Đã dịch hết toàn bộ trang của cả ba source-root.
 - `modules/ROOT/pages/redirect.adoc` không tính là trang dịch: file chỉ chứa bảng ánh xạ redirect anchor, không có prose.
 - Mục tiêu 200 trang đặt trước đó không đạt được vì upstream tại commit này chỉ có 172 trang nội dung (173 file `pages/` kể cả `redirect.adoc`).
-- Kiểm tra hiện tại: đối chiếu tự động số anchor, xref, include, javadoc/configprop macro, source block, bảng, danh sách, admonition giữa nguồn và bản dịch; đối chiếu định danh anchor, target macro và nội dung code block phải trùng khớp tuyệt đối. Chưa chạy build website.
+- Kiểm tra hiện tại: rà soát chất lượng toàn bộ 172 trang (xem mục "Rà soát chất lượng"); đối chiếu tự động số anchor, xref, include, javadoc/configprop macro, source block, bảng, danh sách, admonition giữa nguồn và bản dịch; đối chiếu định danh anchor, target macro và nội dung code block phải trùng khớp tuyệt đối. Chưa chạy build website.
 
 ## Đã dịch
 
@@ -210,9 +210,34 @@
 171. [x] `modules/appendix/pages/dependency-versions/coordinates.adoc`
 172. [x] `modules/appendix/pages/dependency-versions/properties.adoc`
 
-## Tiếp theo
+## Rà soát chất lượng (batch 03)
 
-- Không còn trang nào chưa dịch tại source commit hiện tại.
-- Rà soát lại chất lượng bản dịch của các trang đã dịch trước đó, ưu tiên sửa chỗ sai ngữ nghĩa.
+Đối chiếu từng dòng giữa nguồn và bản dịch trên 147 trang dịch trước đó, phát hiện
+ba nhóm lỗi và đã sửa phần lớn:
+
+| Lỗi | Trước | Sau | Đã sửa |
+| --- | --- | --- | --- |
+| Macro `javadoc:`/`configprop:`/`xref:` bị thay bằng tên trần | 544 | 106 | 438 |
+| Markup trích dẫn `"``...``"` bị hạ thành nháy thường | 95 | 29 | 66 |
+| Câu bị lược bỏ hoặc tóm tắt mất nội dung | 85 | ~20 | ~65 |
+
+Cách sửa: canh theo từng dòng của nguồn trong cùng một section, chỉ chèn macro vào
+đúng dòng mà nguồn có macro đó. Nhờ vậy không đụng vào chỗ nguồn cố ý viết thường
+("bean" chung chung), cố ý dùng backtick, hay ở heading.
+
+Kiểm tra sau khi sửa: anchor ID, xref/include target và nội dung code block vẫn
+trùng khớp tuyệt đối với nguồn; không có macro nào bị tạo thừa so với nguồn.
+
+## Còn lại
+
+- **106 macro** chưa khôi phục được tự động, nằm ở 22 trang. Đây là chỗ bản dịch cũ
+  đã bỏ hẳn tên type khỏi câu (ví dụ nguồn ghi `javadoc:...SpringBootTest[format=annotation]`
+  nhưng bản dịch chỉ còn "attribute `webEnvironment`"), nên không còn chỗ neo để chèn
+  macro; phải viết lại câu thủ công. Trang nhiều nhất:
+  `testing/spring-boot-applications.adoc`, `data/nosql.adoc`, `how-to/spring-mvc.adoc`,
+  `messaging/amqp.adoc`, `actuator/metrics.adoc`.
+- **29 markup trích dẫn** còn thiếu, cùng nguyên nhân.
+- **~20 dòng** chênh lệch còn lại giữa nguồn và bản dịch phần lớn là do nguồn ngắt câu
+  qua nhiều dòng còn bản dịch gộp lại (nội dung không mất), cần soát tay để xác nhận.
 - Chạy build website để kiểm tra xref, include và macro thực sự resolve được.
 - Khi sync upstream mới, dịch phần chênh lệch do `scripts/sync-spring-boot-docs.sh` báo.

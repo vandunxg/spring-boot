@@ -75,11 +75,11 @@ include-code::MyConnectorHttpConfiguration[]
 
 Có ba cách chính để customize javadoc:org.springframework.web.reactive.function.client.WebClient[] tùy phạm vi cần áp dụng.
 
-Để scope hẹp nhất, inject auto-configured WebClient.Builder rồi gọi method cần thiết.
+Để scope hẹp nhất, inject auto-configured javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[] rồi gọi method cần thiết.
 Builder là stateful: mọi thay đổi trên builder ảnh hưởng tới client tạo sau đó.
 Nếu tạo nhiều client từ cùng builder, có thể clone bằng `WebClient.Builder other = builder.clone();`.
 
-Để application-wide additive customization cho mọi WebClient.Builder, khai báo bean javadoc:org.springframework.boot.webclient.WebClientCustomizer[] và thay đổi builder tại injection point.
+Để application-wide additive customization cho mọi javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[], khai báo bean javadoc:org.springframework.boot.webclient.WebClientCustomizer[] và thay đổi builder tại injection point.
 
 Cuối cùng có thể dùng API gốc `WebClient.create()`.
 Khi đó không có auto-configuration hoặc javadoc:org.springframework.boot.webclient.WebClientCustomizer[] được áp dụng.
@@ -115,7 +115,7 @@ include-code::MyService[]
 
 Có ba cách chính để customize javadoc:org.springframework.web.client.RestClient[].
 
-Để scope hẹp nhất, inject auto-configured RestClient.Builder và gọi method cần thiết.
+Để scope hẹp nhất, inject auto-configured javadoc:org.springframework.web.client.RestClient$Builder[] và gọi method cần thiết.
 Builder stateful: thay đổi phản ánh lên client được tạo sau đó.
 Nếu cần tạo nhiều client với cùng builder, có thể clone bằng `RestClient.Builder other = builder.clone();`.
 
@@ -173,6 +173,7 @@ spring:
 TIP: Cũng có thể dùng xref:io/rest-client.adoc#io.rest-client.global-configuration[global configuration property].
 
 Với customization phức tạp hơn, dùng javadoc:org.springframework.boot.http.client.autoconfigure.ClientHttpRequestFactoryBuilderCustomizer[] hoặc khai báo bean javadoc:org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder[] riêng khiến auto-configuration back off.
+Cách này hữu ích khi bạn cần customize một số phần nội bộ của HTTP library bên dưới.
 
 Ví dụ dùng JDK client với javadoc:java.net.ProxySelector[] cụ thể:
 

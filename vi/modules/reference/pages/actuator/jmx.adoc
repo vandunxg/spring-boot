@@ -27,7 +27,8 @@ Ví dụ endpoint `health` được expose thành `org.springframework.boot:type
 Nếu application có nhiều hơn một Spring javadoc:org.springframework.context.ApplicationContext[], name có thể conflict.
 Để giải quyết, đặt configprop:spring.jmx.unique-names[] thành `true` để MBean name luôn unique.
 
-Cũng có thể customize JMX domain nơi endpoint được expose:
+Bạn cũng có thể customize JMX domain nơi endpoint được expose.
+Các setting sau minh họa cách làm điều đó trong `application.properties`:
 
 [configprops,yaml]
 ----

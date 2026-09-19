@@ -131,7 +131,7 @@ Khác biệt duy nhất giữa việc dùng condition ở class level và đánh
 
 TIP: Khi khai báo method javadoc:org.springframework.context.annotation.Bean[format=annotation], hãy cung cấp càng nhiều type information càng tốt trong return type của method.
 Ví dụ, nếu concrete class của bean implement interface, return type của bean method nên là concrete class chứ không phải interface.
-Việc cung cấp càng nhiều type information càng tốt đặc biệt quan trọng khi dùng bean condition, vì quá trình evaluate chỉ có thể dựa vào type information có sẵn trong method signature.
+Việc cung cấp càng nhiều type information càng tốt đặc biệt quan trọng khi dùng javadoc:org.springframework.context.annotation.Bean[format=annotation] condition, vì quá trình evaluate chỉ có thể dựa vào type information có sẵn trong method signature.
 
 
 

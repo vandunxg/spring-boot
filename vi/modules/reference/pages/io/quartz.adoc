@@ -39,7 +39,7 @@ Trong trường hợp này, copy script, chỉnh theo comment trong script rồi
 
 Để Quartz dùng javadoc:javax.sql.DataSource[] khác javadoc:javax.sql.DataSource[] chính của application, khai báo bean javadoc:javax.sql.DataSource[] và annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.quartz.autoconfigure.QuartzDataSource[format=annotation].
 Điều này đảm bảo Quartz-specific javadoc:javax.sql.DataSource[] được dùng bởi cả javadoc:org.springframework.scheduling.quartz.SchedulerFactoryBean[] và schema initialization.
-Tương tự, để Quartz dùng javadoc:org.springframework.transaction.TransactionManager[] khác transaction manager chính, khai báo bean và annotate method bằng javadoc:org.springframework.boot.quartz.autoconfigure.QuartzTransactionManager[format=annotation].
+Tương tự, để Quartz dùng javadoc:org.springframework.transaction.TransactionManager[] khác transaction manager chính, khai báo javadoc:org.springframework.context.annotation.Bean[format=annotation] và annotate method bằng javadoc:org.springframework.boot.quartz.autoconfigure.QuartzTransactionManager[format=annotation].
 
 Mặc định job tạo bởi configuration không overwrite job đã register được đọc từ persistent job store.
 Để cho phép overwrite existing job definition, đặt configprop:spring.quartz.overwrite-existing-jobs[].

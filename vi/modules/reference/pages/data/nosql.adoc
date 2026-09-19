@@ -71,7 +71,7 @@ Ngoài ra có thể register bean javadoc:org.springframework.data.redis.connect
 
 NOTE: master/replica không được Jedis hỗ trợ.
 
-Nếu thêm bean riêng của bất kỳ auto-configured type nào, nó thay default, ngoại trừ javadoc:org.springframework.data.redis.core.RedisTemplate[] nơi exclusion dựa trên bean name `redisTemplate` chứ không phải type.
+Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] riêng của bất kỳ auto-configured type nào, nó thay default, ngoại trừ javadoc:org.springframework.data.redis.core.RedisTemplate[] nơi exclusion dựa trên bean name `redisTemplate` chứ không phải type.
 
 Mặc định pooled connection factory được auto-configure nếu `commons-pool2` có trên classpath.
 
@@ -221,7 +221,7 @@ Spring Data hỗ trợ repository cho MongoDB.
 Giống JPA repository, query được tự động construct dựa trên method name.
 
 Spring Data JPA và Spring Data MongoDB dùng cùng common infrastructure.
-Ví dụ JPA trước đó vẫn hoạt động nếu `City` là MongoDB data class thay vì JPA entity:
+Ví dụ JPA trước đó vẫn hoạt động nếu `City` là MongoDB data class thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation]:
 
 include-code::CityRepository[]
 
@@ -270,7 +270,7 @@ Spring Data hỗ trợ repository cho Neo4j.
 Xem {url-spring-data-neo4j-docs}[reference documentation].
 
 Spring Data Neo4j dùng common infrastructure giống Spring Data JPA và các Spring Data module khác.
-Có thể định nghĩa `City` là javadoc:org.springframework.data.neo4j.core.schema.Node[format=annotation] thay vì JPA entity và repository abstraction hoạt động tương tự:
+Có thể định nghĩa `City` là javadoc:org.springframework.data.neo4j.core.schema.Node[format=annotation] thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation] và repository abstraction hoạt động tương tự:
 
 include-code::CityRepository[]
 
@@ -381,7 +381,7 @@ Spring Data hỗ trợ repository cho Elasticsearch.
 Query được construct tự động dựa trên method name.
 
 Spring Data JPA và Spring Data Elasticsearch dùng cùng common infrastructure.
-Nếu `City` là Elasticsearch javadoc:org.springframework.data.elasticsearch.annotations.Document[format=annotation] thay vì JPA entity, repository hoạt động tương tự.
+Nếu `City` là Elasticsearch javadoc:org.springframework.data.elasticsearch.annotations.Document[format=annotation] thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation], repository hoạt động tương tự.
 
 Repository và document được tìm qua scanning.
 Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
@@ -392,7 +392,7 @@ TIP: Xem {url-spring-data-elasticsearch-docs}[reference documentation].
 Spring Boot hỗ trợ classic và reactive Elasticsearch repository qua javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] bean.
 Nhiều khả năng các bean đó được Spring Boot auto-configure khi có đủ dependency cần thiết.
 
-Nếu muốn custom template backing repository, thêm bean javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.core.ElasticsearchOperations[] tên `"elasticsearchTemplate"`.
+Nếu muốn custom template backing repository, thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.core.ElasticsearchOperations[] tên `"elasticsearchTemplate"`.
 Reactive tương tự với bean name `"reactiveElasticsearchTemplate"`.
 
 Có thể disable repository support:
@@ -486,7 +486,7 @@ Ví dụ inject Cassandra bean:
 
 include-code::MyBean[]
 
-Nếu thêm bean javadoc:org.springframework.data.cassandra.core.CassandraTemplate[] riêng, nó thay default.
+Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.cassandra.core.CassandraTemplate[] riêng, nó thay default.
 
 [[data.nosql.cassandra.repositories]]
 === Spring Data Cassandra Repository

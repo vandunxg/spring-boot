@@ -110,11 +110,13 @@ Trong trường hợp này metrics và traces luôn dùng semantic convention do
 Tài liệu này mô tả OpenTelemetry được Spring team hỗ trợ chính thức bằng Micrometer và OTLP exporter.
 Trong trường hợp này metrics và traces dùng semantic convention mô tả trong Spring project documentation như {url-spring-framework-docs}/integration/observability.html[Spring Framework], nhưng có thể <<actuator.observability.semantic-conventions, cấu hình>> để dùng stable convention của OpenTelemetry.
 
+Module actuator của Spring Boot bao gồm hỗ trợ cơ bản cho OpenTelemetry.
+
 Module actuator của Spring Boot bao gồm basic support cho OpenTelemetry.
 
 Nó cung cấp bean type javadoc:io.opentelemetry.api.OpenTelemetry[], và nếu application context có bean type javadoc:io.opentelemetry.sdk.trace.SdkTracerProvider[], javadoc:io.opentelemetry.context.propagation.ContextPropagators[], javadoc:io.opentelemetry.sdk.logs.SdkLoggerProvider[] hoặc javadoc:io.opentelemetry.sdk.metrics.SdkMeterProvider[], chúng tự động được register.
 Ngoài ra, Spring Boot cung cấp bean javadoc:io.opentelemetry.sdk.resources.Resource[].
-Attribute của auto-configured Resource có thể cấu hình qua configprop:management.opentelemetry.resource-attributes[].
+Attribute của auto-configured javadoc:io.opentelemetry.sdk.resources.Resource[] có thể cấu hình qua configprop:management.opentelemetry.resource-attributes[].
 Auto-configured attribute được merge với attribute từ environment variable `OTEL_RESOURCE_ATTRIBUTES` và `OTEL_SERVICE_NAME`, trong đó attribute từ configuration property có precedence.
 
 Nếu tự định nghĩa bean javadoc:io.opentelemetry.sdk.resources.Resource[], behavior trên không còn áp dụng.

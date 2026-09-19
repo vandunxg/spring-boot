@@ -77,7 +77,8 @@ TIP: Có thể register nhiều bean implement javadoc:org.springframework.kafka
 == Kafka Property bổ sung
 
 Property được auto-configuration hỗ trợ nằm trong xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties].
-Hầu hết property map trực tiếp tới Apache Kafka dotted property.
+Lưu ý rằng phần lớn các property này (dạng hyphen hoặc camelCase) map trực tiếp tới Apache Kafka dotted property.
+Xem tài liệu Apache Kafka để biết chi tiết.
 
 Property không chứa client type (`producer`, `consumer`, `admin`, `streams`) được xem là common và áp dụng cho mọi client.
 Có thể override cho từng client type.

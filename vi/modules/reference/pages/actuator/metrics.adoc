@@ -180,7 +180,7 @@ Ingest endpoint forward metric tới Dynatrace backend.
 ===== Manual Configuration
 
 Nếu không có auto-configuration, cần endpoint của {url-dynatrace-docs-shortlink}/api-metrics-v2-post-datapoints[Metrics v2 API] và API token.
-{url-dynatrace-docs-shortlink}/api-authentication[API token] phải có permission "Ingest metrics" (`metrics.ingest`).
+{url-dynatrace-docs-shortlink}/api-authentication[API token] phải có permission "`Ingest metrics`" (`metrics.ingest`).
 Khuyến nghị giới hạn token chỉ permission này.
 Endpoint URI phải chứa path, ví dụ `/api/v2/metrics/ingest`.
 
@@ -214,7 +214,8 @@ Chỉ nên dùng khi gặp vấn đề migrate từ Micrometer 1.8.x sang 1.9.x.
 * Export meter metadata: Từ Micrometer 1.12.0, Dynatrace exporter mặc định export cả meter metadata như unit và description.
 Dùng toggle `export-meter-metadata` để tắt.
 
-Có thể không specify URI và API token; khi đó dùng auto-configured endpoint:
+Bạn có thể không cần chỉ định URI và API token, như ví dụ sau.
+Trong trường hợp này, endpoint được cấu hình tự động sẽ được dùng:
 
 [configprops,yaml]
 ----
@@ -675,13 +676,13 @@ Nếu dùng semantic convention của OpenTelemetry, name không customize đư�
 Xem {url-spring-framework-docs}/integration/observability.html#observability.http-server.servlet[Spring Framework reference documentation].
 
 Để thêm vào default tag, cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] extend javadoc:org.springframework.http.server.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.observation`.
-Để replace default tag, cung cấp bean implement javadoc:org.springframework.http.server.observation.ServerRequestObservationConvention[].
+Để replace default tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.server.observation.ServerRequestObservationConvention[].
 
 TIP: Trong một số case, exception handle trong web controller không được record làm request metric tag.
 Application có thể opt in bằng xref:web/servlet.adoc#web.servlet.spring-mvc.error-handling[setting handled exception làm request attribute].
 
 Mặc định mọi request được handle.
-Để customize filter, cung cấp bean implement `FilterRegistrationBean<ServerHttpObservationFilter>`.
+Để customize filter, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement `FilterRegistrationBean<ServerHttpObservationFilter>`.
 
 [[actuator.metrics.supported.spring-webflux]]
 === Spring WebFlux Metrics
@@ -693,8 +694,8 @@ Nếu dùng OpenTelemetry semantic convention, name không customize được.
 
 Xem {url-spring-framework-docs}/integration/observability.html#observability.http-server.reactive[Spring Framework reference documentation].
 
-Để thêm default tag, cung cấp bean extend javadoc:org.springframework.http.server.reactive.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.reactive.observation`.
-Để replace default tag, cung cấp bean implement javadoc:org.springframework.http.server.reactive.observation.ServerRequestObservationConvention[].
+Để thêm default tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] extend javadoc:org.springframework.http.server.reactive.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.reactive.observation`.
+Để replace default tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.server.reactive.observation.ServerRequestObservationConvention[].
 
 TIP: Trong một số case, exception handle trong controller và handler function không được record làm request metric tag.
 Application có thể opt in bằng xref:web/reactive.adoc#web.reactive.webflux.error-handling[setting handled exception làm request attribute].
@@ -728,7 +729,7 @@ Mặc định Jersey server metric được tag:
 | URI template của request trước variable substitution nếu có thể, ví dụ `/api/person/{id}`.
 |===
 
-Để customize tag, cung cấp bean implement javadoc:io.micrometer.core.instrument.binder.jersey.server.JerseyObservationConvention[].
+Để customize tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:io.micrometer.core.instrument.binder.jersey.server.JerseyObservationConvention[].
 
 [[actuator.metrics.supported.ssl]]
 === SSL Bundle Metrics
@@ -770,8 +771,8 @@ Customize bằng configprop:management.observations.http.client.requests.name[].
 
 Xem {url-spring-framework-docs}/integration/observability.html#observability.http-client[Spring Framework reference documentation].
 
-Để customize tag khi dùng javadoc:org.springframework.web.client.RestClient[], cung cấp bean implement javadoc:org.springframework.http.client.observation.ClientRequestObservationConvention[] từ package `org.springframework.http.client.observation`.
-Với javadoc:org.springframework.web.reactive.function.client.WebClient[], cung cấp bean implement javadoc:org.springframework.web.reactive.function.client.ClientRequestObservationConvention[] từ package `org.springframework.web.reactive.function.client`.
+Để customize tag khi dùng javadoc:org.springframework.web.client.RestClient[], cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.client.observation.ClientRequestObservationConvention[] từ package `org.springframework.http.client.observation`.
+Với javadoc:org.springframework.web.reactive.function.client.WebClient[], cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.web.reactive.function.client.ClientRequestObservationConvention[] từ package `org.springframework.web.reactive.function.client`.
 
 [[actuator.metrics.supported.tomcat]]
 === Tomcat Metrics
@@ -1114,7 +1115,7 @@ Có thể thêm bất kỳ số lượng query parameter `tag=KEY:VALUE` nào v�
 [TIP]
 ====
 Measurement report là _sum_ statistic của mọi meter match meter name và tag đã apply.
-Trong ví dụ trên, statistic `Value` trả về là tổng maximum memory footprint của area `"`Code Cache`"`, `"`Compressed Class Space`"`, và `"Metaspace"` của heap.
+Trong ví dụ trên, statistic `Value` trả về là tổng maximum memory footprint của area `"`Code Cache`"`, `"`Compressed Class Space`"`, và `"`Metaspace`"` của heap.
 Nếu chỉ muốn maximum size cho `"`Metaspace`"`, thêm `tag=id:Metaspace`, tức `/actuator/metrics/jvm.memory.max?tag=area:nonheap&tag=id:Metaspace`.
 ====
 

@@ -41,8 +41,9 @@ management:
 Nếu server context-path khác `/`, Cloud Foundry endpoint không có ở root.
 Ví dụ `server.servlet.context-path=/app` thì endpoint ở `/app/cloudfoundryapplication/*`.
 
-Nếu muốn endpoint luôn ở `/cloudfoundryapplication/*` bất kể server context-path, cần explicit configuration tùy web server.
-Với Tomcat:
+Nếu muốn Cloud Foundry endpoint luôn có ở `/cloudfoundryapplication/*` bất kể context-path của server, bạn cần cấu hình tường minh trong application.
+Configuration khác nhau tùy web server đang dùng.
+Với Tomcat, bạn có thể thêm configuration sau:
 
 include-code::MyCloudFoundryConfiguration[]
 

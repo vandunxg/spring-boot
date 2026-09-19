@@ -738,13 +738,14 @@ Default status mapping:
 === Reactive Health Indicators
 
 Với reactive application như Spring WebFlux, javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] cung cấp non-blocking contract để lấy application health.
-Tương tự regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[]; mặc định gồm mọi javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] trong ApplicationContext.
+Tương tự regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[]; mặc định gồm mọi javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
 Regular javadoc:org.springframework.boot.health.contributor.HealthContributor[] không check qua reactive API được execute trên elastic scheduler.
 
 TIP: Trong reactive application, nên dùng javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[] để register/unregister health indicator runtime.
 Nếu cần register regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], wrap bằng `ReactiveHealthContributor#adapt`.
 
-Để cung cấp custom health information từ reactive API, register Spring bean implement javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[]:
+Để cung cấp custom health information từ reactive API, bạn có thể register Spring bean implement javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[].
+Đoạn code sau minh họa một implementation javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] mẫu:
 
 include-code::MyReactiveHealthIndicator[]
 
@@ -845,7 +846,8 @@ management:
 TIP: Dùng `@Qualifier("groupname")` nếu cần register custom javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] hoặc javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] bean cho group.
 
 Health group cũng có thể include/exclude javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
-Có thể include/exclude chỉ component cụ thể của javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[] bằng fully qualified name:
+Bạn cũng có thể include/exclude chỉ một component nhất định của javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+Việc này thực hiện bằng fully qualified name của component như sau:
 
 [source,properties]
 ----
@@ -885,7 +887,7 @@ Application deploy trên Kubernetes có thể cung cấp internal state qua http
 Tùy https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes configuration], kubelet gọi probe và react theo result.
 
 Mặc định Spring Boot manage xref:features/spring-application.adoc#features.spring-application.application-availability[Application Availability] state.
-Nếu deploy trong Kubernetes environment, actuator collect "Liveness" và "Readiness" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và dùng trong dedicated xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator]: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
+Nếu deploy trong Kubernetes environment, actuator collect "`Liveness`" và "`Readiness`" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và dùng trong dedicated xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator]: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
 Các indicator hiển thị trên global health endpoint (`"/actuator/health"`).
 Chúng cũng expose thành separate HTTP Probe qua xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health group]: `"/actuator/health/liveness"` và `"/actuator/health/readiness"`.
 
@@ -923,7 +925,8 @@ Xem phần xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes.lif
 
 Nếu Actuator endpoint deploy trên separate management context, endpoint không dùng cùng web infrastructure (port, connection pool, framework component) với main application.
 Trong trường hợp này probe check có thể success dù main application không hoạt động đúng, ví dụ không accept new connection.
-Vì vậy nên expose health group `liveness` và `readiness` trên main server port:
+Vì vậy nên expose health group `liveness` và `readiness` trên main server port.
+Việc này thực hiện bằng cách set property sau:
 
 [source,properties]
 ----

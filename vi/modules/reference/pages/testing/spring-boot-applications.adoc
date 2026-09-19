@@ -81,18 +81,20 @@ include-code::typical/MyApplication[]
 
 Trong ví dụ trên, `main` method chỉ delegate tới javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[]. Tuy nhiên `main` có thể phức tạp hơn và apply customization trước khi gọi `run`.
 
-Ví dụ application đổi banner mode và set additional profile:
+Tuy nhiên, `main` method có thể phức tạp hơn và áp dụng customization trước khi gọi javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[].
+
+Ví dụ, đây là một application đổi banner mode và set thêm profile:
 
 include-code::custom/MyApplication[]
 
 Vì customization trong `main` có thể ảnh hưởng javadoc:org.springframework.context.ApplicationContext[], bạn có thể muốn dùng `main` để tạo context dùng trong test.
-Mặc định javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] không gọi `main`; class được dùng trực tiếp để tạo ApplicationContext.
+Mặc định javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] không gọi `main`; class được dùng trực tiếp để tạo javadoc:org.springframework.context.ApplicationContext[].
 
 Để đổi behavior, thay attribute `useMainMethod` của javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] thành javadoc:org.springframework.boot.test.context.SpringBootTest$UseMainMethod#ALWAYS[] hoặc javadoc:org.springframework.boot.test.context.SpringBootTest$UseMainMethod#WHEN_AVAILABLE[].
 Với `ALWAYS`, test fail nếu không tìm thấy `main`.
 Với `WHEN_AVAILABLE`, `main` được dùng nếu có, nếu không dùng standard loading mechanism.
 
-Ví dụ test sau invoke `main` của `MyApplication` để tạo ApplicationContext.
+Ví dụ test sau invoke `main` của `MyApplication` để tạo javadoc:org.springframework.context.ApplicationContext[].
 Nếu main method set additional profile, các profile đó active khi context start.
 
 include-code::always/MyApplicationTests[]
@@ -368,7 +370,7 @@ TIP: Setup này chỉ hỗ trợ WebFlux application vì javadoc:org.springframe
 NOTE: javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] không detect route register qua functional web framework.
 Để test bean javadoc:org.springframework.web.reactive.function.server.RouterFunction[] trong context, import javadoc:org.springframework.web.reactive.function.server.RouterFunction[] bằng javadoc:org.springframework.context.annotation.Import[format=annotation] hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
 
-NOTE: javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] không detect custom security configuration register thành bean javadoc:org.springframework.security.web.server.SecurityWebFilterChain[].
+NOTE: javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] không detect custom security configuration register thành javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.security.web.server.SecurityWebFilterChain[].
 Để include, import configuration register bean hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
 
 TIP: Đôi khi Spring WebFlux test chưa đủ; Spring Boot có thể chạy xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.with-running-server[full end-to-end test với actual server].
