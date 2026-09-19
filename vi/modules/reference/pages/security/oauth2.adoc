@@ -1,0 +1,283 @@
+[[security.oauth2]]
+= OAuth2
+
+https://oauth.net/2/[OAuth2] là authorization framework được sử dụng rộng rãi.
+
+[[security.oauth2.client]]
+== Client
+
+Nếu `spring-security-oauth2-client` có trên classpath, bạn có thể dùng auto-configuration để setup OAuth2/OpenID Connect client.
+Configuration này dùng property trong javadoc:org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties[].
+Cùng các property áp dụng cho cả servlet và reactive web application.
+
+Mỗi registration phải chỉ định một OAuth2 provider.
+Khi được đặt, value của `spring.security.oauth2.client.registration.<registration-id>.provider` chỉ định provider của registration.
+Nếu không đặt `provider`, ID của registration được dùng thay thế.
+Cả hai cách được minh họa sau:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          my-client:
+            client-id: "abcd"
+            client-secret: "password"
+            provider: "example"
+          example:
+            client-id: "abcd"
+            client-secret: "password"
+----
+
+Hai registration `my-client` và `example` đều dùng provider ID `example`.
+Registration đầu dùng do property `spring.security.oauth2.client.registration.my-client.provider`.
+Registration sau dùng do ID là `example` và không cấu hình property `provider`.
+
+Provider được chỉ định có thể tham chiếu provider cấu hình bằng `spring.security.oauth2.client.provider.<provider-id>.*` hoặc một trong xref:security/oauth2.adoc#security.oauth2.client.common-providers[common provider đã biết].
+
+Có thể register nhiều OAuth2 client và provider dưới prefix `spring.security.oauth2.client`:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          my-login-client:
+            client-id: "abcd"
+            client-secret: "password"
+            client-name: "Client for OpenID Connect"
+            provider: "my-oauth-provider"
+            scope: "openid,profile,email,phone,address"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-authentication-method: "client_secret_basic"
+            authorization-grant-type: "authorization_code"
+
+          my-client-1:
+            client-id: "abcd"
+            client-secret: "password"
+            client-name: "Client for user scope"
+            provider: "my-oauth-provider"
+            scope: "user"
+            redirect-uri: "{baseUrl}/authorized/user"
+            client-authentication-method: "client_secret_basic"
+            authorization-grant-type: "authorization_code"
+
+          my-client-2:
+            client-id: "abcd"
+            client-secret: "password"
+            client-name: "Client for email scope"
+            provider: "my-oauth-provider"
+            scope: "email"
+            redirect-uri: "{baseUrl}/authorized/email"
+            client-authentication-method: "client_secret_basic"
+            authorization-grant-type: "authorization_code"
+
+        provider:
+          my-oauth-provider:
+            authorization-uri: "https://my-auth-server.com/oauth2/authorize"
+            token-uri: "https://my-auth-server.com/oauth2/token"
+            user-info-uri: "https://my-auth-server.com/userinfo"
+            user-info-authentication-method: "header"
+            jwk-set-uri: "https://my-auth-server.com/oauth2/jwks"
+            user-name-attribute: "name"
+----
+
+Ví dụ có ba registration với ID lần lượt `my-login-client`, `my-client-1`, `my-client-2`, cùng một provider ID `my-oauth-provider`.
+
+Với OpenID Connect provider hỗ trợ https://openid.net/specs/openid-connect-discovery-1_0.html[OpenID Connect discovery], configuration có thể đơn giản hơn.
+Provider cần cấu hình `issuer-uri`, URI mà provider công bố là Issuer Identifier.
+Ví dụ, nếu `issuer-uri` là `+https://example.com+`, một "OpenID Provider Configuration Request" được gửi tới `+https://example.com/.well-known/openid-configuration+`.
+Kết quả mong đợi là "OpenID Provider Configuration Response".
+Ví dụ:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc-provider:
+            issuer-uri: "https://dev-123456.oktapreview.com/oauth2/default/"
+----
+
+Mặc định javadoc:org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter[] chỉ xử lý URL match `/login/oauth2/code/*`.
+Nếu customize `redirect-uri` sang pattern khác, cần cung cấp configuration xử lý pattern đó.
+Ví dụ với servlet application:
+
+include-code::MyOAuthClientConfiguration[]
+
+TIP: Spring Boot auto-configure javadoc:org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService[] dùng bởi Spring Security để quản lý client registration.
+Implementation này có giới hạn và chỉ nên dùng ở development.
+Trong production, cân nhắc javadoc:org.springframework.security.oauth2.client.JdbcOAuth2AuthorizedClientService[] hoặc implementation riêng của javadoc:org.springframework.security.oauth2.client.OAuth2AuthorizedClientService[].
+
+[[security.oauth2.client.common-providers]]
+=== OAuth2 Client Registration cho Common Provider
+
+Với các OAuth2/OpenID provider phổ biến (Google, Github, Facebook, X, Okta), Spring Boot cung cấp default provider.
+ID tương ứng là `google`, `github`, `facebook`, `x`, `okta`.
+
+Nếu không cần customize provider, đặt property `provider` của registration bằng ID common provider.
+Ngoài ra có thể xref:security/oauth2.adoc#security.oauth2.client[dùng registration ID trùng provider ID].
+Hai cấu hình sau đều dùng provider `google`:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          my-client:
+            client-id: "abcd"
+            client-secret: "password"
+            provider: "google"
+          google:
+            client-id: "abcd"
+            client-secret: "password"
+----
+
+[[security.oauth2.server]]
+== Resource Server
+
+Nếu `spring-security-oauth2-resource-server` có trên classpath, Spring Boot có thể setup OAuth2 Resource Server.
+Với JWT, cần chỉ định JWK Set URI hoặc OIDC Issuer URI:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "https://example.com/oauth2/default/v1/keys"
+----
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://dev-123456.oktapreview.com/oauth2/default/"
+----
+
+NOTE: Nếu authorization server không hỗ trợ JWK Set URI, có thể cấu hình resource server bằng Public Key dùng verify chữ ký JWT.
+Dùng configprop:spring.security.oauth2.resourceserver.jwt.public-key-location[], value trỏ tới file chứa public key ở PEM-encoded x509 format.
+
+configprop:spring.security.oauth2.resourceserver.jwt.audiences[] chỉ định value mong đợi của claim `aud`.
+Ví dụ yêu cầu JWT chứa `aud=my-audience`:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          audiences:
+            - "my-audience"
+----
+
+Các property này áp dụng cho cả servlet và reactive application.
+Ngoài ra có thể định nghĩa bean javadoc:org.springframework.security.oauth2.jwt.JwtDecoder[] cho servlet hoặc javadoc:org.springframework.security.oauth2.jwt.ReactiveJwtDecoder[] cho reactive.
+
+Nếu dùng opaque token thay JWT, cấu hình introspection:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        opaquetoken:
+          introspection-uri: "https://example.com/check-token"
+          client-id: "my-client-id"
+          client-secret: "my-client-secret"
+----
+
+Các property cũng áp dụng cho cả servlet và reactive application.
+
+Kết quả là introspector được auto-configure: javadoc:org.springframework.security.oauth2.server.resource.introspection.SpringOpaqueTokenIntrospector[] hoặc với reactive là javadoc:org.springframework.security.oauth2.server.resource.introspection.SpringReactiveOpaqueTokenIntrospector[].
+Có thể customize bằng javadoc:org.springframework.boot.security.oauth2.server.resource.autoconfigure.SpringOpaqueTokenIntrospectorBuilderCustomizer[] và javadoc:org.springframework.boot.security.oauth2.server.resource.autoconfigure.reactive.SpringReactiveOpaqueTokenIntrospectorBuilderCustomizer[].
+
+Để kiểm soát hoàn toàn introspection, tự định nghĩa javadoc:org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector[] hoặc javadoc:org.springframework.security.oauth2.server.resource.introspection.ReactiveOpaqueTokenIntrospector[].
+
+[[security.oauth2.authorization-server]]
+== Authorization Server
+
+Nếu `spring-security-oauth2-authorization-server` có trên classpath, có thể dùng auto-configuration để setup Servlet-based OAuth2 Authorization Server.
+
+Có thể register nhiều OAuth2 client dưới prefix `spring.security.oauth2.authorizationserver.client`:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          my-client-1:
+            registration:
+              client-id: "abcd"
+              client-secret: "{noop}secret1"
+              client-authentication-methods:
+                - "client_secret_basic"
+              authorization-grant-types:
+                - "authorization_code"
+                - "refresh_token"
+              redirect-uris:
+                - "https://my-client-1.com/login/oauth2/code/abcd"
+                - "https://my-client-1.com/authorized"
+              scopes:
+                - "openid"
+                - "profile"
+                - "email"
+                - "phone"
+                - "address"
+            require-authorization-consent: true
+            token:
+              authorization-code-time-to-live: 5m
+              access-token-time-to-live: 10m
+              access-token-format: "reference"
+              reuse-refresh-tokens: false
+              refresh-token-time-to-live: 30m
+          my-client-2:
+            registration:
+              client-id: "efgh"
+              client-secret: "{noop}secret2"
+              client-authentication-methods:
+                - "client_secret_jwt"
+              authorization-grant-types:
+                - "client_credentials"
+              scopes:
+                - "user.read"
+                - "user.write"
+            jwk-set-uri: "https://my-client-2.com/jwks"
+	        token-endpoint-authentication-signing-algorithm: "RS256"
+----
+
+NOTE: Property `client-secret` phải ở format match được bởi javadoc:org.springframework.security.crypto.password.PasswordEncoder[] đã cấu hình.
+Default PasswordEncoder được tạo qua `PasswordEncoderFactories.createDelegatingPasswordEncoder()`.
+
+Auto-configuration Spring Boot cho Spring Authorization Server được thiết kế để bắt đầu nhanh.
+Hầu hết application sẽ cần customization và định nghĩa bean để override auto-configuration.
+
+Các component sau có thể định nghĩa thành bean để override:
+
+* javadoc:org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository[]
+* javadoc:org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings[]
+* javadoc:org.springframework.security.web.SecurityFilterChain[]
+* `com.nimbusds.jose.jwk.source.JWKSource<com.nimbusds.jose.proc.SecurityContext>`
+* javadoc:org.springframework.security.oauth2.jwt.JwtDecoder[]
+
+TIP: Spring Boot auto-configure javadoc:org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository[] để quản lý registered client.
+Implementation này có giới hạn và chỉ nên dùng trong development.
+Production nên cân nhắc javadoc:org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository[] hoặc implementation riêng của javadoc:org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository[].
+
+Xem chapter {url-spring-security-docs}/servlet/oauth2/authorization-server/getting-started.html[Getting Started] trong Spring Security Reference Documentation.
