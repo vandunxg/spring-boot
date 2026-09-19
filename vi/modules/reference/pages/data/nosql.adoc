@@ -173,7 +173,7 @@ spring:
       enabled: true
 ----
 
-Custom SSL trust material qua SSL bundle:
+Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle]:
 
 [configprops,yaml]
 ----
@@ -271,7 +271,7 @@ Spring Boot hỗ trợ classic và reactive Neo4j repository qua javadoc:org.spr
 Khi Project Reactor có trên classpath, reactive style cũng được auto-configure.
 
 Repository và entity được tìm qua scanning.
-Mặc định auto-configuration package được scan.
+Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
 Customize bằng javadoc:org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
 
 [NOTE]
@@ -373,7 +373,7 @@ Spring Data JPA và Spring Data Elasticsearch dùng cùng common infrastructure.
 Nếu `City` là Elasticsearch javadoc:org.springframework.data.elasticsearch.annotations.Document[format=annotation] thay vì JPA entity, repository hoạt động tương tự.
 
 Repository và document được tìm qua scanning.
-Mặc định auto-configuration package được scan.
+Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
 Customize bằng javadoc:org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
 
 TIP: Xem {url-spring-data-elasticsearch-docs}[reference documentation].
@@ -444,7 +444,7 @@ spring:
       enabled: true
 ----
 
-Custom SSL bundle:
+Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng:
 
 [configprops,yaml]
 ----
@@ -483,7 +483,7 @@ Spring Data có basic repository support cho Cassandra.
 Hiện tại giới hạn hơn JPA repository và cần finder method annotate javadoc:org.springframework.data.cassandra.repository.Query[format=annotation].
 
 Repository và entity được tìm qua scanning.
-Mặc định auto-configuration package được scan.
+Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
 Customize bằng javadoc:org.springframework.data.cassandra.repository.config.EnableCassandraRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
 
 TIP: Xem {url-spring-data-cassandra-docs}[reference documentation].
@@ -544,7 +544,7 @@ spring:
 ----
 
 Có thể customize javadoc:com.couchbase.client.java.env.ClusterEnvironment[] setting.
-Ví dụ đổi connect timeout và bật SSL bundle:
+Ví dụ đổi connect timeout và bật xref:features/ssl.adoc[SSL bundle]:
 
 [configprops,yaml]
 ----
@@ -566,7 +566,7 @@ TIP: Xem property `spring.couchbase.env.*`.
 Spring Data hỗ trợ repository cho Couchbase.
 
 Repository và document được tìm qua scanning.
-Mặc định auto-configuration package được scan.
+Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
 Customize bằng javadoc:org.springframework.data.couchbase.repository.config.EnableCouchbaseRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
 
 Xem {url-spring-data-couchbase-docs}[reference documentation].
@@ -663,7 +663,7 @@ TIP: Các property này cấu hình LDAP client và bị bỏ qua khi dùng embe
 Spring Data hỗ trợ repository cho LDAP.
 
 Repository và document được tìm qua scanning.
-Mặc định auto-configuration package được scan.
+Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
 Customize bằng javadoc:org.springframework.data.ldap.repository.config.EnableLdapRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
 
 TIP: Xem {url-spring-data-ldap-docs}[reference documentation].
@@ -709,7 +709,7 @@ Mặc định standard schema validate `LDIF` file.
 Có thể disable validation bằng configprop:spring.ldap.embedded.validation.enabled[].
 Nếu có custom attribute, dùng configprop:spring.ldap.embedded.validation.schema[].
 
-Property `spring.ldap.embedded` cấu hình server, các property `spring.ldap` còn lại cấu hình client.
+Property `spring.ldap.embedded` cấu hình server, các property `spring.ldap` còn lại cấu hình client như mô tả trong xref:data/nosql.adoc#data.nosql.ldap[LDAP].
 Connection detail lấy từ server:
 
 * Client kết nối tới port và scheme server đang listen nên configprop:spring.ldap.urls[] bị bỏ qua.
