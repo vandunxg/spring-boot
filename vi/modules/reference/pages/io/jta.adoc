@@ -1,0 +1,43 @@
+[[io.jta]]
+= Distributed Transaction với JTA
+
+Spring Boot hỗ trợ distributed JTA transaction trên nhiều XA resource bằng transaction manager lấy từ JNDI.
+
+Khi detect JTA environment, javadoc:org.springframework.transaction.jta.JtaTransactionManager[] của Spring được dùng để quản lý transaction.
+Auto-configured JMS, DataSource và JPA bean được nâng cấp để hỗ trợ XA transaction.
+Có thể dùng Spring idiom chuẩn như javadoc:org.springframework.transaction.annotation.Transactional[format=annotation] để tham gia distributed transaction.
+Nếu đang trong JTA environment nhưng vẫn muốn local transaction, đặt configprop:spring.jta.enabled[] thành `false` để disable JTA auto-configuration.
+
+[[io.jta.jakartaee]]
+== Sử dụng Jakarta EE Managed Transaction Manager
+
+Nếu package Spring Boot application thành file `war` hoặc `ear` và deploy lên Jakarta EE application server, có thể dùng built-in transaction manager của server.
+Spring Boot thử auto-configure transaction manager bằng cách tìm các JNDI location phổ biến (`java:comp/UserTransaction`, `java:comp/TransactionManager`, v.v.).
+Khi dùng transaction service do application server cung cấp, thông thường cũng cần đảm bảo mọi resource được server quản lý và expose qua JNDI.
+Spring Boot thử auto-configure JMS bằng cách tìm javadoc:jakarta.jms.ConnectionFactory[] tại JNDI path (`java:/JmsXA` hoặc `java:/XAConnectionFactory`), và có thể dùng xref:data/sql.adoc#data.sql.datasource.jndi[property configprop:spring.datasource.jndi-name[]] để cấu hình javadoc:javax.sql.DataSource[].
+
+[[io.jta.mixing-xa-and-non-xa-connections]]
+== Kết hợp XA và Non-XA JMS Connection
+
+Khi dùng JTA, primary JMS javadoc:jakarta.jms.ConnectionFactory[] bean nhận biết XA và tham gia distributed transaction.
+Có thể inject vào bean mà không cần javadoc:org.springframework.beans.factory.annotation.Qualifier[format=annotation]:
+
+include-code::primary/MyBean[]
+
+Trong một số trường hợp, có thể muốn xử lý một số JMS message bằng non-XA javadoc:jakarta.jms.ConnectionFactory[].
+Ví dụ JMS processing logic có thể chạy lâu hơn XA timeout.
+
+Nếu muốn dùng non-XA javadoc:jakarta.jms.ConnectionFactory[], có thể dùng bean `nonXaJmsConnectionFactory`:
+
+include-code::nonxa/MyBean[]
+
+Để nhất quán, bean `jmsConnectionFactory` cũng được cung cấp qua bean alias `xaJmsConnectionFactory`:
+
+include-code::xa/MyBean[]
+
+[[io.jta.supporting-embedded-transaction-manager]]
+== Hỗ trợ Embedded Transaction Manager
+
+Interface javadoc:org.springframework.boot.jms.XAConnectionFactoryWrapper[] và javadoc:org.springframework.boot.jdbc.XADataSourceWrapper[] có thể dùng hỗ trợ embedded transaction manager.
+Các interface chịu trách nhiệm wrap bean javadoc:jakarta.jms.XAConnectionFactory[] và javadoc:javax.sql.XADataSource[], expose chúng thành bean javadoc:jakarta.jms.ConnectionFactory[] và javadoc:javax.sql.DataSource[] thông thường, tự động tham gia distributed transaction.
+DataSource và JMS auto-configuration dùng JTA variant nếu có bean javadoc:org.springframework.transaction.jta.JtaTransactionManager[] và XA wrapper bean phù hợp register trong javadoc:org.springframework.context.ApplicationContext[].
