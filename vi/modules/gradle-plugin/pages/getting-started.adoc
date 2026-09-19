@@ -1,0 +1,154 @@
+[[getting-started]]
+= Getting Started
+
+Để bắt đầu với plugin, cần apply nó vào project.
+
+ifeval::["{build-type}" == "commercial"]
+Plugin được publish tới Spring Commercial repository.
+Cần configure build để access repository này.
+Thông thường thực hiện qua local artifact repository mirror content của Spring Commercial repository.
+Ngoài ra, dù không được khuyến nghị, Spring Commercial repository cũng có thể access trực tiếp.
+Trong cả hai case, xem https://docs.vmware.com/en/Tanzu-Spring-Runtime/Commercial/Tanzu-Spring-Runtime/spring-enterprise-subscription.html[Tanzu Spring Runtime documentation] để biết thêm.
+
+Khi access Spring Commercial repository đã configure trong `settings.gradle` hoặc `settings.gradle.kts`, plugin có thể apply bằng block `plugins`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-commercial.gradle[]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-commercial.gradle.kts[]
+----
+======
+endif::[]
+
+ifeval::["{build-and-artifact-release-type}" == "opensource-release"]
+Plugin được https://plugins.gradle.org/plugin/org.springframework.boot[publish lên Gradle plugin portal] và có thể apply bằng block `plugins`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-release.gradle[]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-release.gradle.kts[]
+----
+======
+endif::[]
+
+ifeval::["{build-and-artifact-release-type}" == "opensource-milestone"]
+Plugin được publish tới Spring milestones repository.
+Gradle có thể configure dùng milestones repository và plugin sau đó apply bằng block `plugins`.
+Để configure Gradle dùng milestones repository, thêm vào `settings.gradle` (Groovy) hoặc `settings.gradle.kts` (Kotlin):
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/milestone-settings.gradle[]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/milestone-settings.gradle.kts[]
+----
+======
+
+Sau đó apply plugin bằng block `plugins`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-release.gradle[]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-release.gradle.kts[]
+----
+======
+endif::[]
+
+ifeval::["{build-and-artifact-release-type}" == "opensource-snapshot"]
+Plugin được publish tới Spring snapshots repository.
+Gradle có thể configure dùng snapshots repository rồi plugin apply bằng block `plugins`.
+Để configure Gradle dùng snapshots repository, thêm vào `settings.gradle` hoặc `settings.gradle.kts`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/snapshot-settings.gradle[]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/snapshot-settings.gradle.kts[]
+----
+======
+
+Sau đó apply plugin:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-release.gradle[]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/apply-plugin-release.gradle.kts[]
+----
+======
+endif::[]
+
+Khi apply riêng lẻ, plugin chỉ thay đổi ít thứ trong project.
+Thay vào đó plugin detect khi một số plugin khác được apply và react tương ứng.
+Ví dụ khi `java` plugin apply, task build executable jar được auto-configure.
+Typical Spring Boot project tối thiểu apply {url-gradle-docs-groovy-plugin}[`groovy`], {url-gradle-docs-java-plugin}[`java`] hoặc {url-kotlin-docs-kotlin-plugin}[`org.jetbrains.kotlin.jvm`], đồng thời dùng {url-dependency-management-plugin-site}[`io.spring.dependency-management`] hoặc native bom support của Gradle cho dependency management.
+Ví dụ:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/typical-plugins.gradle[tags=apply]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/typical-plugins.gradle.kts[tags=apply]
+----
+======
+
+Để hiểu cách Spring Boot plugin behavior khi plugin khác apply, xem section xref:reacting.adoc[reacting to other plugins].
