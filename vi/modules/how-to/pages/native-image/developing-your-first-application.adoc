@@ -1,0 +1,256 @@
+[[howto.native-image.developing-your-first-application]]
+= Phát triển GraalVM Native Application đầu tiên
+
+Có hai cách chính để build Spring Boot native image application:
+
+* Dùng xref:reference:packaging/container-images/cloud-native-buildpacks.adoc[support Cloud Native Buildpacks] của Spring Boot với https://paketo.io/docs/reference/java-native-image-reference/[Paketo Java Native Image buildpack] để generate lightweight container chứa native executable.
+* Dùng GraalVM Native Build Tools để generate native executable.
+
+TIP: Cách dễ nhất để bắt đầu project Spring Boot native mới là vào https://start.spring.io[start.spring.io], thêm dependency `GraalVM Native Support` và generate project.
+File `HELP.md` được include sẽ cung cấp getting-started hint.
+
+[[howto.native-image.developing-your-first-application.sample-application]]
+== Sample Application
+
+Chúng ta cần example application có thể dùng để tạo native image.
+Với mục đích này, web application "Hello World!" đơn giản trong xref:tutorial:first-application/index.adoc[] là đủ.
+
+Tóm lại main application code:
+
+include-code::MyApplication[]
+
+Application này dùng Spring MVC và embedded Tomcat; cả hai đã được test và verify hoạt động với GraalVM native image.
+
+[[howto.native-image.developing-your-first-application.buildpacks]]
+== Build Native Image bằng Buildpacks
+
+Spring Boot hỗ trợ build Docker image chứa native executable bằng Cloud Native Buildpacks (CNB) integration cho cả Maven và Gradle cùng https://paketo.io/docs/reference/java-native-image-reference/[Paketo Java Native Image buildpack].
+Điều này nghĩa là chỉ cần một command để nhanh chóng có sensible image trong local Docker daemon.
+Resulting image không chứa JVM; native image được statically compiled.
+Điều này tạo image nhỏ hơn.
+
+NOTE: CNB builder dùng cho image là `paketobuildpacks/builder-noble-java-tiny:latest`.
+Nó có footprint nhỏ và reduced attack surface. Nó không include shell và chỉ chứa reduced set system library.
+Nếu cần thêm tool trong resulting image, có thể dùng `paketobuildpacks/ubuntu-noble-run:latest` làm *run* image.
+
+NOTE: Phải build application ít nhất bằng JDK 25 vì Buildpacks dùng cùng GraalVM native-image version với Java version dùng compile.
+
+[[howto.native-image.developing-your-first-application.buildpacks.system-requirements]]
+=== System Requirements
+
+Docker phải được install. Xem https://docs.docker.com/installation/#installation[Get Docker].
+Nếu dùng Linux, https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[configure để non-root user có thể dùng].
+
+NOTE: Có thể chạy `docker run hello-world` mà không dùng `sudo` để check Docker daemon reachable như mong đợi.
+Xem documentation Spring Boot plugin cho xref:maven-plugin:build-image.adoc#build-image.docker-daemon[Maven] hoặc xref:gradle-plugin:packaging-oci-image.adoc#build-image.docker-daemon[Gradle] để biết thêm.
+
+TIP: Trên macOS, khuyến nghị tăng memory cấp cho Docker lên ít nhất `8GB` và có thể thêm CPU.
+Xem https://stackoverflow.com/questions/44533319/how-to-assign-more-memory-to-docker-container/44533437#44533437[Stack Overflow answer].
+Trên Microsoft Windows, đảm bảo enable https://docs.docker.com/docker-for-windows/wsl/[Docker WSL 2 backend] để có performance tốt hơn.
+
+[[howto.native-image.developing-your-first-application.buildpacks.maven]]
+=== Dùng Maven
+
+Để build native image container bằng Maven, đảm bảo file `pom.xml` dùng `spring-boot-starter-parent` và `org.graalvm.buildtools:native-maven-plugin`.
+Section `<parent>` nên như sau:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>{version-spring-boot}</version>
+</parent>
+----
+
+Ngoài ra trong section `<build> <plugins>` cần có:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<plugin>
+	<groupId>org.graalvm.buildtools</groupId>
+	<artifactId>native-maven-plugin</artifactId>
+</plugin>
+----
+
+`spring-boot-starter-parent` khai báo profile `native` configure các execution cần chạy để tạo native image.
+Có thể activate profile bằng flag `-P` trên command line.
+
+TIP: Nếu không muốn dùng `spring-boot-starter-parent`, cần configure execution cho goal `process-aot` của Spring Boot plugin và goal `add-reachability-metadata` của Native Build Tools plugin.
+
+Để build image, chạy goal `spring-boot:build-image` với profile `native` active:
+
+[source,shell]
+----
+$ mvn -Pnative spring-boot:build-image
+----
+
+[[howto.native-image.developing-your-first-application.buildpacks.gradle]]
+=== Dùng Gradle
+
+Spring Boot Gradle plugin tự động configure AOT task khi GraalVM Native Image plugin được apply.
+Nên kiểm tra Gradle build có block `plugins` include `org.graalvm.buildtools.native`.
+
+Miễn plugin `org.graalvm.buildtools.native` được apply, task `bootBuildImage` generate native image thay vì JVM image.
+Chạy task:
+
+[source,shell]
+----
+$ gradle bootBuildImage
+----
+
+[[howto.native-image.developing-your-first-application.buildpacks.running]]
+=== Chạy ví dụ
+
+Sau khi chạy build command phù hợp, Docker image sẽ available.
+Start application bằng `docker run`:
+
+[source,shell]
+----
+$ docker run --rm -p 8080:8080 docker.io/library/myproject:0.0.1-SNAPSHOT
+----
+
+Output tương tự:
+
+[source,shell]
+----
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v{version-spring-boot})
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 0.08 seconds (process running for 0.095)
+----
+
+NOTE: Startup time khác nhau giữa các machine, nhưng nên nhanh hơn nhiều so với Spring Boot application chạy trên JVM.
+
+Mở browser tại `http://localhost:8080` sẽ thấy:
+
+[source]
+----
+Hello World!
+----
+
+Để graceful exit application, nhấn `ctrl-c`.
+
+[[howto.native-image.developing-your-first-application.native-build-tools]]
+== Build Native Image bằng Native Build Tools
+
+Nếu muốn generate native executable trực tiếp không dùng Docker, có thể dùng GraalVM Native Build Tools.
+Native Build Tools là plugin do GraalVM cung cấp cho cả Maven và Gradle.
+Có thể dùng chúng cho nhiều GraalVM task, gồm generate native image.
+
+[[howto.native-image.developing-your-first-application.native-build-tools.prerequisites]]
+=== Prerequisites
+
+Để build native image bằng Native Build Tools, cần GraalVM distribution trên machine.
+Có thể download thủ công từ {url-download-liberica-nik}[Liberica Native Image Kit page] hoặc dùng download manager như SDKMAN!.
+
+[[howto.native-image.developing-your-first-application.native-build-tools.prerequisites.linux-macos]]
+==== Linux và macOS
+
+Để install native image compiler trên macOS hoặc Linux, khuyến nghị dùng SDKMAN!.
+Lấy SDKMAN! từ https://sdkman.io và install Liberica GraalVM distribution:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ sdk install java 25.r25-nik
+$ sdk use java 25.r25-nik
+----
+
+Verify đúng version bằng output `java -version`:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ java -version
+openjdk version "25" 2025-09-16 LTS
+OpenJDK Runtime Environment Liberica-NIK-25.0.0-1 (build 25+37-LTS)
+OpenJDK 64-Bit Server VM Liberica-NIK-25.0.0-1 (build 25+37-LTS, mixed mode, sharing)
+----
+
+[[howto.native-image.developing-your-first-application.native-build-tools.prerequisites.windows]]
+==== Windows
+
+Trên Windows, theo https://medium.com/graalvm/using-graalvm-and-native-image-on-windows-10-9954dc071311[instruction này] để install https://www.graalvm.org/downloads/[GraalVM] hoặc {url-download-liberica-nik}[Liberica Native Image Kit] version {version-graal}, Visual Studio Build Tools và Windows SDK.
+Do https://docs.microsoft.com/en-US/troubleshoot/windows-client/shell-experience/command-line-string-limitation[giới hạn maximum command-line length trên Windows], đảm bảo dùng x64 Native Tools Command Prompt thay vì regular Windows command line để chạy Maven hoặc Gradle plugin.
+
+[[howto.native-image.developing-your-first-application.native-build-tools.maven]]
+=== Dùng Maven
+
+Tương tự xref:native-image/developing-your-first-application.adoc#howto.native-image.developing-your-first-application.buildpacks.maven[buildpacks support], cần đảm bảo dùng `spring-boot-starter-parent` để inherit profile `native` và plugin `org.graalvm.buildtools:native-maven-plugin`.
+
+Khi profile `native` active, invoke goal `native:compile` để trigger compile `native-image`:
+
+[source,shell]
+----
+$ mvn -Pnative native:compile
+----
+
+Native image executable nằm trong directory `target`.
+
+[[howto.native-image.developing-your-first-application.native-build-tools.gradle]]
+=== Dùng Gradle
+
+Khi Native Build Tools Gradle plugin được apply vào project, Spring Boot Gradle plugin tự động trigger Spring AOT engine.
+Task dependency được configure tự động nên chỉ cần chạy standard task `nativeCompile` để generate native image:
+
+[source,shell]
+----
+$ gradle nativeCompile
+----
+
+Native image executable nằm trong directory `build/native/nativeCompile`.
+
+[[howto.native-image.developing-your-first-application.native-build-tools.running]]
+=== Chạy ví dụ
+
+Đến đây application sẽ hoạt động. Start application bằng cách chạy trực tiếp:
+
+[tabs]
+======
+Maven::
++
+[source,shell]
+----
+$ target/myproject
+----
+Gradle::
++
+[source,shell]
+----
+$ build/native/nativeCompile/myproject
+----
+======
+
+Output tương tự:
+
+[source,shell,subs="verbatim,attributes"]
+----
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v{version-spring-boot})
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 0.08 seconds (process running for 0.095)
+----
+
+NOTE: Startup time khác giữa các machine, nhưng nên nhanh hơn nhiều so với Spring Boot application chạy trên JVM.
+
+Mở browser tại `http://localhost:8080` sẽ thấy:
+
+[source]
+----
+Hello World!
+----
+
+Để graceful exit application, nhấn `ctrl-c`.
