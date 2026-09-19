@@ -1,0 +1,16 @@
+[[testing.test-scope-dependencies]]
+= Test Scope Dependencies
+
+Starter `spring-boot-starter-test` (trong `scope` `test`) chứa các library được cung cấp sau:
+
+* https://junit.org[JUnit]: Tiêu chuẩn thực tế cho unit testing Java application.
+* {url-spring-framework-docs}/testing/integration.html[Spring Test] & Spring Boot Test: Utility và integration test support cho Spring Boot application.
+* https://assertj.github.io/doc/[AssertJ]: Fluent assertion library.
+* https://github.com/hamcrest/JavaHamcrest[Hamcrest]: Library các matcher object (còn gọi là constraint hoặc predicate).
+* https://site.mockito.org/[Mockito]: Java mocking framework.
+* https://github.com/skyscreamer/JSONassert[JSONassert]: Assertion library cho JSON.
+* https://github.com/jayway/JsonPath[JsonPath]: XPath cho JSON.
+* https://github.com/awaitility/awaitility[Awaitility]: Library để test asynchronous system.
+
+Nhìn chung các common library này hữu ích khi viết test.
+Nếu không phù hợp nhu cầu, bạn có thể thêm test dependency riêng.
