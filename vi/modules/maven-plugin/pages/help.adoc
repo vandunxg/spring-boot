@@ -1,0 +1,6 @@
+[[help]]
+= Help Information
+
+Goal `help` là standard goal hiển thị information về capability của plugin.
+
+include::partial$goals/help.adoc[leveloffset=+1]
