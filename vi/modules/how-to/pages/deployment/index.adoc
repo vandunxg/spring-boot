@@ -1,0 +1,7 @@
+[[howto.deployment]]
+= Deploying Spring Boot Applications
+
+Flexible packaging option của Spring Boot cung cấp nhiều lựa chọn khi deploy application.
+Có thể deploy Spring Boot application lên nhiều cloud platform và virtual hoặc physical machine.
+
+Phần này đề cập một số deployment scenario phổ biến.
