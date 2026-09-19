@@ -1,0 +1,442 @@
+[[actuator.metrics]]
+= Metrics
+
+Spring Boot Actuator cung cấp dependency management và auto-configuration cho {url-micrometer-site}[Micrometer], một application metrics facade hỗ trợ {url-micrometer-docs}[nhiều monitoring system], gồm:
+
+- xref:actuator/metrics.adoc#actuator.metrics.export.atlas[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.datadog[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.dynatrace[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.elastic[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.ganglia[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.graphite[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.humio[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.influx[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.jmx[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.kairos[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.newrelic[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.otlp[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.prometheus[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.simple[] (in-memory)
+- xref:actuator/metrics.adoc#actuator.metrics.export.stackdriver[]
+- xref:actuator/metrics.adoc#actuator.metrics.export.statsd[]
+
+TIP: Để tìm hiểu thêm capability của Micrometer, xem {url-micrometer-docs}[reference documentation], đặc biệt {url-micrometer-docs-concepts}[concepts section].
+
+[[actuator.metrics.getting-started]]
+== Getting Started
+
+Spring Boot auto-configure composite javadoc:io.micrometer.core.instrument.MeterRegistry[] và thêm một registry vào composite cho mỗi implementation được hỗ trợ tìm thấy trên classpath.
+Chỉ cần dependency `micrometer-registry-{system}` trên runtime classpath là Spring Boot cấu hình registry.
+
+Phần lớn registry share common feature.
+Ví dụ có thể disable một registry cụ thể dù implementation Micrometer registry có trên classpath.
+Ví dụ disable Datadog:
+
+[configprops,yaml]
+----
+management:
+  datadog:
+    metrics:
+      export:
+        enabled: false
+----
+
+Cũng có thể disable mọi registry trừ khi registry-specific property nói khác:
+
+[configprops,yaml]
+----
+management:
+  defaults:
+    metrics:
+      export:
+        enabled: false
+----
+
+Spring Boot cũng thêm mọi auto-configured registry vào global static composite registry trên class javadoc:io.micrometer.core.instrument.Metrics[], trừ khi explicit disable:
+
+[configprops,yaml]
+----
+management:
+  metrics:
+    use-global-registry: false
+----
+
+NOTE: Trong test dùng `spring-boot-micrometer-metrics-test`, global registry mặc định disable.
+Nếu muốn dùng global registry, annotate test bằng javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation] với `useGlobalRegistry = true`, hoặc set configprop:management.metrics.use-global-registry[] thành `true`.
+
+Có thể register bất kỳ số lượng bean javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.MeterRegistryCustomizer[] nào để configure registry thêm, ví dụ apply common tag, trước khi meter được register:
+
+include-code::commontags/MyMeterRegistryConfiguration[]
+
+Có thể apply customization cho registry implementation cụ thể bằng generic type cụ thể hơn:
+
+include-code::specifictype/MyMeterRegistryConfiguration[]
+
+Spring Boot cũng xref:actuator/metrics.adoc#actuator.metrics.supported[configure built-in instrumentation] có thể control qua configuration hoặc dedicated annotation marker.
+
+[[actuator.metrics.export]]
+== Supported Monitoring Systems
+
+Phần này mô tả ngắn từng monitoring system được hỗ trợ.
+
+[[actuator.metrics.export.atlas]]
+=== Atlas
+
+Mặc định metric được export tới {url-micrometer-docs-implementations}/atlas[Atlas] chạy trên local machine.
+Có thể cung cấp location của https://github.com/Netflix/atlas[Atlas server]:
+
+[configprops,yaml]
+----
+management:
+  atlas:
+    metrics:
+      export:
+        uri: "https://atlas.example.com:7101/api/v1/publish"
+----
+
+[[actuator.metrics.export.datadog]]
+=== Datadog
+
+Datadog registry định kỳ push metric tới https://www.datadoghq.com[datadoghq].
+Để export metric tới {url-micrometer-docs-implementations}/datadog[Datadog], phải cung cấp API key:
+
+[configprops,yaml]
+----
+management:
+  datadog:
+    metrics:
+      export:
+        api-key: "YOUR_KEY"
+----
+
+Nếu cung cấp thêm application key (optional), metadata như meter description, type và base unit cũng được export:
+
+[configprops,yaml]
+----
+management:
+  datadog:
+    metrics:
+      export:
+        api-key: "YOUR_API_KEY"
+        application-key: "YOUR_APPLICATION_KEY"
+----
+
+Mặc định metric gửi tới Datadog US https://docs.datadoghq.com/getting_started/site[site] (`https://api.datadoghq.com`).
+Nếu project host ở site khác hoặc cần gửi qua proxy, configure URI:
+
+[configprops,yaml]
+----
+management:
+  datadog:
+    metrics:
+      export:
+        uri: "https://api.datadoghq.eu"
+----
+
+Có thể đổi interval gửi metric tới Datadog:
+
+[configprops,yaml]
+----
+management:
+  datadog:
+    metrics:
+      export:
+        step: "30s"
+----
+
+[[actuator.metrics.export.dynatrace]]
+=== Dynatrace
+
+Dynatrace có hai metrics ingest API, cả hai được implement cho {url-micrometer-docs-implementations}/dynatrace[Micrometer].
+Xem Dynatrace documentation về Micrometer metrics ingest {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest[tại đây].
+
+Configuration property trong namespace `v1` chỉ áp dụng khi export tới {url-dynatrace-docs-shortlink}/api-metrics[Timeseries v1 API].
+Support V1 API đã deprecated.
+
+Configuration property trong namespace `v2` chỉ áp dụng khi export tới {url-dynatrace-docs-shortlink}/api-metrics-v2-post-datapoints[Metrics v2 API].
+
+Integration chỉ export tới một trong `v1` hoặc `v2` tại một thời điểm; `v2` được khuyến nghị mạnh vì v1 deprecated.
+Nếu `device-id` được set trong namespace `v1` (bắt buộc cho v1, không dùng ở v2), metric export tới endpoint `v1`.
+Nếu không, mặc định `v2`.
+
+[[actuator.metrics.export.dynatrace.v2-api]]
+==== v2 API
+
+Có thể dùng v2 API theo hai cách.
+
+[[actuator.metrics.export.dynatrace.v2-api.auto-config]]
+===== Auto-configuration
+
+Dynatrace auto-configuration available cho host được monitor bởi OneAgent hoặc Dynatrace Operator for Kubernetes.
+
+**Local OneAgent:** Nếu OneAgent chạy trên host, metric tự động export tới {url-dynatrace-docs-shortlink}/local-api[local OneAgent ingest endpoint].
+Ingest endpoint forward metric tới Dynatrace backend.
+
+**Dynatrace Kubernetes Operator:** Khi chạy Kubernetes có Dynatrace Operator, registry tự động lấy endpoint URI và API token từ operator.
+
+Đây là default behavior và không cần setup đặc biệt ngoài dependency `io.micrometer:micrometer-registry-dynatrace`.
+
+[[actuator.metrics.export.dynatrace.v2-api.manual-config]]
+===== Manual Configuration
+
+Nếu không có auto-configuration, cần endpoint của {url-dynatrace-docs-shortlink}/api-metrics-v2-post-datapoints[Metrics v2 API] và API token.
+{url-dynatrace-docs-shortlink}/api-authentication[API token] phải có permission "Ingest metrics" (`metrics.ingest`).
+Khuyến nghị giới hạn token chỉ permission này.
+Endpoint URI phải chứa path, ví dụ `/api/v2/metrics/ingest`.
+
+URL của Metrics API v2 ingest endpoint tùy deployment option:
+
+* SaaS: `+https://{your-environment-id}.live.dynatrace.com/api/v2/metrics/ingest+`
+* Managed deployments: `+https://{your-domain}/e/{your-environment-id}/api/v2/metrics/ingest+`
+
+Ví dụ configure metric export với environment id `example`:
+
+[configprops,yaml]
+----
+management:
+  dynatrace:
+    metrics:
+      export:
+        uri: "https://example.live.dynatrace.com/api/v2/metrics/ingest"
+        api-token: "YOUR_TOKEN"
+----
+
+Khi dùng Dynatrace v2 API, có các optional feature sau (chi tiết trong {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest#dt-configuration-properties[Dynatrace documentation]):
+
+* Metric key prefix: Prefix được prepend vào mọi exported metric key.
+* Enrich with Dynatrace metadata: Nếu OneAgent hoặc Dynatrace operator đang chạy, enrich metric bằng metadata bổ sung như host, process hoặc pod.
+* Default dimensions: Chỉ định key-value pair thêm vào mọi exported metric.
+Nếu Micrometer chỉ định tag cùng key, tag override default dimension.
+* Use Dynatrace Summary instruments: Trong một số case Micrometer Dynatrace registry tạo metric bị reject.
+Micrometer 1.9.x fix bằng Dynatrace-specific summary instrument.
+Set toggle này `false` buộc Micrometer fallback về behavior mặc định trước 1.9.x.
+Chỉ nên dùng khi gặp vấn đề migrate từ Micrometer 1.8.x sang 1.9.x.
+* Export meter metadata: Từ Micrometer 1.12.0, Dynatrace exporter mặc định export cả meter metadata như unit và description.
+Dùng toggle `export-meter-metadata` để tắt.
+
+Có thể không specify URI và API token; khi đó dùng auto-configured endpoint:
+
+[configprops,yaml]
+----
+management:
+  dynatrace:
+    metrics:
+      export:
+        # Specify uri and api-token here if not using the local OneAgent endpoint.
+        v2:
+          metric-key-prefix: "your.key.prefix"
+          enrich-with-dynatrace-metadata: true
+          default-dimensions:
+            key1: "value1"
+            key2: "value2"
+          use-dynatrace-summary-instruments: true # (default: true)
+          export-meter-metadata: true             # (default: true)
+----
+
+[[actuator.metrics.export.dynatrace.v1-api]]
+==== v1 API (Deprecated)
+
+Dynatrace v1 API metrics registry định kỳ push metric tới configured URI bằng {url-dynatrace-docs-shortlink}/api-metrics[Timeseries v1 API].
+Để backward-compatible với setup hiện có, khi `device-id` được set, metric export tới Timeseries v1 endpoint.
+Để export tới Dynatrace cần API token, device ID và URI:
+
+[configprops%novalidate,yaml]
+----
+management:
+  dynatrace:
+    metrics:
+      export:
+        uri: "https://{your-environment-id}.live.dynatrace.com"
+        api-token: "YOUR_TOKEN"
+        v1:
+          device-id: "YOUR_DEVICE_ID"
+----
+
+Với v1 API, phải specify base environment URI không có path vì v1 endpoint path được thêm tự động.
+
+[[actuator.metrics.export.dynatrace.version-independent-settings]]
+==== Version-independent Settings
+
+Ngoài API endpoint và token, có thể đổi interval gửi metric tới Dynatrace.
+Default export interval là `60s`.
+Ví dụ set 30 giây:
+
+[configprops,yaml]
+----
+management:
+  dynatrace:
+    metrics:
+      export:
+        step: "30s"
+----
+
+Xem thêm {url-micrometer-docs-implementations}/dynatrace[Micrometer documentation] và {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest[Dynatrace documentation].
+
+[[actuator.metrics.export.elastic]]
+=== Elastic
+
+Mặc định metric export tới {url-micrometer-docs-implementations}/elastic[Elastic] trên local machine.
+Có thể cung cấp location Elastic server:
+
+[configprops,yaml]
+----
+management:
+  elastic:
+    metrics:
+      export:
+        host: "https://elastic.example.com:8086"
+----
+
+[[actuator.metrics.export.ganglia]]
+=== Ganglia
+
+Mặc định metric export tới {url-micrometer-docs-implementations}/ganglia[Ganglia] trên local machine.
+Có thể cung cấp host và port của http://ganglia.sourceforge.net[Ganglia server]:
+
+[configprops,yaml]
+----
+management:
+  ganglia:
+    metrics:
+      export:
+        host: "ganglia.example.com"
+        port: 9649
+----
+
+[[actuator.metrics.export.graphite]]
+=== Graphite
+
+Mặc định metric export tới {url-micrometer-docs-implementations}/graphite[Graphite] trên local machine.
+Có thể cung cấp host và port của https://graphiteapp.org[Graphite server]:
+
+[configprops,yaml]
+----
+management:
+  graphite:
+    metrics:
+      export:
+         host: "graphite.example.com"
+         port: 9004
+----
+
+Micrometer cung cấp default javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] chi phối cách dimensional meter ID được {url-micrometer-docs-implementations}/graphite#_hierarchical_name_mapping[map thành flat hierarchical name].
+
+[TIP]
+====
+Để kiểm soát behavior này, define javadoc:io.micrometer.graphite.GraphiteMeterRegistry[] riêng và cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] riêng.
+Auto-configured javadoc:io.micrometer.graphite.GraphiteConfig[] và javadoc:io.micrometer.core.instrument.Clock[] được cung cấp trừ khi tự define:
+
+include-code::MyGraphiteConfiguration[]
+====
+
+[[actuator.metrics.export.humio]]
+=== Humio
+
+Mặc định Humio registry định kỳ push metric tới https://cloud.humio.com.
+Để export metric tới SaaS {url-micrometer-docs-implementations}/humio[Humio], cần API token:
+
+[configprops,yaml]
+----
+management:
+  humio:
+    metrics:
+      export:
+        api-token: "YOUR_TOKEN"
+----
+
+Nên configure một hoặc nhiều tag để identify data source nơi metric được push:
+
+[configprops,yaml]
+----
+management:
+  humio:
+    metrics:
+      export:
+        tags:
+          alpha: "a"
+          bravo: "b"
+----
+
+[[actuator.metrics.export.influx]]
+=== Influx
+
+Mặc định metric export tới instance {url-micrometer-docs-implementations}/influx[Influx] v1 trên local machine với default configuration.
+Để export tới InfluxDB v2, configure `org`, `bucket`, và authentication `token`.
+Có thể cung cấp location https://www.influxdata.com[Influx server]:
+
+[configprops,yaml]
+----
+management:
+  influx:
+    metrics:
+      export:
+        uri: "https://influx.example.com:8086"
+----
+
+[[actuator.metrics.export.jmx]]
+=== JMX
+
+Micrometer cung cấp hierarchical mapping tới {url-micrometer-docs-implementations}/jmx[JMX], chủ yếu như cách rẻ và portable để xem metric local.
+Mặc định metric export tới JMX domain `metrics`.
+Có thể cung cấp domain:
+
+[configprops,yaml]
+----
+management:
+  jmx:
+    metrics:
+      export:
+        domain: "com.example.app.metrics"
+----
+
+Micrometer cung cấp default javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] chi phối cách dimensional meter ID được {url-micrometer-docs-implementations}/jmx#_hierarchical_name_mapping[map thành flat hierarchical name].
+
+[TIP]
+====
+Để kiểm soát behavior, define javadoc:io.micrometer.jmx.JmxMeterRegistry[] và cung cấp HierarchicalNameMapper riêng.
+Auto-configured javadoc:io.micrometer.jmx.JmxConfig[] và javadoc:io.micrometer.core.instrument.Clock[] được cung cấp trừ khi tự define:
+
+include-code::MyJmxConfiguration[]
+====
+
+[[actuator.metrics.export.kairos]]
+=== KairosDB
+
+Mặc định metric export tới {url-micrometer-docs-implementations}/kairos[KairosDB] trên local machine.
+Có thể cung cấp location https://kairosdb.github.io/[KairosDB server]:
+
+[configprops,yaml]
+----
+management:
+  kairos:
+    metrics:
+      export:
+        uri: "https://kairosdb.example.com:8080/api/v1/datapoints"
+----
+
+[[actuator.metrics.export.newrelic]]
+=== New Relic
+
+New Relic registry định kỳ push metric tới {url-micrometer-docs-implementations}/new-relic[New Relic].
+Để export tới https://newrelic.com[New Relic], cần API key và account ID:
+
+[configprops,yaml]
+----
+management:
+  newrelic:
+    metrics:
+      export:
+        api-key: "YOUR_KEY"
+        account-id: "YOUR_ACCOUNT_ID"
+----
+
+Có thể đổi interval gửi metric:
+
+[configprops,yaml]
+----
+management:
+  newrelic:
+    metrics:
+      export:
+        step: "30s"
+----
