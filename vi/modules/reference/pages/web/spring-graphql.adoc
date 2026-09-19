@@ -1,0 +1,167 @@
+[[web.graphql]]
+= Spring for GraphQL
+
+Nếu muốn xây dựng GraphQL application, bạn có thể tận dụng auto-configuration của Spring Boot cho {url-spring-graphql-site}[Spring for GraphQL].
+Project Spring for GraphQL dựa trên https://github.com/graphql-java/graphql-java[GraphQL Java].
+Tối thiểu bạn cần starter `spring-boot-starter-graphql`.
+Vì GraphQL không phụ thuộc transport cụ thể, bạn cũng cần thêm một hoặc nhiều starter vào application để expose GraphQL API qua web:
+
+
+[cols="1,1,1"]
+|===
+| Starter | Transport | Implementation
+
+| `spring-boot-starter-web`
+| HTTP
+| Spring MVC
+
+| `spring-boot-starter-websocket`
+| WebSocket
+| WebSocket cho Servlet application
+
+| `spring-boot-starter-webflux`
+| HTTP, WebSocket
+| Spring WebFlux
+
+| `spring-boot-starter-rsocket`
+| TCP, WebSocket
+| Spring WebFlux trên Reactor Netty
+|===
+
+
+
+[[web.graphql.schema]]
+== GraphQL Schema
+
+Spring GraphQL application cần một schema được định nghĩa khi startup.
+Mặc định, bạn có thể viết file schema ".graphqls" hoặc ".gqls" dưới `src/main/resources/graphql/**` và Spring Boot sẽ tự động phát hiện.
+Bạn có thể customize location bằng configprop:spring.graphql.schema.locations[] và file extension bằng configprop:spring.graphql.schema.file-extensions[].
+
+NOTE: Nếu muốn Spring Boot phát hiện schema file trong tất cả application module và dependency tại location đó,
+bạn có thể đặt configprop:spring.graphql.schema.locations[] thành `+"classpath*:graphql/**/"+` (lưu ý prefix `classpath*:`).
+
+Trong các phần sau, chúng ta dùng sample GraphQL schema định nghĩa hai type và hai query:
+
+[source,json,subs="verbatim,quotes"]
+----
+include::ROOT:example$resources/graphql/schema.graphqls[]
+----
+
+NOTE: Mặc định, https://spec.graphql.org/draft/#sec-Introspection[field introspection] được cho phép trên schema vì cần cho tool như GraphiQL.
+Nếu không muốn expose thông tin về schema, bạn có thể disable introspection bằng cách đặt configprop:spring.graphql.schema.introspection.enabled[] thành `false`.
+
+
+
+[[web.graphql.runtimewiring]]
+== GraphQL RuntimeWiring
+
+GraphQL Java javadoc:graphql.schema.idl.RuntimeWiring$Builder[] có thể dùng để register custom scalar type, directive, type resolver, javadoc:graphql.schema.DataFetcher[] và nhiều thứ khác.
+Bạn có thể khai báo bean javadoc:org.springframework.graphql.execution.RuntimeWiringConfigurer[] trong Spring config để access javadoc:graphql.schema.idl.RuntimeWiring$Builder[].
+Spring Boot phát hiện các bean này và thêm chúng vào {url-spring-graphql-docs}/request-execution.html#execution.graphqlsource[GraphQlSource builder].
+
+Tuy nhiên, thông thường application sẽ không implement trực tiếp javadoc:graphql.schema.DataFetcher[] mà thay vào đó tạo {url-spring-graphql-docs}/controllers.html[annotated controller].
+Spring Boot tự động phát hiện class javadoc:org.springframework.stereotype.Controller[format=annotation] có annotated handler method và register chúng thành ``DataFetcher``.
+Dưới đây là sample implementation cho greeting query bằng class javadoc:org.springframework.stereotype.Controller[format=annotation]:
+
+include-code::GreetingController[]
+
+
+
+[[web.graphql.data-query]]
+== Hỗ trợ Querydsl và QueryByExample Repository
+
+Spring Data hỗ trợ cả Querydsl và QueryByExample repository.
+Spring GraphQL có thể {url-spring-graphql-docs}/data.html[cấu hình Querydsl và QueryByExample repository thành javadoc:graphql.schema.DataFetcher[]].
+
+Spring Data repository được annotate bằng javadoc:org.springframework.graphql.data.GraphQlRepository[format=annotation] và extend một trong các interface sau:
+
+* javadoc:org.springframework.data.querydsl.QuerydslPredicateExecutor[]
+* javadoc:org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor[]
+* javadoc:org.springframework.data.repository.query.QueryByExampleExecutor[]
+* javadoc:org.springframework.data.repository.query.ReactiveQueryByExampleExecutor[]
+
+được Spring Boot phát hiện và xem là candidate cho javadoc:graphql.schema.DataFetcher[] với top-level query tương ứng.
+
+
+
+[[web.graphql.transports]]
+== Transport
+
+
+
+[[web.graphql.transports.http-websocket]]
+=== HTTP và WebSocket
+
+Mặc định GraphQL HTTP endpoint ở HTTP POST `/graphql`.
+Nó cũng hỗ trợ media type `"text/event-stream"` qua Server Sent Events chỉ cho subscription.
+Path có thể customize bằng configprop:spring.graphql.http.path[].
+
+Mặc định HTTP transport chỉ cho phép HTTP POST request, nhưng có thể cấu hình bằng configprop:spring.graphql.http.methods[]
+và configprop:spring.graphql.http.sse.methods[]; xem {url-spring-graphql-docs}/transports.html[phần transport trong tài liệu Spring GraphQL] để biết thêm.
+
+TIP: HTTP endpoint cho cả Spring MVC và Spring WebFlux được cung cấp bởi bean `RouterFunction` có javadoc:org.springframework.core.annotation.Order[format=annotation] bằng `0`.
+Nếu định nghĩa bean `RouterFunction` riêng, bạn có thể thêm annotation javadoc:org.springframework.core.annotation.Order[format=annotation] phù hợp để đảm bảo chúng được sắp đúng.
+
+GraphQL WebSocket endpoint mặc định bị tắt. Để bật:
+
+* Với Servlet application, thêm WebSocket starter `spring-boot-starter-websocket`
+* Với WebFlux application, không cần dependency bổ sung
+* Với cả hai, phải đặt application property configprop:spring.graphql.websocket.path[]
+
+Spring GraphQL cung cấp model {url-spring-graphql-docs}/transports.html#server.interception[Web Interception].
+Nó hữu ích để lấy thông tin từ HTTP request header và đặt vào GraphQL context, hoặc lấy thông tin từ context đó và ghi vào response header.
+Với Spring Boot, bạn có thể khai báo bean javadoc:org.springframework.graphql.server.WebGraphQlInterceptor[] để được register với web transport.
+
+{url-spring-framework-docs}/web/webmvc-cors.html[Spring MVC] và {url-spring-framework-docs}/web/webflux-cors.html[Spring WebFlux] hỗ trợ request CORS (Cross-Origin Resource Sharing).
+CORS là phần quan trọng trong web config cho GraphQL application được browser từ domain khác truy cập.
+
+Spring Boot hỗ trợ nhiều configuration property dưới namespace `spring.graphql.cors.*`; ví dụ ngắn:
+
+[configprops,yaml]
+----
+spring:
+  graphql:
+    cors:
+      allowed-origins: "https://example.org"
+      allowed-methods: GET,POST
+      max-age: 1800s
+----
+
+
+
+[[web.graphql.transports.rsocket]]
+=== RSocket
+
+RSocket cũng được hỗ trợ như một transport trên WebSocket hoặc TCP.
+Sau khi xref:messaging/rsocket.adoc#messaging.rsocket.server-auto-configuration[RSocket server được cấu hình], chúng ta có thể cấu hình GraphQL handler trên route cụ thể bằng configprop:spring.graphql.rsocket.mapping[].
+Ví dụ, cấu hình mapping là `"graphql"` nghĩa là có thể dùng nó làm route khi gửi request bằng javadoc:org.springframework.graphql.client.RSocketGraphQlClient[].
+
+Spring Boot auto-configure bean `RSocketGraphQlClient.Builder<?>` để bạn inject vào component:
+
+include-code::RSocketGraphQlClientExample[tag=builder]
+
+Sau đó gửi request:
+include-code::RSocketGraphQlClientExample[tag=request]
+
+
+
+[[web.graphql.exception-handling]]
+== Exception Handling
+
+Spring GraphQL cho phép application register một hoặc nhiều component Spring javadoc:org.springframework.graphql.execution.DataFetcherExceptionResolver[] được invoke tuần tự.
+Exception phải được resolve thành danh sách object javadoc:{url-graphql-java-javadoc}/graphql.GraphQLError[]; xem {url-spring-graphql-docs}/controllers.html#controllers.exception-handler[tài liệu exception handling của Spring GraphQL].
+Spring Boot tự động phát hiện bean javadoc:org.springframework.graphql.execution.DataFetcherExceptionResolver[] và register chúng với javadoc:org.springframework.graphql.execution.GraphQlSource$Builder[].
+
+
+
+[[web.graphql.graphiql]]
+== GraphiQL và Schema Printer
+
+Spring GraphQL cung cấp infrastructure hỗ trợ developer khi consume hoặc develop GraphQL API.
+
+Spring GraphQL đi kèm default page https://github.com/graphql/graphiql[GraphiQL], mặc định expose tại `"/graphiql"`.
+Page này mặc định bị disable và có thể bật bằng property configprop:spring.graphql.graphiql.enabled[].
+Nhiều application expose page này sẽ thích custom build hơn.
+Default implementation rất hữu ích trong development, vì vậy nó được tự động expose cùng xref:using/devtools.adoc[`spring-boot-devtools`] trong development.
+
+Bạn cũng có thể chọn expose GraphQL schema ở text format tại `/graphql/schema` khi property configprop:spring.graphql.schema.printer.enabled[] được bật.
