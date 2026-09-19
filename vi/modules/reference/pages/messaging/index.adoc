@@ -1,0 +1,8 @@
+[[messaging]]
+= Messaging
+
+Spring Framework cung cấp hỗ trợ toàn diện để tích hợp messaging system, từ cách dùng JMS API đơn giản qua javadoc:org.springframework.jms.core.JmsClient[] đến infrastructure hoàn chỉnh để nhận message asynchronously.
+Spring AMQP cung cấp feature set tương tự cho Advanced Message Queuing Protocol.
+Spring Boot cũng cung cấp auto-configuration cho javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] và RabbitMQ.
+Spring WebSocket hỗ trợ STOMP messaging native, và Spring Boot hỗ trợ qua starter cùng một lượng nhỏ auto-configuration.
+Spring Boot cũng hỗ trợ Apache Kafka và Apache Pulsar.
