@@ -1,0 +1,99 @@
+[[packaging.container-images.dockerfiles]]
+= Dockerfiles
+
+Dù có thể convert Spring Boot uber jar thành Docker image chỉ với vài dòng `Dockerfile`, dùng xref:packaging/container-images/efficient-images.adoc#packaging.container-images.efficient-images.layering[layering feature] sẽ tạo optimized image.
+Khi tạo jar chứa layers index file, jar `spring-boot-jarmode-tools` được thêm làm dependency.
+Với jar này trên classpath, có thể launch application ở special mode để bootstrap code chạy tác vụ khác, ví dụ extract layer.
+
+Launch jar với `tools` jar mode:
+
+[source,shell]
+----
+$ java -Djarmode=tools -jar my-app.jar
+----
+
+Output:
+
+[subs="verbatim"]
+----
+Usage:
+  java -Djarmode=tools -jar my-app.jar
+
+Available commands:
+  extract      Extract the contents from the jar
+  list-layers  List layers from the jar that can be extracted
+  sbom         Print the SBOM from the jar
+  help         Help about any command
+----
+
+Command `extract` giúp split application thành layer để thêm vào `Dockerfile`.
+Ví dụ:
+
+[source,dockerfile]
+----
+include::reference:partial$dockerfile[]
+# Start the application jar - this is not the uber jar used by the builder
+# This jar only contains application code and references to the extracted jar files
+# This layout is efficient to start up and AOT cache (and CDS) friendly
+ENTRYPOINT ["java", "-jar", "application.jar"]
+----
+
+Giả sử Dockerfile ở current directory, build image bằng `docker build .`, hoặc chỉ định path tới application jar:
+
+[source,shell]
+----
+$ docker build --build-arg JAR_FILE=path/to/myapp.jar .
+----
+
+Đây là multi-stage Dockerfile.
+Builder stage extract các directory cần dùng sau.
+Mỗi command `COPY` tương ứng layer được jarmode extract.
+
+Có thể viết Dockerfile không dùng jarmode, kết hợp `unzip` và `mv` để move content tới layer phù hợp, nhưng jarmode đơn giản hóa việc này.
+Layout do jarmode tạo cũng thân thiện với AOT cache (và CDS).
+
+[[packaging.container-images.dockerfiles.aot-cache]]
+== AOT cache
+
+Nếu dùng Java 25 trở lên và muốn enable xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.aot-cache[AOT cache], dùng Dockerfile:
+
+[source,dockerfile]
+----
+include::reference:partial$dockerfile[]
+
+# Execute the AOT cache training run
+RUN java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh -jar application.jar
+
+# Start the application jar with AOT cache enabled - this is not the uber jar used by the builder
+# This jar only contains application code and references to the extracted jar files
+# This layout is efficient to start up and AOT cache friendly
+ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-jar", "application.jar"]
+----
+
+Gần giống Dockerfile trên.
+Bước cuối tạo AOT cache file bằng training run và truyền AOT cache parameter cho `java -jar`.
+
+[[packaging.container-images.dockerfiles.cds]]
+== CDS
+
+NOTE: Nếu dùng Java 24 trở lên, hãy dùng AOT cache thay CDS.
+
+Để enable thêm xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.cds[CDS], dùng Dockerfile:
+
+[source,dockerfile]
+----
+include::reference:partial$dockerfile[]
+
+# Execute the CDS training run
+RUN java -XX:ArchiveClassesAtExit=application.jsa -Dspring.context.exit=onRefresh -jar application.jar
+
+# Start the application jar with CDS enabled - this is not the uber jar used by the builder
+# This jar only contains application code and references to the extracted jar files
+# This layout is efficient to start up and CDS friendly
+ENTRYPOINT ["java", "-XX:SharedArchiveFile=application.jsa", "-jar", "application.jar"]
+----
+
+Gần giống Dockerfile trên.
+Bước cuối tạo CDS archive bằng training run và truyền CDS parameter cho `java -jar`.
+
+NOTE: Nếu dùng Java 25 trở lên, khuyến nghị AOT cache thay CDS.
