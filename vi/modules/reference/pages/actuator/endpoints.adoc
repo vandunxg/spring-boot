@@ -1,0 +1,305 @@
+[[actuator.endpoints]]
+= Endpoints
+
+Actuator endpoint cho phép monitor và tương tác với application.
+Spring Boot có nhiều built-in endpoint và cho phép thêm endpoint riêng.
+Ví dụ endpoint `health` cung cấp basic application health information.
+
+Có thể xref:actuator/endpoints.adoc#actuator.endpoints.controlling-access[kiểm soát access] tới từng endpoint và xref:actuator/endpoints.adoc#actuator.endpoints.exposing[expose chúng (cho phép remote access) qua HTTP hoặc JMX].
+Endpoint được xem là available khi access được permit và endpoint được expose.
+Built-in endpoint chỉ được auto-configure khi available.
+Phần lớn application chọn expose qua HTTP, trong đó endpoint ID cùng prefix `/actuator` được map thành URL.
+Ví dụ mặc định endpoint `health` map tới `/actuator/health`.
+
+TIP: Để tìm hiểu thêm về Actuator endpoint cùng request/response format, xem xref:api:rest/actuator/index.adoc[API documentation].
+
+Các technology-agnostic endpoint sau available:
+
+[cols="2,5"]
+|===
+| ID | Mô tả
+
+| `auditevents`
+| Expose audit event information cho current application.
+  Cần bean javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[].
+
+| `beans`
+| Hiển thị complete list mọi Spring bean trong application.
+
+| `caches`
+| Expose available cache.
+
+| `conditions`
+| Hiển thị condition được evaluate trên configuration và auto-configuration class cùng lý do match hoặc không match.
+
+| `configprops`
+| Hiển thị collated list của mọi javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
+Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitization].
+
+| `env`
+| Expose property từ javadoc:org.springframework.core.env.ConfigurableEnvironment[] của Spring.
+Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitization].
+
+| `flyway`
+| Hiển thị Flyway database migration đã apply.
+  Cần một hoặc nhiều bean javadoc:org.flywaydb.core.Flyway[].
+
+| `health`
+| Hiển thị application health information.
+
+| `httpexchanges`
+| Hiển thị HTTP exchange information, mặc định 100 HTTP request-response exchange gần nhất.
+  Cần bean javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[].
+
+| `info`
+| Hiển thị arbitrary application info.
+
+| `integrationgraph`
+| Hiển thị Spring Integration graph.
+  Cần dependency `spring-integration-core`.
+
+| `loggers`
+| Hiển thị và modify logger configuration trong application.
+
+| `liquibase`
+| Hiển thị Liquibase database migration đã apply.
+  Cần một hoặc nhiều bean javadoc:{url-liquibase-javadoc}/liquibase.Liquibase[].
+
+| `metrics`
+| Hiển thị "metrics" information cho current application để diagnose metric application đã record.
+
+| `mappings`
+| Hiển thị collated list mọi path javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
+
+|`quartz`
+|Hiển thị information về Quartz Scheduler job.
+Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitization].
+
+| `scheduledtasks`
+| Hiển thị scheduled task trong application.
+
+| `sessions`
+| Cho phép retrieve và delete user session từ Spring Session-backed session store.
+  Cần servlet-based web application dùng Spring Session.
+
+| `shutdown`
+| Cho phép graceful shutdown application.
+  Chỉ hoạt động với jar packaging.
+  Mặc định disable.
+
+| `startup`
+| Hiển thị xref:features/spring-application.adoc#features.spring-application.startup-tracking[startup steps data] collect bởi javadoc:org.springframework.core.metrics.ApplicationStartup[].
+  Cần javadoc:org.springframework.boot.SpringApplication[] được configure với javadoc:org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup[].
+
+| `threaddump`
+| Thực hiện thread dump.
+|===
+
+Nếu application là web application (Spring MVC, Spring WebFlux hoặc Jersey), có thêm endpoint:
+
+[cols="2,5"]
+|===
+| ID | Mô tả
+
+| `heapdump`
+| Trả heap dump file.
+  Trên HotSpot JVM trả file format `HPROF`.
+  Trên OpenJ9 JVM trả file format `PHD`.
+
+| `logfile`
+| Trả content logfile nếu property `logging.file.name` hoặc `logging.file.path` được set.
+  Hỗ trợ HTTP header `Range` để retrieve một phần content log file.
+
+| `prometheus`
+| Expose metric ở format Prometheus server có thể scrape.
+  Cần dependency `micrometer-registry-prometheus`.
+|===
+
+[[actuator.endpoints.controlling-access]]
+== Kiểm soát Access tới Endpoint
+
+Mặc định access tới mọi endpoint trừ `shutdown` và `heapdump` là unrestricted.
+Để configure permitted access cho endpoint, dùng property `management.endpoint.<id>.access`.
+Ví dụ cho phép unrestricted access tới `shutdown`:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    shutdown:
+      access: unrestricted
+----
+
+Nếu muốn access theo opt-in thay vì opt-out, đặt configprop:management.endpoints.access.default[] thành `none` rồi dùng property `access` của từng endpoint để opt back in.
+Ví dụ chỉ cho read-only access tới `loggers` và deny mọi endpoint khác:
+
+[configprops,yaml]
+----
+management:
+  endpoints:
+    access:
+      default: none
+  endpoint:
+    loggers:
+      access: read-only
+----
+
+NOTE: Endpoint inaccessible bị remove hoàn toàn khỏi application context.
+Nếu chỉ muốn đổi technology qua đó endpoint được expose, dùng xref:actuator/endpoints.adoc#actuator.endpoints.exposing[property `include` và `exclude`] thay thế.
+
+[[actuator.endpoints.controlling-access.limiting]]
+=== Giới hạn Access
+
+Application-wide endpoint access có thể limit bằng configprop:management.endpoints.access.max-permitted[].
+Property này có precedence hơn default access hoặc access level của endpoint riêng.
+Đặt `none` để mọi endpoint inaccessible.
+Đặt `read-only` để chỉ allow read access.
+
+Với javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation], read access tương ứng endpoint method annotate javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation].
+Với javadoc:org.springframework.boot.actuate.endpoint.web.annotation.ControllerEndpoint[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.web.annotation.RestControllerEndpoint[format=annotation], read access tương ứng request mapping xử lý `GET` và `HEAD`.
+Với javadoc:org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpoint[format=annotation], read access tương ứng `GET` và `HEAD`.
+
+[[actuator.endpoints.exposing]]
+== Expose Endpoints
+
+Mặc định chỉ endpoint health được expose qua HTTP và JMX.
+Vì Endpoint có thể chứa sensitive information, cần cân nhắc kỹ khi expose.
+
+Để đổi endpoint được expose, dùng property `include` và `exclude` theo technology:
+
+[cols="3,1"]
+|===
+| Property | Default
+
+| configprop:management.endpoints.jmx.exposure.exclude[]
+|
+
+| configprop:management.endpoints.jmx.exposure.include[]
+| `health`
+
+| configprop:management.endpoints.web.exposure.exclude[]
+|
+
+| configprop:management.endpoints.web.exposure.include[]
+| `health`
+|===
+
+Property `include` liệt kê ID endpoint được expose.
+Property `exclude` liệt kê endpoint không expose.
+`exclude` có precedence hơn `include`.
+Cả hai có thể cấu hình bằng list endpoint ID.
+
+Ví dụ chỉ expose `health` và `info` qua JMX:
+
+[configprops,yaml]
+----
+management:
+  endpoints:
+    jmx:
+      exposure:
+        include: "health,info"
+----
+
+`*` chọn mọi endpoint.
+Ví dụ expose mọi thứ qua HTTP trừ `env` và `beans`:
+
+[configprops,yaml]
+----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: "env,beans"
+----
+
+NOTE: `*` có meaning đặc biệt trong YAML, nên thêm quote nếu muốn include hoặc exclude toàn bộ endpoint.
+
+NOTE: Nếu application expose public, khuyến nghị mạnh xref:actuator/endpoints.adoc#actuator.endpoints.security[secure endpoint].
+
+TIP: Nếu muốn implement strategy riêng quyết định khi nào endpoint được expose, register bean javadoc:org.springframework.boot.actuate.endpoint.EndpointFilter[].
+
+[[actuator.endpoints.security]]
+== Security
+
+Vì security, mặc định chỉ endpoint `/health` được expose qua HTTP.
+Dùng configprop:management.endpoints.web.exposure.include[] để configure endpoint expose.
+
+NOTE: Trước khi set `management.endpoints.web.exposure.include`, đảm bảo actuator được expose không chứa sensitive information, được protect sau firewall hoặc secure bằng Spring Security.
+
+Nếu Spring Security trên classpath và không có bean javadoc:org.springframework.security.web.SecurityFilterChain[] khác, mọi actuator ngoài `/health` được Spring Boot auto-configuration secure.
+Nếu define custom SecurityFilterChain bean, Spring Boot auto-configuration back off và bạn kiểm soát hoàn toàn actuator access rule.
+
+Nếu muốn custom security cho HTTP endpoint, ví dụ chỉ role cụ thể được access, Spring Boot cung cấp convenient javadoc:org.springframework.security.web.util.matcher.RequestMatcher[] dùng với Spring Security.
+
+Typical configuration:
+
+include-code::typical/MySecurityConfiguration[]
+
+Ví dụ trên dùng `EndpointRequest.toAnyEndpoint()` để match request tới bất kỳ endpoint rồi yêu cầu role `ENDPOINT_ADMIN`.
+Có nhiều matcher method khác trên javadoc:org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest[].
+Xem xref:api:rest/actuator/index.adoc[API documentation].
+
+NOTE: Khi match Actuator endpoint, `EndpointRequest.to("endpoint")` xem xét endpoint root và mọi subpath, thực tế match `"/actuator/endpoint/**"` ngay cả khi endpoint không khai báo nested route.
+
+Nếu deploy application sau firewall, có thể muốn mọi actuator endpoint accessible không cần authentication.
+Thay configprop:management.endpoints.web.exposure.include[]:
+
+[configprops,yaml]
+----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+----
+
+Nếu Spring Security có mặt, cần thêm custom security configuration cho unauthenticated access:
+
+include-code::exposeall/MySecurityConfiguration[]
+
+NOTE: Trong hai ví dụ trên, configuration chỉ áp dụng actuator endpoint.
+Vì Spring Boot security configuration back off hoàn toàn khi có bất kỳ SecurityFilterChain bean nào, cần configure thêm SecurityFilterChain bean với rule cho phần còn lại của application.
+
+[[actuator.endpoints.security.csrf]]
+=== Cross Site Request Forgery Protection
+
+Vì Spring Boot dựa trên default của Spring Security, CSRF protection mặc định bật.
+Điều này nghĩa là actuator endpoint cần `POST` như shutdown và loggers, `PUT`, hoặc `DELETE` sẽ nhận 403 forbidden khi dùng default security configuration.
+
+NOTE: Chỉ khuyến nghị disable hoàn toàn CSRF protection nếu tạo service dùng bởi non-browser client.
+
+Xem thêm {url-spring-security-docs}/features/exploits/csrf.html[Spring Security Reference Guide].
+
+[[actuator.endpoints.caching]]
+== Configure Endpoints
+
+Endpoint tự động cache response của read operation không nhận parameter.
+Để cấu hình thời gian cache response, dùng property `cache.time-to-live`.
+Ví dụ cache endpoint `beans` trong 10 giây:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    beans:
+      cache:
+        time-to-live: "10s"
+----
+
+NOTE: Prefix `management.endpoint.<name>` uniquely identify endpoint đang configure.
+
+[[actuator.endpoints.sanitization]]
+== Sanitize Sensitive Values
+
+Information trả bởi endpoint `/env`, `/configprops` và `/quartz` có thể sensitive, nên mặc định value luôn fully sanitized, được replace bằng `+******+`.
+
+Value chỉ có thể xem unsanitized khi:
+
+- Property `show-values` được set khác `never`
+- Không có custom xref:how-to:actuator.adoc#howto.actuator.customizing-sanitization[`SanitizingFunction`] bean áp dụng
+
+Property `show-values` có thể cấu hình cho sanitizable endpoint:
+
+- `never` - value luôn fully sanitized, replace bằng `+******+`
+- `always` - value hiển thị cho mọi user miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng
