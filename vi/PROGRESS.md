@@ -6,7 +6,7 @@
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **47 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **67 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu thủ công nội dung, anchor, macro, ví dụ và cấu trúc với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -68,12 +68,35 @@
 46. [x] `modules/reference/pages/io/spring-batch.adoc`
 47. [x] `modules/reference/pages/io/grpc.adoc`
 
+## Đã dịch tiếp
+
+48. [x] `modules/reference/pages/io/hazelcast.adoc`
+49. [x] `modules/reference/pages/io/quartz.adoc`
+50. [x] `modules/reference/pages/io/email.adoc`
+51. [x] `modules/reference/pages/io/validation.adoc`
+52. [x] `modules/reference/pages/io/rest-client.adoc`
+53. [x] `modules/reference/pages/io/webservices.adoc`
+54. [x] `modules/reference/pages/io/jta.adoc`
+55. [x] `modules/reference/pages/messaging/index.adoc`
+56. [x] `modules/reference/pages/messaging/jms.adoc`
+57. [x] `modules/reference/pages/messaging/amqp.adoc`
+58. [x] `modules/reference/pages/messaging/kafka.adoc`
+59. [x] `modules/reference/pages/messaging/pulsar.adoc`
+60. [x] `modules/reference/pages/messaging/rsocket.adoc`
+61. [x] `modules/reference/pages/messaging/spring-integration.adoc`
+62. [x] `modules/reference/pages/messaging/websockets.adoc`
+63. [x] `modules/reference/pages/security/index.adoc`
+64. [x] `modules/reference/pages/security/oauth2.adoc`
+65. [x] `modules/reference/pages/security/saml2.adoc`
+66. [x] `modules/reference/pages/testing/index.adoc`
+67. [x] `modules/reference/pages/testing/test-modules.adoc`
+
 ## Tiếp theo
 
-48. [ ] `modules/reference/pages/io/hazelcast.adoc`
-49. [ ] `modules/reference/pages/io/quartz.adoc`
-50. [ ] `modules/reference/pages/io/email.adoc`
-51. [ ] `modules/reference/pages/io/validation.adoc`
-52. [ ] `modules/reference/pages/io/rest-client.adoc`
+68. [ ] `modules/reference/pages/testing/test-scope-dependencies.adoc`
+69. [ ] `modules/reference/pages/testing/spring-applications.adoc`
+70. [ ] `modules/reference/pages/testing/spring-boot-applications.adoc`
+71. [ ] `modules/reference/pages/testing/testcontainers.adoc`
+72. [ ] `modules/reference/pages/testing/test-utilities.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
