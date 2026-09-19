@@ -1,0 +1,165 @@
+[[messaging.kafka]]
+= Hỗ trợ Apache Kafka
+
+https://kafka.apache.org/[Apache Kafka] được hỗ trợ thông qua auto-configuration của project `spring-kafka`.
+
+Kafka configuration được điều khiển bởi external property trong `spring.kafka.*`:
+
+[configprops,yaml]
+----
+spring:
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    consumer:
+      group-id: "myGroup"
+----
+
+TIP: Để tạo topic khi startup, thêm bean javadoc:org.apache.kafka.clients.admin.NewTopic[].
+Nếu topic đã tồn tại, bean bị bỏ qua.
+
+Xem javadoc:org.springframework.boot.kafka.autoconfigure.KafkaProperties[] để biết thêm option.
+
+[[messaging.kafka.sending]]
+== Gửi Message
+
+javadoc:org.springframework.kafka.core.KafkaTemplate[] được auto-configure và có thể autowire trực tiếp:
+
+include-code::MyBean[]
+
+NOTE: Nếu configprop:spring.kafka.producer.transaction-id-prefix[] được định nghĩa, javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[] được cấu hình tự động.
+Nếu có bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], nó tự động liên kết với KafkaTemplate.
+
+Nếu context có bean type `KafkaTemplateObservationConvention`, nó tự động register trên `KafkaTemplate`.
+
+[[messaging.kafka.receiving]]
+== Nhận Message
+
+Khi Apache Kafka infrastructure có mặt, bean có thể annotate javadoc:org.springframework.kafka.annotation.KafkaListener[format=annotation] để tạo listener endpoint.
+Nếu chưa định nghĩa javadoc:org.springframework.kafka.config.KafkaListenerContainerFactory[], default factory được cấu hình tự động với key trong `spring.kafka.listener.*`.
+
+Ví dụ listener endpoint trên topic `someTopic`:
+
+include-code::MyBean[]
+
+Nếu có bean javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[], nó tự động liên kết với container factory.
+Tương tự với bean javadoc:org.springframework.kafka.listener.adapter.RecordFilterStrategy[], javadoc:org.springframework.kafka.listener.CommonErrorHandler[], javadoc:org.springframework.kafka.listener.AfterRollbackProcessor[] hoặc javadoc:org.springframework.kafka.listener.ConsumerAwareRebalanceListener[].
+
+Tùy listener type, bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[] hoặc javadoc:org.springframework.kafka.support.converter.BatchMessageConverter[] được liên kết với default factory.
+Nếu batch listener chỉ có RecordMessageConverter, nó được wrap trong BatchMessageConverter.
+
+TIP: Custom javadoc:org.springframework.kafka.transaction.ChainedKafkaTransactionManager[] phải đánh dấu javadoc:org.springframework.context.annotation.Primary[format=annotation] vì thường reference auto-configured KafkaTransactionManager.
+
+Nếu context có bean type `KafkaListenerObservationConvention`, nó tự động register trên container factory.
+
+[[messaging.kafka.streams]]
+== Kafka Streams
+
+Spring for Apache Kafka cung cấp factory bean tạo javadoc:org.apache.kafka.streams.StreamsBuilder[] và quản lý lifecycle stream.
+Spring Boot auto-configure javadoc:org.springframework.kafka.config.KafkaStreamsConfiguration[] nếu `kafka-streams` có trên classpath và Kafka Streams được enable bằng javadoc:org.springframework.kafka.annotation.EnableKafkaStreams[format=annotation].
+
+Enable Kafka Streams yêu cầu application id và bootstrap server.
+Application id cấu hình bằng `spring.kafka.streams.application-id`, mặc định dùng `spring.application.name`.
+Bootstrap server có thể đặt global hoặc override riêng cho streams.
+
+Có thêm property chuyên dụng; Kafka property khác có thể đặt dưới `spring.kafka.streams.properties`.
+Xem xref:messaging/kafka.adoc#messaging.kafka.additional-properties[].
+
+Để dùng factory bean, wire javadoc:org.apache.kafka.streams.StreamsBuilder[] vào javadoc:org.springframework.context.annotation.Bean[format=annotation]:
+
+include-code::MyKafkaStreamsConfiguration[]
+
+Mặc định stream do StreamsBuilder quản lý tự động start.
+Customize bằng configprop:spring.kafka.streams.auto-startup[].
+
+TIP: Có thể register nhiều bean implement javadoc:org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer[].
+
+[[messaging.kafka.additional-properties]]
+== Kafka Property bổ sung
+
+Property được auto-configuration hỗ trợ nằm trong xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties].
+Hầu hết property map trực tiếp tới Apache Kafka dotted property.
+
+Property không chứa client type (`producer`, `consumer`, `admin`, `streams`) được xem là common và áp dụng cho mọi client.
+Có thể override cho từng client type.
+
+Apache Kafka đánh dấu property importance HIGH, MEDIUM hoặc LOW.
+Spring Boot hỗ trợ toàn bộ HIGH, một số MEDIUM/LOW và property không có default value.
+
+Chỉ subset Kafka property có trực tiếp trong javadoc:org.springframework.boot.kafka.autoconfigure.KafkaProperties[].
+Property bổ sung dùng như sau:
+
+[configprops,yaml]
+----
+spring:
+  kafka:
+    properties:
+      "[prop.one]": "first"
+    admin:
+      properties:
+        "[prop.two]": "second"
+    consumer:
+      properties:
+        "[prop.three]": "third"
+    producer:
+      properties:
+        "[prop.four]": "fourth"
+    streams:
+      properties:
+        "[prop.five]": "fifth"
+----
+
+Cấu hình trên đặt common `prop.one=first`, admin `prop.two=second`, consumer `prop.three=third`, producer `prop.four=fourth` và streams `prop.five=fifth`.
+
+Có thể cấu hình javadoc:org.springframework.kafka.support.serializer.JacksonJsonDeserializer[]:
+
+[configprops,yaml]
+----
+spring:
+  kafka:
+    consumer:
+      value-deserializer: "org.springframework.kafka.support.serializer.JacksonJsonDeserializer"
+      properties:
+        "[spring.json.value.default.type]": "com.example.Invoice"
+        "[spring.json.trusted.packages]": "com.example.main,com.example.another"
+----
+
+Tương tự, disable behavior mặc định của javadoc:org.springframework.kafka.support.serializer.JacksonJsonSerializer[] gửi type information trong header:
+
+[configprops,yaml]
+----
+spring:
+  kafka:
+    producer:
+      value-serializer: "org.springframework.kafka.support.serializer.JacksonJsonSerializer"
+      properties:
+        "[spring.json.add.type.headers]": false
+----
+
+IMPORTANT: Property đặt theo cách này override configuration item Spring Boot hỗ trợ rõ ràng.
+
+[[messaging.kafka.embedded]]
+== Test với Embedded Kafka
+
+Spring for Apache Kafka cung cấp cách tiện lợi test project với embedded Kafka broker.
+Dùng annotation javadoc:org.springframework.kafka.test.context.EmbeddedKafka[format=annotation] từ module `spring-kafka-test`.
+Xem {url-spring-kafka-docs}/testing.html#ekb[reference manual].
+
+Để Spring Boot auto-configuration làm việc với embedded broker, cần remap system property chứa broker address từ javadoc:org.springframework.kafka.test.EmbeddedKafkaBroker[] sang configprop:spring.kafka.bootstrap-servers[].
+Có các cách:
+
+* Cung cấp system property trong test class:
+
+include-code::property/MyTest[tag=*]
+
+* Cấu hình property name trên annotation:
+
+include-code::annotation/MyTest[]
+
+* Dùng placeholder trong configuration:
+
+[configprops,yaml]
+----
+spring:
+  kafka:
+    bootstrap-servers: "${spring.embedded.kafka.brokers}"
+----
