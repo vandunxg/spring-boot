@@ -6,7 +6,7 @@
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Cập nhật: 2026-09-19.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **97 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **147 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu thủ công nội dung, anchor, macro, ví dụ và cấu trúc với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -124,12 +124,65 @@
 96. [x] `modules/reference/pages/actuator/process-monitoring.adoc`
 97. [x] `modules/reference/pages/actuator/cloud-foundry.adoc`
 
+## Đã dịch tiếp
+
+98. [x] `modules/how-to/pages/index.adoc`
+99. [x] `modules/how-to/pages/application.adoc`
+100. [x] `modules/how-to/pages/properties-and-configuration.adoc`
+101. [x] `modules/how-to/pages/webserver.adoc`
+102. [x] `modules/how-to/pages/spring-mvc.adoc`
+103. [x] `modules/how-to/pages/jersey.adoc`
+104. [x] `modules/how-to/pages/http-clients.adoc`
+105. [x] `modules/how-to/pages/logging.adoc`
+106. [x] `modules/how-to/pages/data-access.adoc`
+107. [x] `modules/how-to/pages/data-initialization.adoc`
+108. [x] `modules/how-to/pages/nosql.adoc`
+109. [x] `modules/how-to/pages/messaging.adoc`
+110. [x] `modules/how-to/pages/batch.adoc`
+111. [x] `modules/how-to/pages/actuator.adoc`
+112. [x] `modules/how-to/pages/security.adoc`
+113. [x] `modules/how-to/pages/hotswapping.adoc`
+114. [x] `modules/how-to/pages/testing.adoc`
+115. [x] `modules/how-to/pages/build.adoc`
+116. [x] `modules/how-to/pages/aot.adoc`
+117. [x] `modules/how-to/pages/native-image/index.adoc`
+118. [x] `modules/how-to/pages/native-image/developing-your-first-application.adoc`
+119. [x] `modules/how-to/pages/native-image/testing-native-applications.adoc`
+120. [x] `modules/how-to/pages/aot-cache.adoc`
+121. [x] `modules/how-to/pages/deployment/index.adoc`
+122. [x] `modules/how-to/pages/deployment/traditional-deployment.adoc`
+123. [x] `modules/how-to/pages/deployment/cloud.adoc`
+124. [x] `modules/how-to/pages/deployment/installing.adoc`
+125. [x] `modules/how-to/pages/docker-compose.adoc`
+126. [x] `modules/build-tool-plugin/pages/index.adoc`
+127. [x] `modules/maven-plugin/pages/index.adoc`
+128. [x] `modules/maven-plugin/pages/getting-started.adoc`
+129. [x] `modules/maven-plugin/pages/using.adoc`
+130. [x] `modules/maven-plugin/pages/goals.adoc`
+131. [x] `modules/maven-plugin/pages/packaging.adoc`
+132. [x] `modules/maven-plugin/pages/build-image.adoc`
+133. [x] `modules/maven-plugin/pages/run.adoc`
+134. [x] `modules/maven-plugin/pages/aot.adoc`
+135. [x] `modules/maven-plugin/pages/integration-tests.adoc`
+136. [x] `modules/maven-plugin/pages/build-info.adoc`
+137. [x] `modules/maven-plugin/pages/help.adoc`
+138. [x] `modules/gradle-plugin/pages/index.adoc`
+139. [x] `modules/gradle-plugin/pages/getting-started.adoc`
+140. [x] `modules/gradle-plugin/pages/managing-dependencies.adoc`
+141. [x] `modules/gradle-plugin/pages/packaging.adoc`
+142. [x] `modules/gradle-plugin/pages/packaging-oci-image.adoc`
+143. [x] `modules/gradle-plugin/pages/publishing.adoc`
+144. [x] `modules/gradle-plugin/pages/running.adoc`
+145. [x] `modules/gradle-plugin/pages/aot.adoc`
+146. [x] `modules/gradle-plugin/pages/integrating-with-actuator.adoc`
+147. [x] `modules/gradle-plugin/pages/reacting.adoc`
+
 ## Tiếp theo
 
-98. [ ] `modules/how-to/pages/index.adoc`
-99. [ ] `modules/how-to/pages/application.adoc`
-100. [ ] `modules/how-to/pages/properties-and-configuration.adoc`
-101. [ ] `modules/how-to/pages/webserver.adoc`
-102. [ ] `modules/how-to/pages/spring-mvc.adoc`
+148. [ ] `modules/build-tool-plugin/pages/antlib.adoc`
+149. [ ] `modules/build-tool-plugin/pages/other-build-systems.adoc`
+150. [ ] `modules/cli/pages/index.adoc`
+151. [ ] `modules/cli/pages/installation.adoc`
+152. [ ] `modules/cli/pages/using-the-cli.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
