@@ -1,0 +1,57 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+# Requires Settings > Pages > Source to be set to "GitHub Actions".
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Site
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Out Code
+      uses: actions/checkout@v4
+    - name: Set Up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+        cache-dependency-path: antora/package-lock.json
+    - name: Install Antora
+      run: npm ci
+      working-directory: antora
+    - name: Build Site
+      run: ./antora/node_modules/.bin/antora antora-playbook.yml
+    - name: Disable Jekyll
+      # Keeps GitHub Pages from ever stripping the _/ directory holding the UI assets.
+      run: touch build/site/.nojekyll
+    - name: Configure Pages
+      uses: actions/configure-pages@v5
+    - name: Upload Site
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: build/site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - name: Deploy
+      id: deployment
+      uses: actions/deploy-pages@v4
