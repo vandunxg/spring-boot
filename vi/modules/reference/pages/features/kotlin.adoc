@@ -1,0 +1,177 @@
+[[features.kotlin]]
+= Hỗ trợ Kotlin
+
+https://kotlinlang.org[Kotlin] là ngôn ngữ statically-typed nhắm tới JVM (và các platform khác), cho phép viết code ngắn gọn và thanh lịch đồng thời cung cấp {url-kotlin-docs}/java-interop.html[interoperability] với các library hiện có được viết bằng Java.
+
+Spring Boot cung cấp hỗ trợ Kotlin bằng cách tận dụng support trong các Spring project khác như Spring Framework, Spring Data và Reactor.
+Xem {url-spring-framework-docs}/languages/kotlin.html[tài liệu hỗ trợ Kotlin của Spring Framework] để biết thêm thông tin.
+
+Cách dễ nhất để bắt đầu với Spring Boot và Kotlin là làm theo https://spring.io/guides/tutorials/spring-boot-kotlin/[tutorial đầy đủ này].
+Bạn có thể tạo project Kotlin mới bằng https://start.spring.io/#!language=kotlin[start.spring.io].
+Nếu cần hỗ trợ, bạn có thể tham gia channel #spring trên https://slack.kotlinlang.org/[Kotlin Slack] hoặc đặt câu hỏi với tag `spring` và `kotlin` trên https://stackoverflow.com/questions/tagged/spring+kotlin[Stack Overflow].
+
+
+
+[[features.kotlin.requirements]]
+== Yêu cầu
+
+Spring Boot yêu cầu tối thiểu Kotlin 2.2.x và quản lý một phiên bản Kotlin phù hợp thông qua dependency management.
+Để dùng Kotlin, `org.jetbrains.kotlin:kotlin-stdlib` và `org.jetbrains.kotlin:kotlin-reflect` phải có trên classpath.
+
+Kotlin 2.2.x giới thiệu https://kotlinlang.org/docs/whatsnew22.html#new-defaulting-rules-for-use-site-annotation-targets[các rule mặc định mới để truyền annotation tới parameter, field và property].
+Để tránh các warning liên quan và dùng behavior nhiều khả năng sẽ trở thành mặc định của Kotlin trong một phiên bản sắp tới, nên cấu hình compiler flag `-Xannotation-default-target=param-property`.
+
+Vì https://discuss.kotlinlang.org/t/classes-final-by-default/166[class Kotlin mặc định là final], bạn có thể sẽ muốn cấu hình plugin {url-kotlin-docs}/compiler-plugins.html#spring-support[kotlin-spring] để tự động open các class được annotate bởi Spring nhằm cho phép chúng được proxy.
+
+https://github.com/FasterXML/jackson-module-kotlin[Jackson Kotlin module] là bắt buộc để serialize / deserialize JSON data trong Kotlin.
+Nó được tự động register khi xuất hiện trên classpath.
+
+TIP: Các dependency và plugin này được cung cấp mặc định nếu bạn bootstrap một Kotlin project trên https://start.spring.io/#!language=kotlin[start.spring.io].
+
+
+
+[[features.kotlin.null-safety]]
+== Null-safety
+
+Một trong những feature chính của Kotlin là {url-kotlin-docs}/null-safety.html[null-safety].
+Nó xử lý giá trị `null` tại compile time thay vì trì hoãn vấn đề tới runtime và gặp javadoc:java.lang.NullPointerException[].
+Điều này giúp loại bỏ một nguồn bug phổ biến mà không phải trả chi phí của wrapper như javadoc:java.util.Optional[].
+Kotlin cũng cho phép dùng functional construct với nullable value như được mô tả trong https://www.baeldung.com/kotlin-null-safety[guide đầy đủ về null-safety trong Kotlin].
+
+Mặc dù Java không cho phép biểu diễn null-safety trong type system, hầu hết Spring project cung cấp {url-spring-framework-docs}/core/null-safety.html[null-safety] thông qua annotation https://jspecify.dev/[JSpecify].
+
+Từ Kotlin 2.1, Kotlin enforce strict handling đối với nullability annotation từ package `org.jspecify.annotations`.
+
+
+
+[[features.kotlin.api]]
+== Kotlin API
+
+
+
+[[features.kotlin.api.run-application]]
+=== runApplication
+
+Spring Boot cung cấp cách idiomatic để chạy ứng dụng với `runApplication<MyApplication>(*args)` như ví dụ sau:
+
+[source,kotlin]
+----
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+
+@SpringBootApplication
+class MyApplication
+
+fun main(args: Array<String>) {
+	runApplication<MyApplication>(*args)
+}
+----
+
+Đây là drop-in replacement cho `SpringApplication.run(MyApplication::class.java, *args)`.
+Nó cũng cho phép customize ứng dụng như ví dụ sau:
+
+[source,kotlin]
+----
+runApplication<MyApplication>(*args) {
+	setBannerMode(OFF)
+}
+----
+
+
+
+[[features.kotlin.api.extensions]]
+=== Extension
+
+Kotlin {url-kotlin-docs}/extensions.html[extension] cung cấp khả năng mở rộng class hiện có bằng functionality bổ sung.
+Spring Boot Kotlin API sử dụng các extension này để thêm tiện ích dành riêng cho Kotlin vào các API hiện có.
+
+
+
+[[features.kotlin.dependency-management]]
+== Dependency Management
+
+Để tránh trộn nhiều phiên bản Kotlin dependency trên classpath, Spring Boot import Kotlin BOM.
+
+Với Maven, phiên bản Kotlin có thể được customize bằng property `kotlin.version` và plugin management được cung cấp cho `kotlin-maven-plugin`.
+Với Gradle, Spring Boot plugin tự động căn `kotlin.version` theo phiên bản Kotlin plugin.
+
+Spring Boot cũng quản lý phiên bản Coroutines dependency bằng cách import Kotlin Coroutines BOM.
+Có thể customize phiên bản bằng property `kotlin-coroutines.version`.
+
+TIP: Dependency `org.jetbrains.kotlinx:kotlinx-coroutines-reactor` được cung cấp mặc định nếu bạn bootstrap một Kotlin project với ít nhất một reactive dependency trên https://start.spring.io/#!language=kotlin[start.spring.io].
+
+
+
+[[features.kotlin.configuration-properties]]
+== @ConfigurationProperties
+
+javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] khi được dùng kết hợp với xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.constructor-binding[constructor binding] hỗ trợ data class với property `val` immutable như ví dụ sau:
+
+[source,kotlin]
+----
+@ConfigurationProperties("example.kotlin")
+data class KotlinExampleProperties(
+		val name: String,
+		val description: String,
+		val myService: MyService
+) {
+
+	data class MyService(
+			val apiToken: String,
+			val uri: URI
+	)
+}
+----
+
+Do giới hạn interoperability với Java, support cho value class bị giới hạn.
+Cụ thể, dựa vào default value của value class sẽ không hoạt động với configuration property binding.
+Trong trường hợp đó nên dùng data class thay thế.
+
+TIP: Để generate xref:specification:configuration-metadata/annotation-processor.adoc[metadata riêng của bạn] bằng annotation processor, {url-kotlin-docs}/kapt.html[`kapt` nên được cấu hình] với dependency `spring-boot-configuration-processor`.
+Lưu ý rằng một số feature (như phát hiện default value hoặc deprecated item) không hoạt động do giới hạn trong model mà kapt cung cấp.
+
+
+
+[[features.kotlin.testing]]
+== Testing
+
+Mặc dù có thể dùng JUnit 4 để test Kotlin code, JUnit 6 được cung cấp mặc định và được khuyến nghị.
+JUnit 6 cho phép một test class được instantiate một lần và tái sử dụng cho tất cả test của class.
+Điều này cho phép dùng annotation javadoc:org.junit.jupiter.api.BeforeAll[format=annotation] và javadoc:org.junit.jupiter.api.AfterAll[format=annotation] trên non-static method, rất phù hợp với Kotlin.
+
+Để mock Kotlin class, https://mockk.io/[MockK] được khuyến nghị.
+Nếu cần phiên bản tương đương MockK của các annotation dành riêng cho Mockito xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.mocking-beans[`@MockitoBean` và javadoc:org.springframework.test.context.bean.override.mockito.MockitoSpyBean[format=annotation]], bạn có thể dùng https://github.com/Ninja-Squad/springmockk[SpringMockK], cung cấp các annotation tương tự `@MockkBean` và `@SpykBean`.
+
+
+
+[[features.kotlin.resources]]
+== Resource
+
+
+
+[[features.kotlin.resources.further-reading]]
+=== Đọc thêm
+
+* {url-kotlin-docs}[Kotlin language reference]
+* https://kotlinlang.slack.com/[Kotlin Slack] (với channel #spring riêng)
+* https://stackoverflow.com/questions/tagged/spring+kotlin[Stack Overflow với tag `spring` và `kotlin`]
+* https://try.kotlinlang.org/[Thử Kotlin trong browser]
+* https://blog.jetbrains.com/kotlin/[Kotlin blog]
+* https://kotlin.link/[Awesome Kotlin]
+* https://spring.io/guides/tutorials/spring-boot-kotlin/[Tutorial: xây dựng web application với Spring Boot và Kotlin]
+* https://spring.io/blog/2016/02/15/developing-spring-boot-applications-with-kotlin[Phát triển Spring Boot application với Kotlin]
+* https://spring.io/blog/2016/03/20/a-geospatial-messenger-with-kotlin-spring-boot-and-postgresql[A Geospatial Messenger với Kotlin, Spring Boot và PostgreSQL]
+* https://spring.io/blog/2017/01/04/introducing-kotlin-support-in-spring-framework-5-0[Giới thiệu Kotlin support trong Spring Framework 5.0]
+* https://spring.io/blog/2017/08/01/spring-framework-5-kotlin-apis-the-functional-way[Spring Framework 5 Kotlin API theo cách functional]
+
+
+
+[[features.kotlin.resources.examples]]
+=== Ví dụ
+
+* https://github.com/sdeleuze/spring-boot-kotlin-demo[spring-boot-kotlin-demo]: project Spring Boot + Spring Data JPA thông thường
+* https://github.com/mixitconf/mixit[mixit]: Spring Boot 2 + WebFlux + Reactive Spring Data MongoDB
+* https://github.com/sdeleuze/spring-kotlin-fullstack[spring-kotlin-fullstack]: ví dụ WebFlux Kotlin fullstack với Kotlin2js cho frontend thay vì JavaScript hoặc TypeScript
+* https://github.com/spring-petclinic/spring-petclinic-kotlin[spring-petclinic-kotlin]: phiên bản Kotlin của Spring PetClinic Sample Application
+* https://github.com/sdeleuze/spring-kotlin-deepdive[spring-kotlin-deepdive]: migration từng bước từ Boot 1.0 + Java sang Boot 2.0 + Kotlin
+* https://github.com/sdeleuze/spring-boot-coroutines-demo[spring-boot-coroutines-demo]: project mẫu về Coroutines
