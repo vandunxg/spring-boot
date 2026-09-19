@@ -1,0 +1,26 @@
+[[getting-started]]
+= Getting Started
+
+Để dùng Spring Boot Maven Plugin, include XML phù hợp trong section `plugins` của `pom.xml`:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/pom.xml[tags=getting-started]
+----
+
+ifeval::["{build-type}" == "commercial"]
+Plugin được publish lên Spring Commercial repository.
+Bạn phải configure build để access repository này.
+Thông thường thực hiện qua local artifact repository mirror content của Spring Commercial repository.
+Ngoài ra, dù không được khuyến nghị, Spring Commercial repository cũng có thể access trực tiếp.
+Trong cả hai case, xem https://docs.vmware.com/en/Tanzu-Spring-Runtime/Commercial/Tanzu-Spring-Runtime/spring-enterprise-subscription.html[Tanzu Spring Runtime documentation] để biết thêm.
+endif::[]
+
+ifeval::["{build-type}" == "opensource"]
+Nếu dùng milestone hoặc snapshot release, cũng cần thêm element `pluginRepository` phù hợp:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$getting-started/plugin-repositories-pom.xml[tags=plugin-repositories]
+----
+endif::[]
