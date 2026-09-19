@@ -1,0 +1,35 @@
+[[howto.docker-compose]]
+= Docker Compose
+
+Phần này gồm các chủ đề liên quan đến Docker Compose support trong Spring Boot.
+
+[[howto.docker-compose.jdbc-url]]
+== Customize JDBC URL
+
+Khi dùng javadoc:org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails[] với Docker Compose, parameter của JDBC URL có thể customize bằng label `org.springframework.boot.jdbc.parameters` trên service.
+Ví dụ:
+
+[source,yaml]
+----
+services:
+  postgres:
+    image: 'postgres:15.3'
+    environment:
+      - 'POSTGRES_USER=myuser'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_DB=mydb'
+    ports:
+      - '5432:5432'
+    labels:
+      org.springframework.boot.jdbc.parameters: 'ssl=true&sslmode=require'
+----
+
+Với Docker Compose file này, JDBC URL được dùng là `jdbc:postgresql://127.0.0.1:5432/mydb?ssl=true&sslmode=require`.
+
+[[howto.docker-compose.sharing-services]]
+== Share Service giữa nhiều Application
+
+Nếu muốn share service giữa nhiều application, tạo file `compose.yaml` trong một application rồi dùng configuration property configprop:spring.docker.compose.file[] ở application khác để reference file `compose.yaml`.
+Cũng nên set configprop:spring.docker.compose.lifecycle-management[] thành `start-only` vì default là `start-and-stop`; stop một application khi đó sẽ shutdown shared service cho application khác vẫn đang chạy.
+Set `start-only` sẽ không stop shared service khi application stop, nhưng lưu ý nếu shutdown mọi application thì service vẫn tiếp tục chạy.
+Có thể stop service thủ công bằng command `docker compose stop` trong directory chứa file `compose.yaml`.
