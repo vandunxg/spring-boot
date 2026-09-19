@@ -1,0 +1,33 @@
+[[io.email]]
+= Gửi Email
+
+Spring Framework cung cấp abstraction để gửi email bằng interface javadoc:org.springframework.mail.javamail.JavaMailSender[], và Spring Boot cung cấp auto-configuration cùng starter module.
+
+TIP: Xem {url-spring-framework-docs}/integration/email.html[reference documentation] để biết chi tiết cách dùng javadoc:org.springframework.mail.javamail.JavaMailSender[].
+
+Nếu `spring.mail.host` và các library liên quan (được định nghĩa bởi `spring-boot-starter-mail`) có sẵn, default javadoc:org.springframework.mail.javamail.JavaMailSender[] được tạo nếu chưa tồn tại.
+Sender có thể customize thêm bằng configuration trong namespace `spring.mail`.
+Xem javadoc:org.springframework.boot.mail.autoconfigure.MailProperties[].
+
+Một số default timeout là vô hạn; bạn có thể muốn thay đổi để tránh thread bị block bởi mail server không phản hồi:
+
+[configprops,yaml]
+----
+spring:
+  mail:
+    properties:
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 3000
+      "[mail.smtp.writetimeout]": 5000
+----
+
+Cũng có thể cấu hình javadoc:org.springframework.mail.javamail.JavaMailSender[] bằng existing javadoc:jakarta.mail.Session[] từ JNDI:
+
+[configprops,yaml]
+----
+spring:
+  mail:
+    jndi-name: "mail/Session"
+----
+
+Khi đặt `jndi-name`, nó có precedence hơn mọi setting khác liên quan tới Session.
