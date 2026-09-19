@@ -1,0 +1,103 @@
+[[reacting-to-other-plugins]]
+= Reacting to Other Plugins
+
+Khi plugin khác được apply, Spring Boot plugin react bằng cách thay đổi nhiều project configuration.
+Phần này mô tả các change đó.
+
+[[reacting-to-other-plugins.java]]
+== Reacting to Java Plugin
+
+Khi {url-gradle-docs-java-plugin}[`java` plugin] của Gradle apply vào project, Spring Boot plugin:
+
+1. Tạo task {apiref-gradle-plugin-boot-jar}[`BootJar`] tên `bootJar` tạo executable uber jar cho project.
+   Jar chứa mọi thứ trên runtime classpath của main source set; class package trong `BOOT-INF/classes` và jar trong `BOOT-INF/lib`.
+2. Configure task `assemble` depend vào `bootJar`.
+3. Configure task `jar` dùng `plain` làm convention cho archive classifier.
+4. Tạo task {apiref-gradle-plugin-boot-build-image}[`BootBuildImage`] tên `bootBuildImage` tạo OCI image bằng https://buildpacks.io[buildpack].
+5. Tạo task {apiref-gradle-plugin-boot-run}[`BootRun`] tên `bootRun` để chạy application, dùng main source set tìm main method và cung cấp runtime classpath.
+6. Tạo task `BootRun` tên `bootTestRun` để chạy application, dùng test source set tìm main method và runtime classpath.
+7. Tạo configuration tên `bootArchives` chứa artifact do `bootJar` tạo.
+8. Tạo configuration `developmentOnly` cho dependency chỉ cần ở development time, như Spring Boot Devtools, và không nên package trong executable jar/war.
+9. Tạo configuration `testAndDevelopmentOnly` cho dependency chỉ cần ở development time và khi viết/chạy test, không package trong executable jar/war.
+10. Tạo configuration `productionRuntimeClasspath`. Nó tương đương `runtimeClasspath` trừ dependency chỉ xuất hiện trong `developmentOnly` hoặc `testDevelopmentOnly`.
+11. Configure mọi task `JavaCompile` chưa set encoding dùng `UTF-8`.
+12. Configure mọi task `JavaCompile` dùng compiler argument `-parameters`.
+
+[[reacting-to-other-plugins.kotlin]]
+== Reacting to Kotlin Plugin
+
+Khi {url-kotlin-docs-kotlin-plugin}[Kotlin Gradle plugin] apply, Spring Boot plugin:
+
+1. Align Kotlin version trong Spring Boot dependency management với plugin version bằng cách set property `kotlin.version` match version Kotlin plugin.
+2. Configure mọi task `KotlinCompile` dùng compiler argument `-java-parameters`.
+
+[[reacting-to-other-plugins.war]]
+== Reacting to War Plugin
+
+Khi {url-gradle-docs-war-plugin}[`war` plugin] của Gradle apply, Spring Boot plugin:
+
+1. Tạo task {apiref-gradle-plugin-boot-war}[`BootWar`] tên `bootWar` tạo executable fat war.
+   Ngoài standard packaging, mọi thứ trong configuration `providedRuntime` package vào `WEB-INF/lib-provided`.
+2. Configure `assemble` depend vào `bootWar`.
+3. Configure task `war` dùng `plain` làm convention archive classifier.
+4. Configure `bootArchives` chứa artifact do `bootWar` tạo.
+
+[[reacting-to-other-plugins.dependency-management]]
+== Reacting to Dependency Management Plugin
+
+Khi {url-dependency-management-plugin-site}[`io.spring.dependency-management` plugin] apply, Spring Boot plugin tự động import bom `spring-boot-dependencies`.
+
+[[reacting-to-other-plugins.application]]
+== Reacting to Application Plugin
+
+Khi {url-gradle-docs-application-plugin}[`application` plugin] apply, Spring Boot plugin:
+
+1. Tạo task `CreateStartScripts` tên `bootStartScripts` tạo script launch artifact trong configuration `bootArchives` bằng `java -jar`.
+   Task configure dùng property `applicationDefaultJvmArgs` làm convention cho `defaultJvmOpts`.
+2. Tạo distribution mới tên `boot` và configure chứa artifact trong `bootArchives` ở directory `lib` và start script ở `bin`.
+3. Configure `bootRun` dùng property `mainClassName` làm convention cho property `main`.
+4. Configure `bootRun` và `bootTestRun` dùng `applicationDefaultJvmArgs` làm convention cho `jvmArgs`.
+5. Configure `bootJar` dùng `mainClassName` làm convention cho entry `Start-Class` trong manifest.
+6. Configure `bootWar` dùng `mainClassName` làm convention cho entry `Start-Class` trong manifest.
+
+[[reacting-to-other-plugins.nbt]]
+== Reacting to GraalVM Native Image Plugin
+
+Khi {url-native-build-tools-docs-gradle-plugin}[GraalVM Native Image plugin] apply, Spring Boot plugin:
+
+. Apply plugin `org.springframework.boot.aot`:
+.. Register source set `aot` và `aotTest`.
+.. Register task `ProcessAot` tên `processAot` generate AOT-optimized source cho application trong source set `aot`.
+.. Configure Java compilation và process resources task cho source set `aot` depend vào `processAot`.
+.. Register task `ProcessTestAot` tên `processTestAot` generate AOT-optimized source cho test trong source set `aotTest`.
+.. Configure Java compilation và process resources task cho source set `aotTest` depend vào `processTestAot`.
+. Add output source set `aot` vào classpath của main GraalVM native binary.
+. Add output source set `aotTest` vào classpath test GraalVM native binary.
+. Configure GraalVM extension disable Toolchain detection.
+. Configure task `bootJar` include reachability metadata do task `collectReachabilityMetadata` tạo.
+. Configure `bootJar` add manifest entry `Spring-Boot-Native-Processed: true`.
+
+[[reacting-to-other-plugins.cyclonedx]]
+== Reacting to CycloneDX Plugin
+
+Khi {url-cyclonedx-docs-gradle-plugin}[CycloneDX plugin] apply, Spring Boot plugin:
+
+. Configure task `cyclonedxBom`:
+.. Dùng project type `application`.
+.. Output JSON-format SBOM vào file `application.cdx.json`.
+.. Disable XML-format SBOM.
+.. Disable full license text.
+. Add SBOM dưới `META-INF/sbom` trong generated jar/war.
+. Add `Sbom-Format` và `Sbom-Location` vào manifest jar/war.
+
+[[reacting-to-other-plugins.protobuf]]
+== Reacting to Protobuf Plugin
+
+Khi {url-protobuf-docs-gradle-plugin}[Protobuf plugin] apply, Spring Boot plugin:
+
+. Configure `protoc` dùng artifact `com.google.protobuf:protoc`, align version với Protobuf dependency trên runtime classpath.
+
+Ngoài ra khi Protobuf `grpc` plugin configure, Spring Boot plugin:
+
+. Configure nó dùng artifact `io.grpc:protoc-gen-grpc-java`, align version với gRPC dependency trên runtime classpath.
+. Configure `grpc` plugin của mọi generate proto task với option `@generated=omit`.
