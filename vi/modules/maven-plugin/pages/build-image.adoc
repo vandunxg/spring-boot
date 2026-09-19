@@ -1,0 +1,541 @@
+[[build-image]]
+= Packaging OCI Images
+
+Plugin có thể tạo https://github.com/opencontainers/image-spec[OCI image] từ jar hoặc war file bằng https://buildpacks.io/[Cloud Native Buildpacks] (CNB).
+Image có thể build trên command line bằng goal `build-image`.
+Goal này đảm bảo package lifecycle đã chạy trước khi image được tạo.
+
+NOTE: Vì security, image build và run bằng non-root user.
+Xem {url-buildpacks-docs}/reference/spec/platform-api/#users[CNB specification] để biết thêm.
+
+Cách dễ nhất để bắt đầu là invoke `mvn spring-boot:build-image` trên project.
+Có thể automate việc tạo image mỗi khi phase `package` được invoke:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/pom.xml[tags=packaging-oci-image]
+----
+
+NOTE: Dùng `build-image-no-fork` khi bind goal vào package lifecycle.
+Goal này tương tự `build-image` nhưng không fork lifecycle để đảm bảo `package` đã chạy.
+Trong phần còn lại, `build-image` dùng để chỉ cả goal `build-image` hoặc `build-image-no-fork`.
+
+TIP: Dù buildpack chạy từ xref:packaging.adoc[executable archive], không cần execute goal `repackage` trước vì executable archive được tự động tạo nếu cần.
+Khi `build-image` repackage application, nó apply cùng setting với goal `repackage`, tức dependency có thể exclude bằng option exclude.
+Module `spring-boot-devtools` và `spring-boot-docker-compose` mặc định tự động exclude; control bằng property `excludeDevtools` và `excludeDockerCompose`.
+Cũng lưu ý optional dependency mặc định không include.
+Nếu define các module này optional, cũng cần set `includeOptional` thành `true`.
+
+[[build-image.docker-daemon]]
+== Docker Daemon
+
+Goal `build-image` cần access Docker daemon.
+Goal inspect local Docker CLI https://docs.docker.com/engine/reference/commandline/cli/#configuration-files[configuration file] để determine current https://docs.docker.com/engine/context/working-with-contexts/[context] và dùng connection information của context communicate với Docker daemon.
+Nếu không determine được current context hoặc context không có connection information, goal dùng default local connection.
+Điều này hoạt động với https://docs.docker.com/install/[Docker Engine] trên mọi supported platform mà không cần configuration.
+
+Environment variable có thể set để configure `build-image` dùng alternative local hoặc remote connection:
+
+|===
+| Environment variable | Mô tả
+
+| DOCKER_CONFIG
+| Location Docker CLI https://docs.docker.com/engine/reference/commandline/cli/#configuration-files[configuration file] dùng determine current context (default `$HOME/.docker`)
+
+| DOCKER_CONTEXT
+| Name của https://docs.docker.com/engine/context/working-with-contexts/[context] dùng retrieve host information từ Docker CLI configuration file (override `DOCKER_HOST`)
+
+| DOCKER_HOST
+| URL chứa host và port của Docker daemon, ví dụ `tcp://192.168.99.100:2376`
+
+| DOCKER_TLS_VERIFY
+| Enable secure HTTPS protocol khi set `1` (optional)
+
+| DOCKER_CERT_PATH
+| Path tới certificate và key file cho HTTPS (required nếu `DOCKER_TLS_VERIFY=1`, ignore nếu không)
+|===
+
+Docker daemon connection information cũng có thể cung cấp bằng parameter `docker` trong plugin configuration:
+
+|===
+| Parameter | Mô tả
+
+| `context`
+| Name của https://docs.docker.com/engine/context/working-with-contexts/[context] dùng retrieve host information từ Docker CLI https://docs.docker.com/engine/reference/commandline/cli/#configuration-files[configuration file]
+
+| `host`
+| URL chứa host và port Docker daemon, ví dụ `tcp://192.168.99.100:2376`
+
+| `tlsVerify`
+| Enable secure HTTPS protocol khi set `true` (optional)
+
+| `certPath`
+| Path tới certificate/key file cho HTTPS (required nếu `tlsVerify` là `true`, ignore nếu không)
+
+| `bindHostToBuilder`
+| Khi `true`, value của property `host` được cung cấp cho container tạo cho CNB builder (optional)
+|===
+
+Chi tiết xem xref:build-image.adoc#build-image.examples.docker[examples].
+
+[[build-image.docker-registry]]
+== Docker Registry
+
+Nếu Docker image specify bởi parameter `builder` hoặc `runImage` lưu trong private Docker image registry cần authentication, authentication credential có thể cung cấp bằng parameter `docker.builderRegistry`.
+
+Nếu generated Docker image sẽ publish tới Docker image registry, authentication credential có thể cung cấp bằng parameter `docker.publishRegistry`.
+
+Có parameter cho user authentication hoặc identity token authentication.
+Xem documentation của Docker registry đang dùng để biết supported authentication method.
+
+Parameter available cho `docker.builderRegistry` và `docker.publishRegistry`:
+
+|===
+| Parameter | Mô tả
+
+| `username`
+| Username cho Docker image registry user. Required cho user authentication.
+
+| `password`
+| Password cho Docker image registry user. Required cho user authentication.
+
+| `url`
+| Address Docker image registry. Optional cho user authentication.
+
+| `email`
+| E-mail address Docker image registry user. Optional cho user authentication.
+
+| `token`
+| Identity token Docker image registry user. Required cho token authentication.
+|===
+
+Chi tiết xem xref:build-image.adoc#build-image.examples.docker[examples].
+
+[NOTE]
+====
+Nếu không cung cấp credential, plugin đọc existing Docker configuration file của user, thường tại `$HOME/.docker/config.json`, để determine authentication method.
+Dùng các method này, plugin cố cung cấp authentication credential cho requested image.
+
+Plugin hỗ trợ các authentication method:
+
+- *Credential Helpers*: External tool configure trong Docker configuration file cung cấp credential cho specific registry. Ví dụ `osxkeychain` hoặc `ecr-login` handle authentication cho một số registry.
+- *Credential Store*: Default fallback mechanism lưu/retrieve credential an toàn, ví dụ `desktop` cho Docker Desktop.
+- *Static Credentials*: Credential lưu trực tiếp trong Docker configuration file dưới section `auths`.
+====
+
+[[build-image.customization]]
+== Image Customizations
+
+Plugin invoke {url-buildpacks-docs}/for-app-developers/concepts/builder/[builder] để orchestrate generation của image.
+Builder include nhiều {url-buildpacks-docs}/for-app-developers/concepts/buildpack/[buildpack] có thể inspect application để influence generated image.
+Mặc định plugin chọn builder image.
+Name của generated image derive từ project property.
+
+Parameter `image` cho phép configure builder và cách nó operate trên project.
+Các parameter available và default:
+
+[cols="1,4,1"]
+|===
+| Parameter / (User Property)| Mô tả | Default value
+
+| `builder` +
+(`spring-boot.build-image.builder`)
+| Name builder image dùng.
+| `paketobuildpacks/builder-noble-java-tiny:latest`
+
+| `trustBuilder` +
+(`spring-boot.build-image.trustBuilder`)
+| Có treat builder là {url-buildpacks-docs}/for-platform-operators/how-to/integrate-ci/pack/concepts/trusted_builders/#what-is-a-trusted-builder[trusted] hay không.
+| `true` nếu builder thuộc một trong `paketobuildpacks/builder-noble-java-tiny`, `paketobuildpacks/builder-jammy-java-tiny`, `paketobuildpacks/builder-jammy-tiny`, `paketobuildpacks/builder-jammy-base`, `paketobuildpacks/builder-jammy-full`, `paketobuildpacks/builder-jammy-buildpackless-tiny`, `paketobuildpacks/builder-jammy-buildpackless-base`, `paketobuildpacks/builder-jammy-buildpackless-full`, `gcr.io/buildpacks/builder`, `heroku/builder`; nếu không là `false`.
+
+| `imagePlatform` +
+(`spring-boot.build-image.imagePlatform`)
+a|Platform (operating system và architecture) của builder, run, buildpack image được pull.
+Phải ở form `OS[/architecture[/variant]]` như `linux/amd64`, `linux/arm64` hoặc `linux/arm/v5`.
+Xem documentation builder đang dùng để determine available image OS/architecture option.
+| Không default value, nghĩa là dùng platform host machine.
+
+| `runImage` +
+(`spring-boot.build-image.runImage`)
+| Name run image dùng.
+| Không default; dùng run image specify trong Builder metadata.
+
+| `name` +
+(`spring-boot.build-image.imageName`)
+| javadoc:org.springframework.boot.buildpack.platform.docker.type.ImageName#of(java.lang.String)[Image name] cho generated image.
+| `docker.io/library/` +
+`${project.artifactId}:${project.version}`
+
+| `pullPolicy` +
+(`spring-boot.build-image.pullPolicy`)
+| javadoc:org.springframework.boot.buildpack.platform.build.PullPolicy[Policy] determine khi nào pull builder/run image từ registry.
+Accept value `ALWAYS`, `NEVER`, `IF_NOT_PRESENT`.
+| `ALWAYS`
+
+| `env`
+| Environment variable pass tới builder.
+|
+
+| `buildpacks`
+a|Buildpack builder dùng khi build image.
+Chỉ specified buildpack được dùng, override default buildpack include trong builder.
+Buildpack reference phải ở một trong form:
+
+* Buildpack trong builder - `[urn:cnb:builder:]<buildpack ID>[@<version>]`
+* Buildpack trong directory filesystem - `[file://]<path>`
+* Buildpack trong gzipped tar (.tgz) file - `[file://]<path>/<file name>`
+* Buildpack trong OCI image - `[docker://]<host>/<repo>[:<tag>][@<digest>]`
+| None, nghĩa là builder dùng buildpack include trong nó.
+
+| `bindings`
+a|https://docs.docker.com/storage/bind-mounts/[Volume bind mount] mount vào builder container khi build image.
+Binding pass unparsed/unvalidated tới Docker khi create builder container.
+Binding phải dạng:
+
+* `<host source path>:<container destination path>[:<options>]`
+* `<host volume name>:<container destination path>[:<options>]`
+
+Trong đó `<options>` có thể gồm:
+
+* `ro` mount volume read-only.
+* `rw` mount volume readable/writable.
+* `volume-opt=key=value` specify key-value option.
+|
+
+| `network` + (`spring-boot.build-image.network`)
+| https://docs.docker.com/network/#network-drivers[Network driver] builder container dùng.
+Value pass unvalidated tới Docker.
+|
+
+| `cleanCache` + (`spring-boot.build-image.cleanCache`)
+| Có clean cache trước build hay không.
+| `false`
+
+| `verboseLogging`
+| Enable verbose logging của builder operation.
+| `false`
+
+| `publish` + (`spring-boot.build-image.publish`)
+| Có publish generated image tới Docker registry hay không.
+| `false`
+
+| `tags`
+| Một hoặc nhiều additional tag apply cho generated image.
+Value phải là *full* image reference.
+Xem xref:build-image.adoc#build-image.customization.tags[tags section].
+|
+
+| `buildWorkspace`
+| Temporary workspace builder/buildpack dùng store file trong image build.
+Value có thể là named volume hoặc bind mount location.
+| Named volume trong Docker daemon, name derive từ image name.
+
+| `buildCache`
+| Cache chứa layer do buildpack tạo và image build process dùng.
+Value có thể named volume hoặc bind mount location.
+| Named volume trong Docker daemon, name derive từ image name.
+
+| `launchCache`
+| Cache chứa layer do buildpack tạo và image launch process dùng.
+Value có thể named volume hoặc bind mount location.
+| Named volume trong Docker daemon, name derive từ image name.
+
+| `createdDate` +
+(`spring-boot.build-image.createdDate`)
+| Date dùng set field `Created` trong metadata generated image.
+Value phải ISO 8601 instant format hoặc `now` để dùng current date/time.
+| Fixed date enable {url-buildpacks-docs}/for-app-developers/concepts/reproducibility/[build reproducibility].
+
+| `applicationDirectory` +
+(`spring-boot.build-image.applicationDirectory`)
+| Path tới directory application content upload vào builder image.
+Application content cũng ở location này trong generated image.
+| `/workspace`
+
+| `securityOptions`
+| https://docs.docker.com/reference/cli/docker/container/run/#security-opt[Security option] apply cho builder container, array string.
+| `["label=disable"]` trên Linux/macOS, `[]` trên Windows
+
+|===
+
+NOTE: Plugin detect target Java compatibility của project bằng compiler plugin configuration hoặc property `maven.compiler.target`.
+Khi dùng default Paketo builder/buildpack, plugin instruct buildpack install cùng Java version.
+Có thể override behavior như trong xref:build-image.adoc#build-image.examples.builder-configuration[builder configuration].
+
+Chi tiết xem xref:build-image.adoc#build-image.examples[examples].
+
+[[build-image.customization.tags]]
+=== Tags Format
+
+Value cung cấp cho option `tags` phải là *full* image reference.
+Accepted format: `[domainHost:port/][path/]name[:tag][@digest]`.
+
+Nếu domain thiếu, default `docker.io`.
+Nếu path thiếu, default `library`.
+Nếu tag thiếu, default `latest`.
+
+Ví dụ:
+
+* `my-image` -> `docker.io/library/my-image:latest`
+* `my-repository/my-image` -> `docker.io/my-repository/my-image:latest`
+* `example.com/my-repository/my-image:1.0.0` dùng nguyên.
+
+include::partial$goals/build-image.adoc[leveloffset=+1]
+include::partial$goals/build-image-no-fork.adoc[leveloffset=+1]
+
+[[build-image.examples]]
+== Examples
+
+[[build-image.examples.custom-image-builder]]
+=== Custom Image Builder
+
+Nếu cần customize builder dùng create image hoặc run image dùng launch built image, configure plugin:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/custom-image-builder-pom.xml[tags=custom-image-builder]
+----
+
+Configuration dùng builder image tên `mine/java-cnb-builder` tag `latest` và run image `mine/java-cnb-run` tag `latest`.
+
+Builder và run image cũng có thể specify trên command line:
+
+[source,shell]
+----
+$ mvn spring-boot:build-image -Dspring-boot.build-image.builder=mine/java-cnb-builder -Dspring-boot.build-image.runImage=mine/java-cnb-run
+----
+
+[[build-image.examples.builder-configuration]]
+=== Builder Configuration
+
+Nếu builder expose configuration option bằng environment variable, set bằng attribute `env`.
+
+Ví dụ {url-paketo-docs-java-buildpack}/#configuring-the-jvm-version[configure JVM version] Paketo Java buildpack dùng tại build time:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/build-image-example-builder-configuration-pom.xml[tags=build-image-example-builder-configuration]
+----
+
+Nếu có network proxy giữa Docker daemon nơi builder chạy và network location buildpack download artifact, cần configure builder dùng proxy.
+Với Paketo builder, set environment variable `HTTPS_PROXY` và/hoặc `HTTP_PROXY`:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/paketo-pom.xml[tags=paketo]
+----
+
+[[build-image.examples.runtime-jvm-configuration]]
+=== Runtime JVM Configuration
+
+Paketo Java buildpack {url-paketo-docs-java-buildpack}/#runtime-jvm-configuration[configure JVM runtime environment] bằng environment variable `JAVA_TOOL_OPTIONS`.
+Value `JAVA_TOOL_OPTIONS` do buildpack cung cấp có thể modify để customize JVM runtime behavior khi application image launch trong container.
+
+Environment variable modification cần store trong image và apply cho mọi deployment có thể set như mô tả trong {url-paketo-docs}/buildpacks/configuration/#environment-variables[Paketo documentation]:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/runtime-jvm-configuration-pom.xml[tags=runtime-jvm-configuration]
+----
+
+[[build-image.examples.custom-image-name]]
+=== Custom Image Name
+
+Mặc định image name infer từ `artifactId` và `version` của project, dạng `docker.io/library/${project.artifactId}:${project.version}`.
+Có thể control name:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/custom-image-name-pom.xml[tags=custom-image-name]
+----
+
+NOTE: Configuration này không cung cấp explicit tag nên dùng `latest`.
+Có thể specify tag bằng `${project.version}`, property available trong build, hoặc hardcoded version.
+
+Image name cũng có thể specify trên command line:
+
+[source,shell]
+----
+$ mvn spring-boot:build-image -Dspring-boot.build-image.imageName=example.com/library/my-app:v1
+----
+
+[[build-image.examples.buildpacks]]
+=== Buildpacks
+
+Mặc định builder dùng buildpack include trong builder image và apply theo predefined order.
+Có thể cung cấp alternative buildpack set để dùng buildpack không include trong builder hoặc đổi order.
+Khi cung cấp một hoặc nhiều buildpack, chỉ specified buildpack được apply.
+
+Ví dụ instruct builder dùng custom buildpack package trong file `.tgz`, sau đó buildpack include trong builder:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/buildpacks-pom.xml[tags=buildpacks]
+----
+
+Buildpack có thể specify theo form sau.
+
+Buildpack trong CNB Builder (version có thể omit nếu chỉ có một buildpack trong builder match `buildpack-id`):
+
+* `urn:cnb:builder:buildpack-id`
+* `urn:cnb:builder:buildpack-id@0.0.1`
+* `buildpack-id`
+* `buildpack-id@0.0.1`
+
+Path tới directory chứa buildpack content (không support Windows):
+
+* `\file:///path/to/buildpack/`
+* `/path/to/buildpack/`
+
+Path tới gzipped tar file chứa buildpack:
+
+* `\file:///path/to/buildpack.tgz`
+* `/path/to/buildpack.tgz`
+
+OCI image chứa {url-buildpacks-docs}/for-buildpack-authors/how-to/distribute-buildpacks/package-buildpack/[packaged buildpack]:
+
+* `docker://example/buildpack`
+* `docker:///example/buildpack:latest`
+* `docker:///example/buildpack@sha256:45b23dee08...`
+* `example/buildpack`
+* `example/buildpack:latest`
+* `example/buildpack@sha256:45b23dee08...`
+
+[[build-image.examples.publish]]
+=== Image Publishing
+
+Generated image có thể publish tới Docker registry bằng option `publish`.
+
+Nếu Docker registry cần authentication, credential có thể configure bằng parameter `docker.publishRegistry`.
+Nếu registry không cần authentication, có thể omit configuration `docker.publishRegistry`.
+
+NOTE: Registry nơi image publish được determine bởi registry part của image name, `docker.example.com` trong ví dụ.
+Nếu credential `docker.publishRegistry` configure và include parameter `url`, value này pass tới registry nhưng không dùng determine publishing registry location.
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-pom.xml[tags=docker]
+----
+
+Option `publish` cũng có thể specify trên command line:
+
+[source,shell]
+----
+$ mvn spring-boot:build-image -Dspring-boot.build-image.imageName=docker.example.com/library/my-app:v1 -Dspring-boot.build-image.publish=true
+----
+
+Khi dùng `publish` trên command line với authentication, cung cấp credential qua property:
+
+[source,shell]
+----
+$ mvn spring-boot:build-image \
+      -Ddocker.publishRegistry.username=user \
+      -Ddocker.publishRegistry.password=secret \
+      -Ddocker.publishRegistry.url=docker.example.com \
+      -Dspring-boot.build-image.publish=true \
+      -Dspring-boot.build-image.imageName=docker.example.com/library/my-app:v1
+----
+
+và reference property trong XML configuration:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-pom-authentication-command-line.xml[tags=docker]
+----
+
+[[build-image.examples.caches]]
+=== Builder Cache và Workspace Configuration
+
+CNB builder cache layer dùng khi build và launch image.
+Mặc định cache store như named volume trong Docker daemon với name derive từ full target image name.
+Nếu image name thay đổi thường xuyên, ví dụ project version dùng làm tag, cache có thể invalidate thường xuyên.
+
+Cache volume có thể configure alternative name để control cache lifecycle:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/caches-pom.xml[tags=caches]
+----
+
+Builder/buildpack cần location store temporary file khi build image.
+Mặc định temporary build workspace store trong named volume.
+
+Cache và build workspace có thể configure dùng bind mount thay named volume:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/bind-caches-pom.xml[tags=caches]
+----
+
+Build cache cũng có thể store trong image thay named volume, cho phép cache share giữa host bằng push/pull từ image registry:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/image-caches-pom.xml[tags=caches]
+----
+
+[[build-image.examples.docker]]
+=== Docker Configuration
+
+[[build-image.examples.docker.minikube]]
+==== Docker Configuration cho minikube
+
+Plugin có thể communicate với https://minikube.sigs.k8s.io/docs/tasks/docker_daemon/[Docker daemon do minikube cung cấp] thay default local connection.
+
+Trên Linux/macOS, environment variable có thể set bằng command `eval $(minikube docker-env)` sau khi minikube start.
+
+Plugin cũng có thể configure dùng minikube daemon bằng connection detail:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-minikube-pom.xml[tags=docker-minikube]
+----
+
+[[build-image.examples.docker.podman]]
+==== Docker Configuration cho podman
+
+Plugin có thể communicate với https://podman.io/[podman container engine].
+
+Configure plugin dùng podman local connection bằng connection detail:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-podman-pom.xml[tags=docker-podman]
+----
+
+TIP: Khi cài CLI `colima`, command `podman info --format='{{.Host.RemoteSocket.Path}}'` có thể dùng lấy value cho property `docker.host` trong ví dụ.
+
+[[build-image.examples.docker.colima]]
+==== Docker Configuration cho Colima
+
+Plugin có thể communicate với Docker daemon do https://github.com/abiosoft/colima[Colima] cung cấp.
+Set environment variable `DOCKER_HOST` bằng:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ export DOCKER_HOST=$(docker context inspect colima -f '{{.Endpoints.docker.Host}}')
+----
+
+Plugin cũng có thể configure dùng Colima daemon bằng connection detail:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-colima-pom.xml[tags=docker-colima]
+----
+
+[[build-image.examples.docker.auth]]
+==== Docker Configuration cho Authentication
+
+Nếu builder/run image store trong private Docker registry hỗ trợ user authentication, authentication detail có thể cung cấp bằng parameter `docker.builderRegistry`:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-registry-authentication-pom.xml[tags=docker-registry-authentication]
+----
+
+Nếu builder/run image store trong private Docker registry hỗ trợ token authentication, token value có thể cung cấp bằng parameter `docker.builderRegistry`:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging-oci-image/docker-token-authentication-pom.xml[tags=docker-token-authentication]
+----

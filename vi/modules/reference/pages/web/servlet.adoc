@@ -1,0 +1,739 @@
+[[web.servlet]]
+= Servlet Web Application
+
+Nếu muốn xây dựng servlet-based web application, bạn có thể tận dụng auto-configuration của Spring Boot cho Spring MVC hoặc Jersey.
+
+
+
+[[web.servlet.spring-mvc]]
+== "Spring Web MVC Framework"
+
+{url-spring-framework-docs}/web/webmvc.html[Spring Web MVC framework] (thường được gọi là "Spring MVC") là một web framework "model view controller" đầy đủ tính năng.
+Spring MVC cho phép bạn tạo các bean javadoc:org.springframework.stereotype.Controller[format=annotation] hoặc javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] đặc biệt để xử lý HTTP request đến.
+Các method trong controller được map tới HTTP bằng annotation javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
+
+Code sau cho thấy một javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] điển hình phục vụ JSON data:
+
+include-code::MyRestController[]
+
+"WebMvc.fn", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
+
+include-code::MyRoutingConfiguration[]
+
+include-code::MyUserHandler[]
+
+Spring MVC là một phần của core Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webmvc.html[reference documentation].
+Ngoài ra có nhiều guide về Spring MVC tại https://spring.io/guides.
+
+TIP: Bạn có thể định nghĩa bao nhiêu bean javadoc:org.springframework.web.servlet.function.RouterFunction[] tùy ý để modularize định nghĩa router.
+Các bean có thể được sắp thứ tự nếu cần áp dụng precedence.
+
+
+
+[[web.servlet.spring-mvc.auto-configuration]]
+=== Spring MVC Auto-configuration
+
+Spring Boot cung cấp auto-configuration cho Spring MVC hoạt động tốt với hầu hết application.
+Nó thay thế nhu cầu dùng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation] và hai cách này không thể dùng cùng nhau.
+Ngoài default của Spring MVC, auto-configuration cung cấp các feature sau:
+
+* Include các bean javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[] và javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[].
+* Hỗ trợ phục vụ static resource, bao gồm WebJars (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.static-content[ở phần sau của tài liệu]).
+* Tự động register các bean javadoc:org.springframework.core.convert.converter.Converter[], javadoc:org.springframework.core.convert.converter.GenericConverter[] và javadoc:org.springframework.format.Formatter[].
+* Hỗ trợ javadoc:org.springframework.http.converter.HttpMessageConverters[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.message-converters[ở phần sau]).
+* Tự động register javadoc:org.springframework.validation.MessageCodesResolver[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.message-codes[ở phần sau]).
+* Hỗ trợ static `index.html`.
+* Tự động dùng bean javadoc:org.springframework.web.bind.support.ConfigurableWebBindingInitializer[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.binding-initializer[ở phần sau]).
+
+Nếu muốn giữ các customization MVC của Spring Boot và thêm {url-spring-framework-docs}/web/webmvc.html[MVC customization] khác (interceptor, formatter, view controller và feature khác), bạn có thể thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng kiểu javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] nhưng *không* dùng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+
+Nếu muốn cung cấp custom instance của javadoc:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping[], javadoc:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter[] hoặc javadoc:org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver[], đồng thời vẫn giữ Spring Boot MVC customization, bạn có thể khai báo bean javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcRegistrations[] và dùng nó để cung cấp custom instance của các component đó.
+Các custom instance vẫn tiếp tục được Spring MVC initialize và configure.
+Để tham gia, và nếu muốn override phần xử lý tiếp theo đó, nên dùng javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[].
+
+Nếu không muốn dùng auto-configuration và muốn kiểm soát hoàn toàn Spring MVC, thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng được annotate bằng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+Hoặc thêm javadoc:org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration[] được annotate bằng javadoc:org.springframework.context.annotation.Configuration[format=annotation] như mô tả trong API documentation của javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+
+
+
+[[web.servlet.spring-mvc.conversion-service]]
+=== Spring MVC Conversion Service
+
+Spring MVC dùng một javadoc:org.springframework.core.convert.ConversionService[] khác với cái dùng để convert value từ file `application.properties` hoặc `application.yaml`.
+Điều đó có nghĩa converter cho javadoc:java.time.Period[], javadoc:java.time.Duration[] và javadoc:org.springframework.util.unit.DataSize[] không có sẵn, đồng thời annotation javadoc:org.springframework.boot.convert.DurationUnit[format=annotation] và javadoc:org.springframework.boot.convert.DataSizeUnit[format=annotation] sẽ bị bỏ qua.
+
+Nếu muốn customize javadoc:org.springframework.core.convert.ConversionService[] được Spring MVC dùng, bạn có thể cung cấp bean javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] với method `addFormatters`.
+Từ method này bạn có thể register converter tùy ý, hoặc delegate sang các static method trên javadoc:org.springframework.boot.convert.ApplicationConversionService[].
+
+Conversion cũng có thể customize bằng configuration property `spring.mvc.format.*`.
+Khi chưa cấu hình, dùng các default sau:
+
+|===
+|Property |`DateTimeFormatter` |Format
+
+|configprop:spring.mvc.format.date[]
+|`ofLocalizedDate(FormatStyle.SHORT)`
+|`java.util.Date` và javadoc:java.time.LocalDate[]
+
+|configprop:spring.mvc.format.time[]
+|`ofLocalizedTime(FormatStyle.SHORT)`
+|javadoc:java.time.LocalTime[] và javadoc:java.time.OffsetTime[] của java.time
+
+|configprop:spring.mvc.format.date-time[]
+|`ofLocalizedDateTime(FormatStyle.SHORT)`
+|javadoc:java.time.LocalDateTime[], javadoc:java.time.OffsetDateTime[] và javadoc:java.time.ZonedDateTime[] của java.time
+|===
+
+
+
+[[web.servlet.spring-mvc.message-converters]]
+=== HttpMessageConverters
+
+Spring MVC dùng interface javadoc:org.springframework.http.converter.HttpMessageConverter[] để convert HTTP request và response.
+Các default hợp lý được cung cấp sẵn.
+Ví dụ, object có thể tự động được convert sang JSON (bằng Jackson library) hoặc XML (bằng Jackson XML extension nếu có, hoặc JAXB nếu Jackson XML extension không có).
+Mặc định string được encode bằng `UTF-8`.
+
+Mọi bean javadoc:org.springframework.http.converter.HttpMessageConverter[] có trong context đều được thêm vào danh sách converter.
+Bạn cũng có thể override default converter theo cùng cách.
+
+Nếu cần thêm hoặc customize converter, bạn có thể khai báo một hoặc nhiều bean javadoc:org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer[] hoặc
+javadoc:org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer[]. Tại đó, bạn có thể chọn converter instance được thêm
+trước default (`addCustomConverter`) hoặc override một default converter cụ thể (như `withJsonConverter`).
+
+Xem ví dụ sau:
+
+include-code::MyHttpMessageConvertersConfiguration[]
+
+
+
+[[web.servlet.spring-mvc.message-codes]]
+=== MessageCodesResolver
+
+Spring MVC có strategy để generate error code dùng khi render error message từ binding error: javadoc:org.springframework.validation.MessageCodesResolver[].
+Nếu đặt property configprop:spring.mvc.message-codes-resolver-format[] thành `PREFIX_ERROR_CODE` hoặc `POSTFIX_ERROR_CODE`, Spring Boot sẽ tạo một instance cho bạn (xem enum trong javadoc:org.springframework.validation.DefaultMessageCodesResolver$Format[]).
+
+
+
+[[web.servlet.spring-mvc.static-content]]
+=== Static Content
+
+Mặc định, Spring Boot phục vụ static content từ directory `/static` (hoặc `/public`, `/resources`, `/META-INF/resources`) trên classpath hoặc từ root của javadoc:jakarta.servlet.ServletContext[].
+Nó dùng javadoc:org.springframework.web.servlet.resource.ResourceHttpRequestHandler[] của Spring MVC, vì vậy bạn có thể thay đổi behavior bằng cách thêm javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] riêng và override method `addResourceHandlers`.
+
+Trong stand-alone web application, default servlet của container không được bật.
+Có thể bật bằng property configprop:server.servlet.register-default-servlet[].
+
+Default servlet hoạt động như fallback, phục vụ content từ root của javadoc:jakarta.servlet.ServletContext[] nếu Spring quyết định không xử lý request đó.
+Hầu hết trường hợp điều này không xảy ra (trừ khi bạn sửa default MVC configuration), vì Spring luôn có thể xử lý request qua javadoc:org.springframework.web.servlet.DispatcherServlet[].
+
+Mặc định resource được map vào `+/**+`, nhưng có thể điều chỉnh bằng property configprop:spring.mvc.static-path-pattern[].
+Ví dụ, chuyển toàn bộ resource sang `/resources/**` như sau:
+
+[configprops,yaml]
+----
+spring:
+  mvc:
+    static-path-pattern: "/resources/**"
+----
+
+Bạn cũng có thể customize static resource location bằng property configprop:spring.web.resources.static-locations[] (thay default value bằng danh sách directory location).
+Root servlet context path `"/"` cũng tự động được thêm làm location.
+
+Ngoài các static resource location "standard" ở trên, https://www.webjars.org/[Webjars content] được xử lý như trường hợp đặc biệt.
+Mặc định, mọi resource có path `+/webjars/**+` được phục vụ từ jar file nếu chúng được package theo Webjars format.
+Path có thể customize bằng property configprop:spring.mvc.webjars-path-pattern[].
+
+TIP: Không dùng directory `src/main/webapp` nếu application được package thành jar.
+Mặc dù đây là standard phổ biến, nó *chỉ* hoạt động với war packaging và bị hầu hết build tool bỏ qua âm thầm nếu bạn tạo jar.
+
+Spring Boot cũng hỗ trợ các advanced resource handling feature của Spring MVC, cho các use case như cache-busting static resource hoặc version-agnostic URL cho Webjars.
+
+Để dùng version-agnostic URL cho Webjars, thêm dependency `org.webjars:webjars-locator-lite`.
+Sau đó khai báo Webjar.
+Dùng jQuery làm ví dụ, thêm `"/webjars/jquery/jquery.min.js"` sẽ cho kết quả `"/webjars/jquery/x.y.z/jquery.min.js"`, trong đó `x.y.z` là version của Webjar.
+
+Để dùng cache busting, configuration sau cấu hình cache busting cho mọi static resource, thực tế là thêm content hash như `<link href="/css/spring-2a2d595e6ed9a0b24f027f2b63b134d6.css"/>` vào URL:
+
+[configprops,yaml]
+----
+spring:
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: "/**"
+----
+
+NOTE: Link tới resource được rewrite trong template ở runtime nhờ javadoc:org.springframework.web.servlet.resource.ResourceUrlEncodingFilter[] được auto-configure cho Thymeleaf và FreeMarker.
+Bạn nên tự khai báo filter này khi dùng JSP.
+Các template engine khác hiện chưa được hỗ trợ tự động, nhưng có thể hỗ trợ bằng custom template macro/helper và javadoc:org.springframework.web.servlet.resource.ResourceUrlProvider[].
+
+Khi load resource động, ví dụ qua JavaScript module loader, rename file không phải lựa chọn phù hợp.
+Vì vậy các strategy khác cũng được hỗ trợ và có thể kết hợp.
+Strategy "fixed" thêm static version string vào URL mà không đổi file name, như ví dụ sau:
+
+[configprops,yaml]
+----
+spring:
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: "/**"
+          fixed:
+            enabled: true
+            paths: "/js/lib/"
+            version: "v12"
+----
+
+Với configuration này, JavaScript module dưới `"/js/lib/"` dùng fixed versioning strategy (`"/v12/js/lib/mymodule.js"`), còn resource khác vẫn dùng content strategy (`<link href="/css/spring-2a2d595e6ed9a0b24f027f2b63b134d6.css"/>`).
+
+Xem javadoc:org.springframework.boot.autoconfigure.web.WebProperties$Resources[] để biết thêm option được hỗ trợ.
+
+[TIP]
+====
+Feature này được mô tả kỹ trong https://spring.io/blog/2014/07/24/spring-framework-4-1-handling-static-web-resources[blog post] riêng và {url-spring-framework-docs}/web/webmvc/mvc-config/static-resources.html[reference documentation] của Spring Framework.
+====
+
+
+
+[[web.servlet.spring-mvc.welcome-page]]
+=== Welcome Page
+
+Spring Boot hỗ trợ cả static và templated welcome page.
+Trước tiên nó tìm file `index.html` trong static content location đã cấu hình.
+Nếu không thấy, nó tìm template `index`.
+Nếu tìm thấy một trong hai, nó tự động dùng làm welcome page của application.
+
+Cơ chế này chỉ là fallback cho actual index route được application định nghĩa.
+Thứ tự được xác định bởi order của các bean javadoc:org.springframework.web.servlet.HandlerMapping[], mặc định như sau:
+
+[cols="1,1"]
+|===
+|`RouterFunctionMapping`
+|Endpoint được khai báo bằng bean javadoc:org.springframework.web.servlet.function.RouterFunction[]
+
+|`RequestMappingHandlerMapping`
+|Endpoint được khai báo trong bean javadoc:org.springframework.stereotype.Controller[format=annotation]
+
+|`WelcomePageHandlerMapping`
+|Hỗ trợ welcome page
+|===
+
+
+
+[[web.servlet.spring-mvc.favicon]]
+=== Custom Favicon
+
+Tương tự static resource khác, Spring Boot kiểm tra `favicon.ico` trong các static content location đã cấu hình.
+Nếu file tồn tại, nó tự động được dùng làm favicon của application.
+
+
+
+[[web.servlet.spring-mvc.content-negotiation]]
+=== Path Matching và Content Negotiation
+
+Spring MVC có thể map HTTP request đến handler bằng cách xem request path và match với các mapping được định nghĩa trong application (ví dụ annotation javadoc:org.springframework.web.bind.annotation.GetMapping[format=annotation] trên Controller method).
+
+Spring Boot mặc định disable suffix pattern matching, nghĩa là request như `"GET /projects/spring-boot.json"` sẽ không match mapping `@GetMapping("/projects/spring-boot")`.
+Đây được xem là {url-spring-framework-docs}/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-requestmapping-rfd[best practice cho Spring MVC application].
+Feature này chủ yếu hữu ích trước đây với HTTP client không gửi đúng request header "Accept"; khi đó cần đảm bảo gửi đúng Content Type cho client.
+Hiện nay Content Negotiation đáng tin cậy hơn nhiều.
+
+Có cách khác để xử lý HTTP client không gửi ổn định request header "Accept".
+Thay vì suffix matching, có thể dùng query parameter để đảm bảo request như `"GET /projects/spring-boot?format=json"` được map tới `@GetMapping("/projects/spring-boot")`:
+
+[configprops,yaml]
+----
+spring:
+  mvc:
+    contentnegotiation:
+      favor-parameter: true
+----
+
+Hoặc nếu muốn dùng parameter name khác:
+
+[configprops,yaml]
+----
+spring:
+  mvc:
+    contentnegotiation:
+      favor-parameter: true
+      parameter-name: "myparam"
+----
+
+Hầu hết standard media type được hỗ trợ sẵn, nhưng bạn cũng có thể định nghĩa type mới:
+
+[configprops,yaml]
+----
+spring:
+  mvc:
+    contentnegotiation:
+      media-types:
+        markdown: "text/markdown"
+----
+
+Spring Boot dùng strategy javadoc:org.springframework.web.util.pattern.PathPatternParser[] để match request path với controller.
+javadoc:org.springframework.web.util.pattern.PathPatternParser[] là một https://spring.io/blog/2020/06/30/url-matching-with-pathpattern-in-spring-mvc[implementation được tối ưu] nhưng hạn chế việc dùng {url-spring-framework-docs}/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-requestmapping-uri-templates[một số biến thể path pattern].
+Nó cũng không tương thích với việc cấu hình javadoc:org.springframework.web.servlet.DispatcherServlet[] bằng path prefix (configprop:spring.mvc.servlet.path[]).
+
+Spring MVC sẽ throw javadoc:org.springframework.web.servlet.NoHandlerFoundException[] nếu không tìm thấy handler cho request.
+Lưu ý mặc định xref:web/servlet.adoc#web.servlet.spring-mvc.static-content[phục vụ static content] được map tới `+/**+` và do đó luôn cung cấp handler cho mọi request.
+Nếu không có static content, javadoc:org.springframework.web.servlet.resource.ResourceHttpRequestHandler[] sẽ throw javadoc:org.springframework.web.servlet.resource.NoResourceFoundException[].
+Để javadoc:org.springframework.web.servlet.NoHandlerFoundException[] được throw, đặt configprop:spring.mvc.static-path-pattern[] thành value cụ thể hơn như `/resources/**` hoặc đặt configprop:spring.web.resources.add-mappings[] thành `false` để disable hoàn toàn static content serving.
+
+
+
+[[web.servlet.spring-mvc.binding-initializer]]
+=== ConfigurableWebBindingInitializer
+
+Spring MVC dùng javadoc:org.springframework.web.bind.support.WebBindingInitializer[] để initialize javadoc:org.springframework.web.bind.WebDataBinder[] cho request cụ thể.
+Nếu bạn tạo bean javadoc:org.springframework.web.bind.support.ConfigurableWebBindingInitializer[] javadoc:org.springframework.context.annotation.Bean[format=annotation] riêng, Spring Boot tự động cấu hình Spring MVC để dùng nó.
+
+
+
+[[web.servlet.spring-mvc.template-engines]]
+=== Template Engine
+
+Ngoài REST web service, bạn cũng có thể dùng Spring MVC để phục vụ dynamic HTML content.
+Spring MVC hỗ trợ nhiều templating technology, gồm Thymeleaf, FreeMarker và JSP.
+Nhiều templating engine khác cũng có Spring MVC integration riêng.
+
+Spring Boot có auto-configuration support cho các templating engine sau:
+
+* https://freemarker.apache.org/docs/[FreeMarker]
+* https://docs.groovy-lang.org/docs/next/html/documentation/template-engines.html#_the_markuptemplateengine[Groovy]
+* https://www.thymeleaf.org[Thymeleaf]
+* https://mustache.github.io/[Mustache]
+
+TIP: Nếu có thể, nên tránh JSP.
+Có một số xref:web/servlet.adoc#web.servlet.embedded-container.jsp-limitations[giới hạn đã biết] khi dùng JSP với embedded servlet container.
+
+Khi dùng một trong các templating engine này với default configuration, template được tự động lấy từ `src/main/resources/templates`.
+
+TIP: Tùy cách chạy application, IDE có thể sắp classpath khác nhau.
+Chạy application trong IDE từ main method tạo thứ tự khác so với khi chạy bằng Maven, Gradle hoặc packaged jar.
+Điều này có thể khiến Spring Boot không tìm thấy template mong đợi.
+Nếu gặp vấn đề này, bạn có thể reorder classpath trong IDE để đặt class và resource của module lên trước.
+
+
+
+[[web.servlet.spring-mvc.error-handling]]
+=== Error Handling
+
+Mặc định, Spring Boot cung cấp mapping `/error` xử lý mọi error theo cách hợp lý và được register như một "global" error page trong servlet container.
+Với machine client, nó tạo JSON response chứa chi tiết error, HTTP status và exception message.
+Với browser client, có một "whitelabel" error view render cùng data ở HTML format (để customize, thêm javadoc:org.springframework.web.servlet.View[] resolve tới `error`).
+
+Có một số property `spring.web.error` có thể đặt nếu muốn customize default error handling behavior.
+Xem phần xref:appendix:application-properties/index.adoc#appendix.application-properties.web[Web Properties] trong Appendix.
+
+Để thay hoàn toàn default behavior, bạn có thể implement javadoc:org.springframework.boot.webmvc.error.ErrorController[] và register bean definition của type đó, hoặc thêm bean javadoc:org.springframework.boot.webmvc.error.ErrorAttributes[] để dùng cơ chế hiện tại nhưng thay content.
+
+TIP: javadoc:org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController[] có thể dùng làm base class cho custom javadoc:org.springframework.boot.webmvc.error.ErrorController[].
+Điều này đặc biệt hữu ích nếu muốn thêm handler cho content type mới (default xử lý riêng `text/html` và cung cấp fallback cho mọi type khác).
+Để làm vậy, extend javadoc:org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController[], thêm public method với javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation] có attribute `produces`, và tạo bean type mới.
+
+Từ Spring Framework 6.0, {url-spring-framework-docs}/web/webmvc/mvc-ann-rest-exceptions.html[RFC 9457 Problem Details] được hỗ trợ.
+Spring MVC có thể tạo custom error message với media type `application/problem+json` như sau:
+
+[source,json]
+----
+{
+	"type": "https://example.org/problems/unknown-project",
+	"title": "Unknown project",
+	"status": 404,
+	"detail": "No project found for id 'spring-unknown'",
+	"instance": "/projects/spring-unknown"
+}
+----
+
+Có thể bật hỗ trợ này bằng cách đặt configprop:spring.mvc.problemdetails.enabled[] thành `true`.
+
+Bạn cũng có thể định nghĩa class được annotate bằng javadoc:org.springframework.web.bind.annotation.ControllerAdvice[format=annotation] để customize JSON document trả về cho controller và/hoặc exception type cụ thể, như ví dụ sau:
+
+include-code::MyControllerAdvice[]
+
+Trong ví dụ trên, nếu `MyException` được throw bởi controller định nghĩa trong cùng package với `SomeController`, JSON representation của POJO `MyErrorBody` sẽ được dùng thay cho representation javadoc:org.springframework.boot.webmvc.error.ErrorAttributes[].
+
+Trong một số trường hợp, error được xử lý ở controller level không được ghi nhận bởi web observation hoặc xref:actuator/metrics.adoc#actuator.metrics.supported.spring-mvc[metrics infrastructure].
+Application có thể đảm bảo các exception đó được ghi nhận trong observation bằng cách {url-spring-framework-docs}/integration/observability.html#observability.http-server.servlet[đặt handled exception trên observation context].
+
+
+
+[[web.servlet.spring-mvc.error-handling.error-pages]]
+==== Custom Error Page
+
+Nếu muốn hiển thị custom HTML error page cho status code cụ thể, bạn có thể thêm file vào directory `/error`.
+Error page có thể là static HTML (được thêm dưới một static resource directory) hoặc được build bằng template.
+Tên file nên là exact status code hoặc series mask.
+
+Ví dụ để map `404` tới static HTML file, directory structure như sau:
+
+[source]
+----
+src/
+ +- main/
+     +- java/
+     |   + <source code>
+     +- resources/
+         +- public/
+             +- error/
+             |   +- 404.html
+             +- <other public assets>
+----
+
+Để map toàn bộ error `5xx` bằng FreeMarker template, directory structure như sau:
+
+[source]
+----
+src/
+ +- main/
+     +- java/
+     |   + <source code>
+     +- resources/
+         +- templates/
+             +- error/
+             |   +- 5xx.ftlh
+             +- <other templates>
+----
+
+Với mapping phức tạp hơn, bạn cũng có thể thêm bean implement interface javadoc:org.springframework.boot.webmvc.autoconfigure.error.ErrorViewResolver[], như ví dụ sau:
+
+include-code::MyErrorViewResolver[]
+
+Bạn cũng có thể dùng feature Spring MVC thông thường như {url-spring-framework-docs}/web/webmvc/mvc-servlet/exceptionhandlers.html[method `@ExceptionHandler`] và {url-spring-framework-docs}/web/webmvc/mvc-controller/ann-advice.html[`@ControllerAdvice`].
+javadoc:org.springframework.boot.webmvc.error.ErrorController[] sau đó sẽ nhận các exception chưa được xử lý.
+
+
+
+[[web.servlet.spring-mvc.error-handling.error-pages-without-spring-mvc]]
+==== Map Error Page bên ngoài Spring MVC
+
+Với application không dùng Spring MVC, bạn có thể dùng interface javadoc:org.springframework.boot.web.error.ErrorPageRegistrar[] để register trực tiếp instance javadoc:org.springframework.boot.web.error.ErrorPage[].
+Abstraction này làm việc trực tiếp với underlying embedded servlet container và vẫn hoạt động ngay cả khi không có Spring MVC javadoc:org.springframework.web.servlet.DispatcherServlet[].
+
+include-code::MyErrorPagesConfiguration[]
+
+NOTE: Nếu register javadoc:org.springframework.boot.web.error.ErrorPage[] với path cuối cùng được xử lý bởi javadoc:jakarta.servlet.Filter[] (thường gặp với một số non-Spring web framework như Jersey và Wicket), javadoc:jakarta.servlet.Filter[] phải được register rõ ràng như dispatcher `ERROR`, như ví dụ sau:
+
+include-code::MyFilterConfiguration[]
+
+Lưu ý default javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] không include dispatcher type `ERROR`.
+
+
+
+[[web.servlet.spring-mvc.error-handling.in-a-war-deployment]]
+==== Error Handling trong WAR Deployment
+
+Khi deploy tới servlet container, Spring Boot dùng error page filter để forward request có error status tới error page phù hợp.
+Điều này cần thiết vì servlet specification không cung cấp API để register error page.
+Tùy container nơi bạn deploy war file và technology application sử dụng, có thể cần configuration bổ sung.
+
+Error page filter chỉ có thể forward request tới đúng error page nếu response chưa được committed.
+Mặc định, WebSphere Application Server 8.0 trở lên commit response khi servlet service method hoàn tất thành công.
+Bạn nên disable behavior này bằng cách đặt `com.ibm.ws.webcontainer.invokeFlushAfterService` thành `false`.
+
+
+
+[[web.servlet.spring-mvc.cors]]
+=== Hỗ trợ CORS
+
+https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) là một https://www.w3.org/TR/cors/[W3C specification] được https://caniuse.com/#feat=cors[hầu hết browser] implement, cho phép chỉ định linh hoạt loại cross-domain request nào được authorize thay vì dùng cách kém an toàn và kém mạnh hơn như IFRAME hoặc JSONP.
+
+Từ version 4.2, Spring MVC {url-spring-framework-docs}/web/webmvc-cors.html[hỗ trợ CORS].
+Dùng {url-spring-framework-docs}/web/webmvc-cors.html#mvc-cors-controller[controller method CORS configuration] với annotation javadoc:{url-spring-framework-javadoc}/org.springframework.web.bind.annotation.CrossOrigin[format=annotation] trong Spring Boot application không cần configuration riêng.
+{url-spring-framework-docs}/web/webmvc-cors.html#mvc-cors-global[Global CORS configuration] có thể định nghĩa bằng cách register bean javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] với method `addCorsMappings(CorsRegistry)` được customize, như ví dụ sau:
+
+include-code::MyCorsConfiguration[]
+
+
+
+[[web.servlet.spring-mvc.api-versioning]]
+=== API Versioning
+
+Spring MVC hỗ trợ API versioning để phát triển HTTP API theo thời gian.
+Cùng một path `@Controller` có thể được map nhiều lần để hỗ trợ các version API khác nhau.
+
+Xem thêm {url-spring-framework-docs}/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-requestmapping-version[reference documentation của Spring Framework].
+
+Sau khi thêm mapping, bạn cần cấu hình thêm Spring MVC để nó có thể dùng version information được gửi cùng request.
+Thông thường version được gửi qua HTTP header, query parameter, media type parameter hoặc một phần của path.
+
+Để cấu hình Spring MVC, bạn có thể dùng bean javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] và override method `configureApiVersioning(...)`, hoặc dùng property.
+
+Ví dụ sau dùng HTTP header `X-Version` để lấy version information và default về `1.0.0` khi không gửi header.
+
+[configprops,yaml]
+----
+spring:
+  mvc:
+    apiversion:
+      default: 1.0.0
+      use:
+        header: X-Version
+----
+
+NOTE: Nếu setup cần nhiều strategy như header và query parameter, cân nhắc khai báo order programmatically bằng cách override method `configureApiVersioning`.
+
+Để kiểm soát đầy đủ hơn, bạn cũng có thể định nghĩa bean javadoc:org.springframework.web.accept.ApiVersionResolver[], javadoc:org.springframework.web.accept.ApiVersionParser[] và javadoc:org.springframework.web.accept.ApiVersionDeprecationHandler[], chúng sẽ được inject vào Spring MVC configuration được auto-configure.
+
+TIP: API versioning cũng được hỗ trợ với cả `WebClient` và `RestClient`.
+Xem xref:io/rest-client.adoc#io.rest-client.apiversioning[] để biết chi tiết.
+
+
+
+[[web.servlet.jersey]]
+== JAX-RS và Jersey
+
+Nếu thích programming model JAX-RS cho REST endpoint, bạn có thể dùng một implementation có sẵn thay vì Spring MVC.
+https://jersey.github.io/[Jersey] và https://cxf.apache.org/[Apache CXF] hoạt động khá tốt ngay mặc định.
+CXF yêu cầu register javadoc:jakarta.servlet.Servlet[] hoặc javadoc:jakarta.servlet.Filter[] của nó dưới dạng bean javadoc:org.springframework.context.annotation.Bean[format=annotation] trong application context.
+Jersey có native Spring support, vì vậy Spring Boot cũng cung cấp auto-configuration support cho nó cùng starter.
+
+Để bắt đầu với Jersey, thêm `spring-boot-starter-jersey` làm dependency, sau đó cần một bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.glassfish.jersey.server.ResourceConfig[] để register toàn bộ endpoint, như ví dụ sau:
+
+include-code::MyJerseyConfig[]
+
+WARNING: Hỗ trợ scanning executable archive của Jersey khá hạn chế.
+Ví dụ, nó không thể scan endpoint trong package nằm trong xref:how-to:deployment/installing.adoc[fully executable jar file] hoặc trong `WEB-INF/classes` khi chạy executable war file.
+Để tránh giới hạn này, không nên dùng method `packages`, và endpoint nên được register riêng bằng method `register` như ví dụ trên.
+
+Với advanced customization, bạn cũng có thể register số lượng bất kỳ bean implement javadoc:org.springframework.boot.jersey.autoconfigure.ResourceConfigCustomizer[].
+
+Mọi endpoint được register nên là javadoc:org.springframework.stereotype.Component[format=annotation] có HTTP resource annotation (`@GET` và các annotation khác), như ví dụ sau:
+
+include-code::MyEndpoint[]
+
+Vì javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation] là một Spring javadoc:org.springframework.stereotype.Component[format=annotation], lifecycle của nó được Spring quản lý và bạn có thể dùng annotation javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation] để inject dependency và javadoc:org.springframework.beans.factory.annotation.Value[format=annotation] để inject external configuration.
+Mặc định Jersey servlet được register và map tới `/*`.
+Bạn có thể đổi mapping bằng cách thêm javadoc:jakarta.ws.rs.ApplicationPath[format=annotation] vào javadoc:org.glassfish.jersey.server.ResourceConfig[].
+
+Mặc định Jersey được setup như servlet trong bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] tên `jerseyServletRegistration`.
+Mặc định servlet được lazy initialize, nhưng có thể customize bằng `spring.jersey.servlet.load-on-startup`.
+Bạn có thể disable hoặc override bean đó bằng cách tạo bean riêng cùng tên.
+Bạn cũng có thể dùng filter thay servlet bằng `spring.jersey.type=filter` (trường hợp này bean javadoc:org.springframework.context.annotation.Bean[format=annotation] cần thay hoặc override là `jerseyFilterRegistration`).
+Filter có javadoc:org.springframework.core.annotation.Order[format=annotation], có thể đặt bằng `spring.jersey.filter.order`.
+Khi dùng Jersey như filter, phải tồn tại servlet xử lý request không bị Jersey intercept.
+Nếu application không có servlet như vậy, bạn có thể bật default servlet bằng configprop:server.servlet.register-default-servlet[] = `true`.
+Cả servlet và filter registration đều có thể nhận init parameter qua `spring.jersey.init.*` để chỉ định map property.
+
+
+
+[[web.servlet.embedded-container]]
+== Hỗ trợ Embedded Servlet Container
+
+Với servlet application, Spring Boot hỗ trợ embedded https://tomcat.apache.org/[Tomcat] và https://www.eclipse.org/jetty/[Jetty] server.
+Hầu hết developer dùng starter phù hợp để có fully configured instance.
+Mặc định embedded server lắng nghe HTTP request trên port `8080`.
+
+
+
+[[web.servlet.embedded-container.servlets-filters-listeners]]
+=== Servlet, Filter và Listener
+
+Khi dùng embedded servlet container, bạn có thể register servlet, filter và mọi listener (như javadoc:jakarta.servlet.http.HttpSessionListener[]) từ servlet spec bằng Spring bean hoặc scan servlet component.
+
+
+
+[[web.servlet.embedded-container.servlets-filters-listeners.beans]]
+==== Register Servlet, Filter và Listener dưới dạng Spring Bean
+
+Mọi instance javadoc:jakarta.servlet.Servlet[], javadoc:jakarta.servlet.Filter[] hoặc servlet `*Listener` là Spring bean đều được register với embedded container.
+Điều này đặc biệt tiện nếu muốn tham chiếu value từ `application.properties` trong quá trình configuration.
+
+Mặc định, nếu context chỉ chứa một Servlet duy nhất, nó được map tới `/`.
+Nếu có nhiều servlet bean, bean name được dùng làm path prefix.
+Filter map tới `+/*+`.
+
+Nếu convention-based mapping không đủ linh hoạt, bạn có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[], javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] và javadoc:org.springframework.boot.web.servlet.ServletListenerRegistrationBean[] để kiểm soát hoàn toàn.
+Nếu thích annotation hơn javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] và javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[], bạn cũng có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistration[format=annotation] và
+javadoc:org.springframework.boot.web.servlet.FilterRegistration[format=annotation] thay thế.
+
+Thông thường có thể để filter bean không sắp thứ tự.
+Nếu cần order cụ thể, annotate javadoc:jakarta.servlet.Filter[] bằng javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc cho nó implement javadoc:org.springframework.core.Ordered[].
+Bạn không thể cấu hình order của javadoc:jakarta.servlet.Filter[] bằng cách annotate bean method với javadoc:org.springframework.core.annotation.Order[format=annotation].
+Nếu không thể sửa class javadoc:jakarta.servlet.Filter[] để thêm javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc implement javadoc:org.springframework.core.Ordered[], bạn phải định nghĩa javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] cho javadoc:jakarta.servlet.Filter[] và đặt order của registration bean bằng method `setOrder(int)`.
+Hoặc nếu thích annotation, bạn cũng có thể dùng javadoc:org.springframework.boot.web.servlet.FilterRegistration[format=annotation] và đặt attribute `order`.
+Tránh cấu hình filter đọc request body ở `Ordered.HIGHEST_PRECEDENCE` vì có thể xung đột với character encoding configuration của application.
+Nếu servlet filter wrap request, nên cấu hình order nhỏ hơn hoặc bằng `OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER`.
+
+TIP: Để xem order của mọi javadoc:jakarta.servlet.Filter[] trong application, bật debug-level logging cho xref:features/logging.adoc#features.logging.log-groups[logging group] `web` (`logging.level.web=debug`).
+Chi tiết filter đã register, gồm order và URL pattern, sẽ được log khi startup.
+
+WARNING: Cẩn thận khi register bean javadoc:jakarta.servlet.Filter[] vì chúng được initialize rất sớm trong application lifecycle.
+Nếu cần register javadoc:jakarta.servlet.Filter[] tương tác với bean khác, cân nhắc dùng javadoc:org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean[].
+
+
+
+[[web.servlet.embedded-container.context-initializer]]
+=== Servlet Context Initialization
+
+Embedded servlet container không trực tiếp execute interface javadoc:jakarta.servlet.ServletContainerInitializer[] hoặc interface javadoc:org.springframework.web.WebApplicationInitializer[] của Spring.
+Đây là design decision có chủ ý để giảm rủi ro third-party library được thiết kế chạy trong war làm hỏng Spring Boot application.
+
+Nếu cần thực hiện servlet context initialization trong Spring Boot application, bạn nên register bean implement interface javadoc:org.springframework.boot.web.servlet.ServletContextInitializer[].
+Method `onStartup` duy nhất cung cấp quyền truy cập javadoc:jakarta.servlet.ServletContext[] và khi cần có thể dễ dàng dùng làm adapter cho javadoc:org.springframework.web.WebApplicationInitializer[] hiện có.
+
+
+
+[[web.servlet.embedded-container.context-initializer.init-parameters]]
+==== Init Parameter
+
+Init parameter có thể cấu hình trên javadoc:jakarta.servlet.ServletContext[] bằng property `server.servlet.context-parameters.*`.
+Ví dụ, property `server.servlet.context-parameters.com.example.parameter=example` sẽ cấu hình init parameter `ServletContext` tên `com.example.parameter` với value `example`.
+
+
+
+[[web.servlet.embedded-container.context-initializer.scanning]]
+==== Scan Servlet, Filter và Listener
+
+Khi dùng embedded container, có thể bật automatic registration của class được annotate bằng javadoc:jakarta.servlet.annotation.WebServlet[format=annotation], javadoc:jakarta.servlet.annotation.WebFilter[format=annotation] và javadoc:jakarta.servlet.annotation.WebListener[format=annotation] bằng javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation].
+
+TIP: javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] không có tác dụng trong standalone container, nơi cơ chế discovery tích hợp của container được dùng thay thế.
+
+
+
+[[web.servlet.embedded-container.application-context]]
+=== ServletWebServerApplicationContext
+
+Bên dưới, Spring Boot dùng một type javadoc:org.springframework.context.ApplicationContext[] khác để hỗ trợ embedded servlet container.
+javadoc:org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext[] là type đặc biệt của javadoc:org.springframework.web.context.WebApplicationContext[] tự bootstrap bằng cách tìm một bean javadoc:org.springframework.boot.web.server.servlet.ServletWebServerFactory[] duy nhất.
+Thông thường javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] hoặc javadoc:org.springframework.boot.jetty.servlet.JettyServletWebServerFactory[] đã được auto-configure.
+
+NOTE: Thông thường bạn không cần biết các implementation class này.
+Hầu hết application được auto-configure và javadoc:org.springframework.context.ApplicationContext[] cùng javadoc:org.springframework.boot.web.server.servlet.ServletWebServerFactory[] phù hợp được tạo thay bạn.
+
+Trong embedded container setup, javadoc:jakarta.servlet.ServletContext[] được set như một phần server startup diễn ra trong quá trình application context initialization.
+Vì vậy bean trong javadoc:org.springframework.context.ApplicationContext[] không thể reliably initialize với javadoc:jakarta.servlet.ServletContext[].
+Một cách xử lý là inject javadoc:org.springframework.context.ApplicationContext[] như dependency của bean và chỉ access javadoc:jakarta.servlet.ServletContext[] khi cần.
+Cách khác là dùng callback sau khi server đã start.
+Có thể làm bằng javadoc:org.springframework.context.ApplicationListener[] lắng nghe javadoc:org.springframework.boot.context.event.ApplicationStartedEvent[] như sau:
+
+include-code::MyDemoBean[]
+
+
+
+[[web.servlet.embedded-container.customizing]]
+=== Customize Embedded Servlet Container
+
+Các setting servlet container phổ biến có thể cấu hình bằng Spring javadoc:org.springframework.core.env.Environment[] property.
+Thông thường bạn định nghĩa property trong file `application.properties` hoặc `application.yaml`.
+
+Common server setting gồm:
+
+* Network setting: port lắng nghe HTTP request (`server.port`), interface address để bind (`server.address`), v.v.
+* Session setting: session có persistent hay không (`server.servlet.session.persistent`), session timeout (`server.servlet.session.timeout`), location của session data (`server.servlet.session.store-dir`), và session-cookie configuration (`server.servlet.session.cookie.*`).
+* Error management: location của error page (configprop:spring.web.error.path[]), v.v.
+* xref:how-to:webserver.adoc#howto.webserver.configure-ssl[SSL]
+* xref:how-to:webserver.adoc#howto.webserver.enable-response-compression[HTTP compression]
+
+Spring Boot cố gắng expose common setting tối đa có thể, nhưng không phải lúc nào cũng làm được.
+Trong trường hợp đó, namespace riêng cung cấp server-specific customization (xem `server.tomcat`).
+Ví dụ, xref:how-to:webserver.adoc#howto.webserver.configure-access-logs[access log] có thể cấu hình bằng feature riêng của embedded servlet container.
+
+TIP: Xem class javadoc:org.springframework.boot.web.server.autoconfigure.ServerProperties[] để biết danh sách đầy đủ.
+
+
+
+[[web.servlet.embedded-container.customizing.samesite]]
+==== SameSite Cookie
+
+Attribute cookie `SameSite` có thể được web browser dùng để kiểm soát cookie có được submit trong cross-site request hay không và theo cách nào.
+Attribute này đặc biệt quan trọng với modern browser đang thay đổi default value dùng khi attribute bị thiếu.
+
+Nếu muốn thay attribute `SameSite` của session cookie, bạn có thể dùng property configprop:server.servlet.session.cookie.same-site[].
+Property này được hỗ trợ bởi Tomcat và Jetty server được auto-configure.
+Nó cũng dùng để cấu hình Spring Session servlet-based bean javadoc:org.springframework.session.SessionRepository[].
+
+Ví dụ, nếu muốn session cookie có attribute `SameSite=None`, thêm nội dung sau vào `application.properties` hoặc `application.yaml`:
+
+[configprops,yaml]
+----
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: "none"
+----
+
+Nếu muốn đổi attribute `SameSite` trên cookie khác được thêm vào javadoc:jakarta.servlet.http.HttpServletResponse[], bạn có thể dùng javadoc:org.springframework.boot.web.server.servlet.CookieSameSiteSupplier[].
+javadoc:org.springframework.boot.web.server.servlet.CookieSameSiteSupplier[] nhận một javadoc:jakarta.servlet.http.Cookie[] và có thể trả về value `SameSite` hoặc `null`.
+
+Có một số convenience factory và filter method để nhanh chóng match cookie cụ thể.
+Ví dụ, thêm bean sau sẽ tự động áp dụng `SameSite=Lax` cho mọi cookie có name match regular expression `myapp.*`.
+
+include-code::MySameSiteConfiguration[]
+
+
+
+[[web.servlet.embedded-container.customizing.encoding]]
+==== Character Encoding
+
+Behavior character encoding của embedded servlet container khi xử lý request và response có thể cấu hình bằng configuration property `server.servlet.encoding.*`.
+
+Khi header `Accept-Language` của request chỉ ra locale, servlet container tự động map locale đó tới charset.
+Mỗi container cung cấp default locale-to-charset mapping và bạn nên verify chúng đáp ứng nhu cầu application.
+Nếu không, dùng configuration property configprop:server.servlet.encoding.mapping[] để customize mapping, như ví dụ sau:
+
+[configprops,yaml]
+----
+server:
+  servlet:
+    encoding:
+      mapping:
+        ko: "UTF-8"
+----
+
+Trong ví dụ trên, locale `ko` (Korean) được map tới `UTF-8`.
+Điều này tương đương entry `<locale-encoding-mapping-list>` trong file `web.xml` của traditional war deployment.
+
+
+
+[[web.servlet.embedded-container.customizing.programmatic]]
+==== Programmatic Customization
+
+Nếu cần programmatically configure embedded servlet container, bạn có thể register Spring bean implement interface javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].
+javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[] cung cấp quyền truy cập javadoc:org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory[] có nhiều customization setter method.
+Ví dụ sau programmatically đặt port:
+
+include-code::MyWebServerFactoryCustomizer[]
+
+javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] và javadoc:org.springframework.boot.jetty.servlet.JettyServletWebServerFactory[] là các variant chuyên dụng của javadoc:org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory[] có thêm customization setter method tương ứng cho Tomcat và Jetty.
+Ví dụ sau cho thấy cách customize javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] để access Tomcat-specific configuration option:
+
+include-code::MyTomcatWebServerFactoryCustomizer[]
+
+
+
+[[web.servlet.embedded-container.customizing.direct]]
+==== Customize trực tiếp ConfigurableServletWebServerFactory
+
+Với advanced use case yêu cầu extend javadoc:org.springframework.boot.web.server.servlet.ServletWebServerFactory[], bạn có thể tự expose bean type đó.
+
+Setter được cung cấp cho nhiều configuration option.
+Một số protected method "hook" cũng có sẵn nếu cần behavior đặc biệt hơn.
+Xem API documentation của javadoc:org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory[] để biết chi tiết.
+
+NOTE: Auto-configured customizer vẫn được áp dụng lên custom factory của bạn, vì vậy hãy dùng option này cẩn thận.
+
+
+
+[[web.servlet.embedded-container.jsp-limitations]]
+=== Giới hạn JSP
+
+Khi chạy Spring Boot application dùng embedded servlet container (và được package thành executable archive), JSP support có một số giới hạn.
+
+* Với Jetty và Tomcat, JSP hoạt động nếu dùng war packaging.
+Executable war hoạt động khi launch bằng `java -jar` và cũng có thể deploy tới standard container.
+JSP không được hỗ trợ khi dùng executable jar.
+
+* Tạo custom page `error.jsp` không override default view cho xref:web/servlet.adoc#web.servlet.spring-mvc.error-handling[error handling].
+  Nên dùng xref:web/servlet.adoc#web.servlet.spring-mvc.error-handling.error-pages[Custom error page] thay thế.
+
+* Nếu chạy application bằng `mvn spring-boot:run` hoặc `gradle bootRun` và khác với standard directory structure `src/main/webapp`, bạn có thể cần đặt environment variable `WAR_SOURCE_DIRECTORY` để Spring Boot tìm được JSP.

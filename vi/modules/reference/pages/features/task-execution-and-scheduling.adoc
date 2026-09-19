@@ -1,0 +1,135 @@
+[[features.task-execution-and-scheduling]]
+= Thực thi và lập lịch task
+
+Khi context không có bean javadoc:java.util.concurrent.Executor[], Spring Boot auto-configure một javadoc:org.springframework.core.task.AsyncTaskExecutor[].
+Nếu bật virtual thread (dùng Java 21+ và đặt configprop:spring.threads.virtual.enabled[] thành `true`), executor này là javadoc:org.springframework.core.task.SimpleAsyncTaskExecutor[] sử dụng virtual thread.
+Nếu không, nó là javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor[] với các thiết lập mặc định hợp lý.
+
+javadoc:org.springframework.core.task.AsyncTaskExecutor[] được auto-configure được dùng cho các tích hợp sau, trừ khi có bean javadoc:java.util.concurrent.Executor[] tùy chỉnh:
+
+- Thực thi task bất đồng bộ bằng javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation], trừ khi có bean kiểu javadoc:org.springframework.scheduling.annotation.AsyncConfigurer[].
+- Xử lý bất đồng bộ giá trị trả về javadoc:java.util.concurrent.Callable[] từ method của controller trong Spring for GraphQL.
+- Xử lý request bất đồng bộ trong Spring MVC.
+- Hỗ trợ thực thi blocking trong Spring WebFlux.
+- Dùng cho các message channel đầu vào và đầu ra trong Spring WebSocket.
+- Bootstrap executor cho JPA, dựa trên bootstrap mode của các JPA repository.
+- Bootstrap executor cho việc {url-spring-framework-docs}/core/beans/java/composing-configuration-classes.html#beans-java-startup-background[khởi tạo ngầm] các bean trong `ApplicationContext`.
+
+Dù cách này phù hợp với hầu hết trường hợp, Spring Boot vẫn cho phép ghi đè javadoc:org.springframework.core.task.AsyncTaskExecutor[] được auto-configure.
+Theo mặc định, khi đăng ký bean javadoc:java.util.concurrent.Executor[] tùy chỉnh, javadoc:org.springframework.core.task.AsyncTaskExecutor[] sẽ không được auto-configure nữa, và javadoc:java.util.concurrent.Executor[] tùy chỉnh được dùng để thực thi task thông thường (qua javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation]).
+
+Tuy nhiên, Spring MVC, Spring WebFlux và Spring GraphQL đều yêu cầu bean có tên `applicationTaskExecutor`.
+Với Spring MVC và Spring WebFlux, bean này phải có kiểu javadoc:org.springframework.core.task.AsyncTaskExecutor[]; Spring GraphQL không bắt buộc kiểu này.
+
+Spring WebSocket và JPA dùng javadoc:org.springframework.core.task.AsyncTaskExecutor[] nếu chỉ có một bean thuộc kiểu này hoặc có bean tên `applicationTaskExecutor`.
+
+Cuối cùng, bootstrap executor của `ApplicationContext` dùng bean tên `applicationTaskExecutor`, trừ khi có bean tên `bootstrapExecutor`.
+
+Đoạn code sau minh họa cách đăng ký javadoc:org.springframework.core.task.AsyncTaskExecutor[] tùy chỉnh để dùng với Spring MVC, Spring WebFlux, Spring GraphQL, Spring WebSocket, JPA và việc khởi tạo ngầm các bean.
+
+include-code::application/MyTaskExecutorConfiguration[]
+
+[NOTE]
+====
+Bean `applicationTaskExecutor` cũng được dùng để thực thi task thông thường nếu application context không có bean javadoc:org.springframework.context.annotation.Primary[format=annotation], bean tên `taskExecutor` thuộc kiểu javadoc:java.util.concurrent.Executor[], hoặc bean javadoc:org.springframework.scheduling.annotation.AsyncConfigurer[].
+====
+
+[WARNING]
+====
+Nếu không có cả `AsyncTaskExecutor` được auto-configure lẫn bean `applicationTaskExecutor`, ứng dụng mặc định dùng bean tên `taskExecutor` để thực thi task thông thường (javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation]), theo hành vi của Spring Framework.
+Tuy nhiên, bean này không được dùng cho Spring MVC, Spring WebFlux và Spring GraphQL.
+Nó vẫn có thể được dùng cho Spring WebSocket hoặc JPA nếu có kiểu javadoc:org.springframework.core.task.AsyncTaskExecutor[].
+====
+
+Nếu ứng dụng cần nhiều bean `Executor` cho các tích hợp khác nhau, chẳng hạn một bean để thực thi task thông thường với javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation] và bean khác cho Spring MVC, Spring WebFlux, Spring WebSocket và JPA, bạn có thể cấu hình như sau.
+
+include-code::multiple/MyTaskExecutorConfiguration[]
+
+[TIP]
+====
+javadoc:org.springframework.boot.task.ThreadPoolTaskExecutorBuilder[] hoặc javadoc:org.springframework.boot.task.SimpleAsyncTaskExecutorBuilder[] được auto-configure giúp bạn dễ dàng tạo instance kiểu javadoc:org.springframework.core.task.AsyncTaskExecutor[] có cùng hành vi mặc định của auto-configuration.
+
+include-code::builder/MyTaskExecutorConfiguration[]
+====
+
+Nếu không thể dùng bean tên `taskExecutor`, bạn có thể đánh dấu bean bằng javadoc:org.springframework.context.annotation.Primary[format=annotation] hoặc định nghĩa bean javadoc:org.springframework.scheduling.annotation.AsyncConfigurer[] để chỉ định `Executor` chịu trách nhiệm thực thi task thông thường với javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation].
+Ví dụ sau minh họa cách thực hiện.
+
+include-code::async/MyTaskExecutorConfiguration[]
+
+Để đăng ký javadoc:java.util.concurrent.Executor[] tùy chỉnh mà vẫn giữ javadoc:org.springframework.core.task.AsyncTaskExecutor[] được auto-configure, bạn có thể tạo bean javadoc:java.util.concurrent.Executor[] tùy chỉnh và đặt attribute `defaultCandidate=false` trong annotation javadoc:org.springframework.context.annotation.Bean[format=annotation] của nó, như ví dụ sau:
+
+include-code::defaultcandidate/MyTaskExecutorConfiguration[]
+
+Khi đó, bạn có thể autowire javadoc:java.util.concurrent.Executor[] tùy chỉnh vào các component khác, đồng thời giữ javadoc:org.springframework.core.task.AsyncTaskExecutor[] được auto-configure.
+Tuy nhiên, nhớ dùng annotation javadoc:org.springframework.beans.factory.annotation.Qualifier[format=annotation] cùng với javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation].
+
+Nếu cách này không phù hợp, bạn có thể yêu cầu Spring Boot vẫn auto-configure một javadoc:org.springframework.core.task.AsyncTaskExecutor[] như sau:
+
+[configprops,yaml]
+----
+spring:
+  task:
+    execution:
+      mode: force
+----
+
+javadoc:org.springframework.core.task.AsyncTaskExecutor[] được auto-configure sẽ tự động được dùng cho mọi tích hợp, ngay cả khi đã đăng ký bean javadoc:java.util.concurrent.Executor[] tùy chỉnh, kể cả bean được đánh dấu javadoc:org.springframework.context.annotation.Primary[format=annotation].
+Các tích hợp này bao gồm:
+
+- Thực thi task bất đồng bộ (javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation]), trừ khi có bean javadoc:org.springframework.scheduling.annotation.AsyncConfigurer[].
+- Xử lý bất đồng bộ giá trị trả về javadoc:java.util.concurrent.Callable[] từ method của controller trong Spring for GraphQL.
+- Xử lý request bất đồng bộ của Spring MVC.
+- Hỗ trợ thực thi blocking của Spring WebFlux.
+- Dùng cho các message channel đầu vào và đầu ra trong Spring WebSocket.
+- Bootstrap executor cho JPA, dựa trên bootstrap mode của các JPA repository.
+- Bootstrap executor cho việc {url-spring-framework-docs}/core/beans/java/composing-configuration-classes.html#beans-java-startup-background[khởi tạo ngầm] các bean trong `ApplicationContext`, trừ khi có bean tên `bootstrapExecutor`.
+
+[TIP]
+====
+Tùy cách tổ chức mong muốn, bạn có thể đặt configprop:spring.task.execution.mode[] thành `force` để auto-configure một `applicationTaskExecutor`, chuyển javadoc:java.util.concurrent.Executor[] thành javadoc:org.springframework.core.task.AsyncTaskExecutor[], hoặc định nghĩa cả javadoc:org.springframework.core.task.AsyncTaskExecutor[] và javadoc:org.springframework.scheduling.annotation.AsyncConfigurer[] bọc javadoc:java.util.concurrent.Executor[] tùy chỉnh.
+====
+
+[WARNING]
+====
+Khi bật chế độ `force`, `applicationTaskExecutor` cũng được cấu hình để thực thi task thông thường với javadoc:org.springframework.scheduling.annotation.EnableAsync[format=annotation], ngay cả khi có bean javadoc:org.springframework.context.annotation.Primary[format=annotation] hoặc bean tên `taskExecutor` thuộc kiểu javadoc:java.util.concurrent.Executor[].
+Cách duy nhất để ghi đè `Executor` cho task thông thường là đăng ký bean javadoc:org.springframework.scheduling.annotation.AsyncConfigurer[].
+====
+
+Khi javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor[] được auto-configure, thread pool dùng 8 core thread và có thể tăng hoặc giảm số thread theo tải.
+Bạn có thể tinh chỉnh các thiết lập mặc định qua namespace `spring.task.execution`, như ví dụ sau:
+
+[configprops,yaml]
+----
+spring:
+  task:
+    execution:
+      pool:
+        max-size: 16
+        queue-capacity: 100
+        keep-alive: "10s"
+----
+
+Cấu hình này chuyển thread pool sang dùng bounded queue; khi queue đầy (100 task), thread pool tăng lên tối đa 16 thread.
+Pool thu hẹp nhanh hơn vì thread được thu hồi khi không hoạt động trong 10 giây (thay vì mặc định 60 giây).
+
+Scheduler cũng có thể được auto-configure khi cần gắn với việc thực thi task theo lịch (ví dụ khi dùng javadoc:org.springframework.scheduling.annotation.EnableScheduling[format=annotation]).
+
+Nếu bật virtual thread (dùng Java 21+ và đặt configprop:spring.threads.virtual.enabled[] thành `true`), scheduler này là javadoc:org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler[] sử dụng virtual thread.
+javadoc:org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler[] này bỏ qua mọi property liên quan đến pooling.
+
+Nếu không bật virtual thread, scheduler là javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler[] với các thiết lập mặc định hợp lý.
+javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler[] mặc định dùng một thread; bạn có thể tinh chỉnh qua namespace `spring.task.scheduling`, như ví dụ sau:
+
+[configprops,yaml]
+----
+spring:
+  task:
+    scheduling:
+      thread-name-prefix: "scheduling-"
+      pool:
+        size: 2
+----
+
+Các bean javadoc:org.springframework.boot.task.ThreadPoolTaskExecutorBuilder[], javadoc:org.springframework.boot.task.SimpleAsyncTaskExecutorBuilder[], javadoc:org.springframework.boot.task.ThreadPoolTaskSchedulerBuilder[] và javadoc:org.springframework.boot.task.SimpleAsyncTaskSchedulerBuilder[] được cung cấp trong context khi cần tạo executor hoặc scheduler tùy chỉnh.
+Các bean javadoc:org.springframework.boot.task.SimpleAsyncTaskExecutorBuilder[] và javadoc:org.springframework.boot.task.SimpleAsyncTaskSchedulerBuilder[] được auto-configure để dùng virtual thread nếu đã bật (dùng Java 21+ và đặt configprop:spring.threads.virtual.enabled[] thành `true`).

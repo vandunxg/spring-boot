@@ -1,0 +1,106 @@
+[[howto.native-image.testing]]
+= Testing GraalVM Native Images
+
+Khi viết native image application, khuyến nghị tiếp tục dùng JVM bất cứ khi nào có thể để develop phần lớn unit test và integration test.
+Điều này giúp giảm developer build time và cho phép dùng existing IDE integration.
+Khi đã có test coverage rộng trên JVM, bạn có thể tập trung native image testing vào những area có khả năng khác biệt.
+
+Với native image testing, nhìn chung cần đảm bảo các aspect sau hoạt động:
+
+* Spring AOT engine có thể process application và application chạy được ở AOT-processed mode.
+* GraalVM có đủ hint để đảm bảo có thể tạo valid native image.
+
+[[howto.native-image.testing.with-the-jvm]]
+== Testing Ahead-of-Time Processing bằng JVM
+
+Khi Spring Boot application chạy, nó cố detect có đang chạy dưới dạng native image hay không.
+Nếu là native image, application được initialize bằng code generate tại build-time bởi Spring AOT engine.
+
+Nếu application chạy trên regular JVM, mọi AOT-generated code bị ignore.
+
+Vì phase compile `native-image` có thể mất khá nhiều thời gian, đôi khi hữu ích khi chạy application trên JVM nhưng vẫn dùng AOT-generated initialization code.
+Cách này giúp nhanh chóng validate rằng AOT-generated code không có error và không thiếu gì trước khi application cuối cùng được convert thành native image.
+
+Để chạy Spring Boot application trên JVM và dùng AOT-generated code, set system property `spring.aot.enabled` thành `true`.
+
+Ví dụ:
+
+[source,shell]
+----
+$ java -Dspring.aot.enabled=true -jar myapplication.jar
+----
+
+NOTE: Cần đảm bảo jar đang test include AOT-generated code.
+Với Maven, build bằng `-Pnative` để activate profile `native`.
+Với Gradle, đảm bảo build include plugin `org.graalvm.buildtools.native`.
+
+Nếu application start với property `spring.aot.enabled=true`, mức độ tin cậy rằng nó sẽ hoạt động khi convert thành native image cao hơn.
+
+Cũng có thể cân nhắc chạy integration test với running application.
+Ví dụ dùng Spring javadoc:org.springframework.web.reactive.function.client.WebClient[] gọi REST endpoint của application.
+Hoặc dùng project như Selenium để kiểm tra HTML response.
+
+[[howto.native-image.testing.with-native-build-tools]]
+== Testing với Native Build Tools
+
+GraalVM Native Build Tools có khả năng chạy test bên trong native image.
+Điều này hữu ích khi muốn test sâu rằng internal application hoạt động trong GraalVM native image.
+
+Generate native image chứa test có thể tốn thời gian, nên phần lớn developer có thể ưu tiên JVM ở local.
+Tuy nhiên chúng rất hữu ích trong CI pipeline.
+Ví dụ có thể chọn chạy native test mỗi ngày một lần.
+
+Spring Framework có ahead-of-time support cho running test.
+Mọi Spring testing feature thông thường đều hoạt động với native image test.
+Ví dụ vẫn có thể dùng annotation javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
+Cũng có thể dùng Spring Boot xref:reference:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[test slices] để chỉ test phần cụ thể của application.
+
+Native testing support của Spring Framework hoạt động như sau:
+
+* Test được analyze để discover các instance javadoc:org.springframework.context.ApplicationContext[] cần thiết.
+* Ahead-of-time processing được apply cho từng application context và asset được generate.
+* Native image được tạo, với generated asset được GraalVM process.
+* Native image cũng include JUnit javadoc:org.junit.platform.engine.TestEngine[] được configure với list discovered test.
+* Native image được start, trigger engine chạy từng test và report result.
+
+[[howto.native-image.testing.with-native-build-tools.maven]]
+=== Dùng Maven
+
+Để chạy native test bằng Maven, đảm bảo file `pom.xml` dùng `spring-boot-starter-parent`.
+Section `<parent>` nên như sau:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>{version-spring-boot}</version>
+</parent>
+----
+
+`spring-boot-starter-parent` định nghĩa profile `nativeTest` cung cấp configuration cần thiết cho Spring Boot và Native Build Tools plugin.
+Trước tiên cần thêm hai plugin đó vào module để opt-in feature.
+Test chỉ execute ở native mode khi `nativeTest` enable.
+Có thể activate profile bằng flag `-P` trên command line.
+
+TIP: Nếu không muốn dùng `spring-boot-starter-parent`, cần configure execution cho goal `process-test-aot` của Spring Boot plugin và goal `test` của Native Build Tools plugin.
+
+Để build image và chạy test, dùng goal `test` với profile `nativeTest` active:
+
+[source,shell]
+----
+$ mvn -PnativeTest test
+----
+
+[[howto.native-image.testing.with-native-build-tools.gradle]]
+=== Dùng Gradle
+
+Spring Boot Gradle plugin tự động configure AOT test task khi GraalVM Native Image plugin được apply.
+Nên kiểm tra Gradle build có block `plugins` include `org.graalvm.buildtools.native`.
+
+Để chạy native test bằng Gradle, dùng task `nativeTest`:
+
+[source,shell]
+----
+$ gradle nativeTest
+----

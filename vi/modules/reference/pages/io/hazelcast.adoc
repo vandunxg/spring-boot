@@ -1,0 +1,35 @@
+[[io.hazelcast]]
+= Hazelcast
+
+Nếu https://hazelcast.com/[Hazelcast] có trên classpath và tìm thấy configuration phù hợp, Spring Boot auto-configure một javadoc:com.hazelcast.core.HazelcastInstance[] để bạn inject vào application.
+
+Spring Boot trước tiên thử tạo client bằng cách kiểm tra các option sau:
+
+* Có bean javadoc:com.hazelcast.client.config.ClientConfig[].
+* Configuration file được định nghĩa bởi configprop:spring.hazelcast.config[].
+* Có system property `hazelcast.client.config`.
+* File `hazelcast-client.xml` trong working directory hoặc root classpath.
+* File `hazelcast-client.yaml` (hoặc `hazelcast-client.yml`) trong working directory hoặc root classpath.
+
+Nếu không thể tạo client, Spring Boot thử cấu hình embedded server.
+Nếu bạn định nghĩa bean javadoc:com.hazelcast.config.Config[], Spring Boot dùng nguyên bean đó.
+Nếu configuration định nghĩa instance name, Spring Boot thử tìm existing instance thay vì tạo instance mới.
+
+Bạn cũng có thể chỉ định Hazelcast configuration file qua configuration:
+
+[configprops,yaml]
+----
+spring:
+  hazelcast:
+    config: "classpath:config/my-hazelcast.xml"
+----
+
+Nếu không, Spring Boot tìm Hazelcast configuration tại các location mặc định: `hazelcast.xml` trong working directory hoặc root classpath, hoặc YAML tương ứng tại cùng location.
+Spring Boot cũng kiểm tra system property `hazelcast.config`.
+Xem https://docs.hazelcast.org/docs/latest/manual/html-single/[Hazelcast documentation] để biết thêm.
+
+TIP: Mặc định, javadoc:com.hazelcast.spring.context.SpringAware[format=annotation] trên Hazelcast component được hỗ trợ.
+Có thể override javadoc:com.hazelcast.core.ManagedContext[] bằng cách khai báo bean javadoc:org.springframework.boot.hazelcast.autoconfigure.HazelcastConfigCustomizer[] với javadoc:org.springframework.core.annotation.Order[format=annotation] lớn hơn 0.
+
+NOTE: Spring Boot cũng có xref:io/caching.adoc#io.caching.provider.hazelcast[caching support riêng cho Hazelcast].
+Nếu caching được enable, javadoc:com.hazelcast.core.HazelcastInstance[] tự động được wrap trong implementation javadoc:org.springframework.cache.CacheManager[].

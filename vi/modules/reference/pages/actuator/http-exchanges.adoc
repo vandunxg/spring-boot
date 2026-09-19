@@ -1,0 +1,16 @@
+[[actuator.http-exchanges]]
+= Ghi lại HTTP Exchange
+
+Enable recording HTTP exchange bằng bean javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[] trong application configuration.
+Spring Boot cung cấp javadoc:org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository[], mặc định lưu 100 request-response exchange gần nhất.
+Implementation này hạn chế hơn tracing solution và chỉ khuyến nghị cho development.
+Production nên dùng production-ready tracing/observability solution như Zipkin hoặc OpenTelemetry, hoặc tự tạo HttpExchangeRepository.
+
+Endpoint `httpexchanges` cung cấp thông tin về request-response exchange lưu trong repository.
+
+[[actuator.http-exchanges.custom]]
+== Custom HTTP Exchange Recording
+
+Để customize item được include trong mỗi recorded exchange, dùng configprop:management.httpexchanges.recording.include[].
+
+Để disable recording hoàn toàn, đặt configprop:management.httpexchanges.recording.enabled[] thành `false`.

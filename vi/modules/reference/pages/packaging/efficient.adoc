@@ -1,0 +1,32 @@
+[[packaging.efficient]]
+= Efficient Deployments
+
+[[packaging.efficient.unpacking]]
+== Giải nén Executable jar
+
+Bạn có thể chạy application bằng executable jar, nhưng load class từ nested jar có một chút startup cost.
+Tùy kích thước jar, chạy application từ exploded structure nhanh hơn và được khuyến nghị trong production.
+Một số PaaS implementation cũng có thể extract archive trước khi chạy, ví dụ Cloud Foundry.
+
+Spring Boot hỗ trợ extract application vào directory bằng nhiều layout.
+Default layout hiệu quả nhất và thân thiện với xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.aot-cache[AOT cache] (và xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.cds[CDS]).
+
+Trong layout này, library được extract vào folder `lib/`, còn application jar chứa application class và manifest tham chiếu các library trong `lib/`.
+
+Để unpack executable jar:
+
+[source,shell]
+----
+$ java -Djarmode=tools -jar my-app.jar extract
+----
+
+Sau đó trong production:
+
+[source,shell]
+----
+$ java -jar my-app/my-app.jar
+----
+
+Sau startup, không nên kỳ vọng khác biệt execution time giữa executable jar và extracted jar.
+
+TIP: Chạy `java -Djarmode=tools -jar my-app.jar help extract` để xem mọi option.

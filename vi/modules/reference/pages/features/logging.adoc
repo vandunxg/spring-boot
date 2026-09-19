@@ -1,0 +1,934 @@
+[[features.logging]]
+= Logging
+
+Spring Boot dùng https://commons.apache.org/logging[Commons Logging] cho toàn bộ logging nội bộ nhưng không cố định implementation ghi log bên dưới.
+Cấu hình mặc định được cung cấp cho {apiref-openjdk}/java.logging/java/util/logging/package-summary.html[Java Util Logging], https://logging.apache.org/log4j/2.x/[Log4j2] và https://logback.qos.ch/[Logback].
+Trong mỗi trường hợp, các logger được cấu hình sẵn để xuất ra console, đồng thời có tùy chọn xuất ra file.
+
+Theo mặc định, nếu dùng các starter, Logback được dùng để ghi log.
+Cấu hình định tuyến phù hợp cho Logback cũng được tích hợp để bảo đảm các thư viện phụ thuộc dùng Java Util Logging, Commons Logging, Log4J hoặc SLF4J đều hoạt động đúng.
+
+TIP: Java có nhiều logging framework.
+Đừng lo nếu danh sách trên có vẻ khó hiểu.
+Thông thường, bạn không cần thay đổi các dependency logging; cấu hình mặc định của Spring Boot đã đáp ứng tốt.
+
+TIP: Khi deploy ứng dụng lên servlet container hoặc application server, log được ghi qua Java Util Logging API không được định tuyến vào log của ứng dụng.
+Điều này ngăn log của container hoặc các ứng dụng khác được deploy trên đó xuất hiện trong log của ứng dụng bạn.
+
+
+
+[[features.logging.log-format]]
+== Định dạng log
+
+Log mặc định của Spring Boot có dạng như ví dụ sau:
+
+[source]
+----
+include::ROOT:partial$logging/logging-format.txt[]
+----
+
+Các thông tin sau được xuất ra:
+
+* Ngày và giờ: Độ chính xác đến mili giây, dễ sắp xếp.
+* Log level: `ERROR`, `WARN`, `INFO`, `DEBUG` hoặc `TRACE`.
+* Process ID.
+* Dấu phân cách `---` để xác định điểm bắt đầu của phần thông tin log thực tế.
+* Tên ứng dụng: Đặt trong ngoặc vuông (mặc định chỉ được ghi khi configprop:spring.application.name[] được thiết lập).
+* Nhóm ứng dụng: Đặt trong ngoặc vuông (mặc định chỉ được ghi khi configprop:spring.application.group[] được thiết lập).
+* Tên thread: Đặt trong ngoặc vuông (có thể bị cắt ngắn khi xuất ra console).
+* Correlation ID: Có khi bật tracing (không hiển thị trong ví dụ trên).
+* Tên logger: Thường là tên class nguồn (hay được viết tắt).
+* Nội dung log.
+
+NOTE: Logback không có level `FATAL`.
+Level này được ánh xạ thành `ERROR`.
+
+TIP: Nếu có property configprop:spring.application.name[] nhưng không muốn ghi nó vào log, bạn có thể đặt configprop:logging.include-application-name[] thành `false`.
+
+TIP: Nếu có property configprop:spring.application.group[] nhưng không muốn ghi nó vào log, bạn có thể đặt configprop:logging.include-application-group[] thành `false`.
+
+TIP: Để biết thêm về correlation ID, hãy xref:reference:actuator/tracing.adoc#actuator.micrometer-tracing.logging[xem tài liệu này].
+
+
+
+[[features.logging.console-output]]
+== Xuất ra console
+
+Cấu hình log mặc định xuất thông điệp ra console ngay khi chúng được ghi.
+Theo mặc định, các thông điệp ở level `ERROR`, `WARN` và `INFO` được ghi log.
+Bạn cũng có thể bật chế độ "`debug`" bằng cách khởi động ứng dụng với cờ `--debug`.
+
+[source,shell]
+----
+$ java -jar myapp.jar --debug
+----
+
+NOTE: Bạn cũng có thể đặt `debug=true` trong `application.properties`.
+
+Khi bật chế độ debug, một số logger cốt lõi (embedded container, Hibernate và Spring Boot) được cấu hình để xuất thêm thông tin.
+Bật chế độ debug _không_ cấu hình ứng dụng ghi toàn bộ thông điệp ở level `DEBUG`.
+
+Ngoài ra, bạn có thể bật chế độ "`trace`" bằng cách khởi động ứng dụng với cờ `--trace` (hoặc đặt `trace=true` trong `application.properties`).
+Cách này bật trace logging cho một số logger cốt lõi (embedded container, quá trình sinh schema của Hibernate và toàn bộ hệ sinh thái Spring).
+
+Để tắt logging ra console, bạn có thể đặt property configprop:logging.console.enabled[] thành `false`.
+
+
+
+[[features.logging.console-output.color-coded]]
+=== Hiển thị màu
+
+Nếu terminal hỗ trợ ANSI, màu sắc được dùng để giúp đọc log dễ hơn.
+Bạn có thể đặt `spring.output.ansi.enabled` thành một javadoc:org.springframework.boot.ansi.AnsiOutput$Enabled[giá trị được hỗ trợ] để ghi đè cơ chế tự nhận diện.
+
+Màu sắc được cấu hình bằng conversion word `%clr`.
+Ở dạng đơn giản nhất, converter tô màu đầu ra theo log level, như ví dụ sau:
+
+[source]
+----
+%clr(%5p)
+----
+
+Bảng sau mô tả ánh xạ từ log level sang màu:
+
+|===
+| Level | Màu
+
+| `FATAL`
+| Đỏ
+
+| `ERROR`
+| Đỏ
+
+| `WARN`
+| Vàng
+
+| `INFO`
+| Xanh lá
+
+| `DEBUG`
+| Xanh lá
+
+| `TRACE`
+| Xanh lá
+|===
+
+Ngoài ra, bạn có thể chỉ định màu và kiểu hiển thị bằng các tùy chọn của phép chuyển đổi.
+Ví dụ, để văn bản có màu vàng và in đậm, dùng cấu hình sau:
+
+[source]
+----
+%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){yellow,bold}
+----
+
+Các màu chữ sau được hỗ trợ:
+
+* `black`
+* `blue`
+* `bright_black`
+* `bright_blue`
+* `bright_cyan`
+* `bright_green`
+* `bright_magenta`
+* `bright_red`
+* `bright_white`
+* `bright_yellow`
+* `cyan`
+* `green`
+* `magenta`
+* `red`
+* `white`
+* `yellow`
+
+Các màu nền sau được hỗ trợ:
+
+* `bg_black`
+* `bg_blue`
+* `bg_bright_black`
+* `bg_bright_blue`
+* `bg_bright_cyan`
+* `bg_bright_green`
+* `bg_bright_magenta`
+* `bg_bright_red`
+* `bg_bright_white`
+* `bg_bright_yellow`
+* `bg_cyan`
+* `bg_green`
+* `bg_magenta`
+* `bg_red`
+* `bg_white`
+* `bg_yellow`
+
+Các kiểu hiển thị sau được hỗ trợ:
+
+* `bold`
+* `faint`
+* `italic`
+* `normal`
+* `reverse`
+* `underline`
+
+
+
+[[features.logging.file-output]]
+== Xuất ra file
+
+Theo mặc định, Spring Boot chỉ ghi log ra console và không ghi file log.
+Để ghi file log bên cạnh đầu ra console, bạn cần đặt property configprop:logging.file.name[] hoặc configprop:logging.file.path[] (ví dụ trong `application.properties`).
+Nếu đặt cả hai property, `logging.file.path` bị bỏ qua và chỉ `logging.file.name` được dùng.
+
+Bảng sau cho biết cách kết hợp các property `logging.*`:
+
+.Các property logging
+[cols="1,1,4"]
+|===
+| configprop:logging.file.name[] | configprop:logging.file.path[] | Mô tả
+
+| _(không đặt)_
+| _(không đặt)_
+| Chỉ ghi log ra console.
+
+| File cụ thể (ví dụ `my.log`)
+| _(không đặt)_
+| Ghi vào vị trí do `logging.file.name` chỉ định.
+  Vị trí có thể là đường dẫn tuyệt đối hoặc tương đối so với thư mục hiện tại.
+
+| _(không đặt)_
+| Thư mục cụ thể (ví dụ `/var/log`)
+| Ghi `spring.log` vào thư mục do `logging.file.path` chỉ định.
+  Thư mục có thể là đường dẫn tuyệt đối hoặc tương đối so với thư mục hiện tại.
+
+| File cụ thể
+| Thư mục cụ thể
+| Ghi vào vị trí do `logging.file.name` chỉ định và bỏ qua `logging.file.path`.
+  Vị trí có thể là đường dẫn tuyệt đối hoặc tương đối so với thư mục hiện tại.
+|===
+
+File log được xoay vòng khi đạt 10 MB; giống đầu ra console, các thông điệp ở level `ERROR`, `WARN` và `INFO` được ghi theo mặc định.
+Lưu ý rằng Log4J2 yêu cầu đặt `logging.file.path` với cấu hình này.
+
+TIP: Các property logging độc lập với hạ tầng logging thực tế.
+Vì vậy, Spring Boot không quản lý các khóa cấu hình riêng của từng hệ thống (chẳng hạn `logback.configurationFile` của Logback).
+
+
+
+[[features.logging.file-rotation]]
+== Xoay vòng file
+
+Nếu dùng Logback hoặc Log4j2, bạn có thể tinh chỉnh cấu hình xoay vòng log bằng file `application.properties` hoặc `application.yaml`.
+Với các hệ thống logging khác, bạn cần tự cấu hình trực tiếp việc xoay vòng.
+
+Logback hỗ trợ các property cho chính sách xoay vòng sau:
+
+|===
+| Tên | Mô tả
+
+| configprop:logging.logback.rollingpolicy.file-name-pattern[]
+| Mẫu tên file dùng để tạo các file log lưu trữ.
+
+| configprop:logging.logback.rollingpolicy.clean-history-on-start[]
+| Có dọn dẹp các file log lưu trữ khi ứng dụng khởi động hay không.
+
+| configprop:logging.logback.rollingpolicy.max-file-size[]
+| Kích thước tối đa của file log trước khi được lưu trữ.
+
+| configprop:logging.logback.rollingpolicy.total-size-cap[]
+| Tổng dung lượng tối đa các file log lưu trữ có thể chiếm trước khi bị xóa.
+
+| configprop:logging.logback.rollingpolicy.max-history[]
+| Số file log lưu trữ tối đa được giữ lại (mặc định là 7).
+|===
+
+Nếu dùng Log4j2, các property cho chính sách xoay vòng sau khả dụng:
+
+|===
+| Tên | Mô tả
+
+| configprop:logging.log4j2.rollingpolicy.file-name-pattern[]
+| Mẫu tên file dùng để tạo các file log lưu trữ.
+
+| configprop:logging.log4j2.rollingpolicy.max-file-size[]
+| Kích thước tối đa của file log trước khi được lưu trữ (mặc định là 10MB).
+
+| configprop:logging.log4j2.rollingpolicy.max-history[]
+| Số file log lưu trữ tối đa được giữ lại (mặc định là 7).
+
+| configprop:logging.log4j2.rollingpolicy.strategy[]
+| Chiến lược xoay vòng (mặc định là 'size').
+
+| configprop:logging.log4j2.rollingpolicy.cron[]
+| Cron expression dùng khi chiến lược là 'cron' (mặc định là nửa đêm mỗi ngày).
+
+| configprop:logging.log4j2.rollingpolicy.time-interval[]
+| Khoảng kích hoạt theo thời gian khi chiến lược là 'time' hoặc 'size-and-time' (mặc định là 1).
+
+| configprop:logging.log4j2.rollingpolicy.time-modulate[]
+| Có căn thời điểm xoay vòng tiếp theo vào đầu khoảng thời gian khi dùng chiến lược dựa trên thời gian hay không (mặc định là `false`).
+
+|===
+
+
+[[features.logging.log-levels]]
+== Log level
+
+Với mọi hệ thống logging được hỗ trợ, bạn có thể đặt level của logger trong Spring javadoc:org.springframework.core.env.Environment[] (ví dụ trong `application.properties`) bằng `+logging.level.<logger-name>=<level>+`, trong đó `level` là TRACE, DEBUG, INFO, WARN, ERROR, FATAL hoặc OFF.
+Logger `root` có thể được cấu hình bằng `logging.level.root`.
+
+Ví dụ sau minh họa một số cấu hình logging trong `application.properties`:
+
+[configprops,yaml]
+----
+logging:
+  level:
+    root: "warn"
+    org.springframework.web: "debug"
+    org.hibernate: "error"
+----
+
+Bạn cũng có thể đặt log level bằng biến môi trường.
+Ví dụ, `LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG` đặt `org.springframework.web` thành `DEBUG`.
+
+NOTE: Cách trên chỉ dùng được cho logging ở cấp package.
+Vì relaxed binding xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.relaxed-binding.maps-from-environment-variables[luôn chuyển biến môi trường thành chữ thường], bạn không thể cấu hình logging cho từng class theo cách này.
+Nếu cần cấu hình logging cho một class, bạn có thể dùng xref:features/external-config.adoc#features.external-config.application-json[biến `SPRING_APPLICATION_JSON`].
+
+
+
+[[features.logging.log-groups]]
+== Nhóm logger
+
+Việc nhóm các logger liên quan để cấu hình chúng cùng lúc thường hữu ích.
+Ví dụ, bạn có thể thường xuyên thay đổi log level cho _tất cả_ logger liên quan đến Tomcat nhưng khó nhớ các package cấp cao nhất.
+
+Để hỗ trợ việc này, Spring Boot cho phép định nghĩa nhóm logging trong Spring javadoc:org.springframework.core.env.Environment[].
+Ví dụ, bạn có thể định nghĩa nhóm "`tomcat`" bằng cách thêm cấu hình sau vào `application.properties`:
+
+[configprops,yaml]
+----
+logging:
+  group:
+    tomcat: "org.apache.catalina,org.apache.coyote,org.apache.tomcat"
+----
+
+Sau khi định nghĩa, bạn có thể thay đổi level của tất cả logger trong nhóm bằng một dòng:
+
+[configprops,yaml]
+----
+logging:
+  level:
+    tomcat: "trace"
+----
+
+Spring Boot tích hợp sẵn các nhóm logging sau để dùng ngay:
+
+[cols="1,4"]
+|===
+| Tên | Logger
+
+| web
+| `org.springframework.core.codec`, `org.springframework.http`, `org.springframework.web`, `org.springframework.boot.actuate.endpoint.web`, `org.springframework.boot.web.servlet.ServletContextInitializerBeans`
+
+| sql
+| `org.springframework.jdbc.core`, `org.hibernate.SQL`, javadoc:org.jooq.tools.LoggerListener[]
+|===
+
+
+
+[[features.logging.shutdown-hook]]
+== Dùng shutdown hook cho logging
+
+Để giải phóng tài nguyên logging khi ứng dụng kết thúc, Spring Boot cung cấp một shutdown hook kích hoạt việc dọn dẹp hệ thống logging khi JVM thoát.
+Shutdown hook này được đăng ký tự động, trừ khi ứng dụng được deploy dưới dạng file war.
+Nếu ứng dụng có cấu trúc phân cấp context phức tạp, shutdown hook có thể không đáp ứng nhu cầu của bạn.
+Trong trường hợp đó, hãy tắt shutdown hook và xem các tùy chọn do hệ thống logging bên dưới cung cấp trực tiếp.
+Ví dụ, Logback cung cấp https://logback.qos.ch/manual/loggingSeparation.html[context selector], cho phép tạo mỗi Logger trong context riêng.
+Bạn có thể dùng property configprop:logging.register-shutdown-hook[] để tắt shutdown hook.
+Đặt giá trị thành `false` sẽ vô hiệu hóa việc đăng ký.
+Bạn có thể đặt property trong file `application.properties` hoặc `application.yaml`:
+
+[configprops,yaml]
+----
+logging:
+  register-shutdown-hook: false
+----
+
+
+
+[[features.logging.custom-log-configuration]]
+== Cấu hình log tùy chỉnh
+
+Bạn có thể kích hoạt từng hệ thống logging bằng cách thêm thư viện phù hợp vào classpath, rồi tùy chỉnh thêm bằng file cấu hình ở root của classpath hoặc tại vị trí được chỉ định qua property configprop:logging.config[] của Spring javadoc:org.springframework.core.env.Environment[].
+
+Bạn có thể buộc Spring Boot dùng một hệ thống logging cụ thể bằng system property `org.springframework.boot.logging.LoggingSystem`.
+Giá trị phải là tên class đầy đủ của một implementation javadoc:org.springframework.boot.logging.LoggingSystem[].
+Bạn cũng có thể tắt hoàn toàn cấu hình logging của Spring Boot bằng giá trị `none`.
+
+NOTE: Vì logging được khởi tạo *trước khi* javadoc:org.springframework.context.ApplicationContext[] được tạo, bạn không thể điều khiển logging từ javadoc:org.springframework.context.annotation.PropertySources[format=annotation] trong các file Spring javadoc:org.springframework.context.annotation.Configuration[format=annotation].
+Cách duy nhất để thay đổi hệ thống logging hoặc tắt hoàn toàn nó là thông qua system property.
+
+Tùy hệ thống logging, các file sau được nạp:
+
+|===
+| Hệ thống logging | Tùy chỉnh
+
+| Logback
+| `logback-spring.xml`, `logback-spring.groovy`, `logback.xml` hoặc `logback.groovy`
+
+| Log4j2
+| `log4j2-spring.xml` hoặc `log4j2.xml`
+
+| JDK (Java Util Logging)
+| `logging.properties`
+|===
+
+NOTE: Khi có thể, chúng tôi khuyên bạn dùng các biến thể `-spring` cho cấu hình logging (ví dụ `logback-spring.xml` thay vì `logback.xml`).
+Nếu dùng các vị trí cấu hình tiêu chuẩn, Spring không thể kiểm soát hoàn toàn quá trình khởi tạo log.
+
+WARNING: Java Util Logging có các vấn đề classloading đã biết, gây lỗi khi chạy từ 'executable jar'.
+Chúng tôi khuyên bạn tránh dùng nó khi chạy từ 'executable jar' nếu có thể.
+
+Để hỗ trợ tùy chỉnh, một số property khác được chuyển từ Spring javadoc:org.springframework.core.env.Environment[] sang system property.
+Nhờ đó, cấu hình hệ thống logging có thể sử dụng các property này. Ví dụ, đặt `logging.file.name` trong `application.properties` hoặc đặt biến môi trường `LOGGING_FILE_NAME` sẽ thiết lập system property `LOG_FILE`.
+Các property được chuyển được mô tả trong bảng sau:
+
+|===
+| Spring Environment | System Property | Ghi chú
+
+| configprop:logging.exception-conversion-word[]
+| `LOG_EXCEPTION_CONVERSION_WORD`
+| Conversion word dùng khi ghi log exception.
+
+| configprop:logging.file.name[]
+| `LOG_FILE`
+| Nếu được định nghĩa, property này được dùng trong cấu hình log mặc định.
+
+| configprop:logging.file.path[]
+| `LOG_PATH`
+| Nếu được định nghĩa, property này được dùng trong cấu hình log mặc định.
+
+| configprop:logging.pattern.console[]
+| `CONSOLE_LOG_PATTERN`
+| Mẫu log dùng trên console (stdout).
+
+| configprop:logging.pattern.dateformat[]
+| `LOG_DATEFORMAT_PATTERN`
+| Mẫu appender cho định dạng ngày trong log.
+
+| configprop:logging.charset.console[]
+| `CONSOLE_LOG_CHARSET`
+| Charset dùng khi ghi log ra console.
+
+| configprop:logging.threshold.console[]
+| `CONSOLE_LOG_THRESHOLD`
+| Ngưỡng log level dùng khi ghi log ra console.
+
+| configprop:logging.pattern.file[]
+| `FILE_LOG_PATTERN`
+| Mẫu log dùng trong file (nếu bật `LOG_FILE`).
+
+| configprop:logging.charset.file[]
+| `FILE_LOG_CHARSET`
+| Charset dùng khi ghi log ra file (nếu bật `LOG_FILE`).
+
+| configprop:logging.threshold.file[]
+| `FILE_LOG_THRESHOLD`
+| Ngưỡng log level dùng khi ghi log ra file.
+
+| configprop:logging.pattern.level[]
+| `LOG_LEVEL_PATTERN`
+| Định dạng dùng khi hiển thị log level (mặc định là `%5p`).
+
+| configprop:logging.structured.format.console[]
+| `CONSOLE_LOG_STRUCTURED_FORMAT`
+| Định dạng structured logging dùng khi ghi log ra console.
+
+| configprop:logging.structured.format.file[]
+| `FILE_LOG_STRUCTURED_FORMAT`
+| Định dạng structured logging dùng khi ghi log ra file.
+
+| `PID`
+| `PID`
+| Process ID hiện tại (được xác định nếu có thể và nếu chưa được định nghĩa bằng biến môi trường của hệ điều hành).
+|===
+
+Nếu dùng Logback, các property sau cũng được chuyển:
+
+|===
+| Spring Environment | System Property | Ghi chú
+
+| configprop:logging.logback.rollingpolicy.file-name-pattern[]
+| `LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN`
+| Mẫu tên file log sau khi xoay vòng (mặc định là `$\{LOG_FILE}.%d\{yyyy-MM-dd}.%i.gz`).
+
+| configprop:logging.logback.rollingpolicy.clean-history-on-start[]
+| `LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START`
+| Có dọn dẹp các file log lưu trữ khi khởi động hay không.
+
+| configprop:logging.logback.rollingpolicy.max-file-size[]
+| `LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE`
+| Kích thước tối đa của file log.
+
+| configprop:logging.logback.rollingpolicy.total-size-cap[]
+| `LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP`
+| Tổng dung lượng các bản sao lưu log được giữ lại.
+
+| configprop:logging.logback.rollingpolicy.max-history[]
+| `LOGBACK_ROLLINGPOLICY_MAX_HISTORY`
+| Số file log lưu trữ tối đa được giữ lại.
+|===
+
+
+Mọi hệ thống logging được hỗ trợ đều có thể đọc system property khi phân tích file cấu hình.
+Xem các cấu hình mặc định trong `spring-boot.jar` để tham khảo ví dụ:
+
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/logback/defaults.xml[Logback]
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/log4j2/log4j2.xml[Log4j 2]
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/java/logging-file.properties[Java Util logging]
+
+[TIP]
+====
+Nếu muốn dùng placeholder trong property logging, bạn nên dùng xref:features/external-config.adoc#features.external-config.files.property-placeholders[cú pháp của Spring Boot], không dùng cú pháp của framework bên dưới.
+Đặc biệt, nếu dùng Logback, hãy dùng `:` làm dấu phân cách giữa tên property và giá trị mặc định, không dùng `:-`.
+====
+
+[TIP]
+====
+Bạn có thể thêm MDC và nội dung khác tùy nhu cầu vào dòng log chỉ bằng cách ghi đè `LOG_LEVEL_PATTERN` (hoặc `logging.pattern.level` với Logback).
+Ví dụ, nếu dùng `logging.pattern.level=user:%X\{user} %5p`, định dạng log mặc định sẽ chứa một MDC entry cho "user" nếu entry đó tồn tại, như ví dụ sau.
+
+[source]
+----
+2019-08-30 12:30:04.031 user:someone INFO 22174 --- [  nio-8080-exec-0] demo.Controller
+Handling authenticated request
+----
+====
+
+
+
+[[features.logging.structured]]
+== Structured Logging
+
+Structured logging là kỹ thuật ghi log theo định dạng được xác định rõ, thường có thể được máy đọc.
+Spring Boot hỗ trợ structured logging và tích hợp sẵn các định dạng JSON sau:
+
+* xref:#features.logging.structured.ecs[Elastic Common Schema (ECS)]
+* xref:#features.logging.structured.gelf[Graylog Extended Log Format (GELF)]
+* xref:#features.logging.structured.logstash[Logstash]
+
+Để bật structured logging, đặt property configprop:logging.structured.format.console[] (cho đầu ra console) hoặc configprop:logging.structured.format.file[] (cho đầu ra file) thành ID của định dạng muốn dùng.
+
+Nếu dùng xref:#features.logging.custom-log-configuration[cấu hình log tùy chỉnh], hãy cập nhật cấu hình để sử dụng các system property `CONSOLE_LOG_STRUCTURED_FORMAT` và `FILE_LOG_STRUCTURED_FORMAT`.
+Ví dụ với `CONSOLE_LOG_STRUCTURED_FORMAT`:
+[tabs]
+======
+Logback::
++
+[source,xml]
+----
+<!-- thay encoder của bạn bằng StructuredLogEncoder -->
+<encoder class="org.springframework.boot.logging.logback.StructuredLogEncoder">
+	<format>${CONSOLE_LOG_STRUCTURED_FORMAT}</format>
+	<charset>${CONSOLE_LOG_CHARSET}</charset>
+</encoder>
+----
++
+Bạn cũng có thể tham khảo các cấu hình mặc định được tích hợp trong Spring Boot:
++
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/logback/structured-console-appender.xml[Logback Structured Console Appender]
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/logback/structured-file-appender.xml[Logback Structured File Appender]
+Log4j2::
++
+[source,xml]
+----
+<!-- thay PatternLayout của bạn bằng StructuredLogLayout -->
+<StructuredLogLayout format="${sys:CONSOLE_LOG_STRUCTURED_FORMAT}" charset="${sys:CONSOLE_LOG_CHARSET}"/>
+----
++
+Bạn cũng có thể tham khảo các cấu hình mặc định được tích hợp trong Spring Boot:
++
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/log4j2/log4j2.xml[Log4j2 Console Appender]
+* {code-spring-boot}/core/spring-boot/src/main/resources/org/springframework/boot/logging/log4j2/log4j2-file.xml[Log4j2 Console and File Appender]
+======
+
+
+[[features.logging.structured.ecs]]
+=== Elastic Common Schema
+
+https://www.elastic.co/guide/en/ecs/8.11/ecs-reference.html[Elastic Common Schema] là định dạng logging dựa trên JSON.
+
+Để bật định dạng log Elastic Common Schema, đặt property `format` tương ứng thành `ecs`:
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    format:
+      console: ecs
+      file: ecs
+----
+
+Một dòng log có dạng như sau:
+
+[source,json]
+----
+{"@timestamp":"2024-01-01T10:15:00.067462556Z","log":{"level":"INFO","logger":"org.example.Application"},"process":{"pid":39599,"thread":{"name":"main"}},"service":{"name":"simple"},"message":"No active profile set, falling back to 1 default profile: \"default\"","ecs":{"version":"8.11"}}
+----
+
+Định dạng này cũng thêm mọi cặp key-value trong MDC vào JSON object.
+Bạn cũng có thể dùng https://www.slf4j.org/manual.html#fluent[SLF4J fluent logging API] để thêm các cặp key-value vào JSON object được ghi log bằng method https://www.slf4j.org/apidocs/org/slf4j/spi/LoggingEventBuilder.html#addKeyValue(java.lang.String,java.lang.Object)[addKeyValue].
+
+Các giá trị `service` có thể được tùy chỉnh bằng các property `logging.structured.ecs.service`:
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    ecs:
+      service:
+        name: MyService
+        version: 1.0
+        environment: Production
+        node-name: Primary
+----
+
+NOTE: configprop:logging.structured.ecs.service.name[] mặc định dùng configprop:spring.application.name[] nếu không được chỉ định.
+
+NOTE: configprop:logging.structured.ecs.service.version[] mặc định dùng configprop:spring.application.version[] nếu không được chỉ định.
+
+
+
+[[features.logging.structured.gelf]]
+=== Graylog Extended Log Format (GELF)
+
+https://go2docs.graylog.org/current/getting_in_log_data/gelf.html[Graylog Extended Log Format] là định dạng logging dựa trên JSON dành cho nền tảng phân tích log Graylog.
+
+Để bật Graylog Extended Log Format, đặt property `format` tương ứng thành `gelf`:
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    format:
+      console: gelf
+      file: gelf
+----
+
+Một dòng log có dạng như sau:
+
+[source,json]
+----
+{"version":"1.1","short_message":"No active profile set, falling back to 1 default profile: \"default\"","timestamp":1725958035.857,"level":6,"_level_name":"INFO","_process_pid":47649,"_process_thread_name":"main","_log_logger":"org.example.Application"}
+----
+
+Định dạng này cũng thêm mọi cặp key-value trong MDC vào JSON object.
+Bạn cũng có thể dùng https://www.slf4j.org/manual.html#fluent[SLF4J fluent logging API] để thêm các cặp key-value vào JSON object được ghi log bằng method https://www.slf4j.org/apidocs/org/slf4j/spi/LoggingEventBuilder.html#addKeyValue(java.lang.String,java.lang.Object)[addKeyValue].
+
+Một số trường có thể được tùy chỉnh bằng các property `logging.structured.gelf`:
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    gelf:
+      host: MyService
+      service:
+        version: 1.0
+----
+
+NOTE: configprop:logging.structured.gelf.host[] mặc định dùng configprop:spring.application.name[] nếu không được chỉ định.
+
+NOTE: configprop:logging.structured.gelf.service.version[] mặc định dùng configprop:spring.application.version[] nếu không được chỉ định.
+
+
+
+[[features.logging.structured.logstash]]
+=== Định dạng Logstash JSON
+
+https://github.com/logfellow/logstash-logback-encoder?tab=readme-ov-file#standard-fields[Định dạng Logstash JSON] là định dạng logging dựa trên JSON.
+
+Để bật định dạng log Logstash JSON, đặt property `format` tương ứng thành `logstash`:
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    format:
+      console: logstash
+      file: logstash
+----
+
+Một dòng log có dạng như sau:
+
+[source,json]
+----
+{"@timestamp":"2024-01-01T10:15:00.111037681+02:00","@version":"1","message":"No active profile set, falling back to 1 default profile: \"default\"","logger_name":"org.example.Application","thread_name":"main","level":"INFO","level_value":20000}
+----
+
+Định dạng này cũng thêm mọi cặp key-value trong MDC vào JSON object.
+Bạn cũng có thể dùng https://www.slf4j.org/manual.html#fluent[SLF4J fluent logging API] để thêm các cặp key-value vào JSON object được ghi log bằng method https://www.slf4j.org/apidocs/org/slf4j/spi/LoggingEventBuilder.html#addKeyValue(java.lang.String,java.lang.Object)[addKeyValue].
+
+Nếu thêm https://www.slf4j.org/api/org/slf4j/Marker.html[marker], chúng sẽ xuất hiện trong mảng chuỗi `tags` của JSON.
+
+
+
+[[features.logging.structured.customizing-json]]
+=== Tùy chỉnh JSON của structured logging
+
+Spring Boot cố gắng chọn tên và giá trị JSON mặc định hợp lý cho đầu ra structured logging.
+Tuy nhiên, đôi khi bạn cần điều chỉnh nhỏ JSON theo nhu cầu riêng.
+Ví dụ, bạn có thể muốn đổi một số tên để phù hợp với yêu cầu của hệ thống thu thập log.
+Bạn cũng có thể muốn lọc bỏ một số thành phần vì không thấy chúng hữu ích.
+
+Các property sau cho phép thay đổi cách ghi JSON của structured logging:
+
+|===
+| Property | Mô tả
+
+| configprop:logging.structured.json.include[] & configprop:logging.structured.json.exclude[]
+| Lọc các đường dẫn cụ thể trong JSON.
+
+| configprop:logging.structured.json.rename[]
+| Đổi tên một thành phần cụ thể trong JSON.
+
+| configprop:logging.structured.json.add[]
+| Thêm thành phần vào JSON.
+|===
+
+Ví dụ, cấu hình sau loại bỏ `log.level`, đổi tên `process.id` thành `procid` và thêm trường cố định `corpname`:
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    json:
+      exclude: log.level
+      rename:
+        process.id: procid
+      add:
+        corpname: mycorp
+----
+
+TIP: Để tùy chỉnh nâng cao hơn, bạn có thể dùng interface javadoc:org.springframework.boot.logging.structured.StructuredLoggingJsonMembersCustomizer[].
+Bạn có thể tham chiếu một hoặc nhiều implementation bằng property configprop:logging.structured.json.customizer[].
+Bạn cũng có thể khai báo các implementation bằng cách liệt kê chúng trong file `META-INF/spring.factories`.
+
+
+
+[[features.logging.structured.customizing-stack-traces]]
+=== Tùy chỉnh stack trace của structured logging
+
+Stack trace đầy đủ được đưa vào đầu ra JSON mỗi khi một thông điệp được ghi log kèm exception.
+Lượng thông tin này có thể tốn chi phí xử lý trong hệ thống thu thập log, nên bạn có thể muốn điều chỉnh cách in stack trace.
+
+Để làm việc này, bạn có thể dùng một hoặc nhiều property sau:
+
+|===
+| Property | Mô tả
+
+| configprop:logging.structured.json.stacktrace.root[]
+| Dùng `last` để in mục gốc cuối cùng (giống Java) hoặc `first` để in mục gốc đầu tiên.
+
+| configprop:logging.structured.json.stacktrace.max-length[]
+| Độ dài tối đa được in.
+
+| configprop:logging.structured.json.stacktrace.max-throwable-depth[]
+| Số frame tối đa được in cho mỗi stack trace (bao gồm cả frame chung và frame của suppressed exception).
+
+| configprop:logging.structured.json.stacktrace.include-common-frames[]
+| Có đưa các frame chung vào hay loại bỏ chúng.
+
+| configprop:logging.structured.json.stacktrace.include-hashes[]
+| Có đưa hash của stack trace vào hay không.
+|===
+
+Ví dụ, cấu hình sau in mục gốc trước trong stack trace, giới hạn độ dài và kèm hash.
+
+[configprops,yaml]
+----
+logging:
+  structured:
+    json:
+      stacktrace:
+        root: first
+        max-length: 1024
+        include-common-frames: true
+        include-hashes: true
+----
+
+[TIP]
+====
+Nếu cần kiểm soát hoàn toàn việc in stack trace, bạn có thể đặt configprop:logging.structured.json.stacktrace.printer[] thành tên một implementation của javadoc:org.springframework.boot.logging.StackTracePrinter[].
+Bạn cũng có thể đặt thành `logging-system` để buộc dùng đầu ra stack trace thông thường của hệ thống logging.
+
+Implementation `StackTracePrinter` của bạn cũng có thể có tham số constructor nhận javadoc:org.springframework.boot.logging.StandardStackTracePrinter[] nếu muốn tùy chỉnh thêm stack trace printer được tạo từ các property.
+====
+
+
+
+[[features.logging.structured.other-formats]]
+=== Hỗ trợ các định dạng structured logging khác
+
+Khả năng hỗ trợ structured logging của Spring Boot có thể mở rộng, cho phép bạn định nghĩa định dạng riêng.
+Để làm việc này, hãy implement interface javadoc:org.springframework.boot.logging.structured.StructuredLogFormatter[]. Generic type argument phải là javadoc:ch.qos.logback.classic.spi.ILoggingEvent[] khi dùng Logback và javadoc:org.apache.logging.log4j.core.LogEvent[] khi dùng Log4j2 (nghĩa là implementation của bạn gắn với một hệ thống logging cụ thể).
+Implementation sau đó được gọi với log event và trả về javadoc:java.lang.String[] để ghi log, như ví dụ sau:
+
+include-code::MyCustomFormat[]
+
+Như trong ví dụ, bạn có thể trả về bất kỳ định dạng nào, không bắt buộc là JSON.
+
+Để bật định dạng riêng, đặt property configprop:logging.structured.format.console[] hoặc configprop:logging.structured.format.file[] thành tên class đầy đủ của implementation.
+
+Implementation có thể dùng một số tham số constructor được inject tự động.
+Xem JavaDoc của javadoc:org.springframework.boot.logging.structured.StructuredLogFormatter[] để biết thêm chi tiết.
+
+
+
+[[features.logging.logback-extensions]]
+== Các extension của Logback
+
+Spring Boot tích hợp một số extension cho Logback để hỗ trợ cấu hình nâng cao.
+Bạn có thể dùng chúng trong file cấu hình `logback-spring.xml`.
+
+NOTE: Vì file cấu hình tiêu chuẩn `logback.xml` được nạp quá sớm, bạn không thể dùng extension trong đó.
+Bạn cần dùng `logback-spring.xml` hoặc định nghĩa property configprop:logging.config[].
+
+WARNING: Các extension không dùng được cùng https://logback.qos.ch/manual/configuration.html#autoScan[configuration scanning] của Logback.
+Nếu cố dùng chung, việc thay đổi file cấu hình sẽ khiến một lỗi tương tự các lỗi sau được ghi log:
+
+[source]
+----
+ERROR in ch.qos.logback.core.joran.spi.Interpreter@4:71 - no applicable action for [springProperty], current ElementPath is [[configuration][springProperty]]
+ERROR in ch.qos.logback.core.joran.spi.Interpreter@4:71 - no applicable action for [springProfile], current ElementPath is [[configuration][springProfile]]
+----
+
+
+
+[[features.logging.logback-extensions.profile-specific]]
+=== Cấu hình theo profile
+
+Tag `<springProfile>` cho phép tùy chọn đưa vào hoặc loại bỏ các phần cấu hình dựa trên các Spring profile đang active.
+Các phần cấu hình profile được hỗ trợ ở bất kỳ vị trí nào trong phần tử `<configuration>`.
+Dùng attribute `name` để chỉ định profile áp dụng cấu hình.
+Tag `<springProfile>` có thể chứa tên profile (ví dụ `staging`) hoặc một profile expression.
+Profile expression cho phép biểu diễn logic profile phức tạp hơn, ví dụ `production & (eu-central | eu-west)`.
+Xem {url-spring-framework-docs}/core/beans/environment.html#beans-definition-profiles-java[tài liệu tham khảo Spring Framework] để biết thêm chi tiết.
+Ví dụ sau minh họa ba profile:
+
+[source,xml]
+----
+<springProfile name="staging">
+	<!-- cấu hình được bật khi profile "staging" active -->
+</springProfile>
+
+<springProfile name="dev | staging">
+	<!-- cấu hình được bật khi profile "dev" hoặc "staging" active -->
+</springProfile>
+
+<springProfile name="!production">
+	<!-- cấu hình được bật khi profile "production" không active -->
+</springProfile>
+----
+
+
+
+[[features.logging.logback-extensions.environment-properties]]
+=== Property từ Environment
+
+Tag `<springProperty>` cho phép cung cấp các property từ Spring javadoc:org.springframework.core.env.Environment[] để dùng trong Logback.
+Điều này hữu ích khi bạn muốn truy cập các giá trị trong `application.properties` từ cấu hình Logback.
+Tag này hoạt động tương tự tag `<property>` tiêu chuẩn của Logback.
+Tuy nhiên, thay vì chỉ định trực tiếp `value`, bạn chỉ định `source` của property (từ javadoc:org.springframework.core.env.Environment[]).
+Nếu cần lưu property ở scope khác `local`, bạn có thể dùng attribute `scope`.
+Nếu cần giá trị dự phòng (khi property chưa được đặt trong javadoc:org.springframework.core.env.Environment[]), bạn có thể dùng attribute `defaultValue`.
+Ví dụ sau cho biết cách cung cấp các property để dùng trong Logback:
+
+[source,xml]
+----
+<springProperty scope="context" name="fluentHost" source="myapp.fluentd.host"
+		defaultValue="localhost"/>
+<appender name="FLUENT" class="ch.qos.logback.more.appenders.DataFluentAppender">
+	<remoteHost>${fluentHost}</remoteHost>
+	...
+</appender>
+----
+
+NOTE: `source` phải được chỉ định theo kebab case (chẳng hạn `my.property-name`).
+Tuy nhiên, bạn có thể thêm property vào javadoc:org.springframework.core.env.Environment[] theo các quy tắc relaxed binding.
+
+
+
+[[features.logging.log4j2-extensions]]
+== Các extension của Log4j2
+
+Spring Boot tích hợp một số extension cho Log4j2 để hỗ trợ cấu hình nâng cao.
+Bạn có thể dùng chúng trong bất kỳ file cấu hình `log4j2-spring.xml` nào.
+
+NOTE: Vì file cấu hình tiêu chuẩn `log4j2.xml` được nạp quá sớm, bạn không thể dùng extension trong đó.
+Bạn cần dùng `log4j2-spring.xml` hoặc định nghĩa property configprop:logging.config[].
+
+NOTE: Các extension này thay thế https://logging.apache.org/log4j/2.x/log4j-spring-boot.html[phần hỗ trợ Spring Boot] do Log4J cung cấp.
+Bạn cần bảo đảm không đưa module `org.apache.logging.log4j:log4j-spring-boot` vào build.
+
+
+
+[[features.logging.log4j2-extensions.profile-specific]]
+=== Cấu hình theo profile
+
+Tag `<SpringProfile>` cho phép tùy chọn đưa vào hoặc loại bỏ các phần cấu hình dựa trên các Spring profile đang active.
+Các phần cấu hình profile được hỗ trợ ở bất kỳ vị trí nào trong phần tử `<Configuration>`.
+Dùng attribute `name` để chỉ định profile áp dụng cấu hình.
+Tag `<SpringProfile>` có thể chứa tên profile (ví dụ `staging`) hoặc một profile expression.
+Profile expression cho phép biểu diễn logic profile phức tạp hơn, ví dụ `production & (eu-central | eu-west)`.
+Xem {url-spring-framework-docs}/core/beans/environment.html#beans-definition-profiles-java[tài liệu tham khảo Spring Framework] để biết thêm chi tiết.
+Ví dụ sau minh họa ba profile:
+
+[source,xml]
+----
+<SpringProfile name="staging">
+	<!-- cấu hình được bật khi profile "staging" active -->
+</SpringProfile>
+
+<SpringProfile name="dev | staging">
+	<!-- cấu hình được bật khi profile "dev" hoặc "staging" active -->
+</SpringProfile>
+
+<SpringProfile name="!production">
+	<!-- cấu hình được bật khi profile "production" không active -->
+</SpringProfile>
+----
+
+
+
+[[features.logging.log4j2-extensions.environment-properties-lookup]]
+=== Tra cứu property từ Environment
+
+Để tham chiếu các property trong Spring javadoc:org.springframework.core.env.Environment[] từ cấu hình Log4j2, bạn có thể dùng https://logging.apache.org/log4j/2.x/manual/lookups.html[lookup] có tiền tố `spring:`.
+Điều này hữu ích khi bạn muốn truy cập các giá trị trong `application.properties` từ cấu hình Log4j2.
+
+Ví dụ sau đặt các property Log4j2 tên `applicationName` và `applicationGroup`, đọc `spring.application.name` và `spring.application.group` từ Spring javadoc:org.springframework.core.env.Environment[]:
+
+[source,xml]
+----
+<Properties>
+	<Property name="applicationName">${spring:spring.application.name}</Property>
+	<Property name="applicationGroup">${spring:spring.application.group}</Property>
+</Properties>
+----
+
+NOTE: Khóa lookup nên được chỉ định theo kebab case (chẳng hạn `my.property-name`).
+
+
+
+[[features.logging.log4j2-extensions.environment-property-source]]
+=== System property của Log4j2
+
+Log4j2 hỗ trợ một số https://logging.apache.org/log4j/2.x/manual/systemproperties.html[system property] để cấu hình các thành phần khác nhau.
+Ví dụ, system property `log4j2.skipJansi` có thể cấu hình việc javadoc:org.apache.logging.log4j.core.appender.ConsoleAppender[] có thử dùng output stream https://github.com/fusesource/jansi[Jansi] trên Windows hay không.
+
+Tất cả system property được nạp sau khi Log4j2 khởi tạo đều có thể lấy từ Spring javadoc:org.springframework.core.env.Environment[].
+Ví dụ, bạn có thể thêm `log4j2.skipJansi=false` vào `application.properties` để javadoc:org.apache.logging.log4j.core.appender.ConsoleAppender[] dùng Jansi trên Windows.
+
+NOTE: Spring javadoc:org.springframework.core.env.Environment[] chỉ được xét khi system property và biến môi trường của hệ điều hành không chứa giá trị đang được nạp.
+
+WARNING: Các system property được nạp trong giai đoạn khởi tạo sớm của Log4j2 không thể tham chiếu Spring javadoc:org.springframework.core.env.Environment[].
+Ví dụ, property mà Log4j2 dùng để cho phép chọn implementation Log4j2 mặc định được sử dụng trước khi Spring Environment khả dụng.

@@ -1,0 +1,162 @@
+[[messaging.pulsar]]
+= Hỗ trợ Apache Pulsar
+
+https://pulsar.apache.org/[Apache Pulsar] được hỗ trợ thông qua auto-configuration của project {url-spring-pulsar-site}[Spring for Apache Pulsar].
+
+Spring Boot sẽ auto-configure và register các component Spring for Apache Pulsar khi `org.springframework.pulsar:spring-pulsar` có trên classpath.
+
+Starter `spring-boot-starter-pulsar` được cung cấp để gom dependency thuận tiện.
+
+[[messaging.pulsar.connecting]]
+== Kết nối Pulsar
+
+Khi dùng Pulsar starter, Spring Boot auto-configure và register bean javadoc:org.apache.pulsar.client.api.PulsarClient[].
+
+Mặc định application thử kết nối Pulsar local tại `pulsar://localhost:6650`.
+Có thể đổi bằng configprop:spring.pulsar.client.service-url[].
+
+NOTE: Value phải là URL hợp lệ theo https://pulsar.apache.org/docs/client-libraries-java/#connection-urls[Pulsar Protocol].
+
+Có thể cấu hình client bằng property có prefix `spring.pulsar.client.*`.
+
+Nếu cần kiểm soát nhiều hơn, register một hoặc nhiều bean javadoc:org.springframework.pulsar.core.PulsarClientBuilderCustomizer[].
+
+[[messaging.pulsar.connecting.auth]]
+=== Authentication
+
+Để kết nối Pulsar cluster yêu cầu authentication, cần chỉ định authentication plugin qua `pluginClassName` và các parameter cần thiết.
+Parameter được đặt dưới dạng map name/value.
+Ví dụ cấu hình plugin `AuthenticationOAuth2`:
+
+[configprops,yaml]
+----
+spring:
+  pulsar:
+    client:
+      authentication:
+        plugin-class-name: org.apache.pulsar.client.impl.auth.oauth2.AuthenticationOAuth2
+        param:
+          issuerUrl: https://auth.server.cloud/
+          privateKey: file:///Users/some-key.json
+          audience: urn:sn:acme:dev:my-instance
+----
+
+[NOTE]
+====
+Tên dưới `+spring.pulsar.client.authentication.param.*+` phải match chính xác tên mà auth plugin mong đợi, thường là camelCase.
+Spring Boot không áp dụng relaxed binding cho các entry này.
+
+Ví dụ, để cấu hình issuer URL cho `AuthenticationOAuth2`, phải dùng `+spring.pulsar.client.authentication.param.issuerUrl+`.
+Các dạng như `issuerurl` hoặc `issuer-url` sẽ không được áp dụng.
+
+Do không có relaxed binding, dùng environment variable cho authentication parameter có thể gặp vấn đề vì case sensitivity bị mất khi chuyển đổi.
+Nếu dùng environment variable, làm theo {url-spring-pulsar-docs}/reference/pulsar/pulsar-client.html#client-authentication-env-vars[các bước này] trong Spring for Apache Pulsar reference documentation.
+====
+
+[[messaging.pulsar.connecting.ssl]]
+=== SSL
+
+Mặc định Pulsar client giao tiếp với Pulsar service bằng plain text.
+Có thể làm theo {url-spring-pulsar-docs}/reference/pulsar/pulsar-client.html#tls-encryption[các bước này] để bật TLS encryption.
+
+Để biết đầy đủ chi tiết về client và authentication, xem {url-spring-pulsar-docs}/reference/pulsar/pulsar-client.html[reference documentation].
+
+[[messaging.pulsar.admin]]
+== Kết nối Pulsar Administration
+
+Client javadoc:org.springframework.pulsar.core.PulsarAdministration[] của Spring for Apache Pulsar cũng được auto-configure.
+
+Mặc định application kết nối Pulsar local tại `http://localhost:8080`.
+Có thể đổi bằng configprop:spring.pulsar.admin.service-url[] theo format `(http|https)://<host>:<port>`.
+
+Nếu cần kiểm soát nhiều hơn, register bean javadoc:org.springframework.pulsar.core.PulsarAdminBuilderCustomizer[].
+
+[[messaging.pulsar.admin.auth]]
+=== Authentication
+
+Khi truy cập Pulsar cluster yêu cầu authentication, admin client cần security configuration giống regular Pulsar client.
+Có thể dùng xref:messaging/pulsar.adoc#messaging.pulsar.connecting.auth[authentication configuration] ở trên, thay `spring.pulsar.client.authentication` bằng `spring.pulsar.admin.authentication`.
+
+TIP: Để tạo topic khi startup, thêm bean javadoc:org.springframework.pulsar.core.PulsarTopic[].
+Nếu topic đã tồn tại, bean bị bỏ qua.
+
+[[messaging.pulsar.sending]]
+== Gửi Message
+
+javadoc:org.springframework.pulsar.core.PulsarTemplate[] được auto-configure và có thể dùng gửi message:
+
+include-code::MyBean[]
+
+javadoc:org.springframework.pulsar.core.PulsarTemplate[] dựa trên javadoc:org.springframework.pulsar.core.PulsarProducerFactory[] để tạo underlying Pulsar producer.
+Spring Boot auto-configuration cũng cung cấp producer factory này và mặc định cache các producer được tạo.
+Có thể cấu hình producer factory và cache bằng property prefix `spring.pulsar.producer.*` và `spring.pulsar.producer.cache.*`.
+
+Nếu cần kiểm soát nhiều hơn, register bean javadoc:org.springframework.pulsar.core.ProducerBuilderCustomizer[].
+Customizer áp dụng cho mọi producer được tạo.
+Khi gửi message, cũng có thể truyền javadoc:org.springframework.pulsar.core.ProducerBuilderCustomizer[] chỉ áp dụng cho producer hiện tại.
+
+Để kiểm soát message được gửi, có thể truyền javadoc:org.springframework.pulsar.core.TypedMessageBuilderCustomizer[] khi gửi.
+
+[[messaging.pulsar.receiving]]
+== Nhận Message
+
+Khi Apache Pulsar infrastructure có mặt, bean có thể annotate javadoc:org.springframework.pulsar.annotation.PulsarListener[format=annotation] để tạo listener endpoint.
+Ví dụ listener trên topic `someTopic`:
+
+include-code::MyBean[]
+
+Spring Boot auto-configuration cung cấp component cần cho javadoc:org.springframework.pulsar.annotation.PulsarListener[], gồm javadoc:org.springframework.pulsar.config.PulsarListenerContainerFactory[] và consumer factory bên dưới.
+Có thể cấu hình bằng property prefix `spring.pulsar.listener.*` và `spring.pulsar.consumer.*`.
+
+Nếu cần kiểm soát consumer factory nhiều hơn, register bean javadoc:org.springframework.pulsar.core.ConsumerBuilderCustomizer[].
+Customizer áp dụng cho mọi consumer do factory tạo, vì vậy cho mọi PulsarListener.
+Có thể customize riêng listener bằng attribute `consumerCustomizer` của annotation.
+
+Nếu cần kiểm soát actual container factory, register một hoặc nhiều `PulsarContainerFactoryCustomizer<ConcurrentPulsarListenerContainerFactory<?>>`.
+
+[[messaging.pulsar.reading]]
+== Đọc Message
+
+Pulsar reader interface cho phép application quản lý cursor thủ công.
+Khi dùng reader kết nối topic, cần chỉ định message nơi reader bắt đầu đọc.
+
+Khi Pulsar infrastructure có mặt, bean có thể annotate javadoc:org.springframework.pulsar.annotation.PulsarReader[format=annotation].
+Ví dụ reader bắt đầu từ đầu topic `someTopic`:
+
+include-code::MyBean[]
+
+javadoc:org.springframework.pulsar.annotation.PulsarReader[format=annotation] dựa trên javadoc:org.springframework.pulsar.core.PulsarReaderFactory[] để tạo underlying reader.
+Spring Boot cung cấp reader factory và có thể customize bằng property prefix `spring.pulsar.reader.*`.
+
+Nếu cần kiểm soát nhiều hơn, register bean javadoc:org.springframework.pulsar.core.ReaderBuilderCustomizer[].
+Customizer áp dụng cho mọi reader.
+Có thể customize riêng listener bằng attribute `readerCustomizer` của annotation.
+
+Nếu cần kiểm soát actual container factory, register một hoặc nhiều `PulsarContainerFactoryCustomizer<DefaultPulsarReaderContainerFactory<?>>`.
+
+TIP: Xem {url-spring-pulsar-docs}[reference documentation] để biết thêm component và feature.
+
+[[messaging.pulsar.transactions]]
+== Transaction Support
+
+Spring for Apache Pulsar hỗ trợ transaction khi dùng javadoc:org.springframework.pulsar.core.PulsarTemplate[] và javadoc:org.springframework.pulsar.annotation.PulsarListener[format=annotation].
+
+Đặt configprop:spring.pulsar.transaction.enabled[] thành `true` sẽ:
+
+* Configure bean javadoc:org.springframework.pulsar.transaction.PulsarTransactionManager[]
+* Enable transaction support cho PulsarTemplate
+* Enable transaction support cho method PulsarListener
+
+Attribute `transactional` của javadoc:org.springframework.pulsar.annotation.PulsarListener[format=annotation] có thể dùng fine-tune khi nào transaction được dùng.
+
+Để kiểm soát transaction feature nhiều hơn, tự định nghĩa bean javadoc:org.springframework.pulsar.core.PulsarTemplate[] và/hoặc javadoc:org.springframework.pulsar.config.ConcurrentPulsarListenerContainerFactory[].
+Cũng có thể định nghĩa bean javadoc:org.springframework.pulsar.transaction.PulsarAwareTransactionManager[] nếu default PulsarTransactionManager không phù hợp.
+
+[[messaging.pulsar.additional-properties]]
+== Pulsar Property bổ sung
+
+Property được auto-configuration hỗ trợ nằm trong xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties].
+Phần lớn property map trực tiếp tới Apache Pulsar configuration property.
+
+Chỉ subset property được expose trực tiếp qua javadoc:org.springframework.boot.pulsar.autoconfigure.PulsarProperties[].
+Nếu muốn tune auto-configured component với property khác, dùng customizer tương ứng của từng component.

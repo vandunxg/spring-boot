@@ -1,0 +1,132 @@
+[[packaging.native-image.introducing-graalvm-native-images]]
+= Giới thiệu GraalVM Native Images
+
+GraalVM Native Images cung cấp cách mới để deploy và chạy Java application.
+So với Java Virtual Machine, native image có thể chạy với memory footprint nhỏ hơn và startup time nhanh hơn nhiều.
+
+Chúng phù hợp với application deploy bằng container image và đặc biệt đáng chú ý khi kết hợp platform "Function as a service" (FaaS).
+
+Khác application truyền thống viết cho JVM, GraalVM Native Image application cần ahead-of-time processing để tạo executable.
+Quá trình này statically analyze application code từ main entry point.
+
+GraalVM Native Image là platform-specific executable hoàn chỉnh.
+Không cần ship Java Virtual Machine để chạy native image.
+
+TIP: Nếu chỉ muốn bắt đầu và thử GraalVM, có thể chuyển tới xref:how-to:native-image/developing-your-first-application.adoc[] rồi quay lại phần này sau.
+
+[[packaging.native-image.introducing-graalvm-native-images.key-differences-with-jvm-deployments]]
+== Khác biệt chính với JVM Deployment
+
+GraalVM Native Image được tạo ahead-of-time nên có một số khác biệt quan trọng so với application dựa trên JVM:
+
+* Static analysis application được thực hiện ở build-time từ entry point `main`.
+* Code không reachable khi native image được tạo sẽ bị remove và không nằm trong executable.
+* GraalVM không trực tiếp nhận biết dynamic element trong code và phải được cung cấp thông tin về reflection, resource, serialization và dynamic proxy.
+* Application classpath cố định ở build time và không thể thay đổi.
+* Không có lazy class loading; mọi thứ ship trong executable sẽ load vào memory khi startup.
+* Một số aspect của Java application chưa được hỗ trợ đầy đủ.
+
+Ngoài các khác biệt đó, Spring dùng process gọi là xref:packaging/native-image/introducing-graalvm-native-images.adoc#packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing[Spring Ahead-of-Time processing], tạo thêm hạn chế.
+Hãy đọc ít nhất phần đầu của section tiếp theo.
+
+TIP: Phần {url-graal-docs-native-image}/metadata/Compatibility/[Native Image Compatibility Guide] trong GraalVM reference documentation mô tả chi tiết hơn về limitation của GraalVM.
+
+[[packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing]]
+== Hiểu Spring Ahead-of-Time Processing
+
+Spring Boot application điển hình khá dynamic và configuration diễn ra tại runtime.
+Thực tế, concept Spring Boot auto-configuration phụ thuộc nhiều vào việc phản ứng với runtime state để configure chính xác.
+
+Có thể nói cho GraalVM biết các dynamic aspect này, nhưng như vậy sẽ làm mất phần lớn lợi ích static analysis.
+Vì vậy khi dùng Spring Boot tạo native image, closed-world assumption được áp dụng và dynamic aspect bị hạn chế.
+
+Ngoài xref:packaging/native-image/introducing-graalvm-native-images.adoc#packaging.native-image.introducing-graalvm-native-images.key-differences-with-jvm-deployments[limitation do GraalVM], closed-world assumption tạo các restriction:
+
+* Bean định nghĩa trong application không thể thay đổi runtime, nghĩa là:
+- Annotation Spring javadoc:org.springframework.context.annotation.Profile[format=annotation] và profile-specific configuration xref:how-to:aot.adoc#howto.aot.conditions[có hạn chế].
+- Property thay đổi việc bean có được tạo hay không không được hỗ trợ, ví dụ javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnProperty[format=annotation] và property `.enabled`.
+
+Khi các restriction này tồn tại, Spring có thể perform ahead-of-time processing ở build-time và generate asset bổ sung để GraalVM dùng.
+Spring AOT processed application thường generate:
+
+* Java source code
+* Bytecode (cho dynamic proxy, v.v.)
+* GraalVM JSON hint file trong `+META-INF/native-image/{groupId}/{artifactId}/+`:
+ - Resource hint (`resource-config.json`)
+ - Reflection hint (`reflect-config.json`)
+ - Serialization hint (`serialization-config.json`)
+ - Java Proxy Hint (`proxy-config.json`)
+ - JNI Hint (`jni-config.json`)
+
+Nếu generated hint chưa đủ, có thể xref:packaging/native-image/advanced-topics.adoc#packaging.native-image.advanced.custom-hints[cung cấp hint riêng].
+
+[[packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing.source-code-generation]]
+=== Source Code Generation
+
+Spring application gồm các Spring Bean.
+Bên trong, Spring Framework dùng hai concept khác nhau để manage bean.
+Bean instance là actual instance đã được tạo và có thể inject vào bean khác.
+Bean definition dùng định nghĩa attribute của bean và cách instance được tạo.
+
+Ví dụ javadoc:org.springframework.context.annotation.Configuration[format=annotation] class:
+
+include-code::MyConfiguration[]
+
+Bean definition được tạo bằng cách parse class javadoc:org.springframework.context.annotation.Configuration[format=annotation] và tìm method javadoc:org.springframework.context.annotation.Bean[format=annotation].
+Trong ví dụ trên, một javadoc:org.springframework.beans.factory.config.BeanDefinition[] được định nghĩa cho singleton bean tên `myBean`.
+Một BeanDefinition khác cũng được tạo cho class `MyConfiguration`.
+
+Khi cần instance `myBean`, Spring biết phải invoke method `myBean()` và dùng result.
+Khi chạy trên JVM, parsing Configuration class diễn ra lúc application start và Bean method được invoke bằng reflection.
+
+Khi tạo native image, Spring hoạt động khác.
+Thay vì parse Configuration class và generate bean definition runtime, Spring làm ở build-time.
+Sau khi bean definition được discover, chúng được process và convert thành source code GraalVM compiler có thể analyze.
+
+Spring AOT process sẽ convert configuration class ở trên thành code như:
+
+include-code::MyConfiguration__BeanDefinitions[]
+
+NOTE: Exact generated code có thể khác tùy bản chất bean definition.
+
+Generated code tạo equivalent bean definition với Configuration class nhưng theo cách trực tiếp GraalVM hiểu được.
+
+Có bean definition cho `myConfiguration` và một cho `myBean`.
+Khi cần instance `myBean`, javadoc:org.springframework.beans.factory.aot.BeanInstanceSupplier[] được gọi.
+Supplier invoke method `myBean()` trên bean `myConfiguration`.
+
+NOTE: Trong Spring AOT processing, application được start tới thời điểm bean definition available.
+Bean instance không được tạo trong AOT processing phase.
+
+Spring AOT generate code như vậy cho mọi bean definition.
+Nó cũng generate code khi cần bean post-processing, ví dụ gọi method javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation].
+Một javadoc:org.springframework.context.ApplicationContextInitializer[] cũng được generate và Spring Boot dùng để initialize javadoc:org.springframework.context.ApplicationContext[] khi AOT processed application thực sự chạy.
+
+TIP: Dù AOT generated source code có thể verbose, nó khá readable và hữu ích khi debug.
+Generated source nằm ở `target/spring-aot/main/sources` với Maven và `build/generated/aotSources` với Gradle.
+
+[[packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing.hint-file-generation]]
+=== Hint File Generation
+
+Ngoài source file, Spring AOT engine còn generate hint file cho GraalVM.
+Hint file chứa JSON data mô tả cách GraalVM xử lý những thứ không thể hiểu bằng cách inspect code trực tiếp.
+
+Ví dụ application dùng Spring annotation trên private method.
+Spring cần reflection để invoke private method, kể cả trên GraalVM.
+Trong trường hợp này Spring ghi reflection hint để GraalVM biết private method vẫn phải available trong native image dù không được gọi trực tiếp.
+
+Hint file được generate dưới `META-INF/native-image`, nơi GraalVM tự động pick up.
+
+TIP: Generated hint file nằm ở `target/spring-aot/main/resources` với Maven và `build/generated/aotResources` với Gradle.
+
+[[packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing.proxy-class-generation]]
+=== Proxy Class Generation
+
+Spring đôi khi cần generate proxy class để enhance code với feature bổ sung.
+Nó dùng library cglib để generate bytecode trực tiếp.
+
+Khi application chạy trên JVM, proxy class được generate dynamically trong runtime.
+Khi tạo native image, proxy phải được tạo ở build-time để GraalVM include.
+
+NOTE: Khác source code generation, generated bytecode không đặc biệt hữu ích khi debug.
+Nếu cần inspect content của file `.class` bằng tool như `javap`, chúng nằm ở `target/spring-aot/main/classes` với Maven và `build/generated/aotClasses` với Gradle.

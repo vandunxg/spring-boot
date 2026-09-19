@@ -1,0 +1,14 @@
+[[testing.spring-applications]]
+= Testing Spring Applications
+
+Một lợi ích lớn của dependency injection là giúp code dễ unit test hơn.
+Bạn có thể instantiate object bằng operator `new` mà không cần Spring.
+Bạn cũng có thể dùng _mock object_ thay cho dependency thật.
+
+Thường bạn cần vượt qua unit testing và bắt đầu integration testing (với Spring javadoc:org.springframework.context.ApplicationContext[]).
+Có thể thực hiện integration testing mà không cần deploy application hoặc kết nối infrastructure khác là rất hữu ích.
+
+Spring Framework có test module chuyên dụng cho integration testing.
+Bạn có thể khai báo dependency trực tiếp tới `org.springframework:spring-test` hoặc dùng starter `spring-boot-starter-test` để kéo dependency transitively.
+
+Nếu chưa từng dùng module `spring-test`, nên bắt đầu bằng {url-spring-framework-docs}/testing.html[phần liên quan] trong Spring Framework reference documentation.

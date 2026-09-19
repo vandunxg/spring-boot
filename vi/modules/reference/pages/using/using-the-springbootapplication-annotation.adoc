@@ -1,0 +1,24 @@
+[[using.using-the-springbootapplication-annotation]]
+= Sử dụng annotation @SpringBootApplication
+
+Nhiều developer Spring Boot muốn ứng dụng sử dụng auto-configuration, component scan và cho phép định nghĩa thêm cấu hình trên "class ứng dụng".
+Một annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] duy nhất có thể bật cả ba tính năng đó, cụ thể:
+
+* javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation]: bật xref:using/auto-configuration.adoc[cơ chế auto-configuration của Spring Boot]
+* javadoc:org.springframework.context.annotation.ComponentScan[format=annotation]: bật scan javadoc:org.springframework.stereotype.Component[format=annotation] trong package chứa ứng dụng (xem xref:using/structuring-your-code.adoc[các best practice])
+* javadoc:org.springframework.boot.SpringBootConfiguration[format=annotation]: cho phép đăng ký thêm bean trong context hoặc import thêm class cấu hình.
+Đây là phương án thay thế javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn của Spring, giúp xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[phát hiện cấu hình] trong integration test.
+
+include-code::springapplication/MyApplication[]
+
+NOTE: javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] cũng cung cấp alias để tùy chỉnh các thuộc tính của javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation].
+
+[NOTE]
+====
+Không tính năng nào trong số này là bắt buộc; bạn có thể thay annotation duy nhất này bằng bất kỳ tính năng nào mà nó bật.
+Ví dụ, bạn có thể không muốn sử dụng component scan hoặc configuration properties scan trong ứng dụng:
+
+include-code::individualannotations/MyApplication[]
+
+Trong ví dụ này, `MyApplication` giống mọi ứng dụng Spring Boot khác, ngoại trừ các class được gắn javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] không được phát hiện tự động, còn bean do người dùng định nghĩa được import tường minh (xem javadoc:org.springframework.context.annotation.Import[format=annotation]).
+====

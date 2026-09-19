@@ -1,0 +1,199 @@
+[[howto.logging]]
+= Logging
+
+Spring Boot không có mandatory logging dependency, ngoại trừ Commons Logging API, thường được cung cấp bởi module `spring-jcl` của Spring Framework.
+Để dùng https://logback.qos.ch[Logback], cần include nó và `spring-jcl` trên classpath.
+Cách được khuyến nghị là thông qua starter, vì tất cả starter đều depend vào `spring-boot-starter-logging`.
+Với web application, chỉ cần `spring-boot-starter-web` vì nó transitively depend vào logging starter.
+Nếu dùng Maven, dependency sau thêm logging:
+
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+----
+
+Spring Boot có abstraction javadoc:org.springframework.boot.logging.LoggingSystem[] cố configure logging dựa trên content classpath.
+Nếu Logback available, đó là lựa chọn đầu tiên.
+
+Nếu thay đổi duy nhất cần thực hiện là set level của các logger, có thể làm trong `application.properties` bằng prefix "logging.level":
+
+[configprops,yaml]
+----
+logging:
+  level:
+    org.springframework.web: "debug"
+    org.hibernate: "error"
+----
+
+Cũng có thể set location của file nơi log được ghi, ngoài console, bằng `logging.file.name`.
+
+Để configure fine-grained setting hơn cho logging system, cần dùng native configuration format được javadoc:org.springframework.boot.logging.LoggingSystem[] tương ứng hỗ trợ.
+Mặc định Spring Boot lấy native configuration từ default location của system, ví dụ `classpath:logback.xml` cho Logback, nhưng có thể set location config file bằng configprop:logging.config[].
+
+[[howto.logging.logback]]
+== Configure Logback cho Logging
+
+Nếu cần apply customization cho Logback ngoài những gì có thể làm bằng `application.properties`, cần thêm standard Logback configuration file.
+Có thể thêm file `logback.xml` vào root classpath để Logback tìm thấy.
+Cũng có thể dùng `logback-spring.xml` nếu muốn dùng xref:reference:features/logging.adoc#features.logging.logback-extensions[] của Spring Boot.
+
+TIP: Logback documentation có https://logback.qos.ch/manual/configuration.html[section riêng về configuration] khá chi tiết.
+
+Spring Boot cung cấp một số Logback configuration có thể `include` trong configuration riêng.
+Các include này được thiết kế để cho phép re-apply một số common Spring Boot convention.
+
+Các file sau được cung cấp dưới `org/springframework/boot/logging/logback/`:
+
+* `defaults.xml` - Cung cấp conversion rule, pattern property và common logger configuration.
+* `console-appender.xml` - Thêm javadoc:ch.qos.logback.core.ConsoleAppender[] dùng `CONSOLE_LOG_PATTERN`.
+* `structured-console-appender.xml` - Thêm javadoc:ch.qos.logback.core.ConsoleAppender[] dùng structured logging trong `CONSOLE_LOG_STRUCTURED_FORMAT`.
+* `file-appender.xml` - Thêm javadoc:ch.qos.logback.core.rolling.RollingFileAppender[] dùng `FILE_LOG_PATTERN` và `ROLLING_FILE_NAME_PATTERN` với setting phù hợp.
+* `structured-file-appender.xml` - Thêm javadoc:ch.qos.logback.core.rolling.RollingFileAppender[] dùng `ROLLING_FILE_NAME_PATTERN` với structured logging trong `FILE_LOG_STRUCTURED_FORMAT`.
+
+Ngoài ra có legacy file `base.xml` để compatibility với Spring Boot version trước.
+
+Typical custom `logback.xml`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</root>
+	<logger name="org.springframework.web" level="DEBUG"/>
+</configuration>
+----
+
+Logback configuration file cũng có thể dùng các System property mà javadoc:org.springframework.boot.logging.LoggingSystem[] tạo cho bạn:
+
+* `${PID}`: Current process ID.
+* `${LOG_FILE}`: Cho biết `logging.file.name` có được set trong external configuration của Boot hay không.
+* `${LOG_PATH}`: Cho biết `logging.file.path`, đại diện directory chứa log file, có được set trong external configuration hay không.
+* `${LOG_EXCEPTION_CONVERSION_WORD}`: Cho biết `logging.exception-conversion-word` có được set hay không.
+* `${ROLLING_FILE_NAME_PATTERN}`: Cho biết `logging.pattern.rolling-file-name` có được set hay không.
+
+Spring Boot cũng cung cấp ANSI color terminal output trên console, nhưng không trong log file, bằng custom Logback converter.
+Xem `CONSOLE_LOG_PATTERN` trong configuration `defaults.xml` để biết ví dụ.
+
+Nếu Groovy có trên classpath, có thể configure Logback bằng `logback.groovy`.
+Nếu có, setting này được ưu tiên.
+
+NOTE: Spring extension không được hỗ trợ với Groovy configuration.
+File `logback-spring.groovy` sẽ không được detect.
+
+[[howto.logging.logback.file-only-output]]
+=== Configure Logback chỉ Output ra File
+
+Nếu muốn disable console logging và chỉ write output vào file, cần custom `logback-spring.xml` import `file-appender.xml` nhưng không import `console-appender.xml`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+	<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
+	<include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+	<root level="INFO">
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>
+----
+
+Cũng cần thêm `logging.file.name` vào `application.properties` hoặc `application.yaml`:
+
+[configprops,yaml]
+----
+logging:
+  file:
+    name: "myapplication.log"
+----
+
+[[howto.logging.log4j]]
+== Configure Log4j cho Logging
+
+Spring Boot hỗ trợ https://logging.apache.org/log4j/2.x/[Log4j 2] cho logging configuration nếu nó có trên classpath.
+Nếu dùng starter để assemble dependency, cần exclude Logback rồi include Log4j 2 thay thế.
+Nếu không dùng starter, cần cung cấp ít nhất `spring-jcl` ngoài Log4j 2.
+
+Cách khuyến nghị là thông qua starter dù cần điều chỉnh một chút.
+Ví dụ Maven:
+
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter</artifactId>
+	<exclusions>
+		<exclusion>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-logging</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-log4j2</artifactId>
+</dependency>
+----
+
+Gradle có nhiều cách setup starter.
+Một cách là dùng {url-gradle-docs}/resolution_rules.html#sec:module-replacement[module replacement].
+Khai báo dependency tới Log4j 2 starter và nói Gradle replace mọi occurrence của default logging starter bằng Log4j 2 starter:
+
+[source,gradle]
+----
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter-log4j2"
+	modules {
+		module("org.springframework.boot:spring-boot-starter-logging") {
+			replacedBy("org.springframework.boot:spring-boot-starter-log4j2", "Use Log4j2 instead of Logback")
+		}
+	}
+}
+----
+
+NOTE: Log4j starter tập hợp dependency cho common logging requirement, ví dụ Tomcat dùng `java.util.logging` nhưng output được configure bằng Log4j 2.
+
+NOTE: Để đảm bảo debug logging thực hiện bằng `java.util.logging` được route vào Log4j 2, configure https://logging.apache.org/log4j/2.x/log4j-jul.html[JDK logging adapter] bằng cách set system property `java.util.logging.manager` thành `org.apache.logging.log4j.jul.LogManager`.
+
+[[howto.logging.log4j.yaml-or-json-config]]
+=== Dùng YAML hoặc JSON để Configure Log4j 2
+
+Ngoài default XML configuration format, Log4j 2 cũng hỗ trợ YAML và JSON configuration file.
+Để configure Log4j 2 dùng alternative format, thêm dependency phù hợp vào classpath và đặt tên configuration file theo format đã chọn:
+
+[cols="10,75a,15a"]
+|===
+| Format | Dependencies | File names
+
+|YAML
+| `com.fasterxml.jackson.core:jackson-databind` + `com.fasterxml.jackson.dataformat:jackson-dataformat-yaml`
+| `log4j2.yaml` + `log4j2.yml`
+
+|JSON
+| `com.fasterxml.jackson.core:jackson-databind`
+| `log4j2.json` + `log4j2.jsn`
+|===
+
+[[howto.logging.log4j.composite-configuration]]
+=== Dùng Composite Configuration để Configure Log4j 2
+
+Log4j 2 hỗ trợ combine nhiều configuration file thành một composite configuration.
+Để dùng support này trong Spring Boot, configure configprop:logging.log4j2.config.override[] bằng location của một hoặc nhiều secondary configuration file.
+Secondary configuration file được merge với primary configuration, bất kể source của primary là default của Spring Boot, standard location như `log4j.xml`, hay location configure bởi configprop:logging.config[].
+
+[NOTE]
+====
+Location của Log4j2 override configuration file có thể prefix bằng `optional:`.
+Ví dụ `optional:classpath:log4j2-override.xml` nghĩa là `log4j2-override.xml` chỉ được load nếu resource tồn tại.
+====

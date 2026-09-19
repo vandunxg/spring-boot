@@ -1,0 +1,56 @@
+[[io.quartz]]
+= Quartz Scheduler
+
+Spring Boot cung cấp nhiều tiện ích khi làm việc với https://www.quartz-scheduler.org/[Quartz scheduler], gồm starter `spring-boot-starter-quartz`.
+Nếu Quartz có sẵn, javadoc:org.quartz.Scheduler[] được auto-configure thông qua abstraction javadoc:org.springframework.scheduling.quartz.SchedulerFactoryBean[].
+
+Bean thuộc các type sau tự động được phát hiện và liên kết với javadoc:org.quartz.Scheduler[]:
+
+* javadoc:org.quartz.JobDetail[]: định nghĩa một Job cụ thể.
+  Instance javadoc:org.quartz.JobDetail[] có thể được tạo bằng API javadoc:org.quartz.JobBuilder[].
+* javadoc:org.quartz.Calendar[].
+* javadoc:org.quartz.Trigger[]: định nghĩa thời điểm một job cụ thể được trigger.
+
+Mặc định dùng in-memory javadoc:org.quartz.spi.JobStore[].
+Tuy nhiên có thể cấu hình JDBC-based store nếu application có bean javadoc:javax.sql.DataSource[] và configprop:spring.quartz.job-store-type[] được cấu hình phù hợp:
+
+[configprops,yaml]
+----
+spring:
+  quartz:
+    job-store-type: "jdbc"
+----
+
+Khi dùng JDBC store, schema có thể được initialize khi startup:
+
+[configprops,yaml]
+----
+spring:
+  quartz:
+    jdbc:
+      initialize-schema: "always"
+----
+
+WARNING: Mặc định database được detect và initialize bằng standard script từ Quartz library.
+Các script này drop table hiện có, xóa toàn bộ trigger sau mỗi restart.
+Để dùng custom script, đặt configprop:spring.quartz.jdbc.schema[].
+Một số standard script như SQL Server, Azure SQL và Sybase không thể dùng nếu chưa chỉnh sửa.
+Trong trường hợp này, copy script, chỉnh theo comment trong script rồi đặt configprop:spring.quartz.jdbc.schema[] để dùng custom script.
+
+Để Quartz dùng javadoc:javax.sql.DataSource[] khác DataSource chính của application, khai báo bean javadoc:javax.sql.DataSource[] và annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.quartz.autoconfigure.QuartzDataSource[format=annotation].
+Điều này đảm bảo Quartz-specific DataSource được dùng bởi cả javadoc:org.springframework.scheduling.quartz.SchedulerFactoryBean[] và schema initialization.
+Tương tự, để Quartz dùng javadoc:org.springframework.transaction.TransactionManager[] khác transaction manager chính, khai báo bean và annotate method bằng javadoc:org.springframework.boot.quartz.autoconfigure.QuartzTransactionManager[format=annotation].
+
+Mặc định job tạo bởi configuration không overwrite job đã register được đọc từ persistent job store.
+Để cho phép overwrite existing job definition, đặt configprop:spring.quartz.overwrite-existing-jobs[].
+
+Quartz Scheduler có thể customize bằng property `spring.quartz` và bean javadoc:org.springframework.boot.quartz.autoconfigure.SchedulerFactoryBeanCustomizer[].
+Advanced Quartz property có thể customize bằng `spring.quartz.properties.*`.
+
+NOTE: Cụ thể, bean javadoc:java.util.concurrent.Executor[] không tự liên kết với scheduler vì Quartz cho phép cấu hình scheduler qua `spring.quartz.properties`.
+Nếu cần customize task executor, cân nhắc implement javadoc:org.springframework.boot.quartz.autoconfigure.SchedulerFactoryBeanCustomizer[].
+
+Job có thể định nghĩa setter để inject data map property.
+Regular bean cũng có thể inject tương tự:
+
+include-code::MySampleJob[]

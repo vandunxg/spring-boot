@@ -1,0 +1,362 @@
+[[packaging-executable]]
+= Packaging Executable Archives
+
+Plugin có thể tạo executable archive (jar file và war file) chứa mọi dependency của application và có thể chạy bằng `java -jar`.
+
+[[packaging-executable.jars]]
+== Packaging Executable Jars
+
+Executable jar có thể build bằng task `bootJar`.
+Task tự động được tạo khi `java` plugin apply và là instance {apiref-gradle-plugin-boot-jar}[`BootJar`].
+Task `assemble` tự động configure depend vào `bootJar` nên chạy `assemble` hoặc `build` cũng chạy `bootJar`.
+
+[[packaging-executable.wars]]
+== Packaging Executable Wars
+
+Executable war có thể build bằng task `bootWar`.
+Task tự động tạo khi `war` plugin apply và là instance {apiref-gradle-plugin-boot-war}[`BootWar`].
+Task `assemble` tự động configure depend vào `bootWar` nên chạy `assemble` hoặc `build` cũng chạy `bootWar`.
+
+[[packaging-executable.wars.deployable]]
+=== Packaging Executable và Deployable Wars
+
+War file có thể package để vừa execute bằng `java -jar` vừa deploy lên external container.
+Để làm vậy, embedded servlet container runtime nên add vào configuration `providedRuntime`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/war-container-dependency.gradle[tags=dependencies]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/war-container-dependency.gradle.kts[tags=dependencies]
+----
+======
+
+Điều này đảm bảo runtime jar package trong directory `WEB-INF/lib-provided` của war, nơi chúng không conflict với class của external container.
+
+NOTE: `providedRuntime` được ưu tiên hơn configuration `compileOnly` của Gradle vì, trong các limitation khác, dependency `compileOnly` không ở test classpath nên web-based integration test sẽ fail.
+
+[[packaging-executable.and-plain-archives]]
+== Packaging Executable và Plain Archives
+
+Mặc định khi task `bootJar` hoặc `bootWar` configure, task `jar` hoặc `war` configure dùng `plain` làm convention archive classifier.
+Điều này đảm bảo `bootJar` và `jar` hoặc `bootWar` và `war` có output location khác nhau, cho phép build cả executable archive và plain archive cùng lúc.
+
+Nếu muốn executable archive dùng classifier thay vì plain archive, configure classifier:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-and-jar-classifiers.gradle[tags=classifiers]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-and-jar-classifiers.gradle.kts[tags=classifiers]
+----
+======
+
+Nếu không muốn build plain archive, disable task:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/only-boot-jar.gradle[tags=disable-jar]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/only-boot-jar.gradle.kts[tags=disable-jar]
+----
+======
+
+WARNING: Không disable task `jar` khi tạo native image.
+Xem https://github.com/spring-projects/spring-boot/issues/33238[#33238].
+
+[[packaging-executable.configuring]]
+== Configuring Executable Archive Packaging
+
+Task {apiref-gradle-plugin-boot-jar}[`BootJar`] và {apiref-gradle-plugin-boot-war}[`BootWar`] lần lượt là subclass của task `Jar` và `War` của Gradle.
+Do đó mọi standard configuration option available khi package jar/war cũng available khi package executable jar/war.
+Ngoài ra có các configuration option riêng cho executable jar/war.
+
+[[packaging-executable.configuring.main-class]]
+=== Configure Main Class
+
+Mặc định main class của executable archive tự động configure bằng cách tìm class có method `public static void main(String[])` trong output main source set.
+
+Main class có thể explicit configure bằng property `mainClass` của task:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-main-class.gradle[tags=main-class]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-main-class.gradle.kts[tags=main-class]
+----
+======
+
+Ngoài ra main class name có thể configure project-wide bằng property `mainClass` của Spring Boot DSL:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/spring-boot-dsl-main-class.gradle[tags=main-class]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/spring-boot-dsl-main-class.gradle.kts[tags=main-class]
+----
+======
+
+Nếu {url-gradle-docs-application-plugin}[`application` plugin] được apply, property `mainClass` của nó phải configure và có thể dùng cùng mục đích:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/application-plugin-main-class.gradle[tags=main-class]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/application-plugin-main-class.gradle.kts[tags=main-class]
+----
+======
+
+Cuối cùng attribute `Start-Class` có thể configure trong manifest của task:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-manifest-main-class.gradle[tags=main-class]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-manifest-main-class.gradle.kts[tags=main-class]
+----
+======
+
+NOTE: Nếu main class viết bằng Kotlin, dùng name của generated Java class.
+Mặc định là Kotlin class name thêm suffix `Kt`.
+Ví dụ `ExampleApplication` thành `ExampleApplicationKt`.
+Nếu define name khác bằng `@JvmName` thì dùng name đó.
+
+[[packaging-executable.configuring.including-development-only-dependencies]]
+=== Include Development-only Dependencies
+
+Mặc định mọi dependency declare trong configuration `developmentOnly` bị exclude khỏi executable jar/war.
+
+Nếu muốn include dependency trong `developmentOnly` vào archive, configure classpath task include configuration đó:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-war-include-devtools.gradle[tags=include-devtools]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-war-include-devtools.gradle.kts[tags=include-devtools]
+----
+======
+
+[[packaging-executable.configuring.unpacking]]
+=== Configure Libraries cần Unpacking
+
+Phần lớn library có thể dùng trực tiếp khi nested trong executable archive, nhưng một số library có problem.
+Ví dụ JRuby có nested jar support riêng và assume `jruby-complete.jar` luôn directly available trên filesystem.
+
+Để xử lý problematic library, executable archive có thể configure unpack specific nested jar vào temporary directory khi archive chạy.
+Library cần unpack có thể identify bằng Ant-style pattern match absolute path của source jar file:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-requires-unpack.gradle[tags=requires-unpack]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-requires-unpack.gradle.kts[tags=requires-unpack]
+----
+======
+
+Để control nhiều hơn có thể dùng closure.
+Closure nhận `FileTreeElement` và trả `boolean` cho biết có cần unpack hay không.
+
+[[packaging-executable.configuring.properties-launcher]]
+=== Dùng PropertiesLauncher
+
+Để dùng `PropertiesLauncher` launch executable jar/war, configure task manifest set attribute `Main-Class`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-war-properties-launcher.gradle[tags=properties-launcher]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-war-properties-launcher.gradle.kts[tags=properties-launcher]
+----
+======
+
+[[packaging-executable.configuring.layered-archives]]
+=== Packaging Layered Jar hoặc War
+
+Mặc định task `bootJar` build archive chứa application class và dependency lần lượt trong `BOOT-INF/classes` và `BOOT-INF/lib`.
+Tương tự `bootWar` build archive chứa application class trong `WEB-INF/classes` và dependency trong `WEB-INF/lib` và `WEB-INF/lib-provided`.
+Khi cần build Docker image từ content jar, hữu ích khi tách các directory này thêm để write vào distinct layer.
+
+Layered jar dùng cùng layout với regular boot packaged jar nhưng include additional metadata file mô tả từng layer.
+
+Mặc định các layer sau được define:
+
+* `dependencies` cho non-project dependency có version không chứa `SNAPSHOT`.
+* `spring-boot-loader` cho jar loader class.
+* `snapshot-dependencies` cho non-project dependency có version chứa `SNAPSHOT`.
+* `application` cho project dependency, application class và resource.
+
+Order layer quan trọng vì determine khả năng previous layer được cache khi application change.
+Default order là `dependencies`, `spring-boot-loader`, `snapshot-dependencies`, `application`.
+Content ít khả năng change nên add trước, sau đó layer dễ change hơn.
+
+Để disable feature:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-layered-disabled.gradle[tags=layered]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-layered-disabled.gradle.kts[tags=layered]
+----
+======
+
+Khi layered jar/war được tạo, jar `spring-boot-jarmode-tools` được add làm dependency vào archive.
+Với jar trên classpath, application có thể launch ở special mode để bootstrap code chạy thứ hoàn toàn khác application, ví dụ extract layer.
+Nếu muốn exclude dependency:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-layered-exclude-tools.gradle[tags=layered]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-layered-exclude-tools.gradle.kts[tags=layered]
+----
+======
+
+[[packaging-executable.configuring.layered-archives.configuration]]
+==== Custom Layers Configuration
+
+Tùy application, có thể muốn tune cách layer tạo và thêm layer mới.
+
+Có thể làm bằng configuration mô tả cách jar/war tách thành layer và order layer.
+Ví dụ explicit define default ordering:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-layered-custom.gradle[tags=layered]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-jar-layered-custom.gradle.kts[tags=layered]
+----
+======
+
+DSL `layered` define bằng ba phần:
+
+* Closure `application` define cách application class/resource layer.
+* Closure `dependencies` define cách dependency layer.
+* Method `layerOrder` define order layer write.
+
+Nested closure `intoLayer` dùng trong section `application` và `dependencies` để claim content cho layer.
+Closure evaluate theo order define từ trên xuống.
+Content chưa được closure trước claim vẫn available cho closure sau.
+
+Closure `intoLayer` claim content bằng nested call `include` và `exclude`.
+Closure `application` dùng Ant-style path matching cho include/exclude parameter.
+Section `dependencies` dùng pattern `group:artifact[:version]`.
+Nó cũng có method `includeProjectDependencies()` và `excludeProjectDependencies()` để include/exclude project dependency.
+
+Nếu không gọi `include`, mọi content chưa được closure trước claim được xét.
+
+Nếu không gọi `exclude`, không apply exclusion.
+
+Trong closure `dependencies` của ví dụ trên, `intoLayer` đầu claim mọi project dependency cho layer `application`.
+`intoLayer` tiếp theo claim mọi SNAPSHOT dependency cho layer `snapshot-dependencies`.
+`intoLayer` thứ ba và cuối claim mọi thứ còn lại, tức dependency không phải project dependency hoặc SNAPSHOT, cho layer `dependencies`.
+
+Closure `application` có rule tương tự.
+Đầu tiên claim content `org/springframework/boot/loader/**` cho layer `spring-boot-loader`.
+Sau đó claim class/resource còn lại cho layer `application`.
+
+NOTE: Order closure `intoLayer` được add thường khác order layer write.
+Vì vậy method `layerOrder` luôn phải được gọi và _phải_ cover mọi layer reference bởi call `intoLayer`.

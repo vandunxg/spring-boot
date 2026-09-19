@@ -1,0 +1,155 @@
+:navtitle: Tài liệu
+[[documentation]]
+= Tổng quan tài liệu
+
+Phần này giới thiệu ngắn gọn về tài liệu tham khảo Spring Boot.
+Đây là bản đồ giúp bạn định hướng trong phần còn lại của tài liệu.
+
+
+
+[[documentation.first-steps]]
+== Những bước đầu tiên
+
+Nếu bạn mới bắt đầu với Spring Boot hoặc 'Spring' nói chung, hãy bắt đầu với các chủ đề sau:
+
+* *Từ đầu:* xref:index.adoc[Tổng quan] | xref:system-requirements.adoc[Yêu cầu] | xref:installing.adoc[Cài đặt]
+* *Hướng dẫn:* xref:tutorial:first-application/index.adoc[Phần 1] | xref:tutorial:first-application/index.adoc#getting-started.first-application.code[Phần 2]
+* *Chạy ví dụ:* xref:tutorial:first-application/index.adoc#getting-started.first-application.run[Phần 1] | xref:tutorial:first-application/index.adoc#getting-started.first-application.executable-jar[Phần 2]
+
+
+
+[[documentation.upgrading]]
+== Nâng cấp từ phiên bản cũ
+
+Bạn nên luôn bảo đảm đang chạy một {url-github-wiki}/Supported-Versions[phiên bản được hỗ trợ] của Spring Boot.
+
+Tùy phiên bản cần nâng cấp lên, bạn có thể tìm thêm hướng dẫn tại đây:
+
+* *Từ 1.x lên 2.x:* xref:upgrading.adoc#upgrading.from-1x[Nâng cấp từ 1.x]
+* *Từ 2.x:* xref:upgrading.adoc#upgrading.from-2x[Nâng cấp từ 2.x]
+* *Từ 3.x:* xref:upgrading.adoc#upgrading.from-3x[Nâng cấp từ 3.x]
+* *Lên bản phát hành tính năng mới:* xref:upgrading.adoc#upgrading.to-feature[Nâng cấp lên bản phát hành tính năng mới]
+* *Spring Boot CLI:* xref:upgrading.adoc#upgrading.cli[Nâng cấp Spring Boot CLI]
+
+
+
+[[documentation.using]]
+== Phát triển với Spring Boot
+
+Bạn đã sẵn sàng bắt đầu sử dụng Spring Boot? xref:reference:using/index.adoc[Hãy xem các nội dung sau]:
+
+* *Build system:* xref:reference:using/build-systems.adoc#using.build-systems.maven[Maven] | xref:reference:using/build-systems.adoc#using.build-systems.gradle[Gradle] | xref:reference:using/build-systems.adoc#using.build-systems.ant[Ant] | xref:reference:using/build-systems.adoc#using.build-systems.starters[Starter]
+* *Best practice:* xref:reference:using/structuring-your-code.adoc[Cấu trúc code] | xref:reference:using/configuration-classes.adoc[@Configuration] | xref:reference:using/auto-configuration.adoc[@EnableAutoConfiguration] | xref:reference:using/spring-beans-and-dependency-injection.adoc[Bean và dependency injection]
+* *Chạy code:* xref:reference:using/running-your-application.adoc#using.running-your-application.from-an-ide[IDE] | xref:reference:using/running-your-application.adoc#using.running-your-application.as-a-packaged-application[Ứng dụng đã đóng gói] | xref:reference:using/running-your-application.adoc#using.running-your-application.with-the-maven-plugin[Maven] | xref:reference:using/running-your-application.adoc#using.running-your-application.with-the-gradle-plugin[Gradle]
+* *Đóng gói ứng dụng:* xref:reference:using/packaging-for-production.adoc[Jar cho production]
+* *Spring Boot CLI:* xref:cli:index.adoc[Sử dụng CLI]
+
+
+
+[[documentation.features]]
+== Tìm hiểu các tính năng của Spring Boot
+
+Bạn cần thêm chi tiết về các tính năng cốt lõi của Spring Boot?
+xref:reference:features/index.adoc[Các nội dung sau dành cho bạn]:
+
+* *Spring Application:* xref:reference:features/spring-application.adoc[SpringApplication]
+* *External Configuration:* xref:reference:features/external-config.adoc[External Configuration]
+* *Profile:* xref:reference:features/profiles.adoc[Profile]
+* *Logging:* xref:reference:features/logging.adoc[Logging]
+
+
+
+[[documentation.web]]
+== Web
+
+Nếu bạn phát triển ứng dụng web Spring Boot, hãy xem các nội dung sau:
+
+* *Ứng dụng web Servlet:* xref:reference:web/servlet.adoc[Spring MVC, Jersey, Embedded Servlet Container]
+* *Ứng dụng web reactive:* xref:reference:web/reactive.adoc[Spring Webflux, Embedded Servlet Container]
+* *Graceful Shutdown:* xref:reference:web/graceful-shutdown.adoc[Graceful Shutdown]
+* *Spring Security:* xref:reference:web/spring-security.adoc[Cấu hình security mặc định, auto-configuration cho OAuth2, SAML]
+* *Spring Session:* xref:reference:web/spring-session.adoc[Auto-configuration cho Spring Session]
+* *Spring HATEOAS:* xref:reference:web/spring-hateoas.adoc[Auto-configuration cho Spring HATEOAS]
+
+
+
+[[documentation.data]]
+== Dữ liệu
+
+Nếu ứng dụng làm việc với datastore, bạn có thể tìm cách cấu hình tại đây:
+
+* *SQL:* xref:reference:data/sql.adoc[Cấu hình SQL Datastore, hỗ trợ Embedded Database, Connection Pool và nhiều nội dung khác.]
+* *NOSQL:* xref:reference:data/nosql.adoc[Auto-configuration cho các NOSQL store như Redis, MongoDB, Neo4j và các hệ thống khác.]
+
+
+
+[[documentation.messaging]]
+== Messaging
+
+Nếu ứng dụng sử dụng giao thức messaging, hãy xem một hoặc nhiều phần sau:
+
+* *JMS:* xref:reference:messaging/jms.adoc[Auto-configuration cho ActiveMQ và Artemis, gửi và nhận message qua JMS]
+* *AMQP:* xref:reference:messaging/amqp.adoc[Auto-configuration cho RabbitMQ]
+* *Kafka:* xref:reference:messaging/kafka.adoc[Auto-configuration cho Spring Kafka]
+* *Pulsar:* xref:reference:messaging/pulsar.adoc[Auto-configuration cho Spring for Apache Pulsar]
+* *RSocket:* xref:reference:messaging/rsocket.adoc[Auto-configuration cho phần hỗ trợ RSocket của Spring Framework]
+* *Spring Integration:* xref:reference:messaging/spring-integration.adoc[Auto-configuration cho Spring Integration]
+
+
+
+[[documentation.io]]
+== IO
+
+Nếu ứng dụng cần các khả năng IO, hãy xem một hoặc nhiều phần sau:
+
+* *Caching:* xref:reference:io/caching.adoc[Hỗ trợ caching với EhCache, Hazelcast, Infinispan và nhiều hệ thống khác]
+* *Quartz:* xref:reference:io/quartz.adoc[Scheduling với Quartz]
+* *Mail:* xref:reference:io/email.adoc[Gửi email]
+* *Validation:* xref:reference:io/validation.adoc[JSR-303 Validation]
+* *REST Client:* xref:reference:io/rest-client.adoc[Gọi REST Service bằng RestClient và WebClient]
+* *Webservice:* xref:reference:io/webservices.adoc[Auto-configuration cho Spring Web Services]
+* *JTA:* xref:reference:io/jta.adoc[Distributed Transaction với JTA]
+
+
+
+[[documentation.container-images]]
+== Container Image
+
+Spring Boot hỗ trợ đầy đủ việc build container image hiệu quả. Bạn có thể đọc thêm tại đây:
+
+* *Container Image hiệu quả:* xref:reference:packaging/container-images/efficient-images.adoc[Cách tối ưu container image như Docker image]
+* *Dockerfile:* xref:reference:packaging/container-images/dockerfiles.adoc[Build container image bằng Dockerfile]
+* *Cloud Native Buildpacks:* xref:reference:packaging/container-images/cloud-native-buildpacks.adoc[Hỗ trợ Cloud Native Buildpacks với Maven và Gradle]
+
+
+
+[[documentation.actuator]]
+== Đưa lên production
+
+Khi bạn sẵn sàng đưa ứng dụng Spring Boot lên production, chúng tôi có xref:how-to:actuator.adoc[một số cách làm] có thể hữu ích:
+
+* *Management endpoint:* xref:reference:actuator/endpoints.adoc[Tổng quan]
+* *Tùy chọn kết nối:* xref:reference:actuator/monitoring.adoc[HTTP] | xref:reference:actuator/jmx.adoc[JMX]
+* *Monitoring:* xref:reference:actuator/metrics.adoc[Metrics] | xref:reference:actuator/auditing.adoc[Auditing] | xref:reference:actuator/http-exchanges.adoc[HTTP Exchange] | xref:reference:actuator/process-monitoring.adoc[Process]
+
+
+
+[[documentation.packaging]]
+== Tối ưu cho production
+
+Ứng dụng Spring Boot có thể được tối ưu cho production bằng các công nghệ được mô tả trong những phần sau:
+
+* *Deploy hiệu quả:* xref:reference:packaging/efficient.adoc#packaging.efficient.unpacking[Giải nén Executable JAR]
+* *GraalVM Native Image:* xref:reference:packaging/native-image/introducing-graalvm-native-images.adoc[Giới thiệu] | xref:reference:packaging/native-image/advanced-topics.adoc[Chủ đề nâng cao] | xref:how-to:native-image/developing-your-first-application.adoc[Bắt đầu] | xref:how-to:native-image/testing-native-applications.adoc[Kiểm thử]
+* *AOT cache:* xref:reference:packaging/aot-cache.adoc[Tổng quan]
+* *Checkpoint và Restore* xref:reference:packaging/checkpoint-restore.adoc[Tổng quan]
+
+
+[[documentation.advanced]]
+== Chủ đề nâng cao
+
+Cuối cùng, chúng tôi có một số chủ đề dành cho người dùng có kinh nghiệm hơn:
+
+* *Deploy ứng dụng Spring Boot:* xref:how-to:deployment/cloud.adoc[Deploy lên Cloud] | xref:how-to:deployment/installing.adoc[OS Service]
+* *Build tool plugin:* xref:maven-plugin:index.adoc[Maven] | xref:gradle-plugin:index.adoc[Gradle]
+* *Phụ lục:* xref:appendix:application-properties/index.adoc[Application Property] | xref:specification:configuration-metadata/index.adoc[Configuration Metadata] | xref:appendix:auto-configuration-classes/index.adoc[Auto-configuration Class] | xref:appendix:test-auto-configuration/index.adoc[Annotation Test Auto-configuration] | xref:specification:executable-jar/index.adoc[Executable Jar] | xref:appendix:dependency-versions/index.adoc[Phiên bản dependency]

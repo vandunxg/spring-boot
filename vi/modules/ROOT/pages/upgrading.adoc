@@ -1,0 +1,62 @@
+[[upgrading]]
+= Nâng cấp Spring Boot
+
+Hướng dẫn nâng cấp từ các phiên bản Spring Boot trước được cung cấp trên {url-github-wiki}[wiki] của project.
+Theo các link trong phần {url-github-wiki}#release-notes[release notes] để tìm phiên bản bạn muốn nâng cấp lên.
+
+Hướng dẫn nâng cấp luôn là mục đầu tiên trong release notes.
+Nếu đang chậm hơn nhiều bản phát hành, hãy bảo đảm bạn cũng đọc release notes của những phiên bản đã bỏ qua.
+
+
+
+[[upgrading.from-1x]]
+== Nâng cấp từ 1.x
+
+Nếu nâng cấp từ Spring Boot `1.x`, hãy xem {url-github-wiki}/Spring-Boot-2.0-Migration-Guide[hướng dẫn migration] trên wiki của project để biết chi tiết cách nâng cấp lên Spring Boot 2.x.
+Cũng hãy xem {url-github-wiki}#release-notes[release notes] để biết các tính năng "`mới và đáng chú ý`" của từng bản phát hành.
+
+
+
+[[upgrading.from-2x]]
+== Nâng cấp từ 2.x
+
+Nếu nâng cấp từ Spring Boot `2.x`, hãy xem {url-github-wiki}/Spring-Boot-3.0-Migration-Guide[hướng dẫn migration] trên wiki của project để biết hướng dẫn nâng cấp chi tiết.
+Cũng hãy xem {url-github-wiki}#release-notes[release notes] để biết các tính năng "`mới và đáng chú ý`" của từng bản phát hành.
+
+
+
+[[upgrading.from-3x]]
+== Nâng cấp từ 3.x
+
+Nếu nâng cấp từ Spring Boot `3.x`, hãy xem {url-github-wiki}/Spring-Boot-4.0-Migration-Guide[hướng dẫn migration] trên wiki của project để biết hướng dẫn nâng cấp chi tiết.
+Cũng hãy xem {url-github-wiki}#release-notes[release notes] để biết các tính năng "`mới và đáng chú ý`" của từng bản phát hành.
+
+
+
+[[upgrading.to-feature]]
+== Nâng cấp lên bản phát hành tính năng mới
+
+Khi nâng cấp lên bản phát hành tính năng mới, một số property có thể đã được đổi tên hoặc loại bỏ.
+Spring Boot cung cấp cách phân tích environment của ứng dụng và in thông tin chẩn đoán khi khởi động, đồng thời tạm thời migration các property tại runtime cho bạn.
+Để bật tính năng đó, hãy thêm dependency sau vào project:
+
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-properties-migrator</artifactId>
+	<scope>runtime</scope>
+</dependency>
+----
+
+WARNING: Các property được thêm vào environment muộn, chẳng hạn khi dùng javadoc:org.springframework.context.annotation.PropertySource[format=annotation], sẽ không được xem xét.
+
+NOTE: Sau khi hoàn tất migration, hãy bảo đảm loại bỏ module này khỏi các dependency của project.
+
+
+
+[[upgrading.cli]]
+== Nâng cấp Spring Boot CLI
+
+Để nâng cấp bản cài CLI hiện có, hãy dùng lệnh phù hợp của package manager (ví dụ `brew upgrade`).
+Nếu cài CLI thủ công, hãy làm theo xref:installing.adoc#getting-started.installing.cli.manual-installation[hướng dẫn thông thường], nhớ cập nhật biến môi trường `PATH` để loại bỏ mọi tham chiếu tới phiên bản cũ.

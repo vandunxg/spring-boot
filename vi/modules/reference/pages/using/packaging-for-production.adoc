@@ -1,0 +1,9 @@
+[[using.packaging-for-production]]
+= Đóng gói ứng dụng cho production
+
+Khi ứng dụng Spring Boot đã sẵn sàng deploy lên production, bạn có nhiều lựa chọn để đóng gói và tối ưu
+ứng dụng.
+Xem phần xref:packaging/index.adoc[] trong tài liệu để tìm hiểu các tính năng này.
+
+Để có thêm các tính năng "sẵn sàng cho production" như health, auditing và REST hoặc JMX endpoint cho metric, hãy cân nhắc thêm `spring-boot-actuator`.
+Xem xref:how-to:actuator.adoc[] để biết chi tiết.

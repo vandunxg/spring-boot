@@ -1,0 +1,700 @@
+[[io.grpc]]
+= gRPC
+
+Google Remote Procedure Call (gRPC) là RPC framework hiệu năng cao cho phép client-server communication bằng binary message.
+Spring Boot hỗ trợ phát triển và test cả gRPC client application và server application.
+
+Underlying message format của gRPC là Protocol Buffers, cho phép message được tạo và consume bởi nhiều programming language.
+
+[[io.grpc.servicedefinitions]]
+== Service Definition
+
+Để phát triển gRPC application, trước tiên cần Protocol Buffers service definition file.
+File `.proto` định nghĩa service và message mà application có thể consume hoặc cung cấp.
+
+Ví dụ file `.proto` dùng https://protobuf.dev/programming-guides/proto3/[revision `proto3`] của Protocol Buffers:
+
+[,protobuf]
+----
+syntax = "proto3";
+
+option java_package = "com.example.grpc.proto";
+option java_multiple_files = true;
+
+service HelloWorld {
+    rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloReply {
+    string message = 1;
+}
+----
+
+File này định nghĩa service `HelloWorld` với một method nhận message `HelloRequest` và trả message `HelloReply`.
+`HelloRequest` có field string `name`.
+`HelloReply` có field string `message`.
+
+Ngoại trừ option `java_package` và `java_multiple_files`, không có gì trong file `.proto` dành riêng cho Java.
+
+[[io.grpc.servicedefinitions.generatingjavacode]]
+=== Generate Java Code
+
+Vì file `.proto` language-agnostic, cần process để convert chúng thành Java code có thể sử dụng.
+Generated code có thể dùng để gọi remote procedure trên service đang chạy hoặc implement service để client khác gọi.
+
+Process generate code phụ thuộc build system.
+Spring Boot hỗ trợ cả Maven và Gradle protobuf plugin, nhưng bạn có thể dùng solution phù hợp khác.
+
+[[io.grpc.servicedefinitions.generatingjavacode.maven]]
+==== Sử dụng Maven Plugin
+
+Spring Boot cung cấp dependency management cho Maven plugin `io.github.ascopes:protobuf-maven-plugin`.
+Nếu dùng POM `spring-boot-starter-parent`, bạn cũng có sensible configuration mặc định.
+
+Ví dụ Maven POM:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+    <parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>{version-spring-boot}</version>
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>myproject</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.github.ascopes</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+ifeval::["{build-and-artifact-release-type}" == "opensource-snapshot"]
+    <!-- you don't need this if you are using a release version -->
+    <repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+endif::[]
+</project>
+----
+
+Vì POM trên extend `spring-boot-starter-parent`, bạn nhận được:
+
+* Configuration version của `protoc`.
+* Configuration của plugin `binary-maven`.
+* Execution configuration cho goal `generate`.
+
+File `.proto` nên được thêm vào `src/main/proto`.
+
+TIP: Nếu không dùng `spring-boot-starter-parent` hoặc muốn cấu hình plugin trực tiếp, xem https://ascopes.github.io/protobuf-maven-plugin[protobuf-maven-plugin documentation].
+Nếu dùng dependency management của Spring Boot, property `\${protobuf-java.version}` và `\${grpc-java.version}` sẽ hữu ích.
+
+[[io.grpc.servicedefinitions.generatingjavacode.gradle]]
+==== Sử dụng Gradle Plugin
+
+Spring Boot cung cấp dependency management cho Gradle plugin `com.google.protobuf:protobuf-gradle-plugin`.
+Ngoài ra `spring-boot-gradle-plugin` phản ứng với protobuf plugin và tự cấu hình phù hợp.
+
+Ví dụ Gradle file:
+
+[source,gradle,subs="verbatim,attributes"]
+----
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '{version-spring-boot}'
+	id 'io.spring.dependency-management' version '{version-dependency-management-plugin}'
+	id 'com.google.protobuf' version '{version-protobuf-gradle-plugin}'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+ifeval::["{build-and-artifact-release-type}" == "opensource-snapshot"]
+	// you don't need this if you are using a release version
+	maven { url 'https://repo.spring.io/snapshot' }
+endif::[]
+}
+
+protobuf {
+	plugins {
+		grpc {}
+	}
+}
+----
+
+Plugin `org.springframework.boot` phản ứng với `com.google.protobuf` và cấu hình `protoc` cùng version.
+Vì extension `protobuf` được cấu hình dùng plugin `grpc`, plugin `org.springframework.boot` cũng cấu hình `protoc-gen-grpc-java` cùng version.
+
+File `.proto` nên được thêm vào `src/main/proto`.
+
+TIP: Nếu không dùng plugin `org.springframework.boot` hoặc muốn cấu hình trực tiếp, xem https://github.com/google/protobuf-gradle-plugin[protobuf-gradle-plugin documentation].
+
+[[io.grpc.server]]
+== Viết gRPC Server Application
+
+Spring Boot cung cấp module `spring-boot-grpc-server` và starter POM `spring-boot-starter-grpc-server` cho server application.
+
+Để viết actual server code, cần extend một hoặc nhiều base class được generate từ file `.proto` và expose chúng thành Spring bean.
+Spring gRPC tự động expose mọi bean implement javadoc:io.grpc.BindableService[] thành gRPC server.
+Vì tất cả class generate từ `.proto` implement javadoc:io.grpc.BindableService[], chỉ cần thêm chúng làm bean là đủ expose qua gRPC.
+
+TIP: Xem {url-spring-grpc-docs}/server.html#_create_a_grpc_service[Spring gRPC documentation].
+
+Ví dụ implement service `HelloWorld` ở trên.
+Ví dụ dùng javadoc:org.springframework.grpc.server.service.GrpcService[format=annotation] và giả định code nằm trong package được component scanning phát hiện:
+
+include-code::MyHelloWorldService[]
+
+Nếu application dùng `spring-boot-starter-grpc-server`, Netty được dùng làm server implementation listen port `9090`.
+
+Có thể test bằng https://github.com/fullstorydev/grpcurl[grpcurl]:
+
+[source,shell]
+----
+$ grpcurl -d '{"name":"Spring"}' -plaintext localhost:9090 HelloWorld.SayHello
+----
+
+[source,json]
+----
+{
+  "message": "Hello 'Spring'"
+}
+----
+
+[[io.grpc.server.netty-shaded]]
+=== Chuyển sang Netty Shaded Server
+
+Nếu version Netty từ starter `spring-boot-starter-grpc-server` không tương thích với library khác, có thể chuyển sang version "shaded".
+
+Exclude `io.grpc:grpc-netty` và include `io.grpc:grpc-netty-shaded`:
+
+[tabs]
+======
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-grpc-server</artifactId>
+	<exclusions>
+		<!-- Exclude the gRPC Netty dependency -->
+		<exclusion>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+<!-- Use gRPC Netty Shaded instead -->
+<dependency>
+	<groupId>io.grpc</groupId>
+	<artifactId>grpc-netty-shaded</artifactId>
+</dependency>
+----
++
+
+Gradle::
++
+[source,gradle]
+----
+dependencies {
+	implementation('org.springframework.boot:spring-boot-starter-grpc-server') {
+		// Exclude the gRPC Netty dependency
+		exclude group: 'io.grpc', module: 'grpc-netty'
+	}
+	// Use gRPC Netty Shaded instead
+	implementation "io.grpc:grpc-netty-shaded"
+}
+----
++
+======
+
+[[io.grpc.server.servlet]]
+=== Chuyển sang Servlet Container
+
+Có thể expose gRPC service bằng regular Servlet Container như Tomcat thay vì Netty.
+Servlet Container phải được cấu hình hỗ trợ HTTP/2.
+
+Để chuyển sang Servlet gRPC implementation, exclude `io.grpc:grpc-netty` và include `io.grpc:grpc-servlet-jakarta`:
+
+[tabs]
+======
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-webmvc</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-grpc-server</artifactId>
+	<exclusions>
+		<!-- Exclude the gRPC Netty dependency -->
+		<exclusion>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+<!-- Use gRPC Servlet Jakarta instead -->
+<dependency>
+	<groupId>io.grpc</groupId>
+	<artifactId>grpc-servlet-jakarta</artifactId>
+</dependency>
+----
++
+
+Gradle::
++
+[source,gradle]
+----
+dependencies {
+	implementation('org.springframework.boot:spring-boot-starter-webmvc') {
+	implementation('org.springframework.boot:spring-boot-starter-grpc-server') {
+		// Exclude the gRPC Netty dependency
+		exclude group: 'io.grpc', module: 'grpc-netty'
+	}
+	// Use gRPC Servlet Jakarta instead
+	implementation "io.grpc:grpc-servlet-jakarta"
+}
+----
++
+======
+
+TIP: Nhớ include Servlet Container dependency, ví dụ `spring-boot-starter-tomcat`, và đặt configprop:server.http2.enabled[] thành `true`.
+
+NOTE: Khi dùng servlet container, một số gRPC server configuration property không liên quan và bị bỏ qua.
+Ví dụ configprop:spring.grpc.server.port[] bị bỏ qua vì configprop:server.port[] được dùng cho web server port.
+
+[[io.grpc.server.ssl]]
+=== Hỗ trợ SSL
+
+Có thể cấu hình SSL cho cả `grpc-netty` và `grpc-netty-shaded` server bằng SSL bundle.
+Xem xref:features/ssl.adoc[SSL core documentation].
+
+Sau khi định nghĩa bundle:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    server:
+      ssl:
+        bundle: mysslbundle
+----
+
+Client authentication có thể cấu hình bằng configprop:spring.grpc.server.ssl.client-auth[] = `optional` hoặc `require`.
+
+TIP: Để tạm disable server SSL, ví dụ khi test, đặt configprop:spring.grpc.server.ssl.enabled[] thành `false`.
+
+[[io.grpc.server.in-process]]
+=== Sử dụng In-Process Server
+
+Có thể chạy in-process server bằng dependency `io.grpc:grpc-inprocess` và property configprop:spring.grpc.server.inprocess.name[].
+Trong mode này in-process server factory được auto-configure ngoài regular server factory.
+
+Tên cung cấp có thể dùng làm client channel target theo format `in-process:<name>`.
+
+[[io.grpc.server.reflection]]
+=== Reflection
+
+Khi có sẵn, Spring Boot auto-configure https://grpc.io/docs/guides/reflection/[gRPC Reflection service].
+Điều này cho phép client browse metadata của service và download file `.proto`.
+
+Reflection service nằm trong library `io.grpc:grpc-services`, là optional dependency.
+Cần thêm dependency vào project để auto-configuration áp dụng.
+
+TIP: Nếu có `io.grpc:grpc-services` nhưng không muốn reflection auto-configure, đặt configprop:spring.grpc.server.reflection.enabled[] thành `false`.
+
+[[io.grpc.server.health]]
+=== Server Health
+
+gRPC server có thể cung cấp health information qua standard service API (https://github.com/grpc/grpc-proto/blob/master/grpc/health/v1/health.proto[health/v1]).
+Client có thể kiểm tra health của server service và route traffic phù hợp.
+
+Spring Boot bridge module `spring-boot-health` với standard gRPC health service.
+Health information được cung cấp khi `io.grpc:grpc-services` và `org.springframework.boot:spring-boot-health` có trên classpath.
+
+TIP: Nếu không muốn expose health indicator, đặt configprop:spring.grpc.server.health.enabled[] thành `false`.
+
+[[io.grpc.server.health.service-mappings]]
+==== Health Mapping theo Service
+
+Mặc định health information được cung cấp cho overall server status (`""`) bằng tất cả health indicator.
+
+Có thể cung cấp fine-grained health information cho service cụ thể bằng subset health indicator.
+Custom mapping và ordering rule có thể định nghĩa theo từng service.
+
+Ví dụ `myservice` chỉ dùng indicator `db` và `redis`:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    server:
+      health:
+        service:
+          myservice:
+            include:
+            - db
+            - redis
+----
+
+TIP: Đặt configprop:spring.grpc.server.health.include-overall-health[] thành `false` nếu chỉ muốn service-specific health.
+
+[[io.grpc.server.health.push]]
+==== Push Configuration
+
+Khác web-based health check, gRPC health information được push định kỳ thay vì pull.
+Mặc định push đầu tiên sau 5 giây từ lúc application start, sau đó mỗi 5 giây.
+
+Tune bằng:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    server:
+      health:
+        schedule:
+          period: 5m
+          delay: 2s
+----
+
+TIP: Có thể đặt configprop:spring.grpc.server.health.schedule.enabled[] thành `false` nếu muốn gửi health update theo cách khác.
+
+[[io.grpc.server.security]]
+=== Bảo mật gRPC Server Application
+
+[[io.grpc.server.security.netty]]
+==== Netty-based Server
+
+Spring gRPC có feature cho phép secure Netty-based server application declaratively bằng Spring Security.
+Pattern tương tự regular web application.
+
+Spring Boot auto-configure bean javadoc:org.springframework.grpc.server.security.GrpcSecurity[] và javadoc:org.springframework.grpc.server.security.SecurityGrpcExceptionHandler[].
+Thông thường gRPC application được secure bằng annotation javadoc:org.springframework.security.access.prepost.PreAuthorize[format=annotation] trên gRPC service bean hoặc bean javadoc:org.springframework.grpc.server.security.AuthenticationProcessInterceptor[].
+
+Xem {url-spring-grpc-docs}/server.html#_declarative_security_with_spring_security[Spring gRPC documentation].
+
+[[io.grpc.server.security.servlet]]
+==== Servlet Container-based Server
+
+Nếu gRPC server chạy xref:web/servlet.adoc[trong standard Servlet Container], có thể dùng xref:web/spring-security.adoc#web.security.spring-mvc[web security configuration] thông thường.
+Spring Boot auto-configure javadoc:org.springframework.boot.grpc.server.autoconfigure.GrpcServerExecutorProvider[] và javadoc:org.springframework.grpc.server.security.SecurityContextServerInterceptor[] để Spring Security hoạt động đúng.
+
+CSRF protection không tương thích với gRPC protocol và mặc định bị disable cho mọi gRPC request.
+Nếu muốn tự cấu hình CSRF, có thể switch behavior này bằng configprop:spring.grpc.server.security.csrf.enabled[] = `false`.
+
+Spring Boot cung cấp request matcher cho gRPC service, cho cả servlet và reactive stack.
+Ví dụ sau include mọi gRPC service ngoại trừ `special`:
+
+include-code::MySecurityConfiguration[]
+
+NOTE: Với reactive match dùng javadoc:org.springframework.boot.grpc.server.autoconfigure.security.web.servlet.GrpcRequest[format=full].
+
+[[io.grpc.server.security.oauth-resource-server]]
+==== OAuth2 Resource Server
+
+https://oauth.net/2/[OAuth2] là authorization framework phổ biến.
+OAuth2 Resource Server support của Spring Boot tương thích với gRPC và có thể cấu hình theo cách thông thường.
+
+Xem xref:security/oauth2.adoc#security.oauth2.server[phần "OAuth2" trong "Security"] để biết chi tiết.
+
+[[io.grpc.server.observability]]
+=== Observability
+
+Spring Boot auto-configure javadoc:io.micrometer.core.instrument.binder.grpc.ObservationGrpcServerInterceptor[] khi Micrometer có sẵn.
+Interceptor cung cấp observability cho gRPC server application.
+
+Khi Micrometer Tracing cũng có sẵn, observation mang trace context và xref:actuator/tracing.adoc#actuator.micrometer-tracing.baggage[baggage] từ incoming gRPC metadata.
+Bao gồm W3C `baggage` header và metadata key trong configprop:management.tracing.baggage.remote-fields[], nên không cần interceptor bổ sung.
+
+NOTE: Interceptor được cung cấp bởi `micrometer-core` nên chỉ auto-configure khi dependency có trên classpath, ví dụ qua `spring-boot-starter-actuator`.
+
+TIP: Nếu dùng Micrometer nhưng không muốn cho gRPC, đặt configprop:spring.grpc.server.observation.enabled[] thành `false`.
+
+[[io.grpc.client]]
+== Viết gRPC Client Application
+
+Spring Boot cung cấp module `spring-boot-grpc-client` và starter POM `spring-boot-starter-grpc-client` cho client application.
+
+Client có thể gọi remote gRPC service bằng import một hoặc nhiều class "stub" generate từ file `.proto`.
+Dùng annotation javadoc:org.springframework.grpc.client.ImportGrpcClients[format=annotation] để import stub class cần dùng.
+
+Mỗi import có `target`, có thể là logical channel name hoặc base URL remote server.
+Thường nên dùng channel name thay vì hard-code target.
+
+Ví dụ:
+
+include-code::MyApplication[]
+
+NOTE: Nếu không chỉ định `target` thì dùng `default`.
+
+TIP: Có thể dùng attribute `basePackageClasses` hoặc `basePackages` của javadoc:org.springframework.grpc.client.ImportGrpcClients[format=annotation] để import mọi stub trong package.
+
+[[io.grpc.client.channel-properties]]
+=== Channel Property
+
+Khi attribute `target` của javadoc:org.springframework.grpc.client.ImportGrpcClients[format=annotation] dùng logical channel name, cần property để Spring Boot tìm actual gRPC server.
+
+Thêm entry bằng `spring.grpc.channel.<name>.*`.
+Thông thường cấu hình actual `target` và setting riêng cho channel.
+
+Ví dụ cấu hình `myservice` tới `static://grpc.example.com:9090`, đổi keep-alive timeout và maximum message size:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    client:
+      channel:
+        myservice:
+          target: static://grpc.example.com:9090
+          inbound:
+            keepalive:
+              timeout: 40s
+            message:
+              max-size: 8MB
+----
+
+[[io.grpc.client.stub-beans]]
+=== Sử dụng Stub Bean
+
+Sau khi có annotation javadoc:org.springframework.grpc.client.ImportGrpcClients[format=annotation] và property, stub có thể dùng như bean khác.
+
+Ví dụ inject `HelloWorldStub` vào `ApplicationRunner` bean:
+
+include-code::MyApplicationRunner[]
+
+[[io.grpc.client.netty-shaded]]
+=== Chuyển sang Netty Shaded Client Transport
+
+Remote gRPC network call dùng Netty.
+Nếu version Netty từ `spring-boot-starter-grpc-client` không tương thích library khác, có thể chuyển sang version "shaded".
+
+Exclude `io.grpc:grpc-netty` và include `io.grpc:grpc-netty-shaded`:
+
+[tabs]
+======
+
+Maven::
++
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-grpc-client</artifactId>
+	<exclusions>
+		<!-- Exclude the gRPC Netty dependency -->
+		<exclusion>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+<!-- Use gRPC Netty Shaded instead -->
+<dependency>
+	<groupId>io.grpc</groupId>
+	<artifactId>grpc-netty-shaded</artifactId>
+</dependency>
+----
++
+
+Gradle::
++
+[source,gradle]
+----
+dependencies {
+	implementation('org.springframework.boot:spring-boot-starter-grpc-client') {
+		// Exclude the gRPC Netty dependency
+		exclude group: 'io.grpc', module: 'grpc-netty'
+	}
+	// Use gRPC Netty Shaded instead
+	implementation "io.grpc:grpc-netty-shaded"
+}
+----
++
+======
+
+[[io.grpc.client.ssl]]
+=== Hỗ trợ SSL
+
+gRPC client application có thể kết nối gRPC service bằng SSL/TLS encrypted connection.
+Có thể cấu hình standard one-way TLS hoặc mutual TLS.
+
+[[io.grpc.client.ssl.one-way]]
+==== Standard One-way TLS
+
+Đặt property `ssl.enabled` thành `true` trong channel property.
+Ví dụ:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    client:
+      channel:
+        myservice:
+          target: static://grpc.example.com:9090
+          ssl:
+            enabled: true
+----
+
+[[io.grpc.client.ssl.mutual]]
+==== Mutual TLS
+
+Mutual TLS (mTLS) yêu cầu cả client và server trình certificate cho nhau.
+Để dùng mTLS, đặt property `ssl.bundle` trong channel property.
+Xem xref:features/ssl.adoc[SSL core features documentation].
+
+Ví dụ channel `myservice` dùng bundle `mybundle`:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    client:
+      channel:
+        myservice:
+          target: static://grpc.example.com:9090
+          ssl:
+            bundle: mybundle
+----
+
+[TIP]
+====
+Để tạm disable client SSL validation khi test, đặt `bypass-certificate-validation` thành `true`:
+
+[configprops,yaml]
+----
+spring:
+  grpc:
+    client:
+      channel:
+        myservice:
+          bypass-certificate-validation: true
+----
+====
+
+[[io.grpc.client.in-process]]
+=== Sử dụng In-Process Channel
+
+Có thể giao tiếp với xref:io/grpc.adoc#io.grpc.server.in-process[in-process server] bằng dependency `io.grpc.grpc-inprocess`.
+
+Trong mode này in-process channel factory được auto-configure cùng regular channel factory như Netty.
+Để user không phải xử lý nhiều channel factory, composite channel factory được cấu hình làm primary.
+Composite tìm factory đầu tiên hỗ trợ channel target.
+
+Để dùng in-process server, channel target phải là `in-process:<name>`.
+
+TIP: Disable in-process channel factory bằng configprop:spring.grpc.client.inprocess.enabled[] = `false`.
+
+[[io.grpc.client.observability]]
+=== Observability
+
+Spring Boot auto-configure javadoc:io.micrometer.core.instrument.binder.grpc.ObservationGrpcClientInterceptor[] khi Micrometer có sẵn.
+Interceptor cung cấp observability cho gRPC client application.
+
+Khi Micrometer Tracing có sẵn, trace context và current xref:actuator/tracing.adoc#actuator.micrometer-tracing.baggage[baggage] được ghi vào outgoing call metadata bằng W3C `baggage` header và metadata key trong configprop:management.tracing.baggage.remote-fields[].
+
+NOTE: Interceptor từ `micrometer-core` nên chỉ auto-configure khi dependency này có trên classpath.
+
+TIP: Nếu dùng Micrometer nhưng không muốn cho gRPC, đặt configprop:spring.grpc.client.observation.enabled[] thành `false`.
+
+[[io.grpc.client.channel-customization]]
+=== Channel Customization
+
+Để customize gRPC channel vượt ngoài basic property, dùng javadoc:org.springframework.grpc.client.GrpcChannelBuilderCustomizer[].
+Mỗi customizer được gọi với logical target name và javadoc:io.grpc.ManagedChannelBuilder[] dùng build channel.
+Factory method `matching(String pattern)` giới hạn customization cho target match regex.
+
+Use case phổ biến là thêm {url-spring-grpc-docs}/client.html#_http_headers[security interceptor] vào builder.
+Ví dụ thêm javadoc:org.springframework.grpc.client.interceptor.security.BearerTokenAuthenticationInterceptor[] cho target match `hello`:
+
+include-code::MyGrpcConfiguration[]
+
+[[io.grpc.testing]]
+== Test gRPC Application
+
+Để test gRPC client và server application, dùng module `spring-boot-grpc-test` hoặc starter POM `spring-boot-starter-grpc-client-test` / `spring-boot-starter-grpc-server-test`.
+
+[[io.grpc.testing.test-transport]]
+=== Sử dụng In-Process Test Transport
+
+Annotation javadoc:org.springframework.boot.grpc.test.autoconfigure.AutoConfigureTestGrpcTransport[format=annotation] cho phép nhanh chóng thay gRPC communication channel bằng in-process channel dành riêng cho test.
+Khác regular in-process channel, test channel không cần configuration.
+
+Dùng test gRPC transport nghĩa là không cần thực sự listen network port để start application.
+Test chạy nhanh nhưng vẫn kiểm tra application hoạt động như mong đợi.
+
+Mặc định annotation này sẽ:
+
+* Configure test bean javadoc:org.springframework.grpc.server.GrpcServerFactory[] / javadoc:org.springframework.grpc.client.GrpcChannelFactory[]
+* Disable mọi gRPC servlet registration.
+* Disable javadoc:org.springframework.grpc.server.GrpcServerFactory[] bean auto-configuration.
+* Disable javadoc:org.springframework.grpc.client.GrpcChannelFactory[] bean auto-configuration.
+
+Ví dụ test gRPC server application:
+
+include-code::MyGrpcTests[]
+
+[[io.grpc.testing.local-server-port]]
+=== Test với Running Server
+
+Nếu muốn test bằng real server và actual network connection, nên dùng random port.
+Điều này giúp test chạy ở mọi environment và tránh vô tình gọi real service.
+
+Để start gRPC server bằng random port, đặt configprop:spring.grpc.server.port[] thành `0`.
+Dùng annotation javadoc:org.springframework.boot.grpc.test.autoconfigure.LocalGrpcServerPort[format=annotation] để lấy actual port.
+
+Ví dụ:
+
+include-code::MyGrpcIntegrationTests[]
+
+
+
+// FIXME https://github.com/spring-projects/spring-grpc/issues/397

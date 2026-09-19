@@ -1,0 +1,246 @@
+[[howto.data-initialization]]
+= Database Initialization
+
+SQL database có thể được initialize theo nhiều cách tùy stack đang dùng.
+Tất nhiên cũng có thể làm thủ công nếu database là process riêng.
+Khuyến nghị dùng một mechanism duy nhất cho schema generation.
+
+[[howto.data-initialization.using-hibernate]]
+== Initialize Database bằng Hibernate
+
+Có thể set configprop:spring.jpa.hibernate.ddl-auto[] để control database initialization của Hibernate.
+Supported value: `none`, `validate`, `update`, `create` và `create-drop`.
+Spring Boot chọn default dựa trên việc có dùng embedded database hay không.
+Embedded database được identify bằng type javadoc:java.sql.Connection[] và JDBC URL.
+`hsqldb`, `h2` hoặc `derby` (deprecated) là embedded database; database khác thì không.
+Nếu detect embedded database và không có schema manager như Flyway hoặc Liquibase, `ddl-auto` default `create-drop`.
+Các case khác default `none`.
+
+Cẩn thận khi switch từ in-memory sang database "thật" để không assume table và data tồn tại trên platform mới.
+Hoặc set `ddl-auto` explicit, hoặc dùng mechanism khác để initialize database.
+
+NOTE: Có thể output schema creation bằng cách enable logger `org.hibernate.SQL`.
+Điều này tự động được làm nếu enable xref:reference:features/logging.adoc#features.logging.console-output[debug mode].
+
+Ngoài ra file `import.sql` ở root classpath được execute khi startup nếu Hibernate tạo schema from scratch, tức `ddl-auto` là `create` hoặc `create-drop`.
+Điều này hữu ích cho demo và testing nếu cẩn thận, nhưng thường không muốn file này trên classpath production.
+Đây là feature của Hibernate, không liên quan Spring.
+
+[[howto.data-initialization.using-basic-sql-scripts]]
+== Initialize Database bằng Basic SQL Scripts
+
+Spring Boot có thể tự động tạo schema (DDL script) của JDBC javadoc:javax.sql.DataSource[] hoặc R2DBC javadoc:io.r2dbc.spi.ConnectionFactory[] và initialize data (DML script).
+
+Mặc định nó load schema script từ `optional:classpath*:schema.sql` và data script từ `optional:classpath*:data.sql`.
+Location của schema/data script có thể customize bằng configprop:spring.sql.init.schema-locations[] và configprop:spring.sql.init.data-locations[].
+Prefix `optional:` nghĩa là application vẫn start nếu file không tồn tại.
+Để application fail start khi file thiếu, remove prefix `optional:`.
+
+Ngoài ra Spring Boot process file `optional:classpath*:schema-${platform}.sql` và `optional:classpath*:data-${platform}.sql` nếu có, trong đó `${platform}` là value configprop:spring.sql.init.platform[].
+Điều này cho phép switch sang database-specific script khi cần.
+Ví dụ có thể set thành vendor name như `hsqldb`, `h2`, `oracle`, `mysql`, `postgresql`, v.v.
+
+Mặc định SQL database initialization chỉ thực hiện khi dùng embedded in-memory database.
+Để luôn initialize SQL database bất kể type, set configprop:spring.sql.init.mode[] thành `always`.
+Để disable initialization, set thành `never`.
+Mặc định Spring Boot enable fail-fast của script-based database initializer.
+Nếu script gây exception, application fail start.
+Tune behavior bằng configprop:spring.sql.init.continue-on-error[].
+
+Script-based DataSource initialization mặc định thực hiện trước khi bất kỳ JPA javadoc:jakarta.persistence.EntityManagerFactory[] bean nào được tạo.
+`schema.sql` có thể dùng tạo schema cho JPA-managed entity và `data.sql` populate data.
+Dù không khuyến nghị dùng nhiều data source initialization technology, nếu muốn script-based DataSource initialization build trên schema Hibernate tạo, set configprop:spring.jpa.defer-datasource-initialization[] thành `true`.
+Điều này defer data source initialization cho tới sau khi mọi EntityManagerFactory bean đã được tạo và initialize.
+Khi đó `schema.sql` có thể bổ sung vào schema Hibernate tạo và `data.sql` populate nó.
+
+NOTE: Initialization script support `--` cho single-line comment và `/++*++ ++*++/` cho block comment.
+Comment format khác không được hỗ trợ.
+
+Nếu dùng xref:data-initialization.adoc#howto.data-initialization.migration-tool[higher-level database migration tool] như Flyway hoặc Liquibase, nên dùng riêng tool đó để create và initialize schema.
+Dùng basic `schema.sql`/`data.sql` cùng Flyway hoặc Liquibase không được khuyến nghị và support sẽ bị remove ở future release.
+
+Nếu cần initialize test data bằng higher-level migration tool, xem phần xref:data-initialization.adoc#howto.data-initialization.migration-tool.flyway-tests[Flyway] và xref:data-initialization.adoc#howto.data-initialization.migration-tool.liquibase-tests[Liquibase].
+
+[[howto.data-initialization.batch]]
+== Initialize Spring Batch Database
+
+Nếu dùng Spring Batch, nó đi kèm SQL initialization script cho hầu hết popular database platform.
+Spring Boot detect database type và execute script khi startup.
+Nếu dùng embedded database, điều này xảy ra mặc định.
+Có thể enable cho mọi database type:
+
+[configprops,yaml]
+----
+spring:
+  batch:
+    jdbc:
+      initialize-schema: "always"
+----
+
+Cũng có thể explicit disable bằng `spring.batch.jdbc.initialize-schema=never`.
+
+[[howto.data-initialization.migration-tool]]
+== Dùng Higher-level Database Migration Tool
+
+Spring Boot hỗ trợ hai higher-level migration tool: https://flywaydb.org/[Flyway] và https://www.liquibase.org/[Liquibase].
+
+[[howto.data-initialization.migration-tool.flyway]]
+=== Execute Flyway Database Migrations khi Startup
+
+Để tự động chạy Flyway database migration khi startup, thêm Flyway module phù hợp vào classpath.
+In-memory và file-based database được hỗ trợ bởi starter `spring-boot-starter-flyway`.
+Case khác cần thêm database-specific module.
+Ví dụ dùng `org.flywaydb:flyway-database-postgresql` với PostgreSQL và `org.flywaydb:flyway-mysql` với MySQL.
+Xem https://documentation.red-gate.com/fd/supported-databases-and-versions-143754067.html[Flyway Documentation] để biết thêm.
+
+Thông thường migration là script dạng `V<VERSION>__<NAME>.sql`, trong đó `<VERSION>` là underscore-separated version như `1` hoặc `2_1`.
+Mặc định chúng nằm trong directory `classpath:db/migration`, nhưng có thể đổi location bằng `spring.flyway.locations`.
+Đây là comma-separated list của một hoặc nhiều location `classpath:` hoặc `filesystem:`.
+Ví dụ search script ở cả default classpath location và directory `/opt/migration`:
+
+[configprops,yaml]
+----
+spring:
+  flyway:
+    locations: "classpath:db/migration,filesystem:/opt/migration"
+----
+
+Cũng có thể thêm placeholder đặc biệt `\{vendor}` để dùng vendor-specific script.
+Giả sử:
+
+[configprops,yaml]
+----
+spring:
+  flyway:
+    locations: "classpath:db/migration/{vendor}"
+----
+
+Thay vì dùng `db/migration`, configuration trên set directory tùy database type, ví dụ `db/migration/mysql` cho MySQL.
+List supported database có trong javadoc:org.springframework.boot.jdbc.DatabaseDriver[].
+
+Migration cũng có thể viết bằng Java.
+Flyway auto-configure với mọi bean implement javadoc:org.flywaydb.core.api.migration.JavaMigration[].
+
+javadoc:org.springframework.boot.flyway.autoconfigure.FlywayProperties[] cung cấp phần lớn setting Flyway và một small set additional property để disable migration hoặc tắt location checking.
+Nếu cần control configuration nhiều hơn, register bean javadoc:org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer[].
+
+Spring Boot gọi `Flyway.migrate()` để perform database migration.
+Nếu muốn nhiều control hơn, cung cấp Bean implement javadoc:org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy[].
+
+Flyway hỗ trợ SQL và Java https://documentation.red-gate.com/fd/callbacks-275218509.html[callback].
+Để dùng SQL-based callback, đặt callback script trong directory `classpath:db/migration`.
+Để dùng Java-based callback, tạo bean implement javadoc:org.flywaydb.core.api.callback.Callback[].
+Các bean đó tự động register với javadoc:org.flywaydb.core.Flyway[].
+Có thể order bằng javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc implement javadoc:org.springframework.core.Ordered[].
+
+Mặc định Flyway autowire javadoc:javax.sql.DataSource[] `@Primary` trong context và dùng cho migration.
+Nếu muốn dùng DataSource khác, tạo một bean và mark Bean bằng javadoc:org.springframework.boot.flyway.autoconfigure.FlywayDataSource[format=annotation].
+Nếu muốn hai data source, ví dụ giữ main auto-configured DataSource, nhớ set attribute `defaultCandidate` của Bean thành `false`.
+Ngoài ra có thể dùng native DataSource của Flyway bằng external property `spring.flyway.[url,user,password]`.
+Set `spring.flyway.url` hoặc `spring.flyway.user` là đủ khiến Flyway dùng DataSource riêng.
+Nếu một trong ba property chưa set, value từ equivalent `spring.datasource` property được dùng.
+
+Cũng có thể dùng Flyway cung cấp data cho specific scenario.
+Ví dụ đặt test-specific migration trong `src/test/resources`; chúng chỉ chạy khi application start cho testing.
+Cũng có thể dùng profile-specific configuration để customize `spring.flyway.locations` sao cho migration nhất định chỉ chạy khi profile cụ thể active.
+Ví dụ trong `application-dev.properties`:
+
+[configprops,yaml]
+----
+spring:
+  flyway:
+    locations: "classpath:/db/migration,classpath:/dev/db/migration"
+----
+
+Với setup này, migration trong `dev/db/migration` chỉ chạy khi profile `dev` active.
+
+[[howto.data-initialization.migration-tool.liquibase]]
+=== Execute Liquibase Database Migrations khi Startup
+
+Để tự động chạy Liquibase database migration khi startup, thêm starter `spring-boot-starter-liquibase` vào classpath.
+
+[NOTE]
+====
+Khi thêm `spring-boot-starter-liquibase` vào classpath, database migration mặc định chạy cả trong application startup và trước khi test chạy.
+Behavior có thể customize bằng configprop:spring.liquibase.enabled[], với value khác nhau ở configuration `main` và `test`.
+Không thể dùng hai cách initialize database khác nhau, ví dụ Liquibase cho application startup và JPA cho test run.
+====
+
+Mặc định master change log được đọc từ `db/changelog/db.changelog-master.yaml`, nhưng có thể đổi bằng `spring.liquibase.change-log`.
+Ngoài YAML, Liquibase cũng hỗ trợ JSON, XML và SQL change log.
+
+Mặc định Liquibase autowire DataSource `@Primary` trong context và dùng cho migration.
+Nếu cần DataSource khác, tạo bean và mark Bean bằng javadoc:org.springframework.boot.liquibase.autoconfigure.LiquibaseDataSource[format=annotation].
+Nếu muốn hai data source, nhớ set attribute `defaultCandidate` của Bean thành `false`.
+Ngoài ra có thể dùng native DataSource của Liquibase bằng external property `spring.liquibase.[driver-class-name,url,user,password]`.
+Set `spring.liquibase.url` hoặc `spring.liquibase.user` là đủ khiến Liquibase dùng DataSource riêng.
+Nếu một trong ba property chưa set, value của equivalent `spring.datasource` property được dùng.
+
+Xem javadoc:org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties[] để biết setting available như context, default schema, v.v.
+
+Cũng có thể dùng bean `Customizer<Liquibase>` để customize instance javadoc:{url-liquibase-javadoc}/liquibase.Liquibase[] trước khi nó được dùng.
+
+[[howto.data-initialization.migration-tool.flyway-tests]]
+=== Dùng Flyway cho Test-only Migrations
+
+Nếu muốn tạo Flyway migration populate test database, đặt chúng trong `src/test/resources/db/migration`.
+Ví dụ file `src/test/resources/db/migration/V9999__test-data.sql` execute sau production migration và chỉ khi chạy test.
+Có thể dùng file này tạo test data cần thiết.
+File không package trong uber jar hoặc container.
+
+[[howto.data-initialization.migration-tool.liquibase-tests]]
+=== Dùng Liquibase cho Test-only Migrations
+
+Nếu muốn tạo Liquibase migration populate test database, có thể tận dụng https://docs.liquibase.com/reference-guide/changelog-attributes/what-are-contexts[Liquibase contexts].
+Xem thêm https://www.liquibase.com/blog/contexts-vs-labels[blog post] liên quan.
+
+Trong thực tế, thêm attribute `context:@test` vào changeset chứa test data:
+
+[source,sql]
+----
+--liquibase formatted sql
+
+--changeset alice:1 context:@test
+insert into project (id, name) values (1, 'Spring Boot');
+----
+
+Và dùng `spring.liquibase.contexts=test` trong environment muốn apply changeset chứa test data.
+
+[[howto.data-initialization.dependencies]]
+== Depend Upon an Initialized Database
+
+Database initialization được thực hiện khi application start, như một phần application context refresh.
+Để initialized database có thể access trong startup, bean đóng vai database initializer và bean yêu cầu database đã initialize được detect tự động.
+Bean có initialization depend vào database đã initialize được configure depend vào bean initialize database.
+Nếu trong startup application cố access database mà chưa initialize, có thể configure additional detection của bean initialize database và bean yêu cầu database initialized.
+
+[[howto.data-initialization.dependencies.initializer-detection]]
+=== Detect Database Initializer
+
+Spring Boot tự động detect bean các type sau initialize SQL database:
+
+- javadoc:org.springframework.boot.jdbc.init.DataSourceScriptDatabaseInitializer[]
+- javadoc:jakarta.persistence.EntityManagerFactory[]
+- javadoc:org.flywaydb.core.Flyway[]
+- javadoc:org.springframework.boot.flyway.autoconfigure.FlywayMigrationInitializer[]
+- javadoc:org.springframework.boot.r2dbc.init.R2dbcScriptDatabaseInitializer[]
+- javadoc:liquibase.integration.spring.SpringLiquibase[]
+
+Nếu dùng third-party starter cho database initialization library, nó có thể cung cấp detector để bean type khác cũng detect tự động.
+Để bean khác được detect, register implementation javadoc:org.springframework.boot.sql.init.dependency.DatabaseInitializerDetector[] trong `META-INF/spring.factories`.
+
+[[howto.data-initialization.dependencies.depends-on-initialization-detection]]
+=== Detect Bean phụ thuộc Database Initialization
+
+Spring Boot tự động detect bean các type sau depend vào database initialization:
+
+- javadoc:org.springframework.orm.jpa.AbstractEntityManagerFactoryBean[] (trừ khi configprop:spring.jpa.defer-datasource-initialization[] set `true`)
+- javadoc:org.jooq.DSLContext[] (jOOQ)
+- javadoc:jakarta.persistence.EntityManagerFactory[] (trừ khi configprop:spring.jpa.defer-datasource-initialization[] set `true`)
+- javadoc:org.springframework.jdbc.core.simple.JdbcClient[]
+- javadoc:org.springframework.jdbc.core.JdbcOperations[]
+- javadoc:org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations[]
+
+Nếu dùng third-party starter data access library, nó có thể cung cấp detector để bean type khác detect tự động.
+Để bean khác được detect, register implementation javadoc:org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitializationDetector[] trong `META-INF/spring.factories`.
+Ngoài ra annotate bean class hoặc Bean method bằng javadoc:org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization[format=annotation].

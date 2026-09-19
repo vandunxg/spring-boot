@@ -1,0 +1,22 @@
+[[howto.jersey]]
+= Jersey
+
+[[howto.jersey.spring-security]]
+== Bảo vệ Jersey Endpoint bằng Spring Security
+
+Spring Security có thể được dùng để bảo vệ Jersey-based web application gần giống cách bảo vệ Spring MVC-based web application.
+Tuy nhiên, nếu muốn dùng method-level security của Spring Security với Jersey, phải configure Jersey dùng `setStatus(int)` thay vì `sendError(int)`.
+Điều này ngăn Jersey commit response trước khi Spring Security có cơ hội report authentication hoặc authorization failure cho client.
+
+Property `jersey.config.server.response.setStatusOverSendError` phải được set thành `true` trên bean javadoc:org.glassfish.jersey.server.ResourceConfig[] của application:
+
+include-code::JerseySetStatusOverSendErrorConfig[]
+
+[[howto.jersey.alongside-another-web-framework]]
+== Dùng Jersey cùng một Web Framework khác
+
+Để dùng Jersey cùng framework khác như Spring MVC, cần configure Jersey để framework kia có thể xử lý request mà Jersey không xử lý được.
+Trước tiên, configure Jersey dùng filter thay vì servlet bằng application property configprop:spring.jersey.type[] với value `filter`.
+Sau đó configure javadoc:org.glassfish.jersey.server.ResourceConfig[] để forward request vốn sẽ trả 404:
+
+include-code::JerseyConfig[]

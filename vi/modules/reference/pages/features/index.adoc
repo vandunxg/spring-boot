@@ -1,0 +1,7 @@
+[[features]]
+= Tính năng cốt lõi
+
+Phần này đi sâu vào chi tiết của Spring Boot.
+Tại đây, bạn có thể tìm hiểu các tính năng chính muốn sử dụng và tùy chỉnh.
+Nếu chưa đọc, bạn nên xem các phần xref:tutorial:index.adoc[] và xref:using/index.adoc[] để nắm chắc kiến thức cơ bản.
+

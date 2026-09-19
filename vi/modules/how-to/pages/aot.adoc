@@ -1,0 +1,53 @@
+[[howto.aot]]
+= Ahead-of-Time Processing
+
+Một số câu hỏi thường phát sinh khi dùng ahead-of-time processing của Spring Boot application.
+Phần này giải đáp các câu hỏi đó.
+
+[[howto.aot.conditions]]
+== Conditions
+
+Ahead-of-time processing optimize application và evaluate annotation javadoc:org.springframework.context.annotation.Conditional[format=annotation] dựa trên environment tại build time.
+xref:reference:features/profiles.adoc[Profiles] được implement thông qua condition nên cũng bị ảnh hưởng.
+
+Nếu muốn bean được tạo dựa trên condition trong ahead-of-time optimized application, phải setup environment khi build application.
+Bean được tạo trong ahead-of-time processing tại build time sau đó luôn được tạo khi chạy application và không thể switch off.
+Để làm vậy, có thể set profile cần dùng khi build application.
+
+Với Maven, set configuration `profiles` của execution `spring-boot-maven-plugin:process-aot`:
+
+[source,xml]
+----
+<profile>
+    <id>native</id>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>process-aot</id>
+                            <configuration>
+                                <profiles>profile-a,profile-b</profiles>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</profile>
+----
+
+Với Gradle, cần configure task `ProcessAot`:
+
+[source,gradle]
+----
+tasks.withType(org.springframework.boot.gradle.tasks.aot.ProcessAot).configureEach {
+    args('--spring.profiles.active=profile-a,profile-b')
+}
+----
+
+Profile chỉ thay đổi configuration property không ảnh hưởng condition được hỗ trợ không hạn chế khi chạy ahead-of-time optimized application.

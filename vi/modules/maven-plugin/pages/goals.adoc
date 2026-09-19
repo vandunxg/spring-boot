@@ -1,0 +1,6 @@
+[[goals]]
+= Goals
+
+Spring Boot Plugin có các goal sau:
+
+include::partial$goals/overview.adoc[]

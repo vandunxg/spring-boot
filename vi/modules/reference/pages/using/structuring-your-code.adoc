@@ -1,0 +1,56 @@
+[[using.structuring-your-code]]
+= Tổ chức cấu trúc code
+
+Spring Boot không yêu cầu một cách tổ chức code cụ thể để hoạt động.
+Tuy nhiên, một số best practice có thể hữu ích.
+
+TIP: Để áp dụng cấu trúc dựa trên domain, hãy xem https://spring.io/projects/spring-modulith#overview[Spring Modulith].
+
+
+
+[[using.structuring-your-code.using-the-default-package]]
+== Sử dụng package "`default`"
+
+Khi một class không có khai báo `package`, nó được coi là nằm trong "`default package`".
+Việc sử dụng "`default package`" thường không được khuyến khích và nên tránh.
+Nó có thể gây vấn đề cụ thể cho ứng dụng Spring Boot sử dụng các annotation javadoc:org.springframework.context.annotation.ComponentScan[format=annotation], javadoc:org.springframework.boot.context.properties.ConfigurationPropertiesScan[format=annotation], javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], vì mọi class trong mọi jar đều được đọc.
+
+TIP: Chúng tôi khuyến nghị tuân theo quy ước đặt tên package được Java khuyến nghị và sử dụng tên miền đảo ngược (ví dụ `com.example.project`).
+
+
+
+[[using.structuring-your-code.locating-the-main-class]]
+== Vị trí của class ứng dụng chính
+
+Chúng tôi thường khuyến nghị đặt class ứng dụng chính trong root package, phía trên các class khác.
+Annotation xref:using/using-the-springbootapplication-annotation.adoc[`@SpringBootApplication`] thường được đặt trên class chính và ngầm xác định "`package tìm kiếm`" cơ sở cho một số thành phần.
+Ví dụ, nếu viết ứng dụng JPA, package của class được gắn javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] sẽ được dùng để tìm các thành phần javadoc:jakarta.persistence.Entity[format=annotation].
+Sử dụng root package cũng giúp component scan chỉ áp dụng trong project của bạn.
+
+TIP: Nếu không muốn dùng javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], bạn có thể thay bằng các annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] mà nó import, vì chúng xác định hành vi đó.
+
+Cấu trúc thông thường có dạng như sau:
+
+[source]
+----
+com
+ +- example
+     +- myapplication
+         +- MyApplication.java
+         |
+         +- customer
+         |   +- Customer.java
+         |   +- CustomerController.java
+         |   +- CustomerService.java
+         |   +- CustomerRepository.java
+         |
+         +- order
+             +- Order.java
+             +- OrderController.java
+             +- OrderService.java
+             +- OrderRepository.java
+----
+
+File `MyApplication.java` khai báo method `main` cùng annotation cơ bản javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], như sau:
+
+include-code::MyApplication[]

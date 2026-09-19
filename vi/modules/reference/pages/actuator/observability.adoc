@@ -1,0 +1,415 @@
+[[actuator.observability]]
+= Observability
+
+Observability là khả năng quan sát internal state của một running system từ bên ngoài.
+Nó gồm ba pillar: logging, metrics và traces.
+
+Với metrics và traces, Spring Boot dùng {url-micrometer-docs}/observation[Micrometer Observation].
+Để tạo observation riêng, từ đó tạo metrics và traces, có thể inject javadoc:io.micrometer.observation.ObservationRegistry[].
+
+include-code::MyCustomObservation[]
+
+NOTE: Low-cardinality tag được thêm vào cả metrics và traces, trong khi high-cardinality tag chỉ được thêm vào traces.
+
+Bean type javadoc:io.micrometer.observation.ObservationPredicate[], javadoc:io.micrometer.observation.GlobalObservationConvention[], javadoc:io.micrometer.observation.ObservationFilter[] và javadoc:io.micrometer.observation.ObservationHandler[] tự động register trên javadoc:io.micrometer.observation.ObservationRegistry[].
+Ngoài ra có thể register bất kỳ số lượng bean javadoc:org.springframework.boot.micrometer.observation.autoconfigure.ObservationRegistryCustomizer[] nào để configure registry thêm.
+
+TIP: Observability cho JDBC có thể cấu hình bằng project riêng.
+https://github.com/jdbc-observations/datasource-micrometer[Datasource Micrometer project] cung cấp Spring Boot starter tự động tạo observation khi JDBC operation được invoke.
+Xem thêm trong https://jdbc-observations.github.io/datasource-micrometer/docs/current/docs/html/[reference documentation].
+
+TIP: Observability cho R2DBC được tích hợp trong Spring Boot.
+Để enable, thêm dependency `io.r2dbc:r2dbc-proxy`.
+
+[[actuator.observability.context-propagation]]
+== Context Propagation
+
+Observability support dựa trên https://github.com/micrometer-metrics/context-propagation[Context Propagation library] để forward current observation qua thread và reactive pipeline.
+Mặc định value javadoc:java.lang.ThreadLocal[] không tự động được reinstate trong reactive operator.
+Behavior này được điều khiển bằng configprop:spring.reactor.context-propagation[], có thể đặt thành `auto` để enable automatic propagation.
+
+Nếu làm việc với method javadoc:org.springframework.scheduling.annotation.Async[format=annotation] và javadoc:org.springframework.core.task.AsyncTaskExecutor[] được auto-configure, cần opt-in context propagation bằng configprop:spring.task.execution.propagate-context[].
+
+Nếu tự configure javadoc:org.springframework.core.task.AsyncTaskExecutor[], cần register bean javadoc:org.springframework.core.task.support.ContextPropagatingTaskDecorator[]:
+
+include-code::ContextPropagationConfiguration[]
+
+Chi tiết về observation xem {url-micrometer-docs}/observation[Micrometer Observation documentation].
+
+[[actuator.observability.common-tags]]
+== Common Tags
+
+Common tag thường dùng cho dimensional drill-down trên operating environment như host, instance, region, stack và các yếu tố khác.
+Common tag được áp dụng cho mọi observation dưới dạng low-cardinality tag và có thể cấu hình:
+
+[configprops,yaml]
+----
+management:
+  observations:
+    key-values:
+      region: "us-east-1"
+      stack: "prod"
+----
+
+Ví dụ trên thêm tag `region=us-east-1` và `stack=prod` vào mọi observation.
+
+[[actuator.observability.preventing-observations]]
+== Ngăn Observation được report
+
+Nếu muốn ngăn một số observation được report, dùng property configprop:management.observations.enable[]:
+
+[configprops,yaml]
+----
+management:
+  observations:
+    enable:
+      denied:
+        prefix: false
+      another:
+        denied:
+          prefix: false
+----
+
+Ví dụ trên ngăn mọi observation có name bắt đầu bằng `denied.prefix` hoặc `another.denied.prefix`.
+
+TIP: Nếu muốn ngăn Spring Security report observation, đặt configprop:management.observations.enable.spring.security[] thành `false`.
+
+Nếu cần kiểm soát chi tiết hơn, register bean type javadoc:io.micrometer.observation.ObservationPredicate[].
+Observation chỉ được report nếu tất cả ObservationPredicate bean trả về `true` cho observation đó.
+
+include-code::MyObservationPredicate[]
+
+Ví dụ trên ngăn mọi observation có name chứa "denied".
+
+[[actuator.observability.annotations]]
+== Hỗ trợ Micrometer Observation Annotations
+
+Để enable scanning observability annotation như javadoc:io.micrometer.observation.annotation.Observed[format=annotation], javadoc:io.micrometer.core.annotation.Timed[format=annotation], javadoc:io.micrometer.core.annotation.Counted[format=annotation], javadoc:io.micrometer.core.aop.MeterTag[format=annotation] và javadoc:io.micrometer.tracing.annotation.NewSpan[format=annotation], đặt configprop:management.observations.annotations.enabled[] thành `true`.
+Dependency `org.aspectj:aspectjweaver`, thuộc `spring-boot-starter-aspectj`, cũng là bắt buộc.
+Feature này được Micrometer hỗ trợ trực tiếp.
+Xem {url-micrometer-docs-concepts}/timers.html#_the_timed_annotation[Micrometer], {url-micrometer-docs-observation}/components.html#micrometer-observation-annotations[Micrometer Observation] và {url-micrometer-tracing-docs}/api.html#_aspect_oriented_programming[Micrometer Tracing] reference docs.
+
+NOTE: Khi annotate method hoặc class đã được instrument, ví dụ xref:reference:actuator/metrics.adoc#actuator.metrics.supported.spring-data-repository[Spring Data repository] hoặc xref:reference:actuator/metrics.adoc#actuator.metrics.supported.spring-mvc[Spring MVC controller], sẽ tạo duplicate observation.
+Trong trường hợp này, có thể disable automatic instrumentation bằng xref:reference:actuator/observability.adoc#actuator.observability.preventing-observations[property] hoặc ObservationPredicate rồi dựa vào annotation, hoặc remove annotation.
+
+[[actuator.observability.semantic-conventions]]
+== Semantic Conventions
+
+Semantic convention chi phối metric name, tag name và value.
+Mặc định dùng convention do Micrometer và các Spring project định nghĩa.
+Để chuyển sang OpenTelemetry convention, đặt configprop:management.observations.conventions[] thành `open-telemetry`.
+OpenTelemetry convention chỉ giới hạn ở các convention stable.
+Khi dùng OpenTelemetry convention, lưu ý một số property customize meter name và tương tự sẽ không còn hiệu lực.
+
+[[actuator.observability.opentelemetry]]
+== Hỗ trợ OpenTelemetry
+
+NOTE: Có nhiều cách hỗ trợ https://opentelemetry.io/[OpenTelemetry] trong application.
+Có thể dùng https://opentelemetry.io/docs/zero-code/java/agent/[OpenTelemetry Java Agent] hoặc https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/[OpenTelemetry Spring Boot Starter], được OTel community hỗ trợ.
+Trong trường hợp này metrics và traces luôn dùng semantic convention do OTel library định nghĩa.
+Tài liệu này mô tả OpenTelemetry được Spring team hỗ trợ chính thức bằng Micrometer và OTLP exporter.
+Trong trường hợp này metrics và traces dùng semantic convention mô tả trong Spring project documentation như {url-spring-framework-docs}/integration/observability.html[Spring Framework], nhưng có thể <<actuator.observability.semantic-conventions, cấu hình>> để dùng stable convention của OpenTelemetry.
+
+Module actuator của Spring Boot bao gồm basic support cho OpenTelemetry.
+
+Nó cung cấp bean type javadoc:io.opentelemetry.api.OpenTelemetry[], và nếu application context có bean type javadoc:io.opentelemetry.sdk.trace.SdkTracerProvider[], javadoc:io.opentelemetry.context.propagation.ContextPropagators[], javadoc:io.opentelemetry.sdk.logs.SdkLoggerProvider[] hoặc javadoc:io.opentelemetry.sdk.metrics.SdkMeterProvider[], chúng tự động được register.
+Ngoài ra, Spring Boot cung cấp bean javadoc:io.opentelemetry.sdk.resources.Resource[].
+Attribute của auto-configured Resource có thể cấu hình qua configprop:management.opentelemetry.resource-attributes[].
+Auto-configured attribute được merge với attribute từ environment variable `OTEL_RESOURCE_ATTRIBUTES` và `OTEL_SERVICE_NAME`, trong đó attribute từ configuration property có precedence.
+
+Nếu tự định nghĩa bean javadoc:io.opentelemetry.sdk.resources.Resource[], behavior trên không còn áp dụng.
+
+NOTE: Spring Boot không cung cấp automatic exporting OpenTelemetry metrics hoặc logs.
+Export OpenTelemetry traces chỉ được auto-configure khi dùng cùng xref:actuator/tracing.adoc[Micrometer Tracing].
+
+[[actuator.observability.opentelemetry.disabling]]
+=== Disable OpenTelemetry
+
+Có thể disable OpenTelemetry support bằng configprop:management.opentelemetry.enabled[] = `false`.
+Behavior tương tự environment variable https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#general-sdk-configuration[`OTEL_SDK_DISABLED`] nhưng đảo ngược: khi SDK disable, metrics, traces và logging dùng no-op implementation.
+Context propagator không bị ảnh hưởng và tiếp tục hoạt động.
+
+NOTE: Spring Boot không dùng metrics functionality của OpenTelemetry, vì vậy metrics vẫn có thể enable ngay cả khi disable OpenTelemetry.
+
+[[actuator.observability.opentelemetry.common-otlp-configuration]]
+=== Common OTLP Configuration
+
+Endpoint, header và compression dùng để export traces, logs và metrics qua OTLP có thể cấu hình một lần cho cả ba signal bằng property `management.opentelemetry.otlp.*`:
+
+[configprops,yaml]
+----
+management:
+  opentelemetry:
+    otlp:
+      endpoint: "https://otlp.example.com:4318"
+      compression: "gzip"
+      headers:
+        Authorization: "Bearer some-token"
+----
+
+Signal-specific property, ví dụ configprop:management.opentelemetry.tracing.export.otlp.endpoint[], configprop:management.opentelemetry.logging.export.otlp.endpoint[] hoặc configprop:management.otlp.metrics.export.url[], có precedence hơn common property khi được set.
+Khi common endpoint được dùng làm fallback và signal export qua HTTP, signal-specific path (`v1/traces`, `v1/logs`, hoặc `v1/metrics`) được append.
+Header cấu hình cho signal cụ thể được merge với common header, trong đó signal-specific value có precedence với matching key.
+
+Behavior này tương ứng fallback giữa general và signal-specific environment variable `OTEL_EXPORTER_OTLP_*`.
+
+[[actuator.observability.opentelemetry.environment-variables]]
+=== Environment Variables
+
+Spring Boot hỗ trợ một subset của https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry SDK environment variable].
+Các environment variable được tự động map sang Spring Boot configuration property khi startup.
+Khi environment variable có signal-specific variant, ví dụ `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, và general variant `OTEL_EXPORTER_OTLP_ENDPOINT`, signal-specific variant có precedence và được dùng nguyên trạng.
+Khi general variant dùng làm fallback, signal-specific path (`v1/traces`, `v1/metrics`, hoặc `v1/logs`) được append.
+Ví dụ `OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318` tạo `http://collector:4318/v1/traces` cho traces.
+
+Có thể disable mapping bằng configprop:management.opentelemetry.map-environment-variables[] = `false`.
+
+[[actuator.observability.opentelemetry.environment-variables.general]]
+==== General
+
+[cols="1,1"]
+|===
+| Environment Variable | Spring Boot Property
+
+| `OTEL_SDK_DISABLED`
+| configprop:management.opentelemetry.enabled[] (inverted)
+
+| `OTEL_PROPAGATORS`
+| configprop:management.tracing.propagation.type[] và configprop:management.tracing.baggage.enabled[]
+
+| `OTEL_TRACES_SAMPLER`
+| configprop:management.opentelemetry.tracing.sampler[]
+
+| `OTEL_TRACES_SAMPLER_ARG`
+| configprop:management.tracing.sampling.probability[]
+
+| `OTEL_METRICS_EXEMPLAR_FILTER`
+| configprop:management.tracing.exemplars.include[]
+|===
+
+[[actuator.observability.opentelemetry.environment-variables.metrics]]
+==== Metrics Exporter
+
+[cols="1,1"]
+|===
+| Environment Variable | Spring Boot Property
+
+| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` / `OTEL_EXPORTER_OTLP_ENDPOINT`
+| configprop:management.otlp.metrics.export.url[]
+
+| `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE`
+| configprop:management.otlp.metrics.export.aggregation-temporality[]
+
+| `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION`
+| configprop:management.otlp.metrics.export.histogram-flavor[]
+
+| `OTEL_EXPORTER_OTLP_METRICS_COMPRESSION` / `OTEL_EXPORTER_OTLP_COMPRESSION`
+| configprop:management.otlp.metrics.export.compression-mode[]
+
+| `OTEL_EXPORTER_OTLP_METRICS_TIMEOUT` / `OTEL_EXPORTER_OTLP_TIMEOUT`
+| configprop:management.otlp.metrics.export.read-timeout[]
+
+| `OTEL_EXPORTER_OTLP_METRICS_HEADERS` / `OTEL_EXPORTER_OTLP_HEADERS`
+| configprop:management.otlp.metrics.export.headers[]
+
+| `OTEL_METRIC_EXPORT_INTERVAL`
+| configprop:management.otlp.metrics.export.step[]
+
+| `OTEL_METRICS_EXPORTER`
+| configprop:management.otlp.metrics.export.enabled[] (chỉ `otlp` enable OTLP export; value khác disable nhưng không enable exporter khác)
+
+| `OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE` / `OTEL_EXPORTER_OTLP_CERTIFICATE`
+| configprop:management.otlp.metrics.export.ssl.bundle[] (auto-configured SSL bundle)
+
+| `OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY` / `OTEL_EXPORTER_OTLP_CLIENT_KEY`
+| configprop:management.otlp.metrics.export.ssl.bundle[] (auto-configured SSL bundle)
+
+| `OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE` / `OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE`
+| configprop:management.otlp.metrics.export.ssl.bundle[] (auto-configured SSL bundle)
+|===
+
+[[actuator.observability.opentelemetry.environment-variables.traces]]
+==== Traces Exporter
+
+[cols="1,1"]
+|===
+| Environment Variable | Spring Boot Property
+
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` / `OTEL_EXPORTER_OTLP_ENDPOINT`
+| configprop:management.opentelemetry.tracing.export.otlp.endpoint[]
+
+| `OTEL_EXPORTER_OTLP_TRACES_COMPRESSION` / `OTEL_EXPORTER_OTLP_COMPRESSION`
+| configprop:management.opentelemetry.tracing.export.otlp.compression[]
+
+| `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT` / `OTEL_EXPORTER_OTLP_TIMEOUT`
+| configprop:management.opentelemetry.tracing.export.otlp.timeout[]
+
+| `OTEL_EXPORTER_OTLP_TRACES_PROTOCOL` / `OTEL_EXPORTER_OTLP_PROTOCOL`
+| configprop:management.opentelemetry.tracing.export.otlp.transport[]
+
+| `OTEL_EXPORTER_OTLP_TRACES_HEADERS` / `OTEL_EXPORTER_OTLP_HEADERS`
+| configprop:management.opentelemetry.tracing.export.otlp.headers[]
+
+| `OTEL_BSP_SCHEDULE_DELAY`
+| configprop:management.opentelemetry.tracing.export.schedule-delay[]
+
+| `OTEL_BSP_EXPORT_TIMEOUT`
+| configprop:management.opentelemetry.tracing.export.timeout[]
+
+| `OTEL_BSP_MAX_QUEUE_SIZE`
+| configprop:management.opentelemetry.tracing.export.max-queue-size[]
+
+| `OTEL_BSP_MAX_EXPORT_BATCH_SIZE`
+| configprop:management.opentelemetry.tracing.export.max-batch-size[]
+
+| `OTEL_TRACES_EXPORTER`
+| configprop:management.tracing.export.otlp.enabled[] (chỉ `otlp` enable OTLP export; value khác disable nhưng không enable exporter khác)
+
+| `OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT` / `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT`
+| configprop:management.opentelemetry.tracing.limits.max-attribute-value-length[]
+
+| `OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT` / `OTEL_ATTRIBUTE_COUNT_LIMIT`
+| configprop:management.opentelemetry.tracing.limits.max-attributes[]
+
+| `OTEL_SPAN_EVENT_COUNT_LIMIT`
+| configprop:management.opentelemetry.tracing.limits.max-events[]
+
+| `OTEL_SPAN_LINK_COUNT_LIMIT`
+| configprop:management.opentelemetry.tracing.limits.max-links[]
+
+| `OTEL_EVENT_ATTRIBUTE_COUNT_LIMIT`
+| configprop:management.opentelemetry.tracing.limits.max-attributes-per-event[]
+
+| `OTEL_LINK_ATTRIBUTE_COUNT_LIMIT`
+| configprop:management.opentelemetry.tracing.limits.max-attributes-per-link[]
+
+| `OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE` / `OTEL_EXPORTER_OTLP_CERTIFICATE`
+| configprop:management.opentelemetry.tracing.export.otlp.ssl.bundle[] (auto-configured SSL bundle)
+
+| `OTEL_EXPORTER_OTLP_TRACES_CLIENT_KEY` / `OTEL_EXPORTER_OTLP_CLIENT_KEY`
+| configprop:management.opentelemetry.tracing.export.otlp.ssl.bundle[] (auto-configured SSL bundle)
+
+| `OTEL_EXPORTER_OTLP_TRACES_CLIENT_CERTIFICATE` / `OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE`
+| configprop:management.opentelemetry.tracing.export.otlp.ssl.bundle[] (auto-configured SSL bundle)
+|===
+
+[[actuator.observability.opentelemetry.environment-variables.logs]]
+==== Logs Exporter
+
+[cols="1,1"]
+|===
+| Environment Variable | Spring Boot Property
+
+| `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` / `OTEL_EXPORTER_OTLP_ENDPOINT`
+| configprop:management.opentelemetry.logging.export.otlp.endpoint[]
+
+| `OTEL_EXPORTER_OTLP_LOGS_COMPRESSION` / `OTEL_EXPORTER_OTLP_COMPRESSION`
+| configprop:management.opentelemetry.logging.export.otlp.compression[]
+
+| `OTEL_EXPORTER_OTLP_LOGS_TIMEOUT` / `OTEL_EXPORTER_OTLP_TIMEOUT`
+| configprop:management.opentelemetry.logging.export.otlp.timeout[]
+
+| `OTEL_EXPORTER_OTLP_LOGS_PROTOCOL` / `OTEL_EXPORTER_OTLP_PROTOCOL`
+| configprop:management.opentelemetry.logging.export.otlp.transport[]
+
+| `OTEL_EXPORTER_OTLP_LOGS_HEADERS` / `OTEL_EXPORTER_OTLP_HEADERS`
+| configprop:management.opentelemetry.logging.export.otlp.headers[]
+
+| `OTEL_BLRP_SCHEDULE_DELAY`
+| configprop:management.opentelemetry.logging.export.schedule-delay[]
+
+| `OTEL_BLRP_EXPORT_TIMEOUT`
+| configprop:management.opentelemetry.logging.export.timeout[]
+
+| `OTEL_BLRP_MAX_QUEUE_SIZE`
+| configprop:management.opentelemetry.logging.export.max-queue-size[]
+
+| `OTEL_BLRP_MAX_EXPORT_BATCH_SIZE`
+| configprop:management.opentelemetry.logging.export.max-batch-size[]
+
+| `OTEL_LOGS_EXPORTER`
+| configprop:management.logging.export.otlp.enabled[] (chỉ `otlp` enable OTLP export; value khác disable nhưng không enable exporter khác)
+
+| `OTEL_LOGRECORD_ATTRIBUTE_VALUE_LENGTH_LIMIT` / `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT`
+| configprop:management.opentelemetry.logging.limits.max-attribute-value-length[]
+
+| `OTEL_LOGRECORD_ATTRIBUTE_COUNT_LIMIT` / `OTEL_ATTRIBUTE_COUNT_LIMIT`
+| configprop:management.opentelemetry.logging.limits.max-attributes[]
+
+| `OTEL_EXPORTER_OTLP_LOGS_CERTIFICATE` / `OTEL_EXPORTER_OTLP_CERTIFICATE`
+| configprop:management.opentelemetry.logging.export.otlp.ssl.bundle[] (auto-configured SSL bundle)
+
+| `OTEL_EXPORTER_OTLP_LOGS_CLIENT_KEY` / `OTEL_EXPORTER_OTLP_CLIENT_KEY`
+| configprop:management.opentelemetry.logging.export.otlp.ssl.bundle[] (auto-configured SSL bundle)
+
+| `OTEL_EXPORTER_OTLP_LOGS_CLIENT_CERTIFICATE` / `OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE`
+| configprop:management.opentelemetry.logging.export.otlp.ssl.bundle[] (auto-configured SSL bundle)
+|===
+
+[[actuator.observability.opentelemetry.environment-variables.resource]]
+==== Resource
+
+Các environment variable sau cấu hình OpenTelemetry resource:
+
+* https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#general-sdk-configuration[`OTEL_RESOURCE_ATTRIBUTES`]
+* https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#general-sdk-configuration[`OTEL_SERVICE_NAME`]
+
+NOTE: `OTEL_RESOURCE_ATTRIBUTES` là danh sách key-value pair.
+Ví dụ: `key1=value1,key2=value2,key3=spring%20boot`.
+Mọi attribute value được xem là string, và character ngoài baggage-octet range phải được **percent-encoded**.
+
+[[actuator.observability.opentelemetry.environment-variables.unsupported]]
+==== Unsupported Environment Variables
+
+Các environment variable khác mô tả trong https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[OpenTelemetry documentation] không được hỗ trợ.
+
+Nếu muốn mọi environment variable do OpenTelemetry SDK chỉ định có hiệu lực, cần tự cung cấp bean `OpenTelemetry`.
+
+WARNING: Việc này sẽ tắt OpenTelemetry auto-configuration của Spring Boot và có thể làm hỏng built-in observability functionality.
+
+Trước tiên thêm dependency `io.opentelemetry:opentelemetry-sdk-extension-autoconfigure` để có https://opentelemetry.io/docs/languages/java/configuration/#zero-code-sdk-autoconfigure[OpenTelemetry zero-code SDK autoconfigure module], sau đó thêm configuration:
+
+include-code::AutoConfiguredOpenTelemetrySdkConfiguration[]
+
+[[actuator.observability.opentelemetry.logging]]
+=== Logging
+
+javadoc:org.springframework.boot.opentelemetry.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration[] configure javadoc:io.opentelemetry.sdk.logs.SdkLoggerProvider[] của OpenTelemetry.
+Export log qua OTLP được hỗ trợ bởi javadoc:org.springframework.boot.opentelemetry.autoconfigure.logging.otlp.OtlpLoggingAutoConfiguration[], enable OTLP log exporting qua HTTP hoặc gRPC.
+
+NOTE: Nếu cần advanced customization cho OTLP log record exporter, register bean javadoc:org.springframework.boot.opentelemetry.autoconfigure.logging.otlp.OtlpHttpLogRecordExporterBuilderCustomizer[] hoặc javadoc:org.springframework.boot.opentelemetry.autoconfigure.logging.otlp.OtlpGrpcLogRecordExporterBuilderCustomizer[].
+Chúng được invoke trước khi tạo javadoc:io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter[] hoặc javadoc:io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter[].
+Customizer có precedence hơn auto-configuration.
+
+Tuy nhiên, dù có bean `SdkLoggerProvider`, Spring Boot không hỗ trợ bridge log vào bean này out of the box.
+Có thể dùng third-party log bridge như mô tả trong xref:reference:actuator/loggers.adoc#actuator.loggers.opentelemetry[Logging with OpenTelemetry].
+
+[[actuator.observability.opentelemetry.metrics]]
+=== Metrics
+
+Trong Spring portfolio, metrics dùng Micrometer, nghĩa là metrics không được collect/export qua javadoc:io.opentelemetry.sdk.metrics.SdkMeterProvider[] của OpenTelemetry.
+Spring Boot không cung cấp bean `SdkMeterProvider`.
+
+Tuy nhiên Micrometer metrics có thể export qua OTLP tới OpenTelemetry-capable backend bằng javadoc:io.micrometer.registry.otlp.OtlpMeterRegistry[], như mô tả trong xref:reference:actuator/metrics.adoc#actuator.metrics.export.otlp[Metrics with OTLP].
+
+NOTE: OTLP registry của Micrometer không dùng bean `Resource`, nhưng setting `OTEL_RESOURCE_ATTRIBUTES`, `OTEL_SERVICE_NAME` hoặc configprop:management.opentelemetry.resource-attributes[] vẫn hoạt động.
+
+[[actuator.observability.opentelemetry.metrics.api-and-sdk]]
+==== Metrics qua OpenTelemetry API và SDK
+
+Nếu bạn hoặc dependency sử dụng javadoc:io.opentelemetry.api.metrics.MeterProvider[] của OpenTelemetry, các metrics đó không được export.
+
+Khuyến nghị mạnh dùng Micrometer để report metrics.
+Nếu dependency dùng OpenTelemetry `MeterProvider`, có thể include configuration sau để configure bean `MeterProvider`, sau đó wire vào dependency:
+
+include-code::OpenTelemetryMetricsConfiguration[]
+
+Configuration này cũng enable metrics export qua OTLP over HTTP.
+
+[[actuator.observability.opentelemetry.tracing]]
+=== Tracing
+
+Nếu dùng Micrometer tracing, javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.OpenTelemetryTracingAutoConfiguration[] configure javadoc:io.opentelemetry.sdk.trace.SdkTracerProvider[].
+Export trace qua OTLP được enable bởi javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpTracingAutoConfiguration[], hỗ trợ OTLP qua HTTP hoặc gRPC.
+
+Khuyến nghị mạnh dùng Micrometer Observation hoặc Tracing API thay vì trực tiếp dùng OpenTelemetry API.

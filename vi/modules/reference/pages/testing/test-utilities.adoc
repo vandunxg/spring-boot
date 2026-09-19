@@ -1,0 +1,32 @@
+[[testing.utilities]]
+= Test Utilities
+
+Một số test utility class thường hữu ích khi test application được đóng gói trong `spring-boot`.
+
+[[testing.utilities.config-data-application-context-initializer]]
+== ConfigDataApplicationContextInitializer
+
+javadoc:org.springframework.boot.test.context.ConfigDataApplicationContextInitializer[] là javadoc:org.springframework.context.ApplicationContextInitializer[] có thể áp dụng cho test để load file Spring Boot `application.properties`.
+Có thể dùng khi không cần đầy đủ feature của javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation]:
+
+include-code::MyConfigFileTests[]
+
+NOTE: Chỉ dùng javadoc:org.springframework.boot.test.context.ConfigDataApplicationContextInitializer[] không hỗ trợ injection `@Value("${...}")`.
+Nhiệm vụ duy nhất của nó là đảm bảo file `application.properties` được load vào javadoc:org.springframework.core.env.Environment[] của Spring.
+Để hỗ trợ javadoc:org.springframework.beans.factory.annotation.Value[format=annotation], cần cấu hình thêm javadoc:org.springframework.context.support.PropertySourcesPlaceholderConfigurer[] hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], vốn auto-configure component này.
+
+[[testing.utilities.test-property-values]]
+== TestPropertyValues
+
+javadoc:org.springframework.boot.test.util.TestPropertyValues[] cho phép nhanh chóng thêm property vào javadoc:org.springframework.core.env.ConfigurableEnvironment[] hoặc javadoc:org.springframework.context.ConfigurableApplicationContext[].
+Có thể gọi bằng chuỗi `key=value`:
+
+include-code::MyEnvironmentTests[]
+
+[[testing.utilities.output-capture]]
+== OutputCaptureExtension
+
+javadoc:org.springframework.boot.test.system.OutputCaptureExtension[] là JUnit javadoc:org.junit.jupiter.api.extension.Extension[] dùng để capture output javadoc:java.lang.System#out[] và javadoc:java.lang.System#err[].
+Để dùng, thêm `@ExtendWith(OutputCaptureExtension.class)` và inject javadoc:org.springframework.boot.test.system.CapturedOutput[] làm argument cho constructor test class hoặc test method:
+
+include-code::MyOutputCaptureTests[]

@@ -1,0 +1,30 @@
+[[actuator.process-monitoring]]
+= Process Monitoring
+
+Module `spring-boot` có hai class tạo file thường hữu ích cho process monitoring:
+
+* javadoc:org.springframework.boot.context.ApplicationPidFileWriter[] tạo file chứa application PID (mặc định `application.pid` trong application directory).
+* javadoc:org.springframework.boot.web.server.context.WebServerPortFileWriter[] tạo file chứa port của running web server (mặc định `application.port` trong application directory).
+
+Mặc định các writer không active, nhưng có thể enable:
+
+* xref:actuator/process-monitoring.adoc#actuator.process-monitoring.configuration[]
+* xref:actuator/process-monitoring.adoc#actuator.process-monitoring.programmatically[]
+
+[[actuator.process-monitoring.configuration]]
+== Extending Configuration
+
+Trong file `META-INF/spring.factories`, activate listener ghi PID file:
+
+[source]
+----
+org.springframework.context.ApplicationListener=\
+org.springframework.boot.context.ApplicationPidFileWriter,\
+org.springframework.boot.web.server.context.WebServerPortFileWriter
+----
+
+[[actuator.process-monitoring.programmatically]]
+== Programmatically Enabling Process Monitoring
+
+Có thể activate listener bằng `SpringApplication.addListeners(...)` và truyền javadoc:java.io.Writer[] phù hợp.
+Method này cũng cho phép customize file name và path trong constructor javadoc:java.io.Writer[].

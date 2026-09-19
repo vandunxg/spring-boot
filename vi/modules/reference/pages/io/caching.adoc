@@ -1,0 +1,297 @@
+[[io.caching]]
+= Caching
+
+Spring Framework hỗ trợ việc thêm caching vào application một cách transparent.
+Ở core, abstraction áp dụng caching cho method, từ đó giảm số lần thực thi dựa trên thông tin có trong cache.
+Caching logic được áp dụng transparent mà không can thiệp vào caller.
+Xem {url-spring-framework-docs}/integration/cache.html[phần liên quan] trong Spring Framework reference documentation để biết thêm.
+
+Spring Boot auto-configure cache infrastructure miễn là caching support được bật bằng annotation javadoc:org.springframework.cache.annotation.EnableCaching[format=annotation].
+
+TIP: Tránh thêm javadoc:org.springframework.cache.annotation.EnableCaching[format=annotation] vào application class chứa main method.
+Làm vậy khiến caching trở thành feature bắt buộc, kể cả xref:io/caching.adoc#io.caching.testing[khi chạy test suite].
+
+Để thêm caching vào operation của service, thêm annotation phù hợp vào method như ví dụ sau:
+
+include-code::MyMathService[]
+
+Ví dụ này minh họa caching trên một operation có thể tốn chi phí.
+Trước khi invoke `computePiDecimal`, abstraction tìm entry trong cache `piDecimals` match argument `precision`.
+Nếu tìm thấy entry, content trong cache được trả ngay cho caller và method không được invoke.
+Nếu không, method được invoke và cache được update trước khi trả value.
+
+CAUTION: Bạn cũng có thể dùng transparent các annotation JSR-107 (JCache) chuẩn như javadoc:javax.cache.annotation.CacheResult[format=annotation].
+Tuy nhiên, không nên trộn Spring Cache annotation và JCache annotation.
+
+Nếu không thêm cache library cụ thể, Spring Boot auto-configure xref:io/caching.adoc#io.caching.provider.simple[simple provider] dùng concurrent map trong memory.
+Khi cần cache, chẳng hạn `piDecimals`, provider này tạo cache cho bạn.
+Simple provider không thực sự được khuyến nghị cho production nhưng rất phù hợp để bắt đầu và hiểu feature.
+Sau khi chọn cache provider, hãy đọc documentation của provider để biết cách cấu hình cache application dùng.
+Gần như mọi provider đều yêu cầu explicit configuration cho từng cache.
+Một số provider cho phép customize default cache được định nghĩa bởi configprop:spring.cache.cache-names[].
+
+TIP: Cũng có thể transparent {url-spring-framework-docs}/integration/cache/annotations.html#cache-annotations-put[update] hoặc {url-spring-framework-docs}/integration/cache/annotations.html#cache-annotations-evict[evict] data khỏi cache.
+
+
+
+[[io.caching.provider]]
+== Cache Provider được hỗ trợ
+
+Cache abstraction không cung cấp actual store mà dựa trên abstraction từ interface javadoc:org.springframework.cache.Cache[] và javadoc:org.springframework.cache.CacheManager[].
+
+Nếu chưa định nghĩa bean javadoc:org.springframework.cache.CacheManager[] hoặc javadoc:org.springframework.cache.interceptor.CacheResolver[] tên `cacheResolver` (xem javadoc:org.springframework.cache.annotation.CachingConfigurer[]), Spring Boot thử detect các provider sau theo thứ tự:
+
+. xref:io/caching.adoc#io.caching.provider.generic[]
+. xref:io/caching.adoc#io.caching.provider.jcache[] (EhCache 3, Hazelcast, Infinispan và các provider khác)
+. xref:io/caching.adoc#io.caching.provider.hazelcast[]
+. xref:io/caching.adoc#io.caching.provider.infinispan[]
+. xref:io/caching.adoc#io.caching.provider.couchbase[]
+. xref:io/caching.adoc#io.caching.provider.redis[]
+. xref:io/caching.adoc#io.caching.provider.caffeine[]
+. xref:io/caching.adoc#io.caching.provider.cache2k[]
+. xref:io/caching.adoc#io.caching.provider.simple[]
+
+TIP: Nếu javadoc:org.springframework.cache.CacheManager[] được Spring Boot auto-configure, có thể _force_ cache provider cụ thể bằng configprop:spring.cache.type[].
+
+TIP: Dùng starter `spring-boot-starter-cache` để thêm nhanh basic caching dependency.
+Starter kéo `spring-context-support`.
+Nếu thêm dependency thủ công, phải include `spring-context-support` để dùng JCache hoặc Caffeine support.
+
+Nếu javadoc:org.springframework.cache.CacheManager[] được Spring Boot auto-configure, bạn có thể tune configuration trước khi initialize hoàn toàn bằng bean implement javadoc:org.springframework.boot.cache.autoconfigure.CacheManagerCustomizer[].
+Ví dụ sau đặt flag để value `null` không được truyền xuống underlying map:
+
+include-code::MyCacheManagerConfiguration[]
+
+NOTE: Ví dụ trên giả định javadoc:org.springframework.cache.concurrent.ConcurrentMapCacheManager[] được auto-configure.
+Nếu không, customizer không được invoke.
+Có thể có nhiều customizer và sắp thứ tự bằng javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc javadoc:org.springframework.core.Ordered[].
+
+
+
+[[io.caching.provider.generic]]
+=== Generic
+
+Generic caching được dùng nếu context định nghĩa _ít nhất_ một bean javadoc:org.springframework.cache.Cache[].
+Một javadoc:org.springframework.cache.CacheManager[] wrap tất cả bean type đó sẽ được tạo.
+
+
+
+[[io.caching.provider.jcache]]
+=== JCache (JSR-107)
+
+https://jcp.org/en/jsr/detail?id=107[JCache] được bootstrap khi có javadoc:javax.cache.spi.CachingProvider[] trên classpath, tức có JSR-107 compliant caching library, và javadoc:org.springframework.cache.jcache.JCacheCacheManager[] được cung cấp bởi starter `spring-boot-starter-cache`.
+Có nhiều compliant library và Spring Boot quản lý dependency cho Ehcache 3, Hazelcast và Infinispan.
+Có thể thêm compliant library khác.
+
+Nếu có nhiều provider, provider phải được chỉ định rõ ràng.
+Dù JSR-107 không bắt buộc một cách chuẩn để định nghĩa location của configuration file, Spring Boot cố gắng hỗ trợ setting cache với implementation detail:
+
+[configprops,yaml]
+----
+    # Only necessary if more than one provider is present
+	spring:
+	  cache:
+	    jcache:
+	      provider: "com.example.MyCachingProvider"
+	      config: "classpath:example.xml"
+----
+
+NOTE: Khi cache library cung cấp cả native implementation và JSR-107 support, Spring Boot ưu tiên JSR-107 để giữ cùng feature khi đổi JSR-107 implementation.
+
+TIP: Spring Boot có xref:io/hazelcast.adoc[general support cho Hazelcast].
+Nếu có một javadoc:com.hazelcast.core.HazelcastInstance[], nó cũng tự động được reuse cho javadoc:javax.cache.CacheManager[] trừ khi configprop:spring.cache.jcache.config[] được chỉ định.
+
+Có hai cách customize underlying javadoc:javax.cache.CacheManager[]:
+
+* Cache có thể được tạo khi startup bằng configprop:spring.cache.cache-names[].
+Nếu định nghĩa custom bean javadoc:javax.cache.configuration.Configuration[], bean đó được dùng để customize cache.
+* Bean javadoc:org.springframework.boot.cache.autoconfigure.CacheManagerCustomizer[] được invoke với reference tới javadoc:javax.cache.CacheManager[] để customize hoàn toàn.
+
+TIP: Nếu định nghĩa standard bean javadoc:javax.cache.CacheManager[], nó tự động được wrap trong implementation javadoc:org.springframework.cache.CacheManager[] mà abstraction cần.
+Không có customization thêm được áp dụng.
+
+
+
+[[io.caching.provider.hazelcast]]
+=== Hazelcast
+
+Spring Boot có xref:io/hazelcast.adoc[general support cho Hazelcast].
+Nếu javadoc:com.hazelcast.core.HazelcastInstance[] được auto-configure và `com.hazelcast:hazelcast-spring` có trên classpath, nó tự động được wrap trong javadoc:org.springframework.cache.CacheManager[].
+
+NOTE: Hazelcast có thể dùng như JCache compliant cache hoặc Spring javadoc:org.springframework.cache.CacheManager[] compliant cache.
+Khi configprop:spring.cache.type[] = `hazelcast`, Spring Boot dùng implementation dựa trên javadoc:org.springframework.cache.CacheManager[].
+Nếu muốn JCache compliant cache, đặt thành `jcache`.
+Nếu có nhiều JCache provider và muốn force Hazelcast, phải xref:io/caching.adoc#io.caching.provider.jcache[chỉ định rõ JCache provider].
+
+
+
+[[io.caching.provider.infinispan]]
+=== Infinispan
+
+https://infinispan.org/[Infinispan] không có default configuration file location nên phải chỉ định rõ ràng.
+Nếu không, default bootstrap được dùng.
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    infinispan:
+      config: "infinispan.xml"
+----
+
+Cache có thể được tạo khi startup bằng configprop:spring.cache.cache-names[].
+Nếu custom bean javadoc:org.infinispan.configuration.cache.ConfigurationBuilder[] được định nghĩa, nó được dùng để customize cache.
+
+Xem https://infinispan.org/docs/stable/titles/spring/spring.html[documentation] để biết thêm.
+
+
+[[io.caching.provider.couchbase]]
+=== Couchbase
+
+Nếu Spring Data Couchbase có sẵn và Couchbase được xref:data/nosql.adoc#data.nosql.couchbase[cấu hình], javadoc:org.springframework.data.couchbase.cache.CouchbaseCacheManager[] được auto-configure.
+Có thể tạo cache bổ sung khi startup bằng configprop:spring.cache.cache-names[] và cấu hình default bằng `spring.cache.couchbase.*`.
+Ví dụ sau tạo `cache1` và `cache2` với entry _expiration_ 10 phút:
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    cache-names: "cache1,cache2"
+    couchbase:
+      expiration: "10m"
+----
+
+Nếu cần kiểm soát nhiều hơn, register bean javadoc:org.springframework.boot.cache.autoconfigure.CouchbaseCacheManagerBuilderCustomizer[].
+Ví dụ:
+
+include-code::MyCouchbaseCacheManagerConfiguration[]
+
+
+
+[[io.caching.provider.redis]]
+=== Redis
+
+Nếu https://redis.io/[Redis] có sẵn và được cấu hình, javadoc:org.springframework.data.redis.cache.RedisCacheManager[] được auto-configure.
+Có thể tạo cache bổ sung khi startup bằng configprop:spring.cache.cache-names[] và cấu hình default bằng `spring.cache.redis.*`.
+Ví dụ sau tạo `cache1` và `cache2` với _time to live_ 10 phút:
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    cache-names: "cache1,cache2"
+    redis:
+      time-to-live: "10m"
+----
+
+NOTE: Mặc định key prefix được thêm để nếu hai cache riêng dùng cùng key, Redis không bị overlapping key và trả invalid value.
+Nên giữ setting này nếu tự tạo javadoc:org.springframework.data.redis.cache.RedisCacheManager[].
+
+TIP: Có thể kiểm soát hoàn toàn default configuration bằng custom bean javadoc:org.springframework.data.redis.cache.RedisCacheConfiguration[].
+Điều này hữu ích khi customize default serialization strategy.
+
+Nếu cần kiểm soát nhiều hơn, register bean javadoc:org.springframework.boot.cache.autoconfigure.RedisCacheManagerBuilderCustomizer[]:
+
+include-code::MyRedisCacheManagerConfiguration[]
+
+
+
+[[io.caching.provider.caffeine]]
+=== Caffeine
+
+https://github.com/ben-manes/caffeine[Caffeine] là bản rewrite Java 8 của cache Guava và thay thế support cho Guava.
+Nếu Caffeine có mặt, javadoc:org.springframework.cache.caffeine.CaffeineCacheManager[] được auto-configure.
+Cache có thể được tạo khi startup bằng configprop:spring.cache.cache-names[] và customize theo thứ tự:
+
+. Cache spec từ `spring.cache.caffeine.spec`
+. Bean javadoc:com.github.benmanes.caffeine.cache.CaffeineSpec[]
+. Bean javadoc:com.github.benmanes.caffeine.cache.Caffeine[]
+
+Ví dụ tạo `cache1` và `cache2` với maximum size 500 và _time to live_ 10 phút:
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    cache-names: "cache1,cache2"
+    caffeine:
+      spec: "maximumSize=500,expireAfterAccess=600s"
+----
+
+Nếu bean javadoc:com.github.benmanes.caffeine.cache.CacheLoader[] được định nghĩa, nó tự động liên kết với javadoc:org.springframework.cache.caffeine.CaffeineCacheManager[].
+Vì CacheLoader áp dụng cho _tất cả_ cache do cache manager quản lý, nó phải được định nghĩa là `CacheLoader<Object, Object>`.
+Auto-configuration bỏ qua generic type khác.
+
+
+
+[[io.caching.provider.cache2k]]
+=== Cache2k
+
+https://cache2k.org/[Cache2k] là in-memory cache.
+Nếu Cache2k Spring integration có mặt, `SpringCache2kCacheManager` được auto-configure.
+
+Cache có thể được tạo khi startup bằng configprop:spring.cache.cache-names[].
+Default có thể customize bằng bean javadoc:org.springframework.boot.cache.autoconfigure.Cache2kBuilderCustomizer[].
+Ví dụ sau cấu hình capacity 200 entry với expiration 5 phút:
+
+include-code::MyCache2kDefaultsConfiguration[]
+
+
+
+[[io.caching.provider.simple]]
+=== Simple
+
+Nếu không tìm thấy provider nào khác, simple implementation dùng javadoc:java.util.concurrent.ConcurrentHashMap[] làm cache store được cấu hình.
+Đây là default khi application không có caching library.
+Mặc định cache được tạo khi cần, nhưng có thể giới hạn danh sách cache bằng property `cache-names`.
+Ví dụ chỉ cho phép `cache1` và `cache2`:
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    cache-names: "cache1,cache2"
+----
+
+Nếu application dùng cache không có trong danh sách, application fail tại runtime khi cache được cần chứ không fail lúc startup.
+Behavior này tương tự cache provider thật khi dùng cache chưa khai báo.
+
+
+
+[[io.caching.provider.none]]
+=== None
+
+Nếu cần no-op cache thay cho auto-configured cache manager trong environment cụ thể, đặt cache type thành `none`:
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    type: "none"
+----
+
+
+
+[[io.caching.testing]]
+== Testing
+
+Khi chạy test suite, dùng no-op implementation thường hữu ích.
+Phần này liệt kê một số strategy dành cho test.
+
+Khi custom javadoc:org.springframework.cache.CacheManager[] được định nghĩa, tốt nhất đảm bảo caching configuration nằm trong class javadoc:org.springframework.context.annotation.Configuration[format=annotation] độc lập.
+Điều này đảm bảo slice test không bắt buộc caching.
+Với test enable full context như javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], cần explicit configuration override regular configuration.
+
+Nếu caching được auto-configure, có thêm option.
+Test có thể annotate bằng javadoc:org.springframework.boot.cache.test.autoconfigure.AutoConfigureCache[format=annotation] để thay auto-configured javadoc:org.springframework.cache.CacheManager[] bằng no-op implementation.
+
+include-code::MyIntegrationTests[]
+
+Option khác là force no-op implementation cho auto-configured javadoc:org.springframework.cache.CacheManager[]:
+
+[configprops,yaml]
+----
+spring:
+  cache:
+    type: "none"
+----

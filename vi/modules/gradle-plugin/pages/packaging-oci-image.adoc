@@ -1,0 +1,687 @@
+[[build-image]]
+= Packaging OCI Images
+
+Plugin có thể tạo https://github.com/opencontainers/image-spec[OCI image] từ jar hoặc war file bằng https://buildpacks.io[Cloud Native Buildpacks] (CNB).
+Image có thể build bằng task `bootBuildImage`.
+
+NOTE: Vì security, image build và run bằng non-root user.
+Xem {url-buildpacks-docs}/reference/spec/platform-api/#users[CNB specification] để biết thêm.
+
+Task tự động được tạo khi `java` hoặc `war` plugin apply và là instance {apiref-gradle-plugin-boot-build-image}[`BootBuildImage`].
+
+[[build-image.docker-daemon]]
+== Docker Daemon
+
+Task `bootBuildImage` cần access Docker daemon.
+Task inspect local Docker CLI https://docs.docker.com/engine/reference/commandline/cli/#configuration-files[configuration file] để determine current https://docs.docker.com/engine/context/working-with-contexts/[context] và dùng connection information của context communicate với Docker daemon.
+Nếu không determine được current context hoặc context không có connection information, task dùng default local connection.
+Điều này hoạt động với https://docs.docker.com/install/[Docker Engine] trên mọi supported platform mà không cần configuration.
+
+Environment variable có thể set để configure `bootBuildImage` dùng alternative local hoặc remote connection:
+
+|===
+| Environment variable | Mô tả
+
+| DOCKER_CONFIG
+| Location Docker CLI https://docs.docker.com/engine/reference/commandline/cli/#configuration-files[configuration file] dùng determine current context (default `$HOME/.docker`)
+
+| DOCKER_CONTEXT
+| Name của https://docs.docker.com/engine/context/working-with-contexts/[context] dùng retrieve host information từ Docker CLI configuration file (override `DOCKER_HOST`)
+
+| DOCKER_HOST
+| URL chứa host và port Docker daemon, ví dụ `tcp://192.168.99.100:2376`
+
+| DOCKER_TLS_VERIFY
+| Enable secure HTTPS protocol khi set `1` (optional)
+
+| DOCKER_CERT_PATH
+| Path tới certificate và key file cho HTTPS (required nếu `DOCKER_TLS_VERIFY=1`, ignore nếu không)
+|===
+
+Docker daemon connection information cũng có thể cung cấp bằng property `docker` trong plugin configuration:
+
+|===
+| Property | Mô tả
+
+| `context`
+| Name của https://docs.docker.com/engine/context/working-with-contexts/[context] dùng retrieve host information từ Docker CLI https://docs.docker.com/engine/reference/commandline/cli/#configuration-files[configuration file]
+
+| `host`
+| URL chứa host và port Docker daemon, ví dụ `tcp://192.168.99.100:2376`
+
+| `tlsVerify`
+| Enable secure HTTPS protocol khi set `true` (optional)
+
+| `certPath`
+| Path tới certificate/key file cho HTTPS (required nếu `tlsVerify` là `true`, ignore nếu không)
+
+| `bindHostToBuilder`
+| Khi `true`, value property `host` được cung cấp cho container tạo cho CNB builder (optional)
+|===
+
+Chi tiết xem xref:packaging-oci-image.adoc#build-image.examples.docker[examples].
+
+[[build-image.docker-registry]]
+== Docker Registry
+
+Nếu Docker image specify bởi property `builder` hoặc `runImage` lưu trong private Docker image registry cần authentication, credential có thể cung cấp bằng property `docker.builderRegistry`.
+
+Nếu generated Docker image sẽ publish tới Docker image registry, credential có thể cung cấp bằng property `docker.publishRegistry`.
+
+Property được cung cấp cho user authentication hoặc identity token authentication.
+Xem documentation registry đang dùng để biết supported authentication method.
+
+Property available cho `docker.builderRegistry` và `docker.publishRegistry`:
+
+|===
+| Property | Mô tả
+
+| `username`
+| Username Docker image registry user. Required cho user authentication.
+
+| `password`
+| Password Docker image registry user. Required cho user authentication.
+
+| `url`
+| Address Docker image registry. Optional cho user authentication.
+
+| `email`
+| E-mail address Docker image registry user. Optional cho user authentication.
+
+| `token`
+| Identity token Docker image registry user. Required cho token authentication.
+|===
+
+Chi tiết xem xref:packaging-oci-image.adoc#build-image.examples.docker[examples].
+
+[NOTE]
+====
+Nếu không cung cấp credential, plugin đọc existing Docker configuration file của user, thường ở `$HOME/.docker/config.json`, để determine authentication method.
+Dùng các method này, plugin cố cung cấp authentication credential cho requested image.
+
+Plugin hỗ trợ:
+
+- *Credential Helpers*: External tool configure trong Docker configuration file cung cấp credential cho specific registry. Ví dụ `osxkeychain` hoặc `ecr-login` handle authentication.
+- *Credential Store*: Default fallback mechanism store/retrieve credential an toàn, ví dụ `desktop` cho Docker Desktop.
+- *Static Credentials*: Credential store trực tiếp trong Docker configuration file dưới section `auths`.
+====
+
+[[build-image.customization]]
+== Image Customizations
+
+Plugin invoke {url-buildpacks-docs}/for-app-developers/concepts/builder/[builder] để orchestrate generation của image.
+Builder include nhiều {url-buildpacks-docs}/for-app-developers/concepts/buildpack/[buildpack] có thể inspect application để influence generated image.
+Mặc định plugin chọn builder image.
+Name generated image derive từ project property.
+
+Task property có thể dùng configure cách builder operate trên project.
+Các property available và default:
+
+|===
+| Property | Command-line option | Mô tả | Default value
+
+| `builder`
+| `--builder`
+| Name builder image.
+| `paketobuildpacks/builder-noble-java-tiny:latest`
+
+| `trustBuilder`
+| `--trustBuilder`
+| Có treat builder là {url-buildpacks-docs}/for-platform-operators/how-to/integrate-ci/pack/concepts/trusted_builders/#what-is-a-trusted-builder[trusted] hay không.
+| `true` nếu builder là một trong `paketobuildpacks/builder-noble-java-tiny`, `paketobuildpacks/builder-jammy-java-tiny`, `paketobuildpacks/builder-jammy-tiny`, `paketobuildpacks/builder-jammy-base`, `paketobuildpacks/builder-jammy-full`, `paketobuildpacks/builder-jammy-buildpackless-tiny`, `paketobuildpacks/builder-jammy-buildpackless-base`, `paketobuildpacks/builder-jammy-buildpackless-full`, `gcr.io/buildpacks/builder`, `heroku/builder`; nếu không là `false`.
+
+| `imagePlatform`
+| `--imagePlatform`
+a|Platform (operating system và architecture) của builder, run và buildpack image được pull.
+Phải dạng `OS[/architecture[/variant]]` như `linux/amd64`, `linux/arm64` hoặc `linux/arm/v5`.
+Xem documentation builder để determine available OS/architecture option.
+| Không default, nghĩa là dùng host machine platform.
+
+| `runImage`
+| `--runImage`
+| Name run image.
+| Không default, dùng run image specify trong Builder metadata.
+
+| `imageName`
+| `--imageName`
+| javadoc:org.springframework.boot.buildpack.platform.docker.type.ImageReference#of(java.lang.String)[Image name] cho generated image.
+| `docker.io/library/${project.name}:${project.version}`
+
+| `pullPolicy`
+| `--pullPolicy`
+| javadoc:org.springframework.boot.buildpack.platform.build.PullPolicy[Policy] determine khi nào pull builder/run image từ registry.
+Accepted: `ALWAYS`, `NEVER`, `IF_NOT_PRESENT`.
+| `ALWAYS`
+
+| `environment`
+| `--environment`
+| Environment variable pass tới builder.
+| Empty.
+
+| `buildpacks`
+|
+a|Buildpack builder dùng khi build image.
+Chỉ specified buildpack được dùng, override default buildpack include trong builder.
+Buildpack reference phải dạng:
+
+* Buildpack trong builder - `[urn:cnb:builder:]<buildpack ID>[@<version>]`
+* Buildpack trong directory filesystem - `[file://]<path>`
+* Buildpack trong gzipped tar (.tgz) file - `[file://]<path>/<file name>`
+* Buildpack trong OCI image - `[docker://]<host>/<repo>[:<tag>][@<digest>]`
+| None, nghĩa là builder dùng buildpack include trong nó.
+
+| `bindings`
+|
+a|https://docs.docker.com/storage/bind-mounts/[Volume bind mount] mount vào builder container khi build image.
+Binding pass unparsed/unvalidated tới Docker khi create builder container.
+Binding phải dạng:
+
+* `<host source path>:<container destination path>[:<options>]`
+* `<host volume name>:<container destination path>[:<options>]`
+
+Trong đó `<options>` có thể gồm:
+
+* `ro` để mount volume read-only.
+* `rw` để mount volume readable/writable.
+* `volume-opt=key=value` để specify key-value option.
+|
+
+| `network`
+| `--network`
+| https://docs.docker.com/network/#network-drivers[Network driver] builder container dùng.
+Value pass unvalidated tới Docker khi create builder container.
+|
+
+| `cleanCache`
+| `--cleanCache`
+| Có clean cache trước build không.
+| `false`
+
+| `verboseLogging`
+|
+| Enable verbose logging của builder operation.
+| `false`
+
+| `publish`
+| `--publishImage`
+| Có publish generated image tới Docker registry không.
+| `false`
+
+| `tags`
+|
+| List một hoặc nhiều additional tag apply cho generated image.
+Value phải là *full* image reference.
+Xem xref:packaging-oci-image.adoc#build-image.customization.tags[tags section].
+|
+
+| `buildWorkspace`
+|
+| Temporary workspace builder/buildpack dùng store file trong image building.
+Value có thể named volume hoặc bind mount location.
+| Named volume trong Docker daemon, name derive từ image name.
+
+| `buildCache`
+|
+| Cache chứa layer do buildpack tạo và image building process dùng.
+Value có thể named volume hoặc bind mount location.
+| Named volume trong Docker daemon, name derive từ image name.
+
+| `launchCache`
+|
+| Cache chứa layer do buildpack tạo và image launching process dùng.
+Value có thể named volume hoặc bind mount location.
+| Named volume trong Docker daemon, name derive từ image name.
+
+| `createdDate`
+| `--createdDate`
+| Date dùng set field `Created` trong metadata generated image.
+Value phải ISO 8601 instant format hoặc `now` để dùng current date/time.
+| Fixed date enable {url-buildpacks-docs}/for-app-developers/concepts/reproducibility/[build reproducibility].
+
+| `applicationDirectory`
+| `--applicationDirectory`
+| Path directory application content upload vào builder image.
+Application content cũng ở location này trong generated image.
+| `/workspace`
+
+| `securityOptions`
+| `--securityOptions`
+| https://docs.docker.com/reference/cli/docker/container/run/#security-opt[Security option] apply cho builder container, dưới dạng array string.
+| `["label=disable"]` trên Linux/macOS, `[]` trên Windows
+
+|===
+
+NOTE: Plugin detect target Java compatibility của project bằng property `targetCompatibility` của JavaPlugin.
+Khi dùng default Paketo builder/buildpack, plugin instruct buildpack install cùng Java version.
+Có thể override như trong xref:packaging-oci-image.adoc#build-image.examples.builder-configuration[builder configuration].
+
+NOTE: Default builder `paketobuildpacks/builder-noble-java-tiny:latest` chứa reduced set system library và không include shell.
+Application cần shell để chạy start script, như khi {url-gradle-docs-application-plugin}[`application` plugin] apply để generate distribution zip archive, hoặc depend vào system library không present, nên override `runImage` dùng image có shell và broader system library set như `paketobuildpacks/ubuntu-noble-run:latest`.
+
+[[build-image.customization.tags]]
+=== Tags Format
+
+Value cho option `tags` phải là *full* image reference.
+Accepted format: `[domainHost:port/][path/]name[:tag][@digest]`.
+
+Nếu thiếu domain, default `docker.io`.
+Nếu thiếu path, default `library`.
+Nếu thiếu tag, default `latest`.
+
+Ví dụ:
+
+* `my-image` -> `docker.io/library/my-image:latest`
+* `my-repository/my-image` -> `docker.io/my-repository/my-image:latest`
+* `example.com/my-repository/my-image:1.0.0` dùng nguyên.
+
+[[build-image.examples]]
+== Examples
+
+[[build-image.examples.custom-image-builder]]
+=== Custom Image Builder và Run Image
+
+Nếu cần customize builder dùng create image hoặc run image launch built image, configure task:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-builder.gradle[tags=builder]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-builder.gradle.kts[tags=builder]
+----
+======
+
+Configuration này dùng builder image `mine/java-cnb-builder:latest` và run image `mine/java-cnb-run:latest`.
+
+Builder và run image cũng có thể specify trên command line:
+
+[source,shell]
+----
+$ gradle bootBuildImage --builder=mine/java-cnb-builder --runImage=mine/java-cnb-run
+----
+
+[[build-image.examples.builder-configuration]]
+=== Builder Configuration
+
+Nếu builder expose configuration option, có thể set bằng property `environment`.
+
+Ví dụ {url-paketo-docs-java-buildpack}/#configuring-the-jvm-version[configure JVM version] Paketo Java buildpack dùng ở build time:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-env.gradle[tags=env]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-env.gradle.kts[tags=env]
+----
+======
+
+Environment variable cũng có thể specify trên command line:
+
+[source,shell]
+----
+$ gradle bootBuildImage --environment BP_JVM_VERSION=17
+----
+
+`--environment` có thể dùng nhiều lần để specify nhiều environment variable.
+
+Nếu có network proxy giữa Docker daemon builder chạy và network location buildpack download artifact, cần configure builder dùng proxy.
+Với Paketo builder, set `HTTPS_PROXY` và/hoặc `HTTP_PROXY`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-env-proxy.gradle[tags=env]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-env-proxy.gradle.kts[tags=env]
+----
+======
+
+[[build-image.examples.runtime-jvm-configuration]]
+=== Runtime JVM Configuration
+
+Paketo Java buildpack {url-paketo-docs-java-buildpack}/#runtime-jvm-configuration[configure JVM runtime environment] bằng environment variable `JAVA_TOOL_OPTIONS`.
+Value `JAVA_TOOL_OPTIONS` do buildpack cung cấp có thể modify để customize JVM runtime behavior khi application image launch trong container.
+
+Environment variable modification cần store trong image và apply mọi deployment có thể set như {url-paketo-docs}/buildpacks/configuration/#environment-variables[Paketo documentation]:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-env-runtime.gradle[tags=env-runtime]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-env-runtime.gradle.kts[tags=env-runtime]
+----
+======
+
+[[build-image.examples.custom-image-name]]
+=== Custom Image Name
+
+Mặc định image name infer từ `name` và `version` project, dạng `docker.io/library/${project.name}:${project.version}`.
+Có thể control name bằng task property:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-name.gradle[tags=image-name]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-name.gradle.kts[tags=image-name]
+----
+======
+
+Lưu ý configuration này không explicit tag nên dùng `latest`.
+Có thể specify tag bằng `${project.version}`, property available trong build hoặc hardcoded version.
+
+Image name cũng specify được trên command line:
+
+[source,shell]
+----
+$ gradle bootBuildImage --imageName=example.com/library/my-app:v1
+----
+
+[[build-image.examples.buildpacks]]
+=== Buildpacks
+
+Mặc định builder dùng buildpack include trong builder image và apply theo predefined order.
+Có thể cung cấp alternative buildpack set để dùng buildpack không include hoặc đổi order.
+Khi cung cấp một hoặc nhiều buildpack, chỉ specified buildpack được apply.
+
+Ví dụ instruct builder dùng custom buildpack package trong file `.tgz`, sau đó buildpack include trong builder:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-buildpacks.gradle[tags=buildpacks]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-buildpacks.gradle.kts[tags=buildpacks]
+----
+======
+
+Buildpack có thể specify theo form sau.
+
+Buildpack trong CNB Builder, version có thể omit nếu chỉ có một buildpack match `buildpack-id`:
+
+* `urn:cnb:builder:buildpack-id`
+* `urn:cnb:builder:buildpack-id@0.0.1`
+* `buildpack-id`
+* `buildpack-id@0.0.1`
+
+Path tới directory chứa buildpack content, không support Windows:
+
+* `\file:///path/to/buildpack/`
+* `/path/to/buildpack/`
+
+Path tới gzipped tar file:
+
+* `\file:///path/to/buildpack.tgz`
+* `/path/to/buildpack.tgz`
+
+OCI image chứa {url-buildpacks-docs}/for-buildpack-authors/how-to/distribute-buildpacks/package-buildpack/[packaged buildpack]:
+
+* `docker://example/buildpack`
+* `docker:///example/buildpack:latest`
+* `docker:///example/buildpack@sha256:45b23dee08...`
+* `example/buildpack`
+* `example/buildpack:latest`
+* `example/buildpack@sha256:45b23dee08...`
+
+[[build-image.examples.publish]]
+=== Image Publishing
+
+Generated image có thể publish tới Docker registry bằng option `publish`.
+
+Nếu registry cần authentication, credential configure bằng property `docker.publishRegistry`.
+Nếu không cần authentication, có thể omit configuration `docker.publishRegistry`.
+
+NOTE: Registry publish tới được determine bởi registry part của image name, `docker.example.com` trong ví dụ.
+Nếu credential `docker.publishRegistry` include property `url`, value pass tới registry nhưng không dùng determine publishing registry location.
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-publish.gradle[tags=publish]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-publish.gradle.kts[tags=publish]
+----
+======
+
+Option publish cũng specify được trên command line:
+
+[source,shell]
+----
+$ gradle bootBuildImage --imageName=docker.example.com/library/my-app:v1 --publishImage
+----
+
+[[build-image.examples.caches]]
+=== Builder Cache và Workspace Configuration
+
+CNB builder cache layer dùng khi build và launch image.
+Mặc định cache store như named volume trong Docker daemon với name derive từ full target image name.
+Nếu image name change thường xuyên, ví dụ project version dùng làm tag, cache có thể invalidate thường xuyên.
+
+Cache volume có thể configure alternative name để control cache lifecycle:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-caches.gradle[tags=caches]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-caches.gradle.kts[tags=caches]
+----
+======
+
+Builder/buildpack cần location store temporary file trong image building.
+Mặc định temporary build workspace store trong named volume.
+
+Cache và build workspace có thể configure dùng bind mount thay named volume:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-bind-caches.gradle[tags=caches]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-bind-caches.gradle.kts[tags=caches]
+----
+======
+
+Build cache cũng có thể store trong image thay named volume, cho phép share cache giữa host bằng push/pull từ registry:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-image-caches.gradle[tags=caches]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-image-caches.gradle.kts[tags=caches]
+----
+======
+
+[[build-image.examples.docker]]
+=== Docker Configuration
+
+[[build-image.examples.docker.minikube]]
+==== Docker Configuration cho minikube
+
+Plugin có thể communicate với https://minikube.sigs.k8s.io/docs/tasks/docker_daemon/[Docker daemon do minikube cung cấp] thay default local connection.
+
+Trên Linux/macOS, environment variable có thể set bằng command `eval $(minikube docker-env)` sau khi minikube start.
+
+Plugin cũng có thể configure dùng minikube daemon bằng connection detail:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-host.gradle[tags=docker-host]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-host.gradle.kts[tags=docker-host]
+----
+======
+
+[[build-image.examples.docker.podman]]
+==== Docker Configuration cho podman
+
+Plugin có thể communicate với https://podman.io/[podman container engine].
+
+Configure plugin dùng podman local connection bằng connection detail:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-host-podman.gradle[tags=docker-host]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-host-podman.gradle.kts[tags=docker-host]
+----
+======
+
+TIP: Với CLI `podman` installed, command `podman info --format='{{.Host.RemoteSocket.Path}}'` có thể dùng lấy value cho property `docker.host` trong ví dụ.
+
+[[build-image.examples.docker.colima]]
+==== Docker Configuration cho Colima
+
+Plugin có thể communicate với Docker daemon do https://github.com/abiosoft/colima[Colima] cung cấp.
+Set environment variable `DOCKER_HOST` bằng:
+
+[source,shell,subs="verbatim,attributes"]
+----
+$ export DOCKER_HOST=$(docker context inspect colima -f '{{.Endpoints.docker.Host}}')
+----
+
+Plugin cũng có thể configure dùng Colima daemon bằng connection detail:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-host-colima.gradle[tags=docker-host]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-host-colima.gradle.kts[tags=docker-host]
+----
+======
+
+[[build-image.examples.docker.auth]]
+==== Docker Configuration cho Authentication
+
+Nếu builder/run image store trong private Docker registry hỗ trợ user authentication, authentication detail có thể cung cấp bằng property `docker.builderRegistry`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-auth-user.gradle[tags=docker-auth-user]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-auth-user.gradle.kts[tags=docker-auth-user]
+----
+======
+
+Nếu builder/run image store trong private Docker registry hỗ trợ token authentication, token value có thể cung cấp bằng `docker.builderRegistry`:
+
+[tabs]
+======
+Groovy::
++
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-auth-token.gradle[tags=docker-auth-token]
+----
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,attributes"]
+----
+include::example$packaging/boot-build-image-docker-auth-token.gradle.kts[tags=docker-auth-token]
+----
+======

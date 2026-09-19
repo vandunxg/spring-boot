@@ -1,0 +1,103 @@
+[[security.saml2]]
+= SAML 2.0
+
+https://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html[SAML v2.0] là framework được áp dụng rộng rãi để trao đổi security information giữa các online business partner.
+
+[[security.saml2.build]]
+== Build Configuration
+
+SAML 2.0 support dựa trên OpenSAML library, library này https://shibboleth.atlassian.net/wiki/spaces/DEV/pages/1123844333/Use+of+Maven+Central#Publishing-to-Maven-Central[yêu cầu thêm repository] configuration.
+
+[[security.saml2.build.maven]]
+=== Sử dụng Maven
+
+Với Maven, cần thêm element `repository` vào POM:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<repositories>
+	<repository>
+		<id>shibboleth-releases</id>
+		<name>Shibboleth Releases Repository</name>
+		<url>https://build.shibboleth.net/maven/releases</url>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+	</repository>
+</repositories>
+----
+
+[[security.saml2.build.gradle]]
+=== Sử dụng Gradle
+
+Với Gradle, thêm repository vào build script:
+
+[source,gradle,subs="verbatim,attributes"]
+----
+repositories {
+    maven { url "https://build.shibboleth.net/maven/releases" }
+}
+----
+
+[[security.saml2.relying-party]]
+== Relying Party
+
+Nếu `spring-security-saml2-service-provider` có trên classpath, bạn có thể dùng auto-configuration để setup SAML 2.0 Relying Party.
+Configuration dùng property trong javadoc:org.springframework.boot.security.saml2.autoconfigure.Saml2RelyingPartyProperties[].
+
+Relying party registration biểu diễn paired configuration giữa Identity Provider (IDP) và Service Provider (SP).
+Có thể register nhiều relying party dưới prefix `spring.security.saml2.relyingparty`:
+
+[configprops,yaml]
+----
+spring:
+  security:
+    saml2:
+      relyingparty:
+        registration:
+          my-relying-party1:
+            signing:
+              credentials:
+              - private-key-location: "path-to-private-key"
+                certificate-location: "path-to-certificate"
+            decryption:
+              credentials:
+              - private-key-location: "path-to-private-key"
+                certificate-location: "path-to-certificate"
+            singlelogout:
+               url: "https://myapp/logout/saml2/slo"
+               response-url: "https://remoteidp2.slo.url"
+               binding: "POST"
+            assertingparty:
+              verification:
+                credentials:
+                - certificate-location: "path-to-verification-cert"
+              entity-id: "remote-idp-entity-id1"
+              sso-url: "https://remoteidp1.sso.url"
+
+          my-relying-party2:
+            signing:
+              credentials:
+              - private-key-location: "path-to-private-key"
+                certificate-location: "path-to-certificate"
+            decryption:
+              credentials:
+              - private-key-location: "path-to-private-key"
+                certificate-location: "path-to-certificate"
+            assertingparty:
+              verification:
+                credentials:
+                - certificate-location: "path-to-other-verification-cert"
+              entity-id: "remote-idp-entity-id2"
+              sso-url: "https://remoteidp2.sso.url"
+              singlelogout:
+                url: "https://remoteidp2.slo.url"
+                response-url: "https://myapp/logout/saml2/slo"
+                binding: "POST"
+----
+
+Với SAML2 logout, mặc định javadoc:org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutRequestFilter[] và javadoc:org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutResponseFilter[] chỉ xử lý URL match `/logout/saml2/slo`.
+Nếu customize `url` nơi AP-initiated logout request được gửi hoặc `response-url` nơi AP gửi logout response sang pattern khác, cần cung cấp configuration xử lý custom pattern đó.
+Ví dụ với servlet application, thêm javadoc:org.springframework.security.web.SecurityFilterChain[] riêng:
+
+include-code::MySamlRelyingPartyConfiguration[]

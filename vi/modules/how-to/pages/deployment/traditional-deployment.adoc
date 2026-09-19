@@ -1,0 +1,151 @@
+[[howto.traditional-deployment]]
+= Traditional Deployment
+
+Spring Boot hỗ trợ traditional deployment cũng như các deployment form hiện đại hơn.
+Phần này trả lời các câu hỏi phổ biến về traditional deployment.
+
+[[howto.traditional-deployment.war]]
+== Tạo Deployable War File
+
+WARNING: Vì Spring WebFlux không phụ thuộc chặt vào servlet API và application mặc định deploy trên embedded Reactor Netty server, War deployment không được hỗ trợ cho WebFlux application.
+
+Bước đầu để tạo deployable war file là cung cấp subclass javadoc:org.springframework.boot.web.servlet.support.SpringBootServletInitializer[] và override method `configure`.
+Cách này dùng servlet 3.0 support của Spring Framework và cho phép configure application khi được servlet container launch.
+Thông thường nên update main class của application để extend javadoc:org.springframework.boot.web.servlet.support.SpringBootServletInitializer[]:
+
+include-code::MyApplication[]
+
+Bước tiếp theo là update build configuration để project tạo war file thay vì jar file.
+Nếu dùng Maven và `spring-boot-starter-parent`, vốn configure Maven war plugin cho bạn, chỉ cần modify `pom.xml` để packaging thành war:
+
+[source,xml]
+----
+<packaging>war</packaging>
+----
+
+Nếu dùng Gradle, modify `build.gradle` để apply war plugin:
+
+[source,gradle]
+----
+apply plugin: 'war'
+----
+
+Bước cuối là đảm bảo embedded servlet container không interfere với servlet container nơi war file được deploy.
+
+Với Maven, mark embedded servlet container dependency là `provided`:
+
+[source,xml]
+----
+<dependencies>
+	<!-- ... -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-tomcat</artifactId>
+		<scope>provided</scope>
+	</dependency>
+	<!-- ... -->
+</dependencies>
+----
+
+Nếu dùng Gradle, move chỉ runtime dependency vào configuration `providedRuntime`:
+
+[source,gradle]
+----
+dependencies {
+	// ...
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat-runtime'
+	// ...
+}
+----
+
+TIP: `providedRuntime` được ưu tiên hơn configuration `compileOnly` của Gradle.
+Ngoài limitation khác, dependency `compileOnly` không có trên test classpath nên web-based integration test fail.
+
+Nếu dùng Spring Boot xref:build-tool-plugin:index.adoc[], mark embedded servlet container dependency là provided tạo executable war file với provided dependency package trong directory `lib-provided`.
+Điều này nghĩa là ngoài deploy vào servlet container, cũng có thể chạy application bằng `java -jar` trên command line.
+
+[[howto.traditional-deployment.convert-existing-application]]
+== Convert Existing Application sang Spring Boot
+
+Để convert existing non-web Spring application thành Spring Boot application, replace code tạo javadoc:org.springframework.context.ApplicationContext[] bằng call tới javadoc:org.springframework.boot.SpringApplication[] hoặc javadoc:org.springframework.boot.builder.SpringApplicationBuilder[].
+Spring MVC web application thường phù hợp với việc đầu tiên tạo deployable war application rồi migrate sau sang executable war hoặc jar.
+
+Để tạo deployable war bằng cách extend javadoc:org.springframework.boot.web.servlet.support.SpringBootServletInitializer[], ví dụ class `Application`, và thêm annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], dùng code tương tự:
+
+include-code::MyApplication[tag=!main]
+
+Nhớ rằng mọi thứ đặt trong `sources` chỉ đơn giản là Spring javadoc:org.springframework.context.ApplicationContext[].
+Thông thường thứ gì đã hoạt động thì cũng nên hoạt động ở đây.
+Có thể có một số bean sau này remove và để Spring Boot cung cấp default, nhưng nên có thể làm application hoạt động trước khi cần làm vậy.
+
+Static resource có thể move tới `/public`, `/static`, `/resources` hoặc `/META-INF/resources` ở classpath root.
+Tương tự với `messages.properties` mà Spring Boot tự detect ở root classpath.
+
+Vanilla usage của Spring javadoc:org.springframework.web.servlet.DispatcherServlet[] và Spring Security không cần change thêm.
+Nếu application có feature khác, ví dụ servlet hoặc filter khác, có thể cần thêm configuration vào context `Application` để replace element từ `web.xml`:
+
+* Bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:jakarta.servlet.Servlet[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] install bean vào container như `<servlet/>` và `<servlet-mapping/>` trong `web.xml`.
+* Bean type javadoc:jakarta.servlet.Filter[] hoặc javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] behavior tương tự như `<filter/>` và `<filter-mapping/>`.
+* javadoc:org.springframework.context.ApplicationContext[] trong XML file có thể thêm qua javadoc:org.springframework.context.annotation.ImportResource[format=annotation] trong `+Application+`.
+  Ngoài ra case đã dùng nhiều annotation configuration có thể recreate trong vài dòng Bean definition.
+
+Khi war file đã hoạt động, có thể làm executable bằng cách thêm method `main` vào `Application`:
+
+include-code::MyApplication[tag=main]
+
+[NOTE]
+====
+Nếu định start application dưới dạng war hoặc executable application, cần share customization của builder trong method available cho cả callback javadoc:org.springframework.boot.web.servlet.support.SpringBootServletInitializer[] và method `main` trong class tương tự:
+
+include-code::both/MyApplication[]
+====
+
+Application có thể thuộc nhiều category:
+
+* Servlet 3.0+ application không có `web.xml`.
+* Application có `web.xml`.
+* Application có context hierarchy.
+* Application không có context hierarchy.
+
+Tất cả đều có thể translate, nhưng mỗi loại có thể cần technique hơi khác.
+
+Servlet 3.0+ application có thể translate khá dễ nếu đã dùng Spring Servlet 3.0+ initializer support class.
+Thông thường toàn bộ code từ existing javadoc:org.springframework.web.WebApplicationInitializer[] có thể move vào javadoc:org.springframework.boot.web.servlet.support.SpringBootServletInitializer[].
+Nếu existing application có nhiều hơn một javadoc:org.springframework.context.ApplicationContext[], ví dụ dùng javadoc:org.springframework.web.servlet.support.AbstractDispatcherServletInitializer[], có thể combine toàn bộ context source vào một javadoc:org.springframework.boot.SpringApplication[].
+Complication chính là nếu combine không hoạt động và cần maintain context hierarchy.
+Xem xref:application.adoc#howto.application.context-hierarchy[entry về building hierarchy] để biết ví dụ.
+Existing parent context chứa web-specific feature thường cần tách để mọi component javadoc:org.springframework.web.context.ServletContextAware[] nằm trong child context.
+
+Application chưa phải Spring application cũng có thể convert sang Spring Boot application và guidance trên có thể hữu ích.
+Tuy nhiên vẫn có thể gặp problem.
+Khi đó, đề xuất https://stackoverflow.com/questions/tagged/spring-boot[đặt câu hỏi trên Stack Overflow với tag `spring-boot`].
+
+[[howto.traditional-deployment.weblogic]]
+== Deploy WAR lên WebLogic
+
+Để deploy Spring Boot application lên WebLogic, phải đảm bảo servlet initializer *trực tiếp* implement javadoc:org.springframework.web.WebApplicationInitializer[], kể cả khi extend base class đã implement interface đó.
+
+Typical initializer cho WebLogic:
+
+include-code::MyApplication[]
+
+Nếu dùng Logback, cũng cần nói WebLogic ưu tiên packaged version thay vì version pre-installed với server.
+Thêm file `WEB-INF/weblogic.xml`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<wls:weblogic-web-app
+	xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-web-app"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+		https://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd
+		http://xmlns.oracle.com/weblogic/weblogic-web-app
+		https://xmlns.oracle.com/weblogic/weblogic-web-app/1.4/weblogic-web-app.xsd">
+	<wls:container-descriptor>
+		<wls:prefer-application-packages>
+			<wls:package-name>org.slf4j</wls:package-name>
+		</wls:prefer-application-packages>
+	</wls:container-descriptor>
+</wls:weblogic-web-app>
+----

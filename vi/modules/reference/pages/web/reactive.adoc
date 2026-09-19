@@ -1,0 +1,382 @@
+[[web.reactive]]
+= Reactive Web Application
+
+Spring Boot đơn giản hóa việc phát triển reactive web application bằng cách cung cấp auto-configuration cho Spring WebFlux.
+
+
+
+[[web.reactive.webflux]]
+== "Spring WebFlux Framework"
+
+Spring WebFlux là reactive web framework mới được giới thiệu trong Spring Framework 5.0.
+Khác Spring MVC, nó không yêu cầu servlet API, hoàn toàn asynchronous và non-blocking, đồng thời implement specification https://www.reactive-streams.org/[Reactive Streams] thông qua https://projectreactor.io/[Reactor project].
+
+Spring WebFlux có hai kiểu: functional và annotation-based.
+Kiểu annotation-based khá gần với model của Spring MVC, như ví dụ sau:
+
+include-code::MyRestController[]
+
+WebFlux là một phần của Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webflux.html[reference documentation].
+
+"WebFlux.fn", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
+
+include-code::MyRoutingConfiguration[]
+
+include-code::MyUserHandler[]
+
+"WebFlux.fn" là một phần của Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webflux-functional.html[reference documentation].
+
+TIP: Bạn có thể định nghĩa bao nhiêu bean javadoc:org.springframework.web.reactive.function.server.RouterFunction[] tùy ý để modularize định nghĩa router.
+Các bean có thể được sắp thứ tự nếu cần áp dụng precedence.
+
+Để bắt đầu, thêm module `spring-boot-starter-webflux` vào application.
+
+NOTE: Nếu thêm cả module `spring-boot-starter-web` và `spring-boot-starter-webflux` vào application, Spring Boot sẽ auto-configure Spring MVC chứ không phải WebFlux.
+Behavior này được chọn vì nhiều Spring developer thêm `spring-boot-starter-webflux` vào Spring MVC application để dùng reactive javadoc:org.springframework.web.reactive.function.client.WebClient[].
+Bạn vẫn có thể ép lựa chọn bằng cách đặt application type thành `SpringApplication.setWebApplicationType(WebApplicationType.REACTIVE)`.
+
+
+
+[[web.reactive.webflux.auto-configuration]]
+=== Spring WebFlux Auto-configuration
+
+Spring Boot cung cấp auto-configuration cho Spring WebFlux hoạt động tốt với hầu hết application.
+
+Auto-configuration bổ sung các feature sau trên default của Spring:
+
+* Cấu hình codec cho instance javadoc:org.springframework.http.codec.HttpMessageReader[] và javadoc:org.springframework.http.codec.HttpMessageWriter[] (mô tả xref:web/reactive.adoc#web.reactive.webflux.httpcodecs[ở phần sau]).
+* Hỗ trợ phục vụ static resource, bao gồm WebJars (mô tả xref:web/servlet.adoc#web.servlet.spring-mvc.static-content[ở phần sau]).
+
+Nếu muốn giữ Spring Boot WebFlux feature và thêm {url-spring-framework-docs}/web/webflux/config.html[WebFlux configuration], bạn có thể thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng kiểu javadoc:org.springframework.web.reactive.config.WebFluxConfigurer[] nhưng *không* dùng javadoc:org.springframework.web.reactive.config.EnableWebFlux[format=annotation].
+
+Nếu muốn thêm customization cho javadoc:org.springframework.http.server.reactive.HttpHandler[] đã được auto-configure, bạn có thể định nghĩa bean javadoc:org.springframework.boot.webflux.autoconfigure.WebHttpHandlerBuilderCustomizer[] và dùng chúng để sửa javadoc:org.springframework.web.server.adapter.WebHttpHandlerBuilder[].
+
+Nếu muốn kiểm soát hoàn toàn Spring WebFlux, bạn có thể thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng được annotate bằng javadoc:org.springframework.web.reactive.config.EnableWebFlux[format=annotation].
+
+
+
+[[web.reactive.webflux.conversion-service]]
+=== Spring WebFlux Conversion Service
+
+Nếu muốn customize javadoc:org.springframework.core.convert.ConversionService[] được Spring WebFlux dùng, bạn có thể cung cấp bean javadoc:org.springframework.web.reactive.config.WebFluxConfigurer[] với method `addFormatters`.
+
+Conversion cũng có thể customize bằng configuration property `spring.webflux.format.*`.
+Khi chưa cấu hình, dùng các default sau:
+
+|===
+|Property |`DateTimeFormatter` |Format
+
+|configprop:spring.webflux.format.date[]
+|`ofLocalizedDate(FormatStyle.SHORT)`
+|`java.util.Date` và javadoc:java.time.LocalDate[]
+
+|configprop:spring.webflux.format.time[]
+|`ofLocalizedTime(FormatStyle.SHORT)`
+|javadoc:java.time.LocalTime[] và javadoc:java.time.OffsetTime[] của java.time
+
+|configprop:spring.webflux.format.date-time[]
+|`ofLocalizedDateTime(FormatStyle.SHORT)`
+|javadoc:java.time.LocalDateTime[], javadoc:java.time.OffsetDateTime[] và javadoc:java.time.ZonedDateTime[] của java.time
+|===
+
+
+
+[[web.reactive.webflux.httpcodecs]]
+=== HTTP Codec với HttpMessageReader và HttpMessageWriter
+
+Spring WebFlux dùng interface javadoc:org.springframework.http.codec.HttpMessageReader[] và javadoc:org.springframework.http.codec.HttpMessageWriter[] để convert HTTP request và response.
+Chúng được cấu hình bằng javadoc:org.springframework.http.codec.CodecConfigurer[] để có default hợp lý dựa trên library có sẵn trên classpath.
+
+Spring Boot cung cấp configuration property riêng cho codec, `+spring.http.codecs.*+`.
+Nó cũng áp dụng customization bổ sung bằng instance javadoc:org.springframework.boot.http.codec.CodecCustomizer[].
+Ví dụ, configuration key `+spring.jackson.*+` được áp dụng cho Jackson codec.
+
+Nếu cần thêm hoặc customize codec, bạn có thể tạo custom component javadoc:org.springframework.boot.http.codec.CodecCustomizer[], như ví dụ sau:
+
+include-code::MyCodecsConfiguration[]
+
+Bạn cũng có thể tận dụng xref:features/json.adoc#features.json.jackson.custom-serializers-and-deserializers[custom JSON serializer và deserializer của Boot].
+
+
+
+[[web.reactive.webflux.static-content]]
+=== Static Content
+
+Mặc định, Spring Boot phục vụ static content từ directory `/static` (hoặc `/public`, `/resources`, `/META-INF/resources`) trên classpath.
+Nó dùng javadoc:org.springframework.web.reactive.resource.ResourceWebHandler[] của Spring WebFlux, vì vậy bạn có thể thay đổi behavior bằng cách thêm javadoc:org.springframework.web.reactive.config.WebFluxConfigurer[] riêng và override method `addResourceHandlers`.
+
+Mặc định resource được map vào `+/**+`, nhưng có thể điều chỉnh bằng property configprop:spring.webflux.static-path-pattern[].
+Ví dụ, chuyển toàn bộ resource sang `/resources/**` như sau:
+
+[configprops,yaml]
+----
+spring:
+  webflux:
+    static-path-pattern: "/resources/**"
+----
+
+Bạn cũng có thể customize static resource location bằng `spring.web.resources.static-locations`.
+Việc này thay default value bằng danh sách directory location.
+Nếu làm vậy, default welcome page detection sẽ chuyển sang custom location của bạn.
+Do đó, nếu có `index.html` trong bất kỳ location nào khi startup, nó sẽ là home page của application.
+
+Ngoài các static resource location "standard" ở trên, https://www.webjars.org/[Webjars content] được xử lý như trường hợp đặc biệt.
+Mặc định, mọi resource có path `+/webjars/**+` được phục vụ từ jar file nếu chúng được package theo Webjars format.
+Path có thể customize bằng property configprop:spring.webflux.webjars-path-pattern[].
+
+TIP: Spring WebFlux application không phụ thuộc chặt vào servlet API, vì vậy không thể deploy dưới dạng war file và không dùng directory `src/main/webapp`.
+
+
+
+[[web.reactive.webflux.welcome-page]]
+=== Welcome Page
+
+Spring Boot hỗ trợ cả static và templated welcome page.
+Trước tiên nó tìm file `index.html` trong static content location đã cấu hình.
+Nếu không thấy, nó tìm template `index`.
+Nếu tìm thấy một trong hai, nó tự động dùng làm welcome page của application.
+
+Cơ chế này chỉ là fallback cho actual index route được application định nghĩa.
+Thứ tự được xác định bởi order của các bean javadoc:org.springframework.web.reactive.HandlerMapping[], mặc định như sau:
+
+[cols="1,1"]
+|===
+|`org.springframework.web.reactive.function.server.support.RouterFunctionMapping`
+|Endpoint được khai báo bằng bean javadoc:org.springframework.web.reactive.function.server.RouterFunction[]
+
+|`org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping`
+|Endpoint được khai báo trong bean javadoc:org.springframework.stereotype.Controller[format=annotation]
+
+|`RouterFunctionMapping` cho Welcome Page
+|Hỗ trợ welcome page
+|===
+
+
+
+[[web.reactive.webflux.template-engines]]
+=== Template Engine
+
+Ngoài REST web service, bạn cũng có thể dùng Spring WebFlux để phục vụ dynamic HTML content.
+Spring WebFlux hỗ trợ nhiều templating technology, gồm Thymeleaf, FreeMarker và Mustache.
+
+Spring Boot có auto-configuration support cho các templating engine sau:
+
+* https://freemarker.apache.org/docs/[FreeMarker]
+* https://www.thymeleaf.org[Thymeleaf]
+* https://mustache.github.io/[Mustache]
+
+NOTE: Không phải mọi feature của FreeMarker đều được WebFlux hỗ trợ.
+Xem description của từng property để biết chi tiết.
+
+Khi dùng một trong các templating engine này với default configuration, template được tự động lấy từ `src/main/resources/templates`.
+
+
+
+[[web.reactive.webflux.error-handling]]
+=== Error Handling
+
+Spring Boot cung cấp javadoc:org.springframework.web.server.WebExceptionHandler[] xử lý mọi error theo cách hợp lý.
+Vị trí của nó trong processing order nằm ngay trước các handler do WebFlux cung cấp, vốn được xem là cuối cùng.
+Với machine client, nó tạo JSON response chứa chi tiết error, HTTP status và exception message.
+Với browser client, có "whitelabel" error handler render cùng data ở HTML format.
+Bạn cũng có thể cung cấp HTML template riêng để hiển thị error (xem xref:web/reactive.adoc#web.reactive.webflux.error-handling.error-pages[phần tiếp theo]).
+
+Trước khi customize trực tiếp error handling trong Spring Boot, bạn có thể tận dụng hỗ trợ {url-spring-framework-docs}/web/webflux/ann-rest-exceptions.html[RFC 9457 Problem Details] của Spring WebFlux.
+Spring WebFlux có thể tạo custom error message với media type `application/problem+json` như sau:
+
+[source,json]
+----
+{
+	"type": "https://example.org/problems/unknown-project",
+	"title": "Unknown project",
+	"status": 404,
+	"detail": "No project found for id 'spring-unknown'",
+	"instance": "/projects/spring-unknown"
+}
+----
+
+Có thể bật hỗ trợ này bằng cách đặt configprop:spring.webflux.problemdetails.enabled[] thành `true`.
+
+
+Bước đầu khi customize feature này thường là dùng cơ chế hiện tại nhưng thay thế hoặc bổ sung error content.
+Để làm vậy, bạn có thể thêm bean javadoc:org.springframework.boot.webflux.error.ErrorAttributes[].
+
+Để thay đổi error handling behavior, bạn có thể implement javadoc:org.springframework.boot.webflux.error.ErrorWebExceptionHandler[] và register bean definition của type đó.
+Vì javadoc:org.springframework.boot.webflux.error.ErrorWebExceptionHandler[] khá low-level, Spring Boot cũng cung cấp javadoc:org.springframework.boot.webflux.autoconfigure.error.AbstractErrorWebExceptionHandler[] tiện lợi để xử lý error theo kiểu functional WebFlux, như ví dụ sau:
+
+include-code::MyErrorWebExceptionHandler[]
+
+Để kiểm soát đầy đủ hơn, bạn cũng có thể subclass trực tiếp javadoc:org.springframework.boot.webflux.autoconfigure.error.DefaultErrorWebExceptionHandler[] và override method cụ thể.
+
+Trong một số trường hợp, error được xử lý ở controller level không được ghi nhận bởi web observation hoặc xref:actuator/metrics.adoc#actuator.metrics.supported.spring-webflux[metrics infrastructure].
+Application có thể đảm bảo các exception đó được ghi nhận trong observation bằng cách {url-spring-framework-docs}/integration/observability.html#observability.http-server.reactive[đặt handled exception trên observation context].
+
+
+
+[[web.reactive.webflux.error-handling.error-pages]]
+==== Custom Error Page
+
+Nếu muốn hiển thị custom HTML error page cho status code cụ thể, bạn có thể thêm view resolve từ `error/*`, ví dụ bằng cách thêm file vào directory `/error`.
+Error page có thể là static HTML (được thêm dưới một static resource directory) hoặc được build bằng template.
+Tên file nên là exact status code, status code series mask, hoặc `error` làm default nếu không có match nào khác.
+Lưu ý path tới default error view là `error/error`, trong khi với Spring MVC default error view là `error`.
+
+Ví dụ để map `404` tới static HTML file, directory structure như sau:
+
+[source]
+----
+src/
+ +- main/
+     +- java/
+     |   + <source code>
+     +- resources/
+         +- public/
+             +- error/
+             |   +- 404.html
+             +- <other public assets>
+----
+
+Để map toàn bộ error `5xx` bằng Mustache template, directory structure như sau:
+
+[source]
+----
+src/
+ +- main/
+     +- java/
+     |   + <source code>
+     +- resources/
+         +- templates/
+             +- error/
+             |   +- 5xx.mustache
+             +- <other templates>
+----
+
+
+
+[[web.reactive.webflux.web-filters]]
+=== Web Filter
+
+Spring WebFlux cung cấp interface javadoc:org.springframework.web.server.WebFilter[] có thể implement để filter HTTP request-response exchange.
+Các bean javadoc:org.springframework.web.server.WebFilter[] tìm thấy trong application context sẽ tự động được dùng để filter từng exchange.
+
+Khi order của filter quan trọng, chúng có thể implement javadoc:org.springframework.core.Ordered[] hoặc được annotate bằng javadoc:org.springframework.core.annotation.Order[format=annotation].
+Spring Boot auto-configuration có thể cấu hình web filter cho bạn.
+Khi đó, order trong table sau được dùng:
+
+|===
+| Web Filter | Order
+
+| javadoc:org.springframework.security.web.server.WebFilterChainProxy[] (Spring Security)
+| `-100`
+
+| javadoc:org.springframework.boot.webflux.actuate.web.exchanges.HttpExchangesWebFilter[]
+| `Ordered.LOWEST_PRECEDENCE - 10`
+|===
+
+
+
+[[web.reactive.webflux.api-versioning]]
+=== API Versioning
+
+Spring WebFlux hỗ trợ API versioning để phát triển HTTP API theo thời gian.
+Cùng một path `@Controller` có thể được map nhiều lần để hỗ trợ các version API khác nhau.
+
+Xem thêm {url-spring-framework-docs}/web/webflux/controller/ann-requestmapping.html#webflux-ann-requestmapping-version[reference documentation của Spring Framework].
+
+Sau khi thêm mapping, bạn cần cấu hình thêm Spring WebFlux để nó có thể dùng version information được gửi cùng request.
+Thông thường version được gửi qua HTTP header, query parameter, media type parameter hoặc một phần của path.
+
+Để cấu hình Spring WebFlux, bạn có thể dùng bean javadoc:org.springframework.web.reactive.config.WebFluxConfigurer[] và override method `configureApiVersioning(...)`, hoặc dùng property.
+
+Ví dụ sau dùng HTTP header `X-Version` để lấy version information và default về `1.0.0` khi không gửi header.
+
+[configprops,yaml]
+----
+spring:
+  webflux:
+    apiversion:
+      default: 1.0.0
+      use:
+        header: X-Version
+----
+
+NOTE: Nếu setup cần nhiều strategy như header và query parameter, cân nhắc khai báo order programmatically bằng cách override method `configureApiVersioning`.
+
+Để kiểm soát đầy đủ hơn, bạn cũng có thể định nghĩa bean javadoc:org.springframework.web.reactive.accept.ApiVersionResolver[], javadoc:org.springframework.web.accept.ApiVersionParser[] và javadoc:org.springframework.web.reactive.accept.ApiVersionDeprecationHandler[], chúng sẽ được inject vào Spring WebFlux configuration được auto-configure.
+
+TIP: API versioning cũng được hỗ trợ ở client-side với cả `WebClient` và `RestClient`.
+Xem xref:io/rest-client.adoc#io.rest-client.apiversioning[] để biết chi tiết.
+
+
+
+[[web.reactive.reactive-server]]
+== Hỗ trợ Embedded Reactive Server
+
+Spring Boot hỗ trợ các embedded reactive web server sau: Reactor Netty, Tomcat và Jetty.
+Hầu hết developer dùng starter phù hợp để có fully configured instance.
+Mặc định embedded server lắng nghe HTTP request trên port 8080.
+
+
+
+[[web.reactive.reactive-server.customizing]]
+=== Customize Reactive Server
+
+Các setting reactive web server phổ biến có thể cấu hình bằng Spring javadoc:org.springframework.core.env.Environment[] property.
+Thông thường bạn định nghĩa property trong file `application.properties` hoặc `application.yaml`.
+
+Common server setting gồm:
+
+* Network setting: port lắng nghe HTTP request (`server.port`), interface address để bind (`server.address`), v.v.
+* Error management: location của error page (configprop:spring.web.error.path[]), v.v.
+* xref:how-to:webserver.adoc#howto.webserver.configure-ssl[SSL]
+* xref:how-to:webserver.adoc#howto.webserver.enable-response-compression[HTTP compression]
+
+Spring Boot cố gắng expose common setting tối đa có thể, nhưng không phải lúc nào cũng làm được.
+Trong trường hợp đó, namespace riêng như `server.netty.*` cung cấp server-specific customization.
+
+TIP: Xem class javadoc:org.springframework.boot.web.server.autoconfigure.ServerProperties[] để biết danh sách đầy đủ.
+
+
+
+[[web.reactive.reactive-server.customizing.programmatic]]
+==== Programmatic Customization
+
+Nếu cần programmatically configure reactive web server, bạn có thể register Spring bean implement interface javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].
+javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[] cung cấp quyền truy cập javadoc:org.springframework.boot.web.server.reactive.ConfigurableReactiveWebServerFactory[] có nhiều customization setter method.
+Ví dụ sau programmatically đặt port:
+
+include-code::MyWebServerFactoryCustomizer[]
+
+javadoc:org.springframework.boot.jetty.reactive.JettyReactiveWebServerFactory[], javadoc:org.springframework.boot.reactor.netty.NettyReactiveWebServerFactory[] và javadoc:org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory[] là các variant chuyên dụng của javadoc:org.springframework.boot.web.server.reactive.ConfigurableReactiveWebServerFactory[] có thêm customization setter method tương ứng cho Jetty, Reactor Netty và Tomcat.
+Ví dụ sau cho thấy cách customize javadoc:org.springframework.boot.reactor.netty.NettyReactiveWebServerFactory[] để access Reactor Netty-specific configuration option:
+
+include-code::MyNettyWebServerFactoryCustomizer[]
+
+
+
+[[web.reactive.reactive-server.customizing.direct]]
+==== Customize trực tiếp ConfigurableReactiveWebServerFactory
+
+Với advanced use case yêu cầu extend javadoc:org.springframework.boot.web.server.reactive.ReactiveWebServerFactory[], bạn có thể tự expose bean type đó.
+
+Setter được cung cấp cho nhiều configuration option.
+Một số protected method "hook" cũng có sẵn nếu cần behavior đặc biệt hơn.
+Xem API documentation của javadoc:org.springframework.boot.web.server.reactive.ConfigurableReactiveWebServerFactory[] để biết chi tiết.
+
+NOTE: Auto-configured customizer vẫn được áp dụng lên custom factory của bạn, vì vậy hãy dùng option này cẩn thận.
+
+
+
+[[web.reactive.reactive-server-resources-configuration]]
+== Reactive Server Resources Configuration
+
+Khi auto-configure Reactor Netty hoặc Jetty server, Spring Boot tạo các bean cụ thể cung cấp HTTP resource cho server instance: javadoc:org.springframework.http.client.ReactorResourceFactory[] hoặc javadoc:org.springframework.http.client.reactive.JettyResourceFactory[].
+
+Mặc định, các resource đó cũng được share với Reactor Netty và Jetty client để tối ưu performance, với điều kiện:
+
+* cùng technology được dùng cho server và client
+* client instance được build bằng bean javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[] do Spring Boot auto-configure
+
+Developer có thể override resource configuration cho Jetty và Reactor Netty bằng cách cung cấp custom bean javadoc:org.springframework.http.client.ReactorResourceFactory[] hoặc javadoc:org.springframework.http.client.reactive.JettyResourceFactory[] - configuration này sẽ áp dụng cho cả client và server.
+
+Bạn có thể tìm hiểu thêm về resource configuration phía client trong phần xref:io/rest-client.adoc#io.rest-client.webclient.runtime[].

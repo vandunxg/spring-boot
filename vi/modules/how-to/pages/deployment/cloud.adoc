@@ -1,0 +1,388 @@
+[[howto.deployment.cloud]]
+= Deploy lên Cloud
+
+Executable jar của Spring Boot đã sẵn sàng cho hầu hết popular cloud PaaS (Platform-as-a-Service) provider.
+Các provider này thường yêu cầu bạn "bring your own container".
+Chúng manage application process, không riêng Java application, nên cần một intermediary layer adapt _application của bạn_ với notion về running process của _cloud_.
+
+Hai cloud provider phổ biến, Heroku và Cloud Foundry, dùng approach "buildpack".
+Buildpack wrap deployed code với mọi thứ cần để _start_ application.
+Đó có thể là JDK và call tới `java`, embedded web server, hoặc full-fledged application server.
+Buildpack có thể plug-in, nhưng lý tưởng là chỉ cần ít customization nhất có thể.
+Điều này giảm footprint của functionality không nằm trong quyền kiểm soát của bạn.
+Nó cũng giảm divergence giữa development và production environment.
+
+Lý tưởng nhất, application, giống Spring Boot executable jar, đã package mọi thứ cần để chạy bên trong nó.
+
+Trong phần này, chúng ta xem cần làm gì để đưa xref:tutorial:first-application/index.adoc[application đã phát triển] trong phần "Getting Started" lên Cloud và chạy.
+
+[[howto.deployment.cloud.security]]
+== Security Considerations
+
+Support cho xref:how-to:webserver.adoc#howto.webserver.use-behind-a-proxy-server[forwarded header] chỉ nên enable khi application nhận traffic từ trusted HTTP proxy và chỉ directly accessible từ trusted network.
+Khi chạy trên cloud platform, forward header tự động enable.
+Điều này dựa trên assumption rằng platform đảm bảo từng application instance chỉ directly accessible từ trusted network.
+Nếu platform cụ thể của bạn không đảm bảo điều đó, set configprop:server.forward-headers-strategy[] thành `none`.
+
+[[howto.deployment.cloud.cloud-foundry]]
+== Cloud Foundry
+
+Cloud Foundry cung cấp default buildpack được dùng nếu không specify buildpack khác.
+https://github.com/cloudfoundry/java-buildpack[Java buildpack] của Cloud Foundry hỗ trợ rất tốt Spring application, gồm Spring Boot.
+Có thể deploy standalone executable jar application cũng như traditional application package dạng `.war`.
+
+Sau khi build application, ví dụ bằng `mvn clean package`, và đã https://docs.cloudfoundry.org/cf-cli/install-go-cli.html[install command line tool `cf`], deploy application bằng command `cf push`, thay path bằng compiled `.jar`.
+Đảm bảo đã https://docs.cloudfoundry.org/cf-cli/getting-started.html#login[login bằng command line client `cf`] trước khi push application.
+Ví dụ:
+
+[source,shell]
+----
+$ cf push acloudyspringtime -p target/demo-0.0.1-SNAPSHOT.jar
+----
+
+NOTE: Trong ví dụ trên, `acloudyspringtime` là value bạn đưa cho `cf` làm application name.
+
+Xem https://docs.cloudfoundry.org/cf-cli/getting-started.html#push[documentation `cf push`] để biết thêm option.
+Nếu có file Cloud Foundry https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html[`manifest.yml`] trong cùng directory, file đó cũng được xét đến.
+
+Lúc này `cf` bắt đầu upload application và tạo output tương tự:
+
+[source,subs="verbatim,quotes"]
+----
+Uploading acloudyspringtime... *OK*
+Preparing to start acloudyspringtime... *OK*
+-----> Downloaded app package (*8.9M*)
+-----> Java Buildpack Version: v3.12 (offline) | https://github.com/cloudfoundry/java-buildpack.git#6f25b7e
+-----> Downloading Open Jdk JRE
+       Expanding Open Jdk JRE to .java-buildpack/open_jdk_jre (1.6s)
+-----> Downloading Open JDK Like Memory Calculator 2.0.2_RELEASE from https://java-buildpack.cloudfoundry.org/memory-calculator/trusty/x86_64/memory-calculator-2.0.2_RELEASE.tar.gz (found in cache)
+       Memory Settings: -Xss349K -Xmx681574K -XX:MaxMetaspaceSize=104857K -Xms681574K -XX:MetaspaceSize=104857K
+-----> Downloading Container Certificate Trust Store 1.0.0_RELEASE from https://java-buildpack.cloudfoundry.org/container-certificate-trust-store/container-certificate-trust-store-1.0.0_RELEASE.jar (found in cache)
+       Adding certificates to .java-buildpack/container_certificate_trust_store/truststore.jks (0.6s)
+-----> Downloading Spring Auto Reconfiguration 1.10.0_RELEASE from https://java-buildpack.cloudfoundry.org/auto-reconfiguration/auto-reconfiguration-1.10.0_RELEASE.jar (found in cache)
+Checking status of app 'acloudyspringtime'...
+  0 of 1 instances running (1 starting)
+  ...
+  0 of 1 instances running (1 starting)
+  ...
+  0 of 1 instances running (1 starting)
+  ...
+  1 of 1 instances running (1 running)
+
+App started
+----
+
+Application hiện đã live.
+
+Khi application live, verify status bằng command `cf apps`:
+
+[source,shell]
+----
+$ cf apps
+Getting applications in ...
+OK
+
+name                 requested state   instances   memory   disk   urls
+...
+acloudyspringtime    started           1/1         512M     1G     acloudyspringtime.cfapps.io
+...
+----
+
+Sau khi Cloud Foundry xác nhận application đã deploy, application sẽ available tại URI được cung cấp.
+Trong ví dụ trên: `\https://acloudyspringtime.cfapps.io/`.
+
+[[howto.deployment.cloud.cloud-foundry.binding-to-services]]
+=== Binding to Services
+
+Mặc định metadata về running application cũng như service connection information được expose cho application dưới dạng environment variable, ví dụ `$VCAP_SERVICES`.
+Architecture decision này đến từ tính polyglot của Cloud Foundry: bất kỳ language và platform nào cũng có thể được hỗ trợ như buildpack.
+Process-scoped environment variable là language agnostic.
+
+Environment variable không phải lúc nào cũng là API dễ dùng nhất, nên Spring Boot tự động extract và flatten data thành property có thể access qua abstraction javadoc:org.springframework.core.env.Environment[]:
+
+include-code::MyBean[]
+
+Mọi Cloud Foundry property có prefix `vcap`.
+Có thể dùng property `vcap` để access application information như public URL và service information như database credential.
+Xem API documentation của javadoc:org.springframework.boot.cloud.CloudFoundryVcapEnvironmentPostProcessor[] để biết đầy đủ detail.
+
+TIP: Project https://github.com/pivotal-cf/java-cfenv/[Java CFEnv] phù hợp hơn cho task như configure DataSource.
+
+[[howto.deployment.cloud.kubernetes]]
+== Kubernetes
+
+Spring Boot auto-detect Kubernetes deployment environment bằng cách check environment cho variable `"*_SERVICE_HOST"` và `"*_SERVICE_PORT"`.
+Có thể override detection bằng configuration property configprop:spring.main.cloud-platform[].
+
+Spring Boot giúp xref:reference:features/spring-application.adoc#features.spring-application.application-availability[manage state của application] và export state đó qua xref:reference:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes[HTTP Kubernetes Probes bằng Actuator].
+
+[[howto.deployment.cloud.kubernetes.container-lifecycle]]
+=== Kubernetes Container Lifecycle
+
+Khi Kubernetes delete application instance, shutdown process involve nhiều subsystem concurrently: shutdown hook, unregister service, remove instance khỏi load balancer, v.v.
+Vì shutdown processing diễn ra parallel và do nature của distributed system, có một khoảng thời gian traffic vẫn có thể route tới pod đã bắt đầu shutdown processing.
+
+Có thể configure sleep execution trong preStop handler để tránh request route tới pod đã bắt đầu shutdown.
+Sleep phải đủ lâu để new request ngừng được route tới pod; duration thay đổi theo deployment.
+Delay nên ít nhất bằng longest time xử lý một in-flight request.
+Không nên chỉ dựa vào Spring Boot graceful shutdown period, vì platform sẽ không nhận liveness data trong thời gian app shutdown.
+
+Nếu dùng Kubernetes 1.32 trở lên, configure preStop handler bằng PodSpec trong pod configuration file:
+
+[source,yaml]
+----
+spec:
+  containers:
+  - name: "example-container"
+    image: "example-image"
+    lifecycle:
+      preStop:
+        sleep:
+          seconds: 10
+----
+
+Nếu chưa dùng Kubernetes 1.32, có thể dùng command `exec` để invoke `sleep`:
+
+[source,yaml]
+----
+spec:
+  containers:
+  - name: "example-container"
+    image: "example-image"
+    lifecycle:
+      preStop:
+        exec:
+          command: ["sh", "-c", "sleep 10"]
+----
+
+NOTE: Container cần có shell để cách này hoạt động.
+
+Sau khi pre-stop hook hoàn tất, SIGTERM được gửi tới container và xref:reference:web/graceful-shutdown.adoc[graceful shutdown] bắt đầu, cho phép remaining in-flight request hoàn tất.
+
+NOTE: Khi Kubernetes gửi SIGTERM tới pod, nó chờ khoảng thời gian gọi là termination grace period, mặc định 30 giây.
+Nếu container vẫn chạy sau grace period, SIGKILL được gửi và container bị force remove.
+Nếu pod mất hơn 30 giây để shutdown, ví dụ vì tăng configprop:spring.lifecycle.timeout-per-shutdown-phase[], đảm bảo tăng termination grace period bằng option `terminationGracePeriodSeconds` trong Pod YAML.
+
+[[howto.deployment.cloud.heroku]]
+== Heroku
+
+Heroku là một PaaS platform phổ biến khác.
+Để customize Heroku build, cung cấp `Procfile` định nghĩa command cần để deploy application.
+Heroku assign một `port` cho Java application và đảm bảo routing tới external URI hoạt động.
+
+Phải configure application listen đúng port.
+Ví dụ `Procfile` cho starter REST application:
+
+[source]
+----
+web: java -Dserver.port=$PORT -jar target/demo-0.0.1-SNAPSHOT.jar
+----
+
+Spring Boot làm argument `-D` available như property có thể access từ instance Spring javadoc:org.springframework.core.env.Environment[].
+Configuration property `server.port` được truyền vào embedded Tomcat hoặc Jetty instance, rồi server dùng port đó khi startup.
+Environment variable `$PORT` được Heroku PaaS assign.
+
+Đây là toàn bộ phần cần thiết.
+Deployment workflow phổ biến nhất cho Heroku là `git push` code lên production:
+
+[source,shell]
+----
+$ git push heroku main
+----
+
+Result tương tự:
+
+[source,subs="verbatim,quotes"]
+----
+Initializing repository, *done*.
+Counting objects: 95, *done*.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (78/78), *done*.
+Writing objects: 100% (95/95), 8.66 MiB | 606.00 KiB/s, *done*.
+Total 95 (delta 31), reused 0 (delta 0)
+
+-----> Java app detected
+-----> Installing OpenJDK... *done*
+-----> Installing Maven... *done*
+-----> Installing settings.xml... *done*
+-----> Executing: mvn -B -DskipTests=true clean install
+
+       [INFO] Scanning for projects...
+       Downloading: https://repo.spring.io/...
+       Downloaded: https://repo.spring.io/... (818 B at 1.8 KB/sec)
+		....
+       Downloaded: https://s3pository.heroku.com/jvm/... (152 KB at 595.3 KB/sec)
+       [INFO] Installing /tmp/build_0c35a5d2-a067-4abc-a232-14b1fb7a8229/target/...
+       [INFO] Installing /tmp/build_0c35a5d2-a067-4abc-a232-14b1fb7a8229/pom.xml ...
+       [INFO] ------------------------------------------------------------------------
+       [INFO] *BUILD SUCCESS*
+       [INFO] ------------------------------------------------------------------------
+       [INFO] Total time: 59.358s
+       [INFO] Finished at: Fri Mar 07 07:28:25 UTC 2014
+       [INFO] Final Memory: 20M/493M
+       [INFO] ------------------------------------------------------------------------
+
+-----> Discovering process types
+       Procfile declares types -> *web*
+
+-----> Compressing... *done*, 70.4MB
+-----> Launching... *done*, v6
+       https://agile-sierra-1405.herokuapp.com/ *deployed to Heroku*
+
+To git@heroku.com:agile-sierra-1405.git
+ * [new branch]      main -> main
+----
+
+Application giờ sẽ chạy trên Heroku.
+Chi tiết xem https://devcenter.heroku.com/articles/deploying-spring-boot-apps-to-heroku[Deploying Spring Boot Applications to Heroku].
+
+[[howto.deployment.cloud.openshift]]
+== OpenShift
+
+https://www.openshift.com/[OpenShift] có nhiều resource mô tả cách deploy Spring Boot application, gồm:
+
+* https://blog.openshift.com/using-openshift-enterprise-grade-spring-boot-deployments/[Using the S2I builder]
+* https://blog.openshift.com/using-spring-boot-on-openshift/[Running as a traditional web application on Wildfly]
+* https://blog.openshift.com/openshift-commons-briefing-96-cloud-native-applications-spring-rhoar/[OpenShift Commons Briefing]
+
+[[howto.deployment.cloud.aws]]
+== Amazon Web Services (AWS)
+
+Amazon Web Services cung cấp nhiều option phù hợp để chạy Spring Boot-based application dưới dạng container, traditional web application (war), hoặc self-contained executable jar file.
+Các option phổ biến:
+
+* Amazon Elastic Container Service (ECS)
+* AWS Elastic Beanstalk
+
+[[howto.deployment.cloud.aws.ecs]]
+=== Amazon Elastic Container Service (ECS)
+
+Official https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html[Amazon ECS developer guide] cung cấp overview toàn diện về feature của platform và có https://docs.aws.amazon.com/AmazonECS/latest/developerguide/getting-started.html[getting started guide] hướng dẫn các bước cần để container chạy.
+
+NOTE: Spring Boot application có thể package trong Docker container bằng technique mô tả trong xref:reference:packaging/container-images/index.adoc[].
+
+Ngoài developer guide, AWS cũng cung cấp https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-container-image.html[topical guide] để deploy containerized Java service trên Amazon ECS bằng AWS Fargate.
+
+TIP: Spring Boot auto-detect AWS ECS deployment environment bằng variable `AWS_EXECUTION_ENV`.
+Có thể override detection bằng configprop:spring.main.cloud-platform[].
+
+[[howto.deployment.cloud.aws.beanstalk]]
+=== AWS Elastic Beanstalk
+
+Như mô tả trong official https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_Java.html[Elastic Beanstalk Java guide], có hai option chính để deploy Java application.
+Có thể dùng "Tomcat Platform" hoặc "Java SE platform".
+
+[[howto.deployment.cloud.aws.beanstalk.tomcat-platform]]
+==== Dùng Tomcat Platform
+
+Option này áp dụng cho Spring Boot project produce war file.
+Theo official guide và https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/tomcat-quickstart.html[Java on Tomcat tutorial].
+
+NOTE: Cách tạo deployable war cho Spring Boot application được mô tả trong xref:deployment/traditional-deployment.adoc[].
+
+[[howto.deployment.cloud.aws.beanstalk.java-se-platform]]
+==== Dùng Java SE Platform
+
+Option này áp dụng cho Spring Boot project produce jar file và chạy embedded web container.
+Theo official guide và https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/java-quickstart.html[Java tutorial].
+Cũng có community tutorial như https://www.baeldung.com/spring-boot-deploy-aws-beanstalk[tutorial này].
+
+[[howto.deployment.cloud.boxfuse]]
+== CloudCaptain và Amazon Web Services
+
+https://cloudcaptain.sh/[CloudCaptain] hoạt động bằng cách biến Spring Boot executable jar hoặc war thành minimal VM image có thể deploy không đổi lên VirtualBox hoặc AWS.
+CloudCaptain có deep integration với Spring Boot và dùng information từ Spring Boot configuration file để tự động configure port và health check URL.
+CloudCaptain dùng information này cho cả image nó tạo và resource nó provision như instance, security group, elastic load balancer, v.v.
+
+Sau khi tạo https://console.cloudcaptain.sh[CloudCaptain account], connect với AWS account, install latest CloudCaptain Client, và đảm bảo application đã build bằng Maven hoặc Gradle, ví dụ `mvn clean package`, deploy Spring Boot application lên AWS bằng command:
+
+[source,shell]
+----
+$ boxfuse run myapp-1.0.jar -env=prod
+----
+
+Xem https://cloudcaptain.sh/docs/commandline/run.html[documentation `boxfuse run`] để biết thêm option.
+Nếu có file https://cloudcaptain.sh/docs/commandline/#configuration[`boxfuse.conf`] trong current directory, file đó được xét đến.
+
+TIP: Mặc định CloudCaptain activate Spring profile tên `boxfuse` khi startup.
+Nếu executable jar hoặc war chứa file https://cloudcaptain.sh/docs/payloads/springboot.html#configuration[`application-boxfuse.properties`], CloudCaptain base configuration trên property trong đó.
+
+Lúc này CloudCaptain tạo image cho application, upload nó, configure và start resource cần trên AWS, với output tương tự:
+
+[source]
+----
+Fusing Image for myapp-1.0.jar ...
+Image fused in 00:06.838s (53937 K) -> axelfontaine/myapp:1.0
+Creating axelfontaine/myapp ...
+Pushing axelfontaine/myapp:1.0 ...
+Verifying axelfontaine/myapp:1.0 ...
+Creating Elastic IP ...
+Mapping myapp-axelfontaine.boxfuse.io to 52.28.233.167 ...
+Waiting for AWS to create an AMI for axelfontaine/myapp:1.0 in eu-central-1 (this may take up to 50 seconds) ...
+AMI created in 00:23.557s -> ami-d23f38cf
+Creating security group boxfuse-sg_axelfontaine/myapp:1.0 ...
+Launching t2.micro instance of axelfontaine/myapp:1.0 (ami-d23f38cf) in eu-central-1 ...
+Instance launched in 00:30.306s -> i-92ef9f53
+Waiting for AWS to boot Instance i-92ef9f53 and Payload to start at https://52.28.235.61/ ...
+Payload started in 00:29.266s -> https://52.28.235.61/
+Remapping Elastic IP 52.28.233.167 to i-92ef9f53 ...
+Waiting 15s for AWS to complete Elastic IP Zero Downtime transition ...
+Deployment completed successfully. axelfontaine/myapp:1.0 is up and running at https://myapp-axelfontaine.boxfuse.io/
+----
+
+Application giờ sẽ chạy trên AWS.
+
+Xem blog post https://cloudcaptain.sh/blog/spring-boot-ec2.html[deploying Spring Boot apps on EC2] và https://cloudcaptain.sh/docs/payloads/springboot.html[documentation cho CloudCaptain Spring Boot integration] để bắt đầu Maven build chạy app.
+
+[[howto.deployment.cloud.azure]]
+== Azure
+
+https://spring.io/guides/gs/spring-boot-for-azure/[Getting Started guide] này hướng dẫn deploy Spring Boot application lên https://azure.microsoft.com/en-us/services/spring-cloud/[Azure Spring Cloud] hoặc https://docs.microsoft.com/en-us/azure/app-service/overview[Azure App Service].
+
+[[howto.deployment.cloud.google]]
+== Google Cloud
+
+Google Cloud có nhiều option để launch Spring Boot application.
+Dễ bắt đầu nhất có lẽ là App Engine, nhưng cũng có thể chạy Spring Boot trong container với Container Engine hoặc trên virtual machine với Compute Engine.
+
+Để deploy app đầu tiên lên App Engine standard environment, theo https://codelabs.developers.google.com/codelabs/cloud-app-engine-springboot#0[tutorial này].
+
+Ngoài ra App Engine Flex yêu cầu tạo file `app.yaml` mô tả resource app cần.
+Thông thường đặt file trong `src/main/appengine`:
+
+[source,yaml]
+----
+service: "default"
+
+runtime: "java17"
+env: "flex"
+
+handlers:
+- url: "/.*"
+  script: "this field is required, but ignored"
+
+manual_scaling:
+  instances: 1
+
+health_check:
+  enable_health_check: false
+
+env_variables:
+  ENCRYPT_KEY: "your_encryption_key_here"
+----
+
+Có thể deploy app, ví dụ bằng Maven plugin, bằng cách thêm project ID vào build configuration:
+
+[source,xml]
+----
+<plugin>
+	<groupId>com.google.cloud.tools</groupId>
+	<artifactId>appengine-maven-plugin</artifactId>
+	<version>2.4.4</version>
+	<configuration>
+		<project>myproject</project>
+	</configuration>
+</plugin>
+----
+
+Sau đó deploy bằng `mvn appengine:deploy`; cần authenticate trước, nếu không build fail.

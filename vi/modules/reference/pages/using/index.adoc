@@ -1,0 +1,10 @@
+[[using]]
+= Phát triển với Spring Boot
+
+Phần này trình bày chi tiết hơn về cách sử dụng Spring Boot.
+Nội dung bao gồm các chủ đề như build system, auto-configuration và cách chạy ứng dụng.
+Chúng tôi cũng đề cập một số best practice của Spring Boot.
+Mặc dù Spring Boot không có gì quá đặc biệt (nó chỉ là một thư viện khác mà bạn có thể sử dụng), một số khuyến nghị sẽ giúp quá trình phát triển dễ dàng hơn nếu được áp dụng.
+
+Nếu mới bắt đầu với Spring Boot, bạn nên đọc bài hướng dẫn xref:tutorial:first-application/index.adoc[] trước khi đi sâu vào phần này.
+

@@ -1,0 +1,104 @@
+[[using.running-your-application]]
+= Chạy ứng dụng
+
+Một trong những ưu điểm lớn nhất của việc đóng gói ứng dụng thành jar và dùng embedded HTTP server là bạn có thể chạy ứng dụng như mọi ứng dụng khác.
+Điều này cũng áp dụng cho việc debug ứng dụng Spring Boot.
+Bạn không cần IDE plugin hoặc extension đặc biệt nào.
+
+NOTE: Các lựa chọn dưới đây phù hợp nhất để chạy ứng dụng cục bộ trong quá trình phát triển.
+Để deploy lên production, xem xref:reference:using/packaging-for-production.adoc[].
+
+NOTE: Phần này chỉ đề cập cách đóng gói bằng jar.
+Nếu chọn đóng gói ứng dụng thành file war, hãy xem tài liệu của server và IDE.
+
+
+
+[[using.running-your-application.from-an-ide]]
+== Chạy từ IDE
+
+Bạn có thể chạy ứng dụng Spring Boot từ IDE như một ứng dụng Java.
+Tuy nhiên, trước hết cần import project.
+Các bước import khác nhau tùy IDE và build system.
+Hầu hết IDE có thể import trực tiếp project Maven.
+Ví dụ, người dùng Eclipse có thể chọn `Import...` -> `Existing Maven Projects` từ menu `File`.
+
+Nếu không thể import project trực tiếp vào IDE, bạn có thể tạo IDE metadata bằng build plugin.
+Maven có plugin cho https://maven.apache.org/plugins/maven-eclipse-plugin/[Eclipse] và https://maven.apache.org/plugins/maven-idea-plugin/[IntelliJ IDEA].
+Gradle cung cấp plugin cho {url-gradle-docs}/userguide.html[nhiều IDE].
+
+TIP: Nếu vô tình chạy ứng dụng web hai lần, bạn sẽ gặp lỗi "`Port already in use`".
+Người dùng Spring Tools có thể dùng nút `Relaunch` thay cho `Run` để bảo đảm instance hiện có được đóng.
+
+
+
+[[using.running-your-application.as-a-packaged-application]]
+== Chạy ứng dụng đã đóng gói
+
+Nếu dùng Maven hoặc Gradle plugin của Spring Boot để tạo executable jar, bạn có thể chạy ứng dụng bằng `java -jar`, như ví dụ sau:
+
+[source,shell]
+----
+$ java -jar target/myapplication-0.0.1-SNAPSHOT.jar
+----
+
+Bạn cũng có thể chạy ứng dụng đã đóng gói với hỗ trợ remote debugging được bật.
+Nhờ đó, bạn có thể kết nối debugger tới ứng dụng đã đóng gói, như ví dụ sau:
+
+[source,shell]
+----
+$ java -agentlib:jdwp=server=y,transport=dt_socket,address=8000,suspend=n \
+       -jar target/myapplication-0.0.1-SNAPSHOT.jar
+----
+
+
+
+[[using.running-your-application.with-the-maven-plugin]]
+== Sử dụng Maven plugin
+
+Maven plugin của Spring Boot có goal `run`, dùng để nhanh chóng biên dịch và chạy ứng dụng.
+Ứng dụng chạy ở dạng exploded, giống như trong IDE.
+Ví dụ sau minh họa lệnh Maven thông thường để chạy ứng dụng Spring Boot:
+
+[source,shell]
+----
+$ mvn spring-boot:run
+----
+
+Bạn cũng có thể sử dụng biến môi trường hệ điều hành `MAVEN_OPTS`, như ví dụ sau:
+
+[source,shell]
+----
+$ export MAVEN_OPTS=-Xmx1024m
+----
+
+
+
+[[using.running-your-application.with-the-gradle-plugin]]
+== Sử dụng Gradle plugin
+
+Gradle plugin của Spring Boot cũng có task `bootRun`, dùng để chạy ứng dụng ở dạng exploded.
+Task `bootRun` được thêm khi bạn áp dụng các plugin `org.springframework.boot` và `java`, như ví dụ sau:
+
+[source,shell]
+----
+$ gradle bootRun
+----
+
+Bạn cũng có thể sử dụng biến môi trường hệ điều hành `JAVA_OPTS`, như ví dụ sau:
+
+[source,shell]
+----
+$ export JAVA_OPTS=-Xmx1024m
+----
+
+
+
+[[using.running-your-application.hot-swapping]]
+== Hot Swapping
+
+Vì ứng dụng Spring Boot là ứng dụng Java thông thường, JVM hot swapping có thể hoạt động ngay mà không cần cấu hình thêm.
+JVM hot swapping có giới hạn nhất định về bytecode có thể thay thế.
+Để có giải pháp đầy đủ hơn, bạn có thể dùng https://www.jrebel.com/products/jrebel[JRebel].
+
+Module `spring-boot-devtools` cũng hỗ trợ khởi động lại ứng dụng nhanh.
+Xem phần xref:how-to:hotswapping.adoc[] trong "`Hướng dẫn How-to`" để biết chi tiết.

@@ -1,0 +1,5 @@
+[[io]]
+= IO
+
+Hầu hết application cần xử lý input và output tại một thời điểm nào đó.
+Spring Boot cung cấp utility và integration với nhiều technology để hỗ trợ khi bạn cần khả năng IO.

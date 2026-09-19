@@ -1,0 +1,44 @@
+[[web.graceful-shutdown]]
+= Graceful Shutdown
+
+Graceful shutdown được bật mặc định với cả ba embedded web server (Jetty, Reactor Netty và Tomcat), đồng thời áp dụng cho cả reactive và servlet-based web application.
+Nó diễn ra trong quá trình đóng application context và được thực hiện ở phase sớm nhất khi dừng các bean javadoc:org.springframework.context.SmartLifecycle[].
+Quá trình stop này sử dụng một timeout để cung cấp grace period, trong khoảng thời gian đó các request hiện có được phép hoàn tất nhưng request mới sẽ không được chấp nhận.
+
+Để cấu hình timeout period, cấu hình property configprop:spring.lifecycle.timeout-per-shutdown-phase[] như ví dụ sau:
+
+[configprops,yaml]
+----
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: "20s"
+----
+
+IMPORTANT: Shutdown trong IDE có thể diễn ra ngay lập tức thay vì graceful nếu IDE không gửi đúng signal `SIGTERM`.
+Xem tài liệu của IDE để biết thêm chi tiết.
+
+
+
+[[web.graceful-shutdown.rejecting-requests-during-the-grace-period]]
+== Từ chối request trong Grace Period
+
+Cách chính xác để không cho phép request mới phụ thuộc vào web server đang được sử dụng.
+Implementation có thể ngừng accept request ở network layer, hoặc có thể trả response với HTTP status code hay HTTP header cụ thể.
+Việc sử dụng persistent connection cũng có thể thay đổi cách request ngừng được accept.
+
+TIP: Để tìm hiểu thêm về phương thức cụ thể được dùng với web server của bạn, xem API documentation của `shutDownGracefully` cho javadoc:org.springframework.boot.tomcat.TomcatWebServer#shutDownGracefully(org.springframework.boot.web.server.GracefulShutdownCallback)[], javadoc:org.springframework.boot.reactor.netty.NettyWebServer#shutDownGracefully(org.springframework.boot.web.server.GracefulShutdownCallback)[], hoặc javadoc:org.springframework.boot.jetty.JettyWebServer#shutDownGracefully(org.springframework.boot.web.server.GracefulShutdownCallback)[].
+
+Jetty, Reactor Netty và Tomcat sẽ ngừng accept request mới ở network layer.
+
+
+
+[[web.graceful-shutdown.disabling-graceful-shutdown]]
+== Tắt Graceful Shutdown
+
+Để tắt graceful shutdown, cấu hình property configprop:server.shutdown[] như ví dụ sau:
+
+[configprops,yaml]
+----
+server:
+  shutdown: "immediate"
+----
