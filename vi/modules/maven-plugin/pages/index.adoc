@@ -1,0 +1,9 @@
+[[maven-plugin]]
+= Maven Plugin
+
+Spring Boot Maven Plugin cung cấp Spring Boot support trong https://maven.org[Apache Maven].
+Nó cho phép package executable jar hoặc war archive, chạy Spring Boot application, generate build information và start Spring Boot application trước khi chạy integration test.
+
+Để dùng plugin, phải dùng Maven 3.6.3 trở lên.
+
+Ngoài user guide này, xref:api/java/index.html[API documentation] cũng available.
