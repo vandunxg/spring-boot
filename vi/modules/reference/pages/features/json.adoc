@@ -1,0 +1,104 @@
+[[features.json]]
+= JSON
+
+Spring Boot tích hợp với các thư viện ánh xạ JSON sau:
+
+- Jackson 3
+- Jackson 2
+- Gson
+- JSON-B
+- Kotlin Serialization
+
+Jackson 3 là thư viện được ưu tiên và dùng mặc định.
+
+Phần hỗ trợ Jackson 2 đã deprecated và sẽ bị loại bỏ trong một bản phát hành Spring Boot 4.x trong tương lai.
+Phần này chỉ nhằm hỗ trợ chuyển từ Jackson 2 sang Jackson 3; bạn không nên phụ thuộc vào nó về lâu dài.
+
+
+
+[[features.json.jackson]]
+== Jackson 3
+
+Spring Boot cung cấp auto-configuration cho Jackson 3, và Jackson là một phần của `spring-boot-starter-json`.
+Khi Jackson có trên classpath, một bean javadoc:tools.jackson.databind.json.JsonMapper[] được tự động cấu hình.
+Một số property cấu hình được cung cấp để xref:how-to:spring-mvc.adoc#howto.spring-mvc.customize-jackson-jsonmapper[tùy chỉnh cấu hình của javadoc:tools.jackson.databind.json.JsonMapper[]].
+
+
+
+[[features.json.jackson.custom-serializers-and-deserializers]]
+=== Serializer và deserializer tùy chỉnh
+
+Nếu dùng Jackson để serialize và deserialize dữ liệu JSON, bạn có thể muốn viết các class javadoc:tools.jackson.databind.ValueSerializer[] và javadoc:tools.jackson.databind.ValueDeserializer[] riêng.
+Serializer tùy chỉnh thường được https://github.com/FasterXML/jackson-docs/wiki/JacksonHowToCustomSerializers[đăng ký với Jackson thông qua module], nhưng Spring Boot cung cấp annotation javadoc:org.springframework.boot.jackson.JacksonComponent[format=annotation] như một cách khác để đăng ký trực tiếp các Spring bean dễ hơn.
+
+Bạn có thể dùng annotation javadoc:org.springframework.boot.jackson.JacksonComponent[format=annotation] trực tiếp trên các implementation javadoc:tools.jackson.databind.ValueSerializer[], javadoc:tools.jackson.databind.ValueDeserializer[] hoặc javadoc:tools.jackson.databind.KeyDeserializer[].
+Bạn cũng có thể dùng nó trên các class chứa serializer/deserializer dưới dạng inner class, như ví dụ sau:
+
+include-code::MyJacksonComponent[]
+
+Tất cả bean javadoc:org.springframework.boot.jackson.JacksonComponent[format=annotation] trong javadoc:org.springframework.context.ApplicationContext[] đều được tự động đăng ký với Jackson.
+Vì javadoc:org.springframework.boot.jackson.JacksonComponent[format=annotation] được gắn meta-annotation javadoc:org.springframework.stereotype.Component[format=annotation], các quy tắc component scanning thông thường được áp dụng.
+
+Spring Boot cũng cung cấp các base class javadoc:org.springframework.boot.jackson.ObjectValueSerializer[] và javadoc:org.springframework.boot.jackson.ObjectValueDeserializer[] như những lựa chọn hữu ích thay cho các phiên bản tiêu chuẩn của Jackson khi serialize object.
+Xem javadoc:org.springframework.boot.jackson.ObjectValueSerializer[] và javadoc:org.springframework.boot.jackson.ObjectValueDeserializer[] trong tài liệu API để biết chi tiết.
+
+Ví dụ trên có thể được viết lại để dùng javadoc:org.springframework.boot.jackson.ObjectValueSerializer[] và javadoc:org.springframework.boot.jackson.ObjectValueDeserializer[] như sau:
+
+include-code::object/MyJacksonComponent[]
+
+
+
+[[features.json.jackson.mixins]]
+=== Mixin
+
+Jackson hỗ trợ mixin để bổ sung annotation vào các annotation đã khai báo trên class đích.
+Auto-configuration Jackson của Spring Boot quét các package của ứng dụng để tìm class được gắn javadoc:org.springframework.boot.jackson.JacksonMixin[format=annotation] và đăng ký chúng với javadoc:tools.jackson.databind.json.JsonMapper[] được auto-configure.
+Việc đăng ký do javadoc:org.springframework.boot.jackson.JacksonMixinModule[] của Spring Boot thực hiện.
+
+
+
+[[features.json.jackson2]]
+== Jackson 2
+
+Module `spring-boot-jackson2` cung cấp auto-configuration đã deprecated cho Jackson 2.
+Khi module này có trên classpath, một bean javadoc:com.fasterxml.jackson.databind.ObjectMapper[] được tự động cấu hình.
+Một số property cấu hình `+spring.jackson2.*+` được cung cấp để tùy chỉnh.
+Để kiểm soát nhiều hơn, hãy định nghĩa một hoặc nhiều bean javadoc:org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer[].
+
+Khi có cả Jackson 3 và Jackson 2, bạn có thể dùng các property sau để chỉ định ưu tiên Jackson 2:
+
+- configprop:spring.graphql.rsocket.preferred-json-mapper[]
+- configprop:spring.http.codecs.preferred-json-mapper[] (được Spring WebFlux và reactive HTTP client sử dụng)
+- configprop:spring.http.converters.preferred-json-mapper[] (được Spring MVC và imperative HTTP client sử dụng)
+- configprop:spring.rsocket.preferred-mapper[]
+- configprop:spring.websocket.messaging.preferred-json-mapper[]
+
+Trong mỗi trường hợp, đặt property tương ứng thành `jackson2` để chỉ định ưu tiên Jackson 2.
+
+
+
+[[features.json.gson]]
+== Gson
+
+Spring Boot cung cấp auto-configuration cho Gson.
+Khi Gson có trên classpath, một bean javadoc:com.google.gson.Gson[] được tự động cấu hình.
+Một số property cấu hình `+spring.gson.*+` được cung cấp để tùy chỉnh.
+Để kiểm soát nhiều hơn, bạn có thể dùng một hoặc nhiều bean javadoc:org.springframework.boot.gson.autoconfigure.GsonBuilderCustomizer[].
+
+
+
+[[features.json.json-b]]
+== JSON-B
+
+Spring Boot cung cấp auto-configuration cho JSON-B.
+Khi JSON-B API và một implementation có trên classpath, một bean javadoc:jakarta.json.bind.Jsonb[] được tự động cấu hình.
+Implementation JSON-B được ưu tiên là Eclipse Yasson; Spring Boot cung cấp dependency management cho implementation này.
+
+
+
+[[features.json.kotlin-serialization]]
+== Kotlin Serialization
+
+Spring Boot cung cấp auto-configuration cho Kotlin Serialization.
+Khi `kotlinx-serialization-json` có trên classpath, một bean https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-json/kotlinx.serialization.json/-json/[Json] được tự động cấu hình.
+Một số property cấu hình `+spring.kotlinx.serialization.json.*+` được cung cấp để tùy chỉnh.
