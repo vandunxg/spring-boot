@@ -303,3 +303,290 @@ Property `show-values` có thể cấu hình cho sanitizable endpoint:
 
 - `never` - value luôn fully sanitized, replace bằng `+******+`
 - `always` - value hiển thị cho mọi user miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng
+
+- `when-authorized` - value chỉ hiển thị cho authorized user, miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng.
+
+Với HTTP endpoint, user được xem là authorized nếu đã authenticate và có role được cấu hình bởi property `roles` của endpoint.
+Mặc định mọi authenticated user đều authorized.
+
+Với JMX endpoint, mọi user luôn authorized.
+
+Ví dụ sau cho phép user có role `admin` xem original value từ endpoint `/env`.
+Unauthorized user hoặc user không có role `admin` chỉ thấy sanitized value.
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    env:
+      show-values: when-authorized
+      roles: "admin"
+----
+
+NOTE: Ví dụ này giả định không có bean xref:how-to:actuator.adoc#howto.actuator.customizing-sanitization[`SanitizingFunction`] được định nghĩa.
+
+[[actuator.endpoints.hypermedia]]
+== Hypermedia cho Actuator Web Endpoints
+
+Một "discovery page" được thêm với link tới tất cả endpoint.
+Mặc định discovery page available tại `/actuator`.
+
+Để disable discovery page:
+
+[configprops,yaml]
+----
+management:
+  endpoints:
+    web:
+      discovery:
+        enabled: false
+----
+
+Khi custom management context path được cấu hình, discovery page tự động move từ `/actuator` tới root của management context.
+Ví dụ management context path là `/management`, discovery page available tại `/management`.
+Khi management context path là `/`, discovery page bị disable để tránh clash với mapping khác.
+
+[[actuator.endpoints.cors]]
+== CORS Support
+
+https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) là https://www.w3.org/TR/cors/[W3C specification] cho phép specify linh hoạt loại cross-domain request được authorize.
+Nếu dùng Spring MVC hoặc Spring WebFlux, có thể configure web endpoint của Actuator hỗ trợ scenario này.
+
+CORS support mặc định disable và chỉ enable sau khi set configprop:management.endpoints.web.cors.allowed-origins[].
+Configuration sau cho phép `GET` và `POST` từ domain `example.com`:
+
+[configprops,yaml]
+----
+management:
+  endpoints:
+    web:
+      cors:
+        allowed-origins: "https://example.com"
+        allowed-methods: "GET,POST"
+----
+
+TIP: Xem javadoc:org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties[] để biết đầy đủ option.
+
+[[actuator.endpoints.json]]
+== JSON
+
+Khi làm việc với JSON, Jackson được dùng cho serialization và deserialization.
+Mặc định dùng isolated javadoc:tools.jackson.databind.json.JsonMapper[].
+Isolation nghĩa là nó không share configuration với `JsonMapper` của application và không bị ảnh hưởng bởi property `spring.jackson.*`.
+Để disable behavior này và dùng JsonMapper của application, đặt configprop:management.endpoints.jackson.isolated-json-mapper[] thành `false`.
+Ngoài ra có thể define bean javadoc:org.springframework.boot.actuate.endpoint.jackson.EndpointJsonMapper[] riêng tạo JsonMapper phù hợp.
+Actuator sẽ dùng nó cho JSON processing.
+
+[[actuator.endpoints.implementing-custom]]
+== Implement Custom Endpoints
+
+Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] annotate javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], mọi method annotate javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation], hoặc javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation] tự động expose qua JMX và, với web application, qua HTTP.
+Endpoint có thể expose qua HTTP bằng Jersey, Spring MVC hoặc Spring WebFlux.
+Nếu cả Jersey và Spring MVC có sẵn, Spring MVC được dùng.
+
+Ví dụ expose read operation trả custom object:
+
+include-code::MyEndpoint[tag=read]
+
+Cũng có thể viết technology-specific endpoint bằng javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation].
+Endpoint này giới hạn ở technology tương ứng.
+Ví dụ WebEndpoint chỉ expose qua HTTP, không qua JMX.
+
+Có thể viết technology-specific extension bằng javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.EndpointJmxExtension[format=annotation].
+Annotation này cho phép cung cấp technology-specific operation để augment existing endpoint.
+Một endpoint có tối đa một extension mỗi type.
+
+Cuối cùng, nếu cần web-framework-specific functionality, có thể implement servlet hoặc endpoint Spring javadoc:org.springframework.stereotype.Controller[format=annotation] và javadoc:org.springframework.web.bind.annotation.RestController[format=annotation], đổi lại chúng không available qua JMX hoặc khi dùng web framework khác.
+
+[[actuator.endpoints.implementing-custom.input]]
+=== Nhận Input
+
+Operation trên endpoint nhận input qua parameter.
+Khi expose qua web, value parameter lấy từ URL query parameter và JSON request body.
+Khi expose qua JMX, parameter map tới parameter của MBean operation.
+Parameter mặc định required.
+Có thể làm optional bằng annotation JSpecify javadoc:org.jspecify.annotations.Nullable[format=annotation].
+Kotlin null safety cũng được hỗ trợ.
+
+Có thể map mỗi root property trong JSON request body tới một endpoint parameter.
+Ví dụ request body:
+
+[source,json]
+----
+{
+	"name": "test",
+	"counter": 42
+}
+----
+
+Có thể dùng để invoke write operation nhận parameter `String name` và `int counter`:
+
+include-code::../MyEndpoint[tag=write]
+
+TIP: Vì endpoint technology agnostic, chỉ simple type có thể dùng trong method signature.
+Cụ thể, single parameter type javadoc:liquibase.report.CustomData[] định nghĩa property `name` và `counter` không được hỗ trợ.
+
+NOTE: Để input map tới parameter của operation method, Java code implement endpoint nên compile với `-parameters`.
+Với Kotlin, xem {url-spring-framework-docs}/languages/kotlin/classes-interfaces.html[recommendation] của Spring Framework reference.
+Điều này tự động xảy ra nếu dùng Spring Boot Gradle plugin hoặc Maven cùng `spring-boot-starter-parent`.
+
+[[actuator.endpoints.implementing-custom.input.conversion]]
+==== Input Type Conversion
+
+Parameter truyền vào endpoint operation method được tự động convert sang required type khi cần.
+Trước khi gọi operation method, input nhận qua JMX hoặc HTTP được convert bằng instance javadoc:org.springframework.boot.convert.ApplicationConversionService[] cùng mọi bean javadoc:org.springframework.core.convert.converter.Converter[] hoặc javadoc:org.springframework.core.convert.converter.GenericConverter[] qualified bằng javadoc:org.springframework.boot.actuate.endpoint.annotation.EndpointConverter[format=annotation].
+
+[[actuator.endpoints.implementing-custom.web]]
+=== Custom Web Endpoints
+
+Operation trên javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] tự động expose qua HTTP bằng Jersey, Spring MVC hoặc Spring WebFlux.
+Nếu cả Jersey và Spring MVC có sẵn, Spring MVC được dùng.
+
+[[actuator.endpoints.implementing-custom.web.request-predicates]]
+==== Web Endpoint Request Predicates
+
+Request predicate tự động generate cho mỗi operation trên web-exposed endpoint.
+
+[[actuator.endpoints.implementing-custom.web.path-predicates]]
+==== Path
+
+Path của predicate được xác định bởi endpoint ID và base path của web-exposed endpoint.
+Default base path là `/actuator`.
+Ví dụ endpoint ID `sessions` dùng `/actuator/sessions` làm path trong predicate.
+
+Có thể customize path thêm bằng cách annotate một hoặc nhiều parameter của operation method với javadoc:org.springframework.boot.actuate.endpoint.annotation.Selector[format=annotation].
+Parameter này được thêm vào path predicate như path variable.
+Value được truyền vào operation method khi endpoint operation invoke.
+Nếu muốn capture mọi remaining path element, thêm `@Selector(Match=ALL_REMAINING)` vào parameter cuối và dùng type conversion-compatible với `String[]`.
+
+[[actuator.endpoints.implementing-custom.web.method-predicates]]
+==== HTTP Method
+
+HTTP method của predicate được xác định bởi operation type:
+
+[cols="3, 1"]
+|===
+| Operation | HTTP method
+
+| javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation]
+| `GET`
+
+| javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation]
+| `POST`
+
+| javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation]
+| `DELETE`
+|===
+
+[[actuator.endpoints.implementing-custom.web.consumes-predicates]]
+==== Consumes
+
+Với javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] (HTTP `POST`) dùng request body, clause `consumes` của predicate là `application/vnd.spring-boot.actuator.v2+json, application/json`.
+Với mọi operation khác, clause `consumes` rỗng.
+
+[[actuator.endpoints.implementing-custom.web.produces-predicates]]
+==== Produces
+
+Clause `produces` có thể được xác định bởi attribute `produces` của annotation DeleteOperation, ReadOperation và WriteOperation.
+Attribute optional.
+Nếu không dùng, `produces` được xác định tự động.
+
+Nếu operation method trả `void` hoặc javadoc:java.lang.Void[], clause `produces` rỗng.
+Nếu trả javadoc:org.springframework.core.io.Resource[], clause là `application/octet-stream`.
+Với operation khác, clause là `application/vnd.spring-boot.actuator.v2+json, application/json`.
+
+[[actuator.endpoints.implementing-custom.web.response-status]]
+==== Web Endpoint Response Status
+
+Default response status phụ thuộc operation type và value operation trả về.
+
+Nếu ReadOperation trả value, response status 200 (OK).
+Nếu không trả value, status 404 (Not Found).
+
+Nếu WriteOperation hoặc DeleteOperation trả value, response status 200 (OK).
+Nếu không trả value, status 204 (No Content).
+
+Nếu operation invoke thiếu required parameter hoặc parameter không convert được sang required type, operation method không được gọi và response status 400 (Bad Request).
+
+[[actuator.endpoints.implementing-custom.web.range-requests]]
+==== Web Endpoint Range Requests
+
+Có thể dùng HTTP range request để request một phần HTTP resource.
+Khi dùng Spring MVC hoặc Spring WebFlux, operation trả javadoc:org.springframework.core.io.Resource[] tự động hỗ trợ range request.
+
+NOTE: Range request không được hỗ trợ với Jersey.
+
+[[actuator.endpoints.implementing-custom.web.security]]
+==== Web Endpoint Security
+
+Operation trên web endpoint hoặc web-specific endpoint extension có thể nhận current javadoc:java.security.Principal[] hoặc javadoc:org.springframework.boot.actuate.endpoint.SecurityContext[] làm method parameter.
+Principal thường dùng cùng javadoc:org.jspecify.annotations.Nullable[format=annotation] để cung cấp behavior khác cho authenticated và unauthenticated user.
+SecurityContext thường dùng để authorization check qua method `isUserInRole(String)`.
+
+[[actuator.endpoints.health]]
+== Health Information
+
+Có thể dùng health information để check status của running application.
+Monitoring software thường dùng để alert khi production system down.
+Information expose bởi endpoint `health` phụ thuộc configprop:management.endpoint.health.show-details[] và configprop:management.endpoint.health.show-components[], với value:
+
+[cols="1, 3"]
+|===
+| Name | Mô tả
+
+| `never`
+| Không bao giờ hiển thị detail.
+
+| `when-authorized`
+| Chỉ hiển thị detail cho authorized user.
+  Authorized role configure bằng `management.endpoint.health.roles`.
+
+| `always`
+| Hiển thị detail cho mọi user.
+|===
+
+Default là `never`.
+User authorized khi thuộc một hoặc nhiều role của endpoint.
+Nếu endpoint không cấu hình role, mặc định mọi authenticated user authorized.
+Configure role bằng configprop:management.endpoint.health.roles[].
+
+NOTE: Nếu application đã secure và muốn dùng `always`, security configuration phải permit access health endpoint cho cả authenticated và unauthenticated user.
+
+Health information được collect từ javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[]; mặc định là mọi instance javadoc:org.springframework.boot.health.contributor.HealthContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
+Spring Boot có nhiều auto-configured HealthContributor bean, và bạn cũng có thể viết riêng.
+
+HealthContributor có thể là javadoc:org.springframework.boot.health.contributor.HealthIndicator[] hoặc javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+HealthIndicator cung cấp actual health information gồm javadoc:org.springframework.boot.health.contributor.Status[].
+CompositeHealthContributor cung cấp composite của HealthContributor khác.
+Together, contributor tạo tree structure biểu diễn overall system health.
+
+Mặc định final system health derive bởi javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], sort status từ mỗi HealthIndicator dựa trên ordered list status.
+Status đầu tiên trong sorted list được dùng làm overall health status.
+Nếu không HealthIndicator nào trả status được StatusAggregator biết, dùng `UNKNOWN`.
+
+TIP: Có thể dùng javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[] để register/unregister health indicator runtime.
+
+[[actuator.endpoints.health.auto-configured-health-indicators]]
+=== Auto-configured HealthIndicators
+
+Khi phù hợp, Spring Boot auto-configure các bean javadoc:org.springframework.boot.health.contributor.HealthIndicator[] trong table sau.
+Cũng có thể enable/disable indicator bằng `management.health.key.enabled`, với `key` trong table:
+
+[cols="2,4,6"]
+|===
+| Key | Name | Mô tả
+
+| `cassandra`
+| javadoc:org.springframework.boot.cassandra.health.CassandraDriverHealthIndicator[]
+| Kiểm tra Cassandra database up.
+
+| `couchbase`
+| javadoc:org.springframework.boot.couchbase.health.CouchbaseHealthIndicator[]
+| Kiểm tra Couchbase cluster up.
+
+| `db`
+| javadoc:org.springframework.boot.jdbc.health.DataSourceHealthIndicator[]
+| Kiểm tra có thể lấy connection tới javadoc:javax.sql.DataSource[].
+
+| `diskspace`
+| javadoc:org.springframework.boot.health.application.DiskSpaceHealthIndicator[]
