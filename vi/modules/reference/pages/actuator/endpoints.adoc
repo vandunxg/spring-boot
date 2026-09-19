@@ -896,3 +896,360 @@ Có thể configure Kubernetes infrastructure bằng endpoint information:
 livenessProbe:
   httpGet:
     path: "/actuator/health/liveness"
+
+    port: <actuator-port>
+  failureThreshold: ...
+  periodSeconds: ...
+
+readinessProbe:
+  httpGet:
+    path: "/actuator/health/readiness"
+    port: <actuator-port>
+  failureThreshold: ...
+  periodSeconds: ...
+----
+
+NOTE: `<actuator-port>` nên đặt thành port nơi actuator endpoint available.
+Có thể là main web server port hoặc separate management port nếu property `"management.server.port"` được set.
+
+Các health group này tự động enable.
+Có thể disable bằng configprop:management.endpoint.health.probes.enabled[].
+
+NOTE: Nếu application mất nhiều thời gian start hơn configured liveness period, Kubernetes https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#when-should-you-use-a-startup-probe[đề cập `"startupProbe"` như một solution].
+Nói chung `"startupProbe"` không nhất thiết cần vì `"readinessProbe"` fail cho tới khi mọi startup task hoàn tất.
+Nghĩa là application không nhận traffic trước khi ready.
+Tuy nhiên nếu application start lâu, cân nhắc https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes[cấu hình `"startupProbe"`] dùng liveness HTTP probe để đảm bảo Kubernetes không kill application trong khi đang start.
+Xem phần xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes.lifecycle[mô tả probe behavior trong application lifecycle].
+
+Nếu Actuator endpoint deploy trên separate management context, endpoint không dùng cùng web infrastructure (port, connection pool, framework component) với main application.
+Trong trường hợp này probe check có thể success dù main application không hoạt động đúng, ví dụ không accept new connection.
+Vì vậy nên expose health group `liveness` và `readiness` trên main server port:
+
+[source,properties]
+----
+management.endpoint.health.probes.add-additional-paths=true
+----
+
+Điều này expose group `liveness` tại `/livez` và `readiness` tại `/readyz` trên main server port.
+Path có thể customize bằng property `additional-path` trên từng group; xem xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health groups].
+
+[[actuator.endpoints.kubernetes-probes.external-state]]
+=== Kiểm tra External State bằng Kubernetes Probes
+
+Actuator configure probe `"liveness"` và `"readiness"` như Health Groups.
+Do đó mọi xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health groups feature] đều available.
+Ví dụ configure additional Health Indicator:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: "readinessState,customCheck"
+----
+
+Mặc định Spring Boot không thêm health indicator khác vào các group này.
+
+Probe `"liveness"` không nên depend vào health check của external system.
+Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.liveness[liveness state của application] broken, Kubernetes cố solve bằng restart application instance.
+Nếu external system như database, Web API hoặc external cache fail, Kubernetes có thể restart mọi application instance và tạo cascading failure.
+
+Với probe `"readiness"`, việc check external system cần được developer cân nhắc kỹ.
+Vì vậy Spring Boot không include additional health check nào trong readiness probe.
+Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.readiness[readiness state của application instance] là unready, Kubernetes không route traffic tới instance đó.
+Một số external system không shared giữa application instance, khi đó có thể include trong readiness probe.
+External system khác có thể không essential cho application, ví dụ application có circuit breaker và fallback, khi đó chắc chắn không nên include.
+External system shared giữa mọi application instance là case phổ biến và cần judgement call: include trong readiness probe và chấp nhận application bị đưa out-of-service khi service ngoài down, hoặc không include và xử lý failure ở layer cao hơn, ví dụ circuit breaker ở caller.
+
+NOTE: Nếu mọi instance của application đều unready, Kubernetes Service với `type=ClusterIP` hoặc `NodePort` không accept incoming connection.
+Không có HTTP error response như 503 vì không có connection.
+Service `type=LoadBalancer` có thể accept hoặc không tùy provider.
+Service có explicit https://kubernetes.io/docs/concepts/services-networking/ingress/[ingress] cũng response tùy implementation; ingress service phải quyết định cách handle `"connection refused"` từ downstream.
+HTTP 503 khá có khả năng xảy ra với load balancer và ingress.
+
+Ngoài ra nếu application dùng Kubernetes https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/[autoscaling], behavior khi application bị remove khỏi load balancer phụ thuộc autoscaler configuration.
+
+[[actuator.endpoints.kubernetes-probes.lifecycle]]
+=== Application Lifecycle và Probe States
+
+Aspect quan trọng của Kubernetes Probes support là consistency với application lifecycle.
+Có khác biệt đáng kể giữa javadoc:org.springframework.boot.availability.AvailabilityState[] (in-memory internal state) và actual probe expose state đó.
+Tùy phase lifecycle, probe có thể chưa available.
+
+Spring Boot publish xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[application event trong startup và shutdown], và probe có thể listen event để expose AvailabilityState information.
+
+Các table sau cho biết AvailabilityState và HTTP connector state ở từng stage.
+
+Khi Spring Boot application start:
+
+[cols="2,2,2,3,5"]
+|===
+|Startup phase |LivenessState |ReadinessState |HTTP server |Ghi chú
+
+|Starting
+|`BROKEN`
+|`REFUSING_TRAFFIC`
+|Not started
+|Kubernetes check "liveness" Probe và restart application nếu mất quá nhiều thời gian.
+
+|Started
+|`CORRECT`
+|`REFUSING_TRAFFIC`
+|Refuses requests
+|Application context đã refresh. Application thực hiện startup task và chưa nhận traffic.
+
+|Ready
+|`CORRECT`
+|`ACCEPTING_TRAFFIC`
+|Accepts requests
+|Startup task hoàn tất. Application nhận traffic.
+|===
+
+Khi Spring Boot application shutdown:
+
+[cols="2,2,2,3,5"]
+|===
+|Shutdown phase |Liveness State |Readiness State |HTTP server |Ghi chú
+
+|Running
+|`CORRECT`
+|`ACCEPTING_TRAFFIC`
+|Accepts requests
+|Shutdown đã được request.
+
+|Graceful shutdown
+|`CORRECT`
+|`REFUSING_TRAFFIC`
+|New requests are rejected
+|Nếu enable, xref:web/graceful-shutdown.adoc[graceful shutdown xử lý in-flight request].
+HTTP probe cũng ngừng accept traffic nên availability state không readily available externally.
+
+|Shutdown complete
+|N/A
+|N/A
+|Server is shut down
+|Application context đóng và application shutdown.
+|===
+
+TIP: Xem xref:how-to:deployment/cloud.adoc#howto.deployment.cloud.kubernetes.container-lifecycle[] để biết thêm về Kubernetes deployment.
+Đặc biệt phần này mô tả dùng hook `preStop` để cho application thời gian graceful shutdown trước khi Kubernetes kill.
+
+[[actuator.endpoints.info]]
+== Application Information
+
+Application information expose information collect từ mọi bean javadoc:org.springframework.boot.actuate.info.InfoContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
+Spring Boot có nhiều auto-configured InfoContributor bean và bạn có thể viết riêng.
+
+[[actuator.endpoints.info.auto-configured-info-contributors]]
+=== Auto-configured InfoContributors
+
+Khi phù hợp, Spring auto-configure các InfoContributor sau:
+
+[cols="1,4,8,4"]
+|===
+| ID | Name | Mô tả | Prerequisites
+
+| `build`
+| javadoc:org.springframework.boot.actuate.info.BuildInfoContributor[]
+| Expose build information.
+| Resource `META-INF/build-info.properties`.
+
+| `env`
+| javadoc:org.springframework.boot.actuate.info.EnvironmentInfoContributor[]
+| Expose property từ javadoc:org.springframework.core.env.Environment[] có name bắt đầu bằng `info.`.
+| None.
+
+| `git`
+| javadoc:org.springframework.boot.actuate.info.GitInfoContributor[]
+| Expose git information.
+| Resource `git.properties`.
+
+| `java`
+| javadoc:org.springframework.boot.actuate.info.JavaInfoContributor[]
+| Expose Java runtime information.
+| None.
+
+| `os`
+| javadoc:org.springframework.boot.actuate.info.OsInfoContributor[]
+| Expose Operating System information.
+| None.
+
+| `process`
+| javadoc:org.springframework.boot.actuate.info.ProcessInfoContributor[]
+| Expose process information.
+| None.
+
+| `ssl`
+| javadoc:org.springframework.boot.actuate.info.SslInfoContributor[]
+| Expose SSL certificate information.
+| Có xref:features/ssl.adoc#features.ssl.bundles[SSL Bundle] configured.
+
+|===
+
+Contributor riêng có enable hay không được control bởi property `management.info.<id>.enabled`.
+Mỗi contributor có default khác nhau tùy prerequisite và nature của information expose.
+
+Không có prerequisite cho thấy nên enable, các contributor `env`, `java`, `os`, và `process` mặc định disable.
+Contributor `ssl` có prerequisite là SSL Bundle được configure nhưng vẫn default disable.
+Mỗi contributor có thể enable bằng `management.info.<id>.enabled=true`.
+
+Contributor `build` và `git` mặc định enable.
+Có thể disable từng cái bằng `management.info.<id>.enabled=false`.
+Hoặc disable mọi contributor thường default enable bằng configprop:management.info.defaults.enabled[] = `false`.
+
+[[actuator.endpoints.info.custom-application-information]]
+=== Custom Application Information
+
+Khi contributor `env` enable, có thể customize data expose bởi endpoint `info` bằng Spring property `+info.*+`.
+Mọi property Environment dưới key `info` tự động expose.
+Ví dụ:
+
+[configprops,yaml]
+----
+info:
+  app:
+    encoding: "UTF-8"
+    java:
+      source: "17"
+      target: "17"
+----
+
+[TIP]
+====
+Thay vì hardcode value, có thể xref:how-to:properties-and-configuration.adoc#howto.properties-and-configuration.expand-properties[expand info property ở build time].
+
+Với Maven, có thể viết:
+
+[configprops,yaml]
+----
+info:
+  app:
+    encoding: "@project.build.sourceEncoding@"
+    java:
+      source: "@java.version@"
+      target: "@java.version@"
+----
+====
+
+[[actuator.endpoints.info.git-commit-information]]
+=== Git Commit Information
+
+Feature hữu ích khác của endpoint `info` là publish information về state của `git` source code repository khi project được build.
+Nếu bean javadoc:org.springframework.boot.info.GitProperties[] available, endpoint `info` có thể expose property này.
+
+TIP: Bean GitProperties được auto-configure nếu file `git.properties` available ở root classpath.
+Xem xref:how-to:build.adoc#howto.build.generate-git-info[].
+
+Mặc định endpoint expose property `git.branch`, `git.commit.id`, và `git.commit.time` nếu có.
+Nếu không muốn property nào trong response, cần exclude khỏi `git.properties`.
+Nếu muốn display full git information, tức full content `git.properties`, dùng configprop:management.info.git.mode[]:
+
+[configprops,yaml]
+----
+management:
+  info:
+    git:
+      mode: "full"
+----
+
+Để disable hoàn toàn git commit information khỏi endpoint `info`, set configprop:management.info.git.enabled[] = `false`:
+
+[configprops,yaml]
+----
+management:
+  info:
+    git:
+      enabled: false
+----
+
+[[actuator.endpoints.info.build-information]]
+=== Build Information
+
+Nếu bean javadoc:org.springframework.boot.info.BuildProperties[] available, endpoint `info` cũng có thể publish build information.
+Điều này xảy ra khi file `META-INF/build-info.properties` available trên classpath.
+
+TIP: Cả Maven và Gradle plugin đều có thể generate file này.
+Xem xref:how-to:build.adoc#howto.build.generate-info[].
+
+[[actuator.endpoints.info.java-information]]
+=== Java Information
+
+Endpoint `info` publish information về Java runtime environment; xem javadoc:org.springframework.boot.info.JavaInfo[].
+
+[[actuator.endpoints.info.os-information]]
+=== OS Information
+
+Endpoint `info` publish Operating System information; xem javadoc:org.springframework.boot.info.OsInfo[].
+
+[[actuator.endpoints.info.process-information]]
+=== Process Information
+
+Endpoint `info` publish process information; xem javadoc:org.springframework.boot.info.ProcessInfo[].
+
+[[actuator.endpoints.info.ssl-information]]
+=== SSL Information
+
+Endpoint `info` publish SSL certificate information được cấu hình qua xref:features/ssl.adoc#features.ssl.bundles[SSL Bundles]; xem javadoc:org.springframework.boot.info.SslInfo[].
+
+[[actuator.endpoints.info.writing-custom-info-contributors]]
+=== Viết Custom InfoContributors
+
+Để cung cấp custom application information, register Spring bean implement interface javadoc:org.springframework.boot.actuate.info.InfoContributor[].
+
+Ví dụ contribute entry `example` với một value:
+
+include-code::MyInfoContributor[]
+
+Khi gọi endpoint `info`, response có additional entry:
+
+[source,json]
+----
+{
+	"example": {
+		"key" : "value"
+	}
+}
+----
+
+[[actuator.endpoints.sbom]]
+== Software Bill of Materials (SBOM)
+
+Endpoint `sbom` expose https://en.wikipedia.org/wiki/Software_supply_chain[Software Bill of Materials].
+CycloneDX SBOM có thể auto-detect, format khác có thể manual configure.
+
+Actuator endpoint `sbom` expose SBOM tên "application", mô tả content của application.
+
+TIP: Để tự động generate CycloneDX SBOM khi build project, xem xref:how-to:build.adoc#howto.build.generate-cyclonedx-sbom[].
+
+[[actuator.endpoints.sbom.other-formats]]
+=== SBOM Format khác
+
+Nếu muốn publish SBOM format khác, có configuration property để dùng.
+
+configprop:management.endpoint.sbom.application.location[] đặt location application SBOM.
+Ví dụ `classpath:sbom.json` dùng content resource `/sbom.json` trên classpath.
+
+Media type cho SBOM format CycloneDX, SPDX và Syft được detect tự động.
+Để override auto-detected media type, dùng configprop:management.endpoint.sbom.application.media-type[].
+
+[[actuator.endpoints.sbom.additional]]
+=== Additional SBOMs
+
+Actuator endpoint có thể handle nhiều SBOM.
+Để thêm SBOM, dùng configprop:management.endpoint.sbom.additional[]:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    sbom:
+      additional:
+        system:
+          location: "optional:file:/system.spdx.json"
+          media-type: "application/spdx+json"
+----
+
+Điều này thêm SBOM tên `system`, lưu tại `/system.spdx.json`.
+Prefix `optional:` có thể dùng để tránh startup failure nếu file không tồn tại.
