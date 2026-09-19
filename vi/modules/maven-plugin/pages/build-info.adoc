@@ -1,0 +1,18 @@
+[[build-info]]
+= Integrating with Actuator
+
+Spring Boot Actuator hiển thị build-related information nếu file `META-INF/build-info.properties` tồn tại.
+Goal `build-info` generate file này với coordinates của project và build time.
+Nó cũng cho phép thêm số lượng tùy ý additional property:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+include::example$build-info/pom.xml[tags=build-info]
+----
+
+Configuration này generate `build-info.properties` tại expected location với ba additional key.
+
+NOTE: `java.version` được kỳ vọng là regular property available trong project.
+Nó được interpolate như mong đợi.
+
+include::partial$goals/build-info.adoc[leveloffset=+1]
