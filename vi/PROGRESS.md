@@ -5,7 +5,7 @@
 - Source commit: `adbbf047320013ee42284d6957293aaf75a56ad7`.
 - Source-root: `documentation/spring-boot-docs/src/docs/antora/`.
 - Mục tiêu yêu cầu: 200 trang, theo navigation chính thức từ đầu đến cuối.
-- Đã dịch trọn vẹn: **17 trang**. Chưa hoàn thành mục tiêu 200 trang.
+- Đã dịch trọn vẹn: **20 trang**. Chưa hoàn thành mục tiêu 200 trang.
 - Kiểm tra hiện tại: đối chiếu nội dung và cú pháp với nguồn; chưa chạy build website.
 
 ## Đã dịch
@@ -27,13 +27,16 @@
 15. [x] `modules/reference/pages/using/spring-beans-and-dependency-injection.adoc`
 16. [x] `modules/reference/pages/using/using-the-springbootapplication-annotation.adoc`
 17. [x] `modules/reference/pages/using/running-your-application.adoc`
+18. [x] `modules/reference/pages/using/devtools.adoc`
+19. [x] `modules/reference/pages/using/packaging-for-production.adoc`
+20. [x] `modules/reference/pages/features/index.adoc`
 
 ## Tiếp theo
 
-18. [ ] `modules/reference/pages/using/devtools.adoc`
-19. [ ] `modules/reference/pages/using/packaging-for-production.adoc`
-20. [ ] `modules/reference/pages/features/index.adoc`
 21. [ ] `modules/reference/pages/features/spring-application.adoc`
 22. [ ] `modules/reference/pages/features/external-config.adoc`
+23. [ ] `modules/reference/pages/features/profiles.adoc`
+24. [ ] `modules/reference/pages/features/logging.adoc`
+25. [ ] `modules/reference/pages/features/internationalization.adoc`
 
 Sau đó tiếp tục theo `modules/reference/partials/nav-reference.adoc` và các navigation được include trong `nav.adoc` gốc. Không tính file quản lý hoặc navigation vào số trang đã dịch.
