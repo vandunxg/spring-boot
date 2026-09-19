@@ -83,25 +83,26 @@ We like to know the Spring Boot version, operating system, and JVM version you'r
 
 
 
-== Building from Source
+== Building the Documentation Site
 
-You don't need to build from source to use Spring Boot.
-If you want to try out the latest and greatest, Spring Boot can be built and published to your local Maven cache using the https://docs.gradle.org/current/userguide/gradle_wrapper.html[Gradle wrapper].
-You also need JDK 25.
+This fork carries documentation only: no Spring Boot source, no Gradle build.
+It publishes the reference documentation in two languages, English at the site root and Vietnamese under `/vi/`.
 
-[source,shell]
-----
-$ ./gradlew publishToMavenLocal
-----
+* `upstream/` is a read-only mirror of the upstream documentation, refreshed by `scripts/sync-spring-boot-docs.sh` and pinned by `.upstream-version`. Do not edit it by hand.
+* `vi/` holds the Vietnamese translation. See `vi/README.md`.
+* `antora-playbook.yml` builds both into a single site.
 
-This command builds all modules and publishes them to your local Maven cache.
-It won't run any of the tests.
-If you want to build everything, use the `build` task:
+Install the toolchain once, then build from the repository root.
+You need Node.js 20 or later.
 
 [source,shell]
 ----
-$ ./gradlew build
+$ npm ci --prefix antora
+$ ./antora/node_modules/.bin/antora antora-playbook.yml
 ----
+
+The site is written to `build/site` and can be opened straight from the file system.
+Pushing to `main` builds and publishes it to GitHub Pages through `.github/workflows/deploy-docs.yml`.
 
 
 
