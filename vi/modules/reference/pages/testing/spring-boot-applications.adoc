@@ -1,0 +1,284 @@
+[[testing.spring-boot-applications]]
+= Testing Spring Boot Applications
+
+Spring Boot application là Spring javadoc:org.springframework.context.ApplicationContext[], vì vậy ngoài những gì thường làm với vanilla Spring context thì không cần gì quá đặc biệt để test.
+
+NOTE: External property, logging và các feature khác của Spring Boot mặc định chỉ được install vào context nếu dùng javadoc:org.springframework.boot.SpringApplication[] để tạo context.
+
+Spring Boot cung cấp annotation javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], có thể dùng thay standard `spring-test` javadoc:org.springframework.test.context.ContextConfiguration[format=annotation] khi cần Spring Boot feature.
+Annotation hoạt động bằng cách xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[tạo javadoc:org.springframework.context.ApplicationContext[] dùng trong test thông qua javadoc:org.springframework.boot.SpringApplication[]].
+Ngoài javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], còn có nhiều annotation khác để xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[test các slice cụ thể hơn] của application.
+
+TIP: Nếu dùng JUnit 4, đừng quên thêm `@RunWith(SpringRunner.class)` vào test, nếu không annotation sẽ bị ignore.
+Nếu dùng JUnit 6, không cần thêm `@ExtendWith(SpringExtension.class)` vì javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] và các annotation `@...Test` khác đã annotate sẵn.
+
+Mặc định javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] không start server.
+Có thể dùng attribute `webEnvironment` để điều chỉnh cách test chạy:
+
+* `MOCK` (default): Load web javadoc:org.springframework.context.ApplicationContext[] và cung cấp mock web environment.
+  Embedded server không start.
+  Nếu classpath không có web environment, mode này tự fallback sang regular non-web javadoc:org.springframework.context.ApplicationContext[].
+  Có thể dùng cùng xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.with-mock-environment[`@AutoConfigureMockMvc`, javadoc:org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient[format=annotation], hoặc javadoc:org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient[format=annotation]] để test web application dựa trên mock.
+* `RANDOM_PORT`: Load javadoc:org.springframework.boot.web.server.context.WebServerApplicationContext[] và cung cấp real web environment.
+  Embedded server start và listen random port.
+* `DEFINED_PORT`: Load javadoc:org.springframework.boot.web.server.context.WebServerApplicationContext[] và cung cấp real web environment.
+  Embedded server start và listen port được định nghĩa trong `application.properties` hoặc default `8080`.
+* `NONE`: Load javadoc:org.springframework.context.ApplicationContext[] bằng javadoc:org.springframework.boot.SpringApplication[] nhưng không cung cấp web environment nào, kể cả mock.
+
+NOTE: Nếu test annotate javadoc:org.springframework.transaction.annotation.Transactional[format=annotation], mặc định transaction rollback ở cuối mỗi test method.
+Tuy nhiên với `RANDOM_PORT` hoặc `DEFINED_PORT`, real servlet environment được cung cấp ngầm, HTTP client và server chạy ở thread khác nhau nên transaction cũng khác nhau.
+Transaction được tạo phía server sẽ không rollback trong trường hợp này.
+
+NOTE: javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] với `webEnvironment = WebEnvironment.RANDOM_PORT` cũng start management server trên random port riêng nếu application dùng management server port khác.
+
+[[testing.spring-boot-applications.detecting-web-app-type]]
+== Detect Web Application Type
+
+Nếu Spring MVC available, regular MVC-based application context được cấu hình.
+Nếu chỉ có Spring WebFlux, Spring Boot detect và cấu hình WebFlux-based application context.
+
+Nếu cả hai có mặt, Spring MVC có precedence.
+Nếu muốn test reactive web application trong scenario này, đặt configprop:spring.main.web-application-type[]:
+
+include-code::MyWebFluxTests[]
+
+[[testing.spring-boot-applications.detecting-configuration]]
+== Detect Test Configuration
+
+Nếu quen Spring Test Framework, bạn có thể thường dùng `@ContextConfiguration(classes=...)` để chỉ định Spring javadoc:org.springframework.context.annotation.Configuration[format=annotation] cần load.
+Hoặc có thể dùng nested javadoc:org.springframework.context.annotation.Configuration[format=annotation] class trong test.
+
+Khi test Spring Boot application, điều này thường không cần thiết.
+Các annotation `@*Test` của Spring Boot tự động tìm primary configuration nếu bạn không explicit define.
+
+Search algorithm đi từ package chứa test lên trên cho tới khi tìm class annotate javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] hoặc javadoc:org.springframework.boot.SpringBootConfiguration[format=annotation].
+Miễn là xref:using/structuring-your-code.adoc[code được structure hợp lý], main configuration thường được tìm thấy.
+
+[NOTE]
+====
+Nếu dùng xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[test annotation để test slice cụ thể hơn], nên tránh đặt configuration setting đặc thù cho một area trên xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.user-configuration-and-slicing[application class chứa main method].
+
+Underlying component scan configuration của javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] định nghĩa exclude filter để slicing hoạt động đúng.
+Nếu dùng explicit javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] trên class annotate javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], các filter đó bị disable.
+Nếu dùng slicing, cần định nghĩa lại chúng.
+====
+
+Nếu muốn customize primary configuration, dùng nested class javadoc:org.springframework.boot.test.context.TestConfiguration[format=annotation].
+Khác nested javadoc:org.springframework.context.annotation.Configuration[format=annotation] dùng thay primary configuration của application, nested TestConfiguration được dùng bổ sung cùng primary configuration.
+
+NOTE: Spring test framework cache application context giữa các test.
+Do đó miễn là test share cùng configuration, bất kể được discover theo cách nào, quá trình load context tốn thời gian chỉ diễn ra một lần.
+
+[[testing.spring-boot-applications.using-main]]
+== Sử dụng Main Method của Test Configuration
+
+Thông thường test configuration do javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] discover chính là main javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation].
+Trong phần lớn application structure tốt, configuration class này cũng chứa `main` method launch application.
+
+Pattern phổ biến:
+
+include-code::typical/MyApplication[]
+
+Trong ví dụ trên, `main` method chỉ delegate tới javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[]. Tuy nhiên `main` có thể phức tạp hơn và apply customization trước khi gọi `run`.
+
+Ví dụ application đổi banner mode và set additional profile:
+
+include-code::custom/MyApplication[]
+
+Vì customization trong `main` có thể ảnh hưởng javadoc:org.springframework.context.ApplicationContext[], bạn có thể muốn dùng `main` để tạo context dùng trong test.
+Mặc định SpringBootTest không gọi `main`; class được dùng trực tiếp để tạo ApplicationContext.
+
+Để đổi behavior, thay attribute `useMainMethod` của SpringBootTest thành javadoc:org.springframework.boot.test.context.SpringBootTest$UseMainMethod#ALWAYS[] hoặc javadoc:org.springframework.boot.test.context.SpringBootTest$UseMainMethod#WHEN_AVAILABLE[].
+Với `ALWAYS`, test fail nếu không tìm thấy `main`.
+Với `WHEN_AVAILABLE`, `main` được dùng nếu có, nếu không dùng standard loading mechanism.
+
+Ví dụ test sau invoke `main` của `MyApplication` để tạo ApplicationContext.
+Nếu main method set additional profile, các profile đó active khi context start.
+
+include-code::always/MyApplicationTests[]
+
+[[testing.spring-boot-applications.excluding-configuration]]
+== Exclude Test Configuration
+
+Nếu application dùng component scanning, ví dụ javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] hoặc javadoc:org.springframework.context.annotation.ComponentScan[format=annotation], top-level configuration class chỉ tạo cho test cụ thể có thể vô tình bị scan ở mọi nơi.
+
+Như xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[đã thấy], javadoc:org.springframework.boot.test.context.TestConfiguration[format=annotation] có thể dùng trên inner class của test để customize primary configuration.
+TestConfiguration cũng có thể dùng trên top-level class; điều đó cho biết class không nên được scan.
+Sau đó import class explicit khi cần:
+
+include-code::MyTests[]
+
+NOTE: Nếu trực tiếp dùng javadoc:org.springframework.context.annotation.ComponentScan[format=annotation], tức không thông qua SpringBootApplication, cần register javadoc:org.springframework.boot.context.TypeExcludeFilter[].
+Xem API documentation của TypeExcludeFilter.
+
+NOTE: Imported javadoc:org.springframework.boot.test.context.TestConfiguration[format=annotation] được process sớm hơn inner-class TestConfiguration, và imported TestConfiguration được process trước configuration tìm thấy qua component scanning.
+Thông thường khác biệt ordering không có effect đáng kể nhưng cần lưu ý nếu dựa vào bean overriding.
+
+[[testing.spring-boot-applications.using-application-arguments]]
+== Sử dụng Application Arguments
+
+Nếu application mong đợi xref:features/spring-application.adoc#features.spring-application.application-arguments[argument], có thể để SpringBootTest inject bằng attribute `args`.
+
+include-code::MyApplicationArgumentTests[]
+
+[[testing.spring-boot-applications.with-mock-environment]]
+== Test với Mock Environment
+
+Mặc định SpringBootTest không start server mà setup mock environment để test web endpoint.
+
+Với Spring MVC, có thể query web endpoint bằng {url-spring-framework-docs}/testing/mockmvc.html[`MockMvc`].
+Các integration available:
+
+* Regular {url-spring-framework-docs}/testing/mockmvc/hamcrest.html[`MockMvc`] dùng Hamcrest.
+* {url-spring-framework-docs}/testing/mockmvc/assertj.html[`MockMvcTester`] wrap javadoc:org.springframework.test.web.servlet.MockMvc[] và dùng AssertJ.
+* {url-spring-framework-docs}/testing/resttestclient.html[`RestTestClient`] nơi javadoc:org.springframework.test.web.servlet.MockMvc[] được plug làm server xử lý request.
+* {url-spring-framework-docs}/testing/webtestclient.html[`WebTestClient`] nơi javadoc:org.springframework.test.web.servlet.MockMvc[] được plug làm server xử lý request.
+
+Ví dụ:
+
+include-code::MyMockMvcTests[]
+
+TIP: Nếu chỉ muốn focus web layer và không start complete javadoc:org.springframework.context.ApplicationContext[], cân nhắc xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.spring-mvc-tests[dùng javadoc:org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest[format=annotation]].
+
+Với Spring WebFlux endpoint, dùng {url-spring-framework-docs}/testing/webtestclient.html[`WebTestClient`]:
+
+include-code::MyMockWebTestClientTests[]
+
+[TIP]
+====
+Test trong mocked environment thường nhanh hơn chạy full servlet container.
+Tuy nhiên vì mocking diễn ra ở Spring MVC layer, code phụ thuộc lower-level servlet container behavior không thể test trực tiếp bằng MockMvc.
+
+Ví dụ error handling của Spring Boot dựa trên "error page" support từ servlet container.
+Điều này nghĩa là có thể test MVC layer throw/handle exception đúng, nhưng không thể trực tiếp test một xref:web/servlet.adoc#web.servlet.spring-mvc.error-handling.error-pages[custom error page] cụ thể được render.
+Nếu cần test concern lower-level này, start fully running server như phần tiếp theo.
+====
+
+[[testing.spring-boot-applications.with-running-server]]
+== Test với Running Server
+
+Nếu cần start full server, khuyến nghị dùng random port.
+Với `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)`, available port được chọn ngẫu nhiên mỗi lần test chạy.
+
+Annotation javadoc:org.springframework.boot.test.web.server.LocalServerPort[format=annotation] dùng để xref:how-to:webserver.adoc#howto.webserver.discover-port[inject actual port] vào test.
+
+Test cần gọi REST tới server có thể autowire {url-spring-framework-docs}/testing/resttestclient.html[`RestTestClient`] bằng cách annotate test class với javadoc:org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient[format=annotation].
+
+Configured client resolve relative link tới running server và có API riêng verify response:
+
+include-code::MyRandomPortRestTestClientTests[]
+
+Nếu thích AssertJ, dedicated assertion có trong javadoc:org.springframework.test.web.servlet.client.assertj.RestTestClientResponse[]:
+
+include-code::MyRandomPortRestTestClientAssertJTests[]
+
+Nếu `spring-webflux` có trên classpath, cũng có thể autowire {url-spring-framework-docs}/testing/webtestclient.html[`WebTestClient`] bằng annotation javadoc:org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient[format=annotation].
+
+WebTestClient có API tương tự:
+
+include-code::MyRandomPortWebTestClientTests[]
+
+TIP: javadoc:org.springframework.test.web.reactive.server.WebTestClient[] cũng dùng được với xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.with-mock-environment[mock environment], không cần running server, bằng annotation javadoc:org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient[format=annotation] từ `spring-boot-webflux-test`.
+
+NOTE: Với một số xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[sliced test], có thể cần annotation javadoc:org.springframework.boot.web.server.test.AutoConfigureWebServer[format=annotation] để auto-configure embedded web server.
+
+[[testing.spring-boot-applications.customizing-rest-test-client]]
+== Customize RestTestClient
+
+Để customize bean javadoc:org.springframework.test.web.servlet.client.RestTestClient[], cấu hình bean javadoc:org.springframework.boot.resttestclient.autoconfigure.RestTestClientBuilderCustomizer[].
+Các bean này được gọi với javadoc:org.springframework.test.web.servlet.client.RestTestClient$Builder[] dùng để tạo RestTestClient.
+
+[[testing.spring-boot-applications.customizing-web-test-client]]
+== Customize WebTestClient
+
+Để customize bean javadoc:org.springframework.test.web.reactive.server.WebTestClient[], cấu hình bean javadoc:org.springframework.boot.webtestclient.autoconfigure.WebTestClientBuilderCustomizer[].
+Các bean này được gọi với javadoc:org.springframework.test.web.reactive.server.WebTestClient$Builder[] dùng để tạo WebTestClient.
+
+[[testing.spring-boot-applications.jmx]]
+== Sử dụng JMX
+
+Vì test context framework cache context, JMX mặc định disable để tránh component giống nhau register trên cùng domain.
+Nếu test cần access javadoc:javax.management.MBeanServer[], cân nhắc mark context dirty:
+
+include-code::MyJmxTests[]
+
+[[testing.spring-boot-applications.observations]]
+== Sử dụng Observations
+
+Nếu annotate xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[sliced test] bằng javadoc:org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing[format=annotation] từ `spring-boot-micrometer-tracing-test` hoặc javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation] từ `spring-boot-micrometer-metrics-test`, Spring Boot auto-configure javadoc:io.micrometer.observation.ObservationRegistry[].
+
+[[testing.spring-boot-applications.metrics]]
+== Sử dụng Metrics
+
+Bất kể classpath, meter registry ngoài in-memory backed registry không được auto-configure khi dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
+
+Nếu cần export metric tới backend khác trong integration test, annotate bằng javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation].
+
+Nếu annotate xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[sliced test] bằng AutoConfigureMetrics, nó auto-configure in-memory javadoc:io.micrometer.core.instrument.MeterRegistry[].
+Data exporting trong sliced test không được hỗ trợ bởi annotation này.
+
+Meter registry mặc định không được thêm vào xref:actuator/metrics.adoc#actuator.metrics.getting-started[global registry] trong test.
+Nếu cần global registry, annotate AutoConfigureMetrics với `useGlobalRegistry = true`, hoặc set configprop:management.metrics.use-global-registry[] thành `true`.
+
+[[testing.spring-boot-applications.tracing]]
+== Sử dụng Tracing
+
+Bất kể classpath, tracing component report data không được auto-configure khi dùng SpringBootTest.
+
+Nếu cần component đó trong integration test, annotate test bằng javadoc:org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing[format=annotation].
+
+Nếu đã tạo reporting component riêng, ví dụ custom javadoc:io.opentelemetry.sdk.trace.export.SpanExporter[] hoặc `brave.handler.SpanHandler`, và không muốn chúng active trong test, dùng javadoc:org.springframework.boot.micrometer.tracing.autoconfigure.ConditionalOnEnabledTracingExport[format=annotation] để disable.
+
+Nếu annotate xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[sliced test] bằng AutoConfigureTracing, nó auto-configure no-op javadoc:io.micrometer.tracing.Tracer[].
+Data exporting trong sliced test không được hỗ trợ bằng annotation này.
+
+[[testing.spring-boot-applications.mocking-beans]]
+== Mocking và Spying Beans
+
+Khi chạy test, đôi khi cần mock component trong application context.
+Ví dụ có facade tới remote service không available trong development.
+Mocking cũng hữu ích để simulate failure khó trigger trong environment thật.
+
+Spring Framework có annotation javadoc:org.springframework.test.context.bean.override.mockito.MockitoBean[format=annotation] để định nghĩa Mockito mock cho bean trong javadoc:org.springframework.context.ApplicationContext[].
+Ngoài ra javadoc:org.springframework.test.context.bean.override.mockito.MockitoSpyBean[format=annotation] định nghĩa Mockito spy.
+Xem {url-spring-framework-docs}/testing/annotations/integration-spring/annotation-mockitobean.html[Spring Framework documentation].
+
+[[testing.spring-boot-applications.autoconfigured-tests]]
+== Auto-configured Tests
+
+Auto-configuration system của Spring Boot phù hợp cho application nhưng đôi khi quá nhiều cho test.
+Thường hữu ích khi chỉ load phần configuration cần để test một "slice".
+Ví dụ có thể muốn test Spring MVC controller map URL đúng mà không gọi database, hoặc test JPA entity mà không quan tâm web layer.
+
+Khi kết hợp với `spring-boot-test-autoconfigure`, xref:reference:testing/test-modules.adoc[test module] của Spring Boot cung cấp nhiều annotation để auto-configure các "slice".
+Mỗi annotation hoạt động tương tự: cung cấp `@...Test` load ApplicationContext và một hoặc nhiều `@AutoConfigure...` customize auto-configuration setting.
+
+NOTE: Mỗi slice giới hạn component scan vào component phù hợp và load rất ít auto-configuration class.
+Nếu cần exclude một class, phần lớn `@...Test` có attribute `excludeAutoConfiguration`.
+Ngoài ra dùng `@ImportAutoConfiguration#exclude`.
+
+NOTE: Không hỗ trợ include nhiều "slice" bằng nhiều `@...Test` trên cùng test.
+Nếu cần nhiều slice, chọn một `@...Test` rồi thêm thủ công `@AutoConfigure...` từ slice khác.
+
+TIP: Cũng có thể dùng `@AutoConfigure...` cùng standard javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
+Dùng combination này nếu không cần slicing application nhưng muốn một số auto-configured test bean.
+
+[[testing.spring-boot-applications.json-tests]]
+== Auto-configured JSON Tests
+
+Để test object JSON serialization/deserialization hoạt động đúng, dùng javadoc:org.springframework.boot.test.autoconfigure.json.JsonTest[format=annotation] từ module `spring-boot-test-autoconfigure`.
+JsonTest auto-configure supported JSON mapper available, gồm:
+
+* Jackson javadoc:tools.jackson.databind.json.JsonMapper[], mọi bean javadoc:org.springframework.boot.jackson.JacksonComponent[format=annotation] và mọi Jackson javadoc:tools.jackson.databind.JacksonModule[]
+* Jackson 2 (deprecated) javadoc:com.fasterxml.jackson.databind.ObjectMapper[], mọi bean javadoc:org.springframework.boot.jackson2.JsonComponent[format=annotation] và mọi javadoc:com.fasterxml.jackson.databind.Module[]
+* `Gson`
+* `Jsonb`
+
+TIP: Danh sách auto-configuration enable bởi JsonTest có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
+
+Nếu cần configure element của auto-configuration, dùng annotation javadoc:org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters[format=annotation].
+
+Spring Boot có AssertJ-based helper dùng JSONAssert và JsonPath để kiểm tra JSON.
+javadoc:org.springframework.boot.test.json.JacksonTester[], javadoc:org.springframework.boot.test.json.GsonTester[], javadoc:org.springframework.boot.test.json.JsonbTester[] và javadoc:org.springframework.boot.test.json.BasicJsonTester[] dùng lần lượt cho Jackson, Gson, Jsonb và String.
+Helper field trong test class có thể javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation] khi dùng JsonTest.
+Ví dụ test class cho Jackson:
