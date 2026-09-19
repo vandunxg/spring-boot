@@ -590,3 +590,309 @@ Cũng có thể enable/disable indicator bằng `management.health.key.enabled`,
 
 | `diskspace`
 | javadoc:org.springframework.boot.health.application.DiskSpaceHealthIndicator[]
+
+| Kiểm tra low disk space.
+
+| `elasticsearch`
+| javadoc:org.springframework.boot.elasticsearch.health.ElasticsearchRestClientHealthIndicator[]
+| Kiểm tra Elasticsearch cluster up.
+
+| `hazelcast`
+| javadoc:org.springframework.boot.hazelcast.health.HazelcastHealthIndicator[]
+| Kiểm tra Hazelcast server up.
+
+| `jms`
+| javadoc:org.springframework.boot.jms.health.JmsHealthIndicator[]
+| Kiểm tra JMS broker up.
+
+| `ldap`
+| javadoc:org.springframework.boot.ldap.health.LdapHealthIndicator[]
+| Kiểm tra LDAP server up.
+
+| `mail`
+| javadoc:org.springframework.boot.mail.health.MailHealthIndicator[]
+| Kiểm tra mail server up.
+
+| `mongodb`
+| javadoc:org.springframework.boot.mongodb.health.MongoHealthIndicator[]
+| Kiểm tra Mongo database up.
+
+| `neo4j`
+| javadoc:org.springframework.boot.neo4j.health.Neo4jHealthIndicator[]
+| Kiểm tra Neo4j database up.
+
+| `ping`
+| javadoc:org.springframework.boot.health.contributor.PingHealthIndicator[]
+| Luôn trả `UP`.
+
+| `rabbit`
+| javadoc:org.springframework.boot.rabbitmq.health.RabbitHealthIndicator[]
+| Kiểm tra Rabbit server up.
+
+| `redis`
+| javadoc:org.springframework.boot.data.redis.health.DataRedisHealthIndicator[]
+| Kiểm tra Redis server up.
+
+| `ssl`
+| javadoc:org.springframework.boot.health.application.SslHealthIndicator[]
+| Kiểm tra SSL certificate ổn.
+|===
+
+TIP: Có thể disable toàn bộ bằng configprop:management.health.defaults.enabled[].
+
+TIP: `ssl` javadoc:org.springframework.boot.health.contributor.HealthIndicator[] có property "warning threshold" tên configprop:management.health.ssl.certificate-validity-warning-threshold[].
+Có thể dùng threshold để đủ lead time rotate certificate sắp expire.
+Nếu SSL certificate sắp invalid trong period định nghĩa bởi threshold, HealthIndicator report trong detail response nơi `details.validChains.certificates.[*].validity.status` có value `WILL_EXPIRE_SOON`.
+
+Các HealthIndicator bean bổ sung mặc định enable:
+
+[cols="3,4,6"]
+|===
+| Key | Name | Mô tả
+
+| `livenessstate`
+| javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[]
+| Expose application availability state "Liveness".
+
+| `readinessstate`
+| javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[]
+| Expose application availability state "Readiness".
+|===
+
+Có thể disable bằng configprop:management.endpoint.health.probes.enabled[].
+
+[[actuator.endpoints.health.writing-custom-health-indicators]]
+=== Viết Custom HealthIndicators
+
+Để cung cấp custom health information, register Spring bean implement interface javadoc:org.springframework.boot.health.contributor.HealthIndicator[].
+Cần implement method `health()` và trả javadoc:org.springframework.boot.health.contributor.Health[].
+Health response nên include status và optional additional detail.
+Ví dụ:
+
+include-code::MyHealthIndicator[]
+
+NOTE: Identifier của HealthIndicator là bean name bỏ suffix `HealthIndicator` nếu có.
+Trong ví dụ trên, health information available trong entry tên `my`.
+
+TIP: Health indicator thường được gọi qua HTTP và cần response trước connection timeout.
+Spring Boot log warning nếu health indicator mất hơn 10 giây.
+Configure threshold bằng configprop:management.endpoint.health.logging.slow-indicator-threshold[].
+
+Ngoài predefined javadoc:org.springframework.boot.health.contributor.Status[] type, Health có thể trả custom Status đại diện system state mới.
+Khi đó cũng cần custom implementation javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], hoặc configure default bằng configprop:management.endpoint.health.status.order[].
+
+Ví dụ có Status code `FATAL`.
+Configure severity order:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    health:
+      status:
+        order: "fatal,down,out-of-service,unknown,up"
+----
+
+HTTP status code trong response phản ánh overall health status.
+Mặc định `OUT_OF_SERVICE` và `DOWN` map 503.
+Health status không map, gồm `UP`, map 200.
+Có thể register custom status mapping nếu access health endpoint qua HTTP.
+Configure custom mapping sẽ disable default mapping của `DOWN` và `OUT_OF_SERVICE`.
+Nếu muốn giữ default, cần explicit configure cùng custom mapping.
+Ví dụ map `FATAL` thành 503 và giữ default mapping:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    health:
+      status:
+        http-mapping:
+          down: 503
+          fatal: 503
+          out-of-service: 503
+----
+
+TIP: Nếu cần kiểm soát nhiều hơn, define bean javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] riêng.
+
+Default status mapping:
+
+[cols="1,3"]
+|===
+| Status | Mapping
+
+| `DOWN`
+| `SERVICE_UNAVAILABLE` (`503`)
+
+| `OUT_OF_SERVICE`
+| `SERVICE_UNAVAILABLE` (`503`)
+
+| `UP`
+| Mặc định không mapping, HTTP status `200`
+
+| `UNKNOWN`
+| Mặc định không mapping, HTTP status `200`
+|===
+
+[[actuator.endpoints.health.reactive-health-indicators]]
+=== Reactive Health Indicators
+
+Với reactive application như Spring WebFlux, javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] cung cấp non-blocking contract để lấy application health.
+Tương tự regular HealthContributor, health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[]; mặc định gồm mọi javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] trong ApplicationContext.
+Regular HealthContributor không check qua reactive API được execute trên elastic scheduler.
+
+TIP: Trong reactive application, nên dùng javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[] để register/unregister health indicator runtime.
+Nếu cần register regular HealthContributor, wrap bằng `ReactiveHealthContributor#adapt`.
+
+Để cung cấp custom health information từ reactive API, register Spring bean implement javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[]:
+
+include-code::MyReactiveHealthIndicator[]
+
+TIP: Để tự động handle error, cân nhắc extend javadoc:org.springframework.boot.health.contributor.AbstractReactiveHealthIndicator[].
+
+[[actuator.endpoints.health.auto-configured-reactive-health-indicators]]
+=== Auto-configured ReactiveHealthIndicators
+
+Khi phù hợp, Spring Boot auto-configure các ReactiveHealthIndicator sau:
+
+[cols="2,4,6"]
+|===
+| Key | Name | Mô tả
+
+| `cassandra`
+| javadoc:org.springframework.boot.cassandra.health.CassandraDriverReactiveHealthIndicator[]
+| Kiểm tra Cassandra database up.
+
+| `couchbase`
+| javadoc:org.springframework.boot.couchbase.health.CouchbaseReactiveHealthIndicator[]
+| Kiểm tra Couchbase cluster up.
+
+| `elasticsearch`
+| javadoc:org.springframework.boot.data.elasticsearch.health.DataElasticsearchReactiveHealthIndicator[]
+| Kiểm tra Elasticsearch cluster up.
+
+| `mongodb`
+| javadoc:org.springframework.boot.mongodb.health.MongoReactiveHealthIndicator[]
+| Kiểm tra Mongo database up.
+
+| `neo4j`
+| javadoc:org.springframework.boot.neo4j.health.Neo4jReactiveHealthIndicator[]
+| Kiểm tra Neo4j database up.
+
+| `redis`
+| javadoc:org.springframework.boot.data.redis.health.DataRedisReactiveHealthIndicator[]
+| Kiểm tra Redis server up.
+|===
+
+TIP: Khi cần, reactive indicator replace regular indicator.
+Mọi HealthIndicator không explicit handle cũng tự động được wrap.
+
+[[actuator.endpoints.health.groups]]
+=== Health Groups
+
+Đôi khi hữu ích khi organize health indicator thành group dùng cho mục đích khác nhau.
+
+Để tạo health indicator group, dùng property `management.endpoint.health.group.<name>` và specify list health indicator ID trong `include` hoặc `exclude`.
+Ví dụ group chỉ gồm database indicator:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    health:
+      group:
+        custom:
+          include: "db"
+----
+
+Check result tại `http://localhost:8080/actuator/health/custom`.
+
+Tương tự, để group exclude database indicator và include indicator khác:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    health:
+      group:
+        custom:
+          exclude: "db"
+----
+
+Mặc định startup fail nếu health group include/exclude health indicator không tồn tại.
+Disable behavior bằng configprop:management.endpoint.health.validate-group-membership[] = `false`.
+
+Mặc định group inherit cùng javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] và javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] như system health.
+Tuy nhiên có thể define riêng theo group.
+Cũng có thể override `show-details` và `roles`:
+
+[configprops,yaml]
+----
+management:
+  endpoint:
+    health:
+      group:
+        custom:
+          show-details: "when-authorized"
+          roles: "admin"
+          status:
+            order: "fatal,up"
+            http-mapping:
+              fatal: 500
+              out-of-service: 500
+----
+
+TIP: Dùng `@Qualifier("groupname")` nếu cần register custom StatusAggregator hoặc HttpCodeStatusMapper bean cho group.
+
+Health group cũng có thể include/exclude javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+Có thể include/exclude chỉ component cụ thể của CompositeHealthContributor bằng fully qualified name:
+
+[source,properties]
+----
+management.endpoint.health.group.custom.include="test/primary"
+management.endpoint.health.group.custom.exclude="test/primary/b"
+----
+
+Trong ví dụ, group `custom` include HealthContributor tên `primary`, component của composite `test`.
+`primary` cũng là composite và HealthContributor tên `b` bị exclude.
+
+Health group có thể available tại additional path trên main hoặc management port.
+Điều này hữu ích trong cloud environment như Kubernetes, nơi thường dùng separate management port cho actuator endpoint vì security.
+Separate port có thể dẫn tới unreliable health check vì main application có thể hỏng dù health check success.
+Configure additional path:
+
+[source,properties]
+----
+management.endpoint.health.group.live.additional-path="server:/healthz"
+----
+
+Điều này expose group `live` trên main server port tại `/healthz`.
+Prefix bắt buộc và phải là `server:` (main server port) hoặc `management:` (management port nếu configured).
+Path có thể chứa một hoặc nhiều segment.
+
+[[actuator.endpoints.health.datasource]]
+=== DataSource Health
+
+javadoc:javax.sql.DataSource[] health indicator hiển thị health của standard data source và routing data source bean.
+Health của routing data source gồm health mỗi target data source.
+Trong health endpoint response, mỗi target được đặt tên bằng routing key.
+Nếu không muốn include routing data source trong output, set configprop:management.health.db.ignore-routing-data-sources[] = `true`.
+
+[[actuator.endpoints.kubernetes-probes]]
+== Kubernetes Probes
+
+Application deploy trên Kubernetes có thể cung cấp internal state qua https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes[Container Probes].
+Tùy https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes configuration], kubelet gọi probe và react theo result.
+
+Mặc định Spring Boot manage xref:features/spring-application.adoc#features.spring-application.application-availability[Application Availability] state.
+Nếu deploy trong Kubernetes environment, actuator collect "Liveness" và "Readiness" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và dùng trong dedicated xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator]: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
+Các indicator hiển thị trên global health endpoint (`"/actuator/health"`).
+Chúng cũng expose thành separate HTTP Probe qua xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health group]: `"/actuator/health/liveness"` và `"/actuator/health/readiness"`.
+
+Có thể configure Kubernetes infrastructure bằng endpoint information:
+
+[source,yaml]
+----
+livenessProbe:
+  httpGet:
+    path: "/actuator/health/liveness"
