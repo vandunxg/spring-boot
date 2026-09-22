@@ -1,32 +1,36 @@
 [[packaging.efficient]]
-= Efficient Deployments
+= Deploy hiệu quả
+
+
 
 [[packaging.efficient.unpacking]]
-== Giải nén Executable jar
+== Giải nén executable jar
 
-Bạn có thể chạy application bằng executable jar, nhưng load class từ nested jar có một chút startup cost.
-Tùy kích thước jar, chạy application từ exploded structure nhanh hơn và được khuyến nghị trong production.
-Một số PaaS implementation cũng có thể extract archive trước khi chạy, ví dụ Cloud Foundry.
+Bạn có thể chạy application bằng executable jar, nhưng việc load các class từ nested jar làm phát sinh một startup cost nhỏ.
+Tùy thuộc kích thước jar, chạy application từ exploded structure sẽ nhanh hơn và được khuyến nghị trong production.
+Một số implementation của PaaS cũng có thể chọn extract archive trước khi chạy.
+Ví dụ, Cloud Foundry hoạt động theo cách này.
 
-Spring Boot hỗ trợ extract application vào directory bằng nhiều layout.
-Default layout hiệu quả nhất và thân thiện với xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.aot-cache[AOT cache] (và xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.cds[CDS]).
+Spring Boot hỗ trợ extract application vào directory bằng các layout khác nhau.
+Layout mặc định là layout hiệu quả nhất và thân thiện với xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.aot-cache[AOT cache] (và xref:reference:packaging/aot-cache.adoc#packaging.aot-cache.cds[CDS]).
 
-Trong layout này, library được extract vào folder `lib/`, còn application jar chứa application class và manifest tham chiếu các library trong `lib/`.
+Trong layout này, các library được extract vào folder `lib/`, còn application jar
+chứa các application class và một manifest tham chiếu đến các library trong folder `lib/`.
 
-Để unpack executable jar:
+Để unpack executable jar, chạy command sau:
 
 [source,shell]
 ----
 $ java -Djarmode=tools -jar my-app.jar extract
 ----
 
-Sau đó trong production:
+Sau đó, trong production, bạn có thể chạy jar đã được extract:
 
 [source,shell]
 ----
 $ java -jar my-app/my-app.jar
 ----
 
-Sau startup, không nên kỳ vọng khác biệt execution time giữa executable jar và extracted jar.
+Sau startup, bạn không nên kỳ vọng có khác biệt nào về execution time giữa việc chạy executable jar và extracted jar.
 
-TIP: Chạy `java -Djarmode=tools -jar my-app.jar help extract` để xem mọi option.
+TIP: Chạy `java -Djarmode=tools -jar my-app.jar help extract` để xem tất cả option có thể sử dụng.

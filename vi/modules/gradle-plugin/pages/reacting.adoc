@@ -1,103 +1,103 @@
 [[reacting-to-other-plugins]]
 = Reacting to Other Plugins
 
-Khi plugin khác được apply, Spring Boot plugin react bằng cách thay đổi nhiều project configuration.
-Phần này mô tả các change đó.
+Khi một plugin khác được áp dụng, Spring Boot plugin sẽ thực hiện nhiều thay đổi trong configuration của project.
+Phần này mô tả các thay đổi đó.
 
 [[reacting-to-other-plugins.java]]
 == Reacting to Java Plugin
 
-Khi {url-gradle-docs-java-plugin}[`java` plugin] của Gradle apply vào project, Spring Boot plugin:
+Khi {url-gradle-docs-java-plugin}[`java` plugin] của Gradle được áp dụng cho một project, Spring Boot plugin:
 
-1. Tạo task {apiref-gradle-plugin-boot-jar}[`BootJar`] tên `bootJar` tạo executable uber jar cho project.
-   Jar chứa mọi thứ trên runtime classpath của main source set; class package trong `BOOT-INF/classes` và jar trong `BOOT-INF/lib`.
-2. Configure task `assemble` depend vào `bootJar`.
-3. Configure task `jar` dùng `plain` làm convention cho archive classifier.
-4. Tạo task {apiref-gradle-plugin-boot-build-image}[`BootBuildImage`] tên `bootBuildImage` tạo OCI image bằng https://buildpacks.io[buildpack].
-5. Tạo task {apiref-gradle-plugin-boot-run}[`BootRun`] tên `bootRun` để chạy application, dùng main source set tìm main method và cung cấp runtime classpath.
-6. Tạo task `BootRun` tên `bootTestRun` để chạy application, dùng test source set tìm main method và runtime classpath.
-7. Tạo configuration tên `bootArchives` chứa artifact do `bootJar` tạo.
-8. Tạo configuration `developmentOnly` cho dependency chỉ cần ở development time, như Spring Boot Devtools, và không nên package trong executable jar/war.
-9. Tạo configuration `testAndDevelopmentOnly` cho dependency chỉ cần ở development time và khi viết/chạy test, không package trong executable jar/war.
-10. Tạo configuration `productionRuntimeClasspath`. Nó tương đương `runtimeClasspath` trừ dependency chỉ xuất hiện trong `developmentOnly` hoặc `testDevelopmentOnly`.
-11. Configure mọi task `JavaCompile` chưa set encoding dùng `UTF-8`.
-12. Configure mọi task `JavaCompile` dùng compiler argument `-parameters`.
+1. Tạo task {apiref-gradle-plugin-boot-jar}[`BootJar`] có tên `bootJar` để tạo executable uber jar cho project.
+   Jar này chứa mọi thứ trên runtime classpath của main source set; các class được đóng gói trong `BOOT-INF/classes` và các jar được đóng gói trong `BOOT-INF/lib`.
+2. Cấu hình task `assemble` để phụ thuộc vào task `bootJar`.
+3. Cấu hình task `jar` sử dụng `plain` làm convention cho archive classifier.
+4. Tạo task {apiref-gradle-plugin-boot-build-image}[`BootBuildImage`] có tên `bootBuildImage` để tạo OCI image bằng https://buildpacks.io[buildpack].
+5. Tạo task {apiref-gradle-plugin-boot-run}[`BootRun`] có tên `bootRun` để chạy application bằng cách sử dụng source set `main` để tìm main method và cung cấp runtime classpath.
+6. Tạo task {apiref-gradle-plugin-boot-run}[`BootRun`] có tên `bootTestRun` để chạy application bằng cách sử dụng source set `test` để tìm main method và cung cấp runtime classpath.
+7. Tạo configuration có tên `bootArchives`, chứa artifact do task `bootJar` tạo ra.
+8. Tạo configuration `developmentOnly` cho các dependency chỉ cần ở development time, chẳng hạn như Spring Boot Devtools, và không nên được đóng gói trong executable jar và war.
+9. Tạo configuration `testAndDevelopmentOnly` cho các dependency chỉ cần ở development time và khi viết và chạy test, và không nên được đóng gói trong executable jar và war.
+10. Tạo configuration `productionRuntimeClasspath`. Configuration này tương đương với `runtimeClasspath`, trừ các dependency chỉ xuất hiện trong configuration `developmentOnly` hoặc `testDevelopmentOnly`.
+11. Cấu hình mọi task `JavaCompile` chưa được cấu hình encoding để sử dụng `UTF-8`.
+12. Cấu hình mọi task `JavaCompile` để sử dụng compiler argument `-parameters`.
 
 [[reacting-to-other-plugins.kotlin]]
 == Reacting to Kotlin Plugin
 
-Khi {url-kotlin-docs-kotlin-plugin}[Kotlin Gradle plugin] apply, Spring Boot plugin:
+Khi {url-kotlin-docs-kotlin-plugin}[Kotlin Gradle plugin] được áp dụng cho một project, Spring Boot plugin:
 
-1. Align Kotlin version trong Spring Boot dependency management với plugin version bằng cách set property `kotlin.version` match version Kotlin plugin.
-2. Configure mọi task `KotlinCompile` dùng compiler argument `-java-parameters`.
+1. Align Kotlin version được sử dụng trong Spring Boot dependency management với version của plugin. Việc này được thực hiện bằng cách set property `kotlin.version` bằng version của Kotlin plugin.
+2. Cấu hình mọi task `KotlinCompile` để sử dụng compiler argument `-java-parameters`.
 
 [[reacting-to-other-plugins.war]]
 == Reacting to War Plugin
 
-Khi {url-gradle-docs-war-plugin}[`war` plugin] của Gradle apply, Spring Boot plugin:
+Khi {url-gradle-docs-war-plugin}[`war` plugin] của Gradle được áp dụng cho một project, Spring Boot plugin:
 
-1. Tạo task {apiref-gradle-plugin-boot-war}[`BootWar`] tên `bootWar` tạo executable fat war.
-   Ngoài standard packaging, mọi thứ trong configuration `providedRuntime` package vào `WEB-INF/lib-provided`.
-2. Configure `assemble` depend vào `bootWar`.
-3. Configure task `war` dùng `plain` làm convention archive classifier.
-4. Configure `bootArchives` chứa artifact do `bootWar` tạo.
+1. Tạo task {apiref-gradle-plugin-boot-war}[`BootWar`] có tên `bootWar` để tạo executable fat war cho project.
+   Ngoài standard packaging, mọi thứ trong configuration `providedRuntime` được đóng gói vào `WEB-INF/lib-provided`.
+2. Cấu hình task `assemble` để phụ thuộc vào task `bootWar`.
+3. Cấu hình task `war` sử dụng `plain` làm convention cho archive classifier.
+4. Cấu hình configuration `bootArchives` để chứa artifact do task `bootWar` tạo ra.
 
 [[reacting-to-other-plugins.dependency-management]]
 == Reacting to Dependency Management Plugin
 
-Khi {url-dependency-management-plugin-site}[`io.spring.dependency-management` plugin] apply, Spring Boot plugin tự động import bom `spring-boot-dependencies`.
+Khi {url-dependency-management-plugin-site}[`io.spring.dependency-management` plugin] được áp dụng cho một project, Spring Boot plugin sẽ tự động import bom `spring-boot-dependencies`.
 
 [[reacting-to-other-plugins.application]]
 == Reacting to Application Plugin
 
-Khi {url-gradle-docs-application-plugin}[`application` plugin] apply, Spring Boot plugin:
+Khi {url-gradle-docs-application-plugin}[`application` plugin] của Gradle được áp dụng cho một project, Spring Boot plugin:
 
-1. Tạo task `CreateStartScripts` tên `bootStartScripts` tạo script launch artifact trong configuration `bootArchives` bằng `java -jar`.
-   Task configure dùng property `applicationDefaultJvmArgs` làm convention cho `defaultJvmOpts`.
-2. Tạo distribution mới tên `boot` và configure chứa artifact trong `bootArchives` ở directory `lib` và start script ở `bin`.
-3. Configure `bootRun` dùng property `mainClassName` làm convention cho property `main`.
-4. Configure `bootRun` và `bootTestRun` dùng `applicationDefaultJvmArgs` làm convention cho `jvmArgs`.
-5. Configure `bootJar` dùng `mainClassName` làm convention cho entry `Start-Class` trong manifest.
-6. Configure `bootWar` dùng `mainClassName` làm convention cho entry `Start-Class` trong manifest.
+1. Tạo task `CreateStartScripts` có tên `bootStartScripts` để tạo các script khởi chạy artifact trong configuration `bootArchives` bằng `java -jar`.
+   Task này được cấu hình để sử dụng property `applicationDefaultJvmArgs` làm convention cho property `defaultJvmOpts`.
+2. Tạo distribution mới có tên `boot` và cấu hình để distribution này chứa artifact trong configuration `bootArchives` ở directory `lib`, cùng các start script ở directory `bin`.
+3. Cấu hình task `bootRun` để sử dụng property `mainClassName` làm convention cho property `main`.
+4. Cấu hình các task `bootRun` và `bootTestRun` để sử dụng `applicationDefaultJvmArgs` làm convention cho property `jvmArgs`.
+5. Cấu hình task `bootJar` để sử dụng `mainClassName` làm convention cho entry `Start-Class` trong manifest.
+6. Cấu hình task `bootWar` để sử dụng `mainClassName` làm convention cho entry `Start-Class` trong manifest.
 
 [[reacting-to-other-plugins.nbt]]
 == Reacting to GraalVM Native Image Plugin
 
-Khi {url-native-build-tools-docs-gradle-plugin}[GraalVM Native Image plugin] apply, Spring Boot plugin:
+Khi {url-native-build-tools-docs-gradle-plugin}[GraalVM Native Image plugin] được áp dụng cho một project, Spring Boot plugin:
 
-. Apply plugin `org.springframework.boot.aot`:
+. Áp dụng plugin `org.springframework.boot.aot`:
 .. Register source set `aot` và `aotTest`.
-.. Register task `ProcessAot` tên `processAot` generate AOT-optimized source cho application trong source set `aot`.
-.. Configure Java compilation và process resources task cho source set `aot` depend vào `processAot`.
-.. Register task `ProcessTestAot` tên `processTestAot` generate AOT-optimized source cho test trong source set `aotTest`.
-.. Configure Java compilation và process resources task cho source set `aotTest` depend vào `processTestAot`.
-. Add output source set `aot` vào classpath của main GraalVM native binary.
-. Add output source set `aotTest` vào classpath test GraalVM native binary.
-. Configure GraalVM extension disable Toolchain detection.
-. Configure task `bootJar` include reachability metadata do task `collectReachabilityMetadata` tạo.
-. Configure `bootJar` add manifest entry `Spring-Boot-Native-Processed: true`.
+.. Register task `ProcessAot` có tên `processAot` để generate AOT-optimized source cho application trong source set `aot`.
+.. Cấu hình các task Java compilation và process resources cho source set `aot` để phụ thuộc vào `processAot`.
+.. Register task `ProcessTestAot` có tên `processTestAot` để generate AOT-optimized source cho test của application trong source set `aotTest`.
+.. Cấu hình các task Java compilation và process resources cho source set `aotTest` để phụ thuộc vào `processTestAot`.
+. Thêm output của source set `aot` vào classpath của `main` GraalVM native binary.
+. Thêm output của source set `aotTest` vào classpath của `test` GraalVM native binary.
+. Cấu hình GraalVM extension để disable Toolchain detection.
+. Cấu hình task `bootJar` để include vào jar của nó reachability metadata do task `collectReachabilityMetadata` tạo ra.
+. Cấu hình task `bootJar` để thêm manifest entry `Spring-Boot-Native-Processed: true`.
 
 [[reacting-to-other-plugins.cyclonedx]]
 == Reacting to CycloneDX Plugin
 
-Khi {url-cyclonedx-docs-gradle-plugin}[CycloneDX plugin] apply, Spring Boot plugin:
+Khi {url-cyclonedx-docs-gradle-plugin}[CycloneDX plugin] được áp dụng cho một project, Spring Boot plugin:
 
-. Configure task `cyclonedxBom`:
-.. Dùng project type `application`.
+. Cấu hình task `cyclonedxBom`:
+.. Sử dụng project type `application`.
 .. Output JSON-format SBOM vào file `application.cdx.json`.
 .. Disable XML-format SBOM.
 .. Disable full license text.
-. Add SBOM dưới `META-INF/sbom` trong generated jar/war.
-. Add `Sbom-Format` và `Sbom-Location` vào manifest jar/war.
+. Thêm SBOM vào dưới `META-INF/sbom` trong jar hoặc war được generate.
+. Thêm `Sbom-Format` và `Sbom-Location` vào manifest của jar hoặc war.
 
 [[reacting-to-other-plugins.protobuf]]
 == Reacting to Protobuf Plugin
 
-Khi {url-protobuf-docs-gradle-plugin}[Protobuf plugin] apply, Spring Boot plugin:
+Khi {url-protobuf-docs-gradle-plugin}[Protobuf plugin] được áp dụng cho một project, Spring Boot plugin:
 
-. Configure `protoc` dùng artifact `com.google.protobuf:protoc`, align version với Protobuf dependency trên runtime classpath.
+. Cấu hình `protoc` để sử dụng artifact `com.google.protobuf:protoc`, align version của artifact này với Protobuf dependency trên runtime classpath.
 
-Ngoài ra khi Protobuf `grpc` plugin configure, Spring Boot plugin:
+Ngoài ra, khi Protobuf `grpc` plugin được configure, Spring Boot plugin:
 
-. Configure nó dùng artifact `io.grpc:protoc-gen-grpc-java`, align version với gRPC dependency trên runtime classpath.
-. Configure `grpc` plugin của mọi generate proto task với option `@generated=omit`.
+. Cấu hình plugin này để sử dụng artifact `io.grpc:protoc-gen-grpc-java`, align version của artifact này với gRPC dependency trên runtime classpath.
+. Cấu hình `grpc` plugin của mọi generate proto task với option `@generated=omit`.

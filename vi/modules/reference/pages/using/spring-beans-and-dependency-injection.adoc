@@ -1,18 +1,18 @@
 [[using.spring-beans-and-dependency-injection]]
-= Spring Bean và Dependency Injection
+= Spring Beans và Dependency Injection
 
-Bạn có thể sử dụng bất kỳ kỹ thuật tiêu chuẩn nào của Spring Framework để định nghĩa bean và các dependency được inject.
-Chúng tôi thường khuyến nghị dùng constructor injection để kết nối dependency và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] để tìm bean.
+Bạn có thể tùy ý sử dụng bất kỳ kỹ thuật tiêu chuẩn nào của Spring Framework để định nghĩa các bean và các dependency được inject vào chúng.
+Nhìn chung, chúng tôi khuyến nghị dùng constructor injection để kết nối các dependency và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] để tìm các bean.
 
-Nếu tổ chức code như gợi ý ở trên (đặt class ứng dụng trong package cấp trên cùng), bạn có thể thêm javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] không có đối số hoặc dùng annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], vốn ngầm bao gồm nó.
-Mọi component của ứng dụng (javadoc:org.springframework.stereotype.Component[format=annotation], javadoc:org.springframework.stereotype.Service[format=annotation], javadoc:org.springframework.stereotype.Repository[format=annotation], javadoc:org.springframework.stereotype.Controller[format=annotation] và các component khác) được tự động đăng ký thành Spring Bean.
+Nếu tổ chức code theo gợi ý ở trên (đặt application class trong package cấp cao nhất), bạn có thể thêm javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] mà không cần đối số hoặc dùng annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], vốn ngầm bao gồm nó.
+Tất cả component của application (javadoc:org.springframework.stereotype.Component[format=annotation], javadoc:org.springframework.stereotype.Service[format=annotation], javadoc:org.springframework.stereotype.Repository[format=annotation], javadoc:org.springframework.stereotype.Controller[format=annotation] và các component khác) đều được tự động đăng ký thành các Spring Bean.
 
-Ví dụ sau minh họa bean javadoc:org.springframework.stereotype.Service[format=annotation] sử dụng constructor injection để nhận bean `RiskAssessor` bắt buộc:
+Ví dụ sau minh họa một bean javadoc:org.springframework.stereotype.Service[format=annotation] sử dụng constructor injection để nhận bean `RiskAssessor` bắt buộc:
 
 include-code::singleconstructor/MyAccountService[]
 
-Nếu bean có nhiều constructor, bạn cần đánh dấu constructor muốn Spring sử dụng bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation]:
+Nếu một bean có nhiều constructor, bạn cần đánh dấu constructor mà bạn muốn Spring sử dụng bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation]:
 
 include-code::multipleconstructors/MyAccountService[]
 
-TIP: Lưu ý rằng constructor injection cho phép đánh dấu field `riskAssessor` là `final`, thể hiện nó không thể bị thay đổi sau đó.
+TIP: Lưu ý rằng constructor injection cho phép đánh dấu field `riskAssessor` là `final`, cho biết field này không thể bị thay đổi sau đó.

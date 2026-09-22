@@ -1,28 +1,30 @@
 [[integration-tests]]
-= Running Integration Tests
+= Chạy Integration Test
 
-Dù có thể start Spring Boot application rất dễ từ chính test hoặc test suite, đôi khi muốn build tự handle việc này.
-Để đảm bảo lifecycle Spring Boot application được manage đúng quanh integration test, dùng goal `start` và `stop`:
+Dù có thể start Spring Boot application rất dễ từ chính test hoặc test suite, đôi khi bạn muốn build tự xử lý việc này.
+Để đảm bảo lifecycle của Spring Boot application được quản lý đúng quanh các integration test, bạn có thể dùng goal `start` và `stop`, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$integration-tests/pom.xml[tags=integration-tests]
 ----
 
-Setup này có thể dùng https://maven.apache.org/surefire/maven-failsafe-plugin[failsafe-plugin] để chạy integration test như mong đợi.
+Setup này có thể dùng https://maven.apache.org/surefire/maven-failsafe-plugin[failsafe-plugin] để chạy integration test theo cách bạn mong đợi.
 
-NOTE: Application start trong process riêng và JMX dùng để communicate với application.
+NOTE: Application được start trong một process riêng và JMX được dùng để communicate với application.
 Mặc định plugin dùng port `9001`.
-Nếu cần configure JMX port, xem xref:integration-tests.adoc#integration-tests.examples.jmx-port[dedicated example].
+Nếu cần configure JMX port, xem xref:integration-tests.adoc#integration-tests.examples.jmx-port[ví dụ riêng].
 
-Cũng có thể configure advanced setup hơn để skip integration test khi specific property được set; xem xref:integration-tests.adoc#integration-tests.examples.skip[dedicated example].
+Bạn cũng có thể configure một setup nâng cao hơn để skip integration test khi một property cụ thể được set; xem xref:integration-tests.adoc#integration-tests.examples.skip[ví dụ riêng].
+
+
 
 [[integration-tests.no-starter-parent]]
-== Dùng Failsafe không có Spring Boot Parent POM
+== Dùng Failsafe không có Parent POM của Spring Boot
 
 Parent POM `spring-boot-starter-parent` configure `<classesDirectory>` của Failsafe thành `${project.build.outputDirectory}`.
-Không có configuration này, khiến Failsafe dùng compiled class thay vì repackaged jar, Failsafe không thể load application class.
-Nếu không dùng parent POM, nên configure Failsafe tương tự:
+Nếu không có configuration này, Failsafe sẽ dùng các compiled class thay vì repackaged jar và không thể load các class của application.
+Nếu không dùng parent POM, bạn nên configure Failsafe theo cách tương tự, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -33,51 +35,59 @@ include::partial$goals/start.adoc[leveloffset=+1]
 
 include::partial$goals/stop.adoc[leveloffset=+1]
 
+
+
 [[integration-tests.examples]]
-== Examples
+== Ví dụ
+
+
 
 [[integration-tests.examples.random-port]]
-=== Random Port cho Integration Tests
+=== Random Port cho Integration Test
 
-Một feature hữu ích của Spring Boot test integration là có thể allocate free port cho web application.
-Khi goal `start` của plugin được dùng, Spring Boot application start riêng, khiến khó pass actual port vào integration test.
+Một feature hữu ích của Spring Boot test integration là có thể allocate một free port cho web application.
+Khi dùng goal `start` của plugin, Spring Boot application được start riêng, khiến việc truyền actual port vào integration test trở nên khó khăn.
 
-Ví dụ dưới dùng https://www.mojohaus.org/build-helper-maven-plugin[Build Helper Maven Plugin] để đạt feature tương tự:
+Ví dụ dưới đây cho thấy cách bạn có thể đạt được feature tương tự bằng https://www.mojohaus.org/build-helper-maven-plugin[Build Helper Maven Plugin]:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$integration-tests/random-port-pom.xml[tags=random-port]
 ----
 
-Giờ có thể retrieve system property `test.server.port` trong integration test để tạo proper `URL` tới server.
+Giờ bạn có thể retrieve system property `test.server.port` trong bất kỳ integration test nào để tạo một `URL` phù hợp tới server.
+
+
 
 [[integration-tests.examples.jmx-port]]
-=== Customize JMX Port
+=== Tùy chỉnh JMX Port
 
-Property `jmxPort` cho phép customize port plugin dùng communicate với Spring Boot application.
+Property `jmxPort` cho phép customize port mà plugin dùng để communicate với Spring Boot application.
 
-Ví dụ customize port nếu `9001` đã được dùng:
+Ví dụ này cho biết cách customize port trong trường hợp `9001` đã được sử dụng:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$integration-tests/customize-jmx-port-pom.xml[tags=customize-jmx-port]
 ----
 
-TIP: Nếu cần configure JMX port, đảm bảo làm trong global configuration như trên để share cho cả hai goal.
+TIP: Nếu cần configure JMX port, hãy đảm bảo thực hiện trong global configuration như ở trên để configuration được dùng chung cho cả hai goal.
+
+
 
 [[integration-tests.examples.skip]]
-=== Skip Integration Tests
+=== Bỏ qua Integration Test
 
 Property `skip` cho phép skip toàn bộ execution của Spring Boot Maven plugin.
 
-Ví dụ skip integration test bằng command-line property trong khi vẫn đảm bảo goal `repackage` chạy:
+Ví dụ này cho biết cách skip integration test bằng một command-line property trong khi vẫn đảm bảo goal `repackage` chạy:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$integration-tests/skip-integration-tests-pom.xml[tags=skip-integration-tests]
 ----
 
-Mặc định integration test chạy, nhưng setup này cho phép dễ disable trên command line:
+Mặc định integration test sẽ chạy, nhưng setup này cho phép bạn dễ dàng disable chúng trên command line như sau:
 
 [source,shell]
 ----

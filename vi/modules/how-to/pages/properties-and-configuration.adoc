@@ -1,23 +1,23 @@
 [[howto.properties-and-configuration]]
 = Properties và Configuration
 
-Phần này gồm các chủ đề về việc thiết lập và đọc property và configuration setting, cũng như cách chúng tương tác với Spring Boot application.
+Phần này gồm các chủ đề về cách thiết lập và đọc properties và configuration setting, cũng như cách chúng tương tác với các Spring Boot application.
 
 
 
 [[howto.properties-and-configuration.expand-properties]]
-== Tự động expand property tại build time
+== Tự động expand properties tại build time
 
-Thay vì hardcode một số property vốn cũng đã được chỉ định trong build configuration của project, bạn có thể tự động expand chúng bằng cách sử dụng chính build configuration hiện có.
+Thay vì hardcode một số properties cũng được chỉ định trong build configuration của project, bạn có thể tự động expand chúng bằng cách sử dụng build configuration hiện có.
 Điều này có thể thực hiện với cả Maven và Gradle.
 
 
 
 [[howto.properties-and-configuration.expand-properties.maven]]
-=== Automatic Property Expansion bằng Maven
+=== Tự động expand properties bằng Maven
 
-Bạn có thể tự động expand property trong Maven project bằng resource filtering.
-Nếu dùng `spring-boot-starter-parent`, bạn có thể tham chiếu Maven 'project property' bằng placeholder `@..@`, như ví dụ sau:
+Bạn có thể tự động expand properties trong Maven project bằng resource filtering.
+Nếu dùng `spring-boot-starter-parent`, bạn có thể tham chiếu các '`project properties`' của Maven bằng placeholder `@..@`, như ví dụ sau:
 
 [configprops%novalidate,yaml]
 ----
@@ -27,12 +27,12 @@ app:
     version: "@java.version@"
 ----
 
-NOTE: Chỉ production configuration được filter theo cách này (nghĩa là không apply filtering cho `src/test/resources`).
+NOTE: Chỉ production configuration được filter theo cách này (nói cách khác, không áp dụng filtering cho `src/test/resources`).
 
-TIP: Nếu enable flag `addResources`, goal `spring-boot:run` có thể thêm `src/main/resources` trực tiếp vào classpath để hot reload.
-Việc này bypass resource filtering và feature này.
-Thay vào đó, bạn có thể dùng goal `exec:java` hoặc customize plugin configuration.
-Xem xref:maven-plugin:using.adoc[plugin usage page] để biết thêm.
+TIP: Nếu enable flag `addResources`, goal `spring-boot:run` có thể thêm `src/main/resources` trực tiếp vào classpath để phục vụ hot reloading.
+Làm vậy sẽ bypass resource filtering và feature này.
+Thay vào đó, bạn có thể dùng goal `exec:java` hoặc customize configuration của plugin.
+Xem xref:maven-plugin:using.adoc[trang hướng dẫn sử dụng plugin] để biết thêm chi tiết.
 
 Nếu không dùng starter parent, cần include element sau bên trong element `<build/>` của `pom.xml`:
 
@@ -63,15 +63,15 @@ Bạn cũng cần include element sau bên trong `<plugins/>`:
 </plugin>
 ----
 
-NOTE: Property `useDefaultDelimiters` rất quan trọng nếu dùng standard Spring placeholder (như `${placeholder}`) trong configuration.
-Nếu property này không được set thành `false`, các placeholder đó có thể bị build expand.
+NOTE: Property `useDefaultDelimiters` rất quan trọng nếu dùng standard Spring placeholders (chẳng hạn `$\{placeholder}`) trong configuration.
+Nếu property này không được set thành `false`, các placeholder này có thể bị build expand.
 
 
 
 [[howto.properties-and-configuration.expand-properties.gradle]]
-=== Automatic Property Expansion bằng Gradle
+=== Tự động expand properties bằng Gradle
 
-Bạn có thể tự động expand property từ Gradle project bằng cách configure task `processResources` của Java plugin:
+Bạn có thể tự động expand properties từ Gradle project bằng cách configure task `processResources` của Java plugin, như ví dụ sau:
 
 [source,gradle]
 ----
@@ -80,7 +80,7 @@ tasks.named('processResources') {
 }
 ----
 
-Sau đó có thể tham chiếu property của Gradle project bằng placeholder:
+Sau đó, bạn có thể tham chiếu properties của Gradle project bằng placeholder, như ví dụ sau:
 
 [configprops%novalidate,yaml]
 ----
@@ -89,8 +89,8 @@ app:
   description: "${description}"
 ----
 
-NOTE: Method `expand` của Gradle dùng Groovy `SimpleTemplateEngine`, biến đổi token `${..}`.
-Style `${..}` conflict với property placeholder mechanism của Spring.
+NOTE: Method `expand` của Gradle dùng Groovy `SimpleTemplateEngine`, biến đổi các token `${..}`.
+Style `${..}` conflict với cơ chế property placeholder của Spring.
 Để dùng Spring property placeholder cùng automatic expansion, escape Spring property placeholder như sau: `\${..}`.
 
 
@@ -98,9 +98,9 @@ Style `${..}` conflict với property placeholder mechanism của Spring.
 [[howto.properties-and-configuration.externalize-configuration]]
 == Externalize Configuration của SpringApplication
 
-javadoc:org.springframework.boot.SpringApplication[] có bean property setter, vì vậy có thể dùng Java API khi tạo application để modify behavior.
-Ngoài ra có thể externalize configuration bằng property `+spring.main.*+`.
-Ví dụ trong `application.properties`:
+javadoc:org.springframework.boot.SpringApplication[] có các bean property setter, vì vậy bạn có thể dùng Java API của nó khi tạo application để thay đổi behavior.
+Ngoài ra, bạn có thể externalize configuration bằng cách set properties trong `+spring.main.*+`.
+Ví dụ, trong `application.properties`, bạn có thể có các setting sau:
 
 [configprops,yaml]
 ----
@@ -110,18 +110,18 @@ spring:
     banner-mode: "off"
 ----
 
-Khi đó Spring Boot banner không được print lúc startup và application không start embedded web server.
+Khi đó, Spring Boot banner sẽ không được in lúc startup và application sẽ không khởi động embedded web server.
 
-Property định nghĩa trong external configuration override và replace value chỉ định bằng Java API, ngoại trừ primary source.
-Primary source là những source được truyền vào constructor javadoc:org.springframework.boot.SpringApplication[]:
+Các properties được định nghĩa trong external configuration sẽ override và replace các value được chỉ định bằng Java API, ngoại trừ primary sources.
+Primary sources là các source được cung cấp cho constructor javadoc:org.springframework.boot.SpringApplication[]:
 
 include-code::application/MyApplication[]
 
-Hoặc method `sources(...)` của javadoc:org.springframework.boot.builder.SpringApplicationBuilder[]:
+Hoặc cho method `sources(...)` của javadoc:org.springframework.boot.builder.SpringApplicationBuilder[]:
 
 include-code::builder/MyApplication[]
 
-Với các ví dụ trên, nếu có configuration sau:
+Dựa trên các ví dụ trên, nếu có configuration sau:
 
 [configprops,yaml]
 ----
@@ -141,11 +141,11 @@ Các application source là:
 
 
 [[howto.properties-and-configuration.external-properties-location]]
-== Thay đổi location của External Properties trong application
+== Thay đổi location của External Properties của một application
 
-Mặc định, property từ các source khác nhau được thêm vào Spring javadoc:org.springframework.core.env.Environment[] theo order xác định trước (xem xref:reference:features/external-config.adoc[] trong phần "`Spring Boot Features`" để biết exact order).
+Mặc định, properties từ các source khác nhau được thêm vào Spring javadoc:org.springframework.core.env.Environment[] theo một thứ tự xác định (xem xref:reference:features/external-config.adoc[] trong phần "`Spring Boot Features`" để biết thứ tự chính xác).
 
-Bạn cũng có thể cung cấp các System property (hoặc environment variable) sau để thay đổi behavior:
+Bạn cũng có thể cung cấp các System properties (hoặc environment variables) sau để thay đổi behavior:
 
 * configprop:spring.config.name[] (configprop:spring.config.name[format=envvar]): Mặc định là `application`, dùng làm root của file name.
 * configprop:spring.config.location[] (configprop:spring.config.location[format=envvar]): File cần load (như classpath resource hoặc URL).
@@ -154,15 +154,15 @@ Bạn cũng có thể cung cấp các System property (hoặc environment variab
 Bất kể set gì trong environment, Spring Boot luôn load `application.properties` như mô tả ở trên.
 Mặc định nếu dùng YAML, các file extension '`.yaml`' và '`.yml`' cũng được thêm vào list.
 
-TIP: Nếu muốn thông tin chi tiết về các file đang được load, có thể xref:reference:features/logging.adoc#features.logging.log-levels[set logging level] của `org.springframework.boot.context.config` thành `trace`.
+TIP: Nếu muốn thông tin chi tiết về các file đang được load, có thể xref:reference:features/logging.adoc#features.logging.log-levels[thiết lập logging level] của `org.springframework.boot.context.config` thành `trace`.
 
 
 
 [[howto.properties-and-configuration.short-command-line-arguments]]
-== Dùng 'Short' Command Line Arguments
+== Dùng Command Line Arguments '`Short`'
 
-Một số người thích dùng, ví dụ, `--port=9000` thay vì `--server.port=9000` để set configuration property trên command line.
-Có thể enable behavior này bằng placeholder trong `application.properties`:
+Một số người thích dùng (ví dụ) `--port=9000` thay vì `--server.port=9000` để set configuration properties trên command line.
+Bạn có thể enable behavior này bằng cách dùng placeholders trong `application.properties`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -170,18 +170,18 @@ server:
   port: "${port:8080}"
 ----
 
-TIP: Nếu inherit từ POM `spring-boot-starter-parent`, default filter token của `maven-resources-plugins` đã đổi từ `+${*}+` sang `@` (tức `@maven.token@` thay vì `${maven.token}`) để tránh conflict với Spring-style placeholder.
-Nếu đã enable Maven filtering trực tiếp cho `application.properties`, có thể cũng muốn đổi default filter token để dùng https://maven.apache.org/plugins/maven-resources-plugin/resources-mojo.html#delimiters[delimiter khác].
+TIP: Nếu inherit từ POM `spring-boot-starter-parent`, default filter token của `maven-resources-plugins` đã được đổi từ `+${*}+` sang `@` (tức `@maven.token@` thay vì `${maven.token}`) để tránh conflict với Spring-style placeholders.
+Nếu đã enable Maven filtering trực tiếp cho `application.properties`, có thể cũng muốn đổi default filter token để dùng https://maven.apache.org/plugins/maven-resources-plugin/resources-mojo.html#delimiters[các delimiter khác].
 
 NOTE: Trong case cụ thể này, port binding hoạt động trong PaaS environment như Heroku hoặc Cloud Foundry.
-Trên hai platform đó, environment variable `PORT` được set tự động và Spring có thể bind tới capitalized synonym cho property javadoc:org.springframework.core.env.Environment[].
+Trên hai platform đó, environment variable `PORT` được set tự động và Spring có thể bind tới các synonym viết hoa của properties trong javadoc:org.springframework.core.env.Environment[].
 
 
 
 [[howto.properties-and-configuration.yaml]]
 == Dùng YAML cho External Properties
 
-YAML là superset của JSON và vì vậy là syntax tiện lợi để lưu external property theo hierarchical format:
+YAML là superset của JSON và vì vậy là syntax tiện lợi để lưu external properties theo hierarchical format, như ví dụ sau:
 
 [source,yaml]
 ----
@@ -195,11 +195,11 @@ server:
   port: 9000
 ----
 
-Tạo file `application.yaml` và đặt nó ở root classpath.
-Sau đó thêm `snakeyaml` vào dependency (Maven coordinates `org.yaml:snakeyaml`, đã được include nếu dùng `spring-boot-starter`).
-YAML file được parse thành Java `Map<String,Object>` giống JSON object, và Spring Boot flatten map thành một level với key phân tách bằng dấu chấm, giống cách thường dùng với file javadoc:java.util.Properties[] trong Java.
+Tạo file có tên `application.yaml` và đặt file đó ở root của classpath.
+Sau đó thêm `snakeyaml` vào dependencies (Maven coordinates `org.yaml:snakeyaml`, đã được include nếu dùng `spring-boot-starter`).
+YAML file được parse thành Java `Map<String,Object>` giống một JSON object, và Spring Boot flatten map để map chỉ còn một level với các key phân tách bằng dấu chấm, như cách nhiều người đã quen dùng với các file javadoc:java.util.Properties[] trong Java.
 
-YAML ở trên tương ứng file `application.properties` sau:
+YAML ở trên tương ứng với file `application.properties` sau:
 
 [source,properties,subs="verbatim",configprops]
 ----
@@ -214,17 +214,17 @@ Xem xref:reference:features/external-config.adoc#features.external-config.yaml[]
 
 
 [[howto.properties-and-configuration.set-active-spring-profiles]]
-== Set Active Spring Profiles
+== Thiết lập các Spring profile đang active
 
 Spring javadoc:org.springframework.core.env.Environment[] có API cho việc này, nhưng thông thường bạn sẽ set System property (configprop:spring.profiles.active[]) hoặc OS environment variable (configprop:spring.profiles.active[format=envvar]).
-Cũng có thể launch application với argument `-D` (nhớ đặt trước main class hoặc jar archive):
+Cũng có thể launch application với argument `-D` (nhớ đặt trước main class hoặc jar archive), như sau:
 
 [source,shell]
 ----
 $ java -jar -Dspring.profiles.active=production demo-0.0.1-SNAPSHOT.jar
 ----
 
-Trong Spring Boot, cũng có thể set active profile trong `application.properties`:
+Trong Spring Boot, cũng có thể set active profile trong `application.properties`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -233,20 +233,20 @@ spring:
     active: "production"
 ----
 
-Value set theo cách này bị replace bởi System property hoặc environment variable setting, nhưng không bị replace bởi method `SpringApplicationBuilder.profiles()`.
-Do đó Java API sau có thể dùng để augment profile mà không đổi default.
+Giá trị được set theo cách này sẽ bị thay thế bởi giá trị của System property hoặc environment variable, nhưng không bị thay thế bởi method `SpringApplicationBuilder.profiles()`.
+Do đó, Java API sau có thể được dùng để augment các profile mà không thay đổi default.
 
 Xem xref:reference:features/profiles.adoc[] trong phần "`Spring Boot Features`" để biết thêm.
 
 
 
 [[howto.properties-and-configuration.set-default-spring-profile-name]]
-== Set Default Profile Name
+== Thiết lập tên default profile
 
-Default profile là profile được enable nếu không có profile active.
+Default profile là profile được enable nếu không có profile nào active.
 Mặc định tên default profile là `default`, nhưng có thể đổi bằng System property (configprop:spring.profiles.default[]) hoặc OS environment variable (configprop:spring.profiles.default[format=envvar]).
 
-Trong Spring Boot, cũng có thể set default profile name trong `application.properties`:
+Trong Spring Boot, cũng có thể set default profile name trong `application.properties`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -262,10 +262,10 @@ Xem xref:reference:features/profiles.adoc[] trong phần "`Spring Boot Features`
 [[howto.properties-and-configuration.change-configuration-depending-on-the-environment]]
 == Thay đổi Configuration tùy theo Environment
 
-Spring Boot hỗ trợ multi-document YAML và Properties file (xem xref:reference:features/external-config.adoc#features.external-config.files.multi-document[]) có thể activate conditionally dựa trên active profile.
+Spring Boot hỗ trợ các file YAML và Properties dạng multi-document (xem xref:reference:features/external-config.adoc#features.external-config.files.multi-document[] để biết chi tiết); các document này có thể được activate conditionally dựa trên các active profile.
 
-Nếu document chứa key `spring.config.activate.on-profile`, profile value (comma-separated list hoặc profile expression) được truyền vào method `Environment.acceptsProfiles()` của Spring.
-Nếu profile expression match, document được include trong final merge; nếu không thì không:
+Nếu document chứa key `spring.config.activate.on-profile`, giá trị profile (một danh sách profile phân tách bằng dấu phẩy hoặc một profile expression) được truyền vào method `Environment.acceptsProfiles()` của Spring.
+Nếu profile expression match, document đó được include trong final merge; nếu không thì không được include, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -287,23 +287,23 @@ server:
   port: 0
 ----
 
-Trong ví dụ trên, default port là 9000.
-Nếu Spring profile `development` active, port là 9001.
-Nếu `production` active, port là 0.
+Trong ví dụ trên, port mặc định là 9000.
+Tuy nhiên, nếu Spring profile `development` đang active thì port là 9001.
+Nếu `production` đang active thì port là 0.
 
-NOTE: Document được merge theo thứ tự xuất hiện.
-Value xuất hiện sau override value trước.
+NOTE: Các document được merge theo thứ tự chúng xuất hiện.
+Các value xuất hiện sau sẽ override các value trước đó.
 
 
 
 [[howto.properties-and-configuration.discover-build-in-options-for-external-properties]]
-== Khám phá Built-in Option cho External Properties
+== Khám phá các built-in options cho External Properties
 
-Spring Boot bind external property từ `application.properties` (hoặc YAML file và location khác) vào application tại runtime.
-Không có, và về mặt kỹ thuật cũng không thể có, exhaustive list mọi supported property tại một location duy nhất vì contribution có thể đến từ additional jar trên classpath.
+Spring Boot bind các external properties từ `application.properties` (hoặc các YAML file và location khác) vào application tại runtime.
+Không có, và về mặt kỹ thuật cũng không thể có, một exhaustive list về mọi supported property tại một location duy nhất vì contributions có thể đến từ các additional jar trên classpath.
 
-Running application có Actuator feature sẽ có endpoint `configprops` hiển thị mọi bound và bindable property available qua javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
+Một application đang chạy với các Actuator feature sẽ có endpoint `configprops` hiển thị mọi property đã bound và có thể bind, thông qua javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
 
 Appendix gồm xref:appendix:application-properties/index.adoc[ví dụ `application.properties`] với list các property phổ biến nhất được Spring Boot hỗ trợ.
-Definitive list đến từ việc search source code cho annotation javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], javadoc:org.springframework.beans.factory.annotation.Value[format=annotation], và đôi khi việc dùng javadoc:org.springframework.boot.context.properties.bind.Binder[].
-Để biết exact order load property, xem xref:reference:features/external-config.adoc[].
+Definitive list có được bằng cách search source code để tìm các annotation javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] và javadoc:org.springframework.beans.factory.annotation.Value[format=annotation], cũng như những chỗ thỉnh thoảng sử dụng javadoc:org.springframework.boot.context.properties.bind.Binder[].
+Để biết thứ tự chính xác khi load properties, xem xref:reference:features/external-config.adoc[].

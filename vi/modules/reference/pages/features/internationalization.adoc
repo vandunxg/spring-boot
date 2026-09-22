@@ -1,14 +1,14 @@
 [[features.internationalization]]
-= Internationalization
+= Quốc tế hóa
 
-Spring Boot hỗ trợ thông điệp được bản địa hóa để ứng dụng phục vụ người dùng với các tùy chọn ngôn ngữ khác nhau.
-Theo mặc định, Spring Boot tìm resource bundle `messages` ở root của classpath.
+Spring Boot hỗ trợ các message được bản địa hóa để ứng dụng có thể phục vụ người dùng với các tùy chọn ngôn ngữ khác nhau.
+Theo mặc định, Spring Boot tìm resource bundle `messages` tại root của classpath.
 
-NOTE: Auto-configuration được áp dụng khi có file properties mặc định của resource bundle đã cấu hình (mặc định là `messages.properties`).
-Nếu resource bundle chỉ chứa các file properties riêng cho từng ngôn ngữ, bạn phải thêm file mặc định.
-Nếu không tìm thấy file properties khớp với bất kỳ base name nào đã cấu hình, javadoc:org.springframework.context.MessageSource[] sẽ không được auto-configure.
+NOTE: Auto-configuration được áp dụng khi có properties file mặc định của resource bundle đã cấu hình (`messages.properties` theo mặc định).
+Nếu resource bundle chỉ chứa các properties file dành riêng cho từng ngôn ngữ, bạn phải thêm properties file mặc định.
+Nếu không tìm thấy properties file nào khớp với bất kỳ base name nào đã cấu hình, sẽ không có javadoc:org.springframework.context.MessageSource[] nào được auto-configure.
 
-Bạn có thể cấu hình basename của resource bundle cùng một số attribute khác qua namespace `spring.messages`, như ví dụ sau:
+Có thể cấu hình basename của resource bundle cùng một số attribute khác qua namespace `spring.messages`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -19,9 +19,9 @@ spring:
     fallback-to-system-locale: false
 ----
 
-TIP: Property configprop:spring.messages.basename[] hỗ trợ danh sách vị trí dưới dạng tên định danh package hoặc resource được phân giải từ root của classpath.
-Property configprop:spring.messages.common-messages[] hỗ trợ danh sách resource là các file properties.
+TIP: Property configprop:spring.messages.basename[] hỗ trợ danh sách location, trong đó mỗi location có thể là package qualifier hoặc resource được resolve từ root của classpath.
+Property configprop:spring.messages.common-messages[] hỗ trợ danh sách resource trỏ tới các properties file.
 
-Xem javadoc:org.springframework.boot.autoconfigure.context.MessageSourceProperties[] để biết thêm các tùy chọn được hỗ trợ.
+Xem javadoc:org.springframework.boot.autoconfigure.context.MessageSourceProperties[] để biết thêm các option được hỗ trợ.
 
 Nếu cần dùng implementation khác của javadoc:org.springframework.context.support.AbstractResourceBasedMessageSource[], Spring Boot cung cấp bean javadoc:org.springframework.boot.autoconfigure.context.ResourceBasedMessageSourceConfigurer[] để bạn áp dụng cùng các thiết lập như message source được auto-configure.

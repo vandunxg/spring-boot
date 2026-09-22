@@ -1,18 +1,20 @@
 [[actuator.auditing]]
 = Auditing
 
-Khi Spring Security được dùng, Spring Boot Actuator có flexible audit framework publish event (mặc định: "`authentication success`", "`failure`" và exception "`access denied`").
-Feature này hữu ích cho reporting và implement lock-out policy dựa trên authentication failure.
+Khi Spring Security được sử dụng, Spring Boot Actuator có một audit framework linh hoạt để publish event (theo mặc định là các event "`authentication success`", "`failure`" và các exception "`access denied`").
+Feature này có thể rất hữu ích cho reporting và triển khai lock-out policy dựa trên các authentication failure.
 
-Enable auditing bằng bean javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] trong application configuration.
-Spring Boot cung cấp javadoc:org.springframework.boot.actuate.audit.InMemoryAuditEventRepository[] để tiện sử dụng.
-Implementation này có capability giới hạn và chỉ khuyến nghị cho development.
-Production nên tạo implementation javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] riêng.
+Có thể enable auditing bằng cách cung cấp một bean có type javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] trong application configuration.
+Để thuận tiện, Spring Boot cung cấp javadoc:org.springframework.boot.actuate.audit.InMemoryAuditEventRepository[].
+javadoc:org.springframework.boot.actuate.audit.InMemoryAuditEventRepository[] có capability giới hạn và chúng tôi khuyến nghị chỉ sử dụng nó trong development environment.
+Trong production environment, hãy cân nhắc tự tạo implementation javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] thay thế.
+
+
 
 [[actuator.auditing.custom]]
 == Custom Auditing
 
-Để customize published security event, cung cấp implementation javadoc:org.springframework.boot.actuate.security.AbstractAuthenticationAuditListener[] và javadoc:org.springframework.boot.actuate.security.AbstractAuthorizationAuditListener[] riêng.
+Để customize security event được publish, có thể cung cấp implementation riêng của javadoc:org.springframework.boot.actuate.security.AbstractAuthenticationAuditListener[] và javadoc:org.springframework.boot.actuate.security.AbstractAuthorizationAuditListener[].
 
-Có thể dùng audit service cho business event riêng.
-Inject javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] vào component và dùng trực tiếp, hoặc publish javadoc:org.springframework.boot.actuate.audit.listener.AuditApplicationEvent[] bằng Spring javadoc:org.springframework.context.ApplicationEventPublisher[] (implement javadoc:org.springframework.context.ApplicationEventPublisherAware[]).
+Cũng có thể sử dụng audit service cho business event của riêng bạn.
+Để làm vậy, hãy inject bean javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[] vào các component của riêng bạn và sử dụng trực tiếp, hoặc publish một javadoc:org.springframework.boot.actuate.audit.listener.AuditApplicationEvent[] bằng Spring javadoc:org.springframework.context.ApplicationEventPublisher[] (bằng cách implement javadoc:org.springframework.context.ApplicationEventPublisherAware[]).

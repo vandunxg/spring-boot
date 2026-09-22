@@ -2,27 +2,27 @@
 = AOT Cache
 :page-aliases: class-data-sharing.adoc
 
-Phần này gồm thông tin về việc dùng AOT cache với Spring Boot application.
-Để xem overview về support AOT cache của Spring Boot, xem xref:reference:packaging/aot-cache.adoc[].
+Phần này cung cấp thông tin về cách sử dụng AOT cache với các application Spring Boot.
+Để xem tổng quan về hỗ trợ AOT cache của Spring Boot, xem xref:reference:packaging/aot-cache.adoc[].
 
 [[howto.aot-cache.buildpacks]]
-== Package Application bằng AOT Cache và Buildpacks
+== Đóng gói application bằng AOT cache và Buildpacks
 
-xref:reference:packaging/container-images/cloud-native-buildpacks.adoc[Support Cloud Native Buildpacks] của Spring Boot cùng https://paketo.io/docs/reference/java-reference[Paketo Java buildpack] và https://paketo.io/docs/reference/java-reference/#spring-boot-applications[Spring Boot support] của nó có thể dùng để generate Docker image chứa application được optimize bằng AOT Cache.
+xref:reference:packaging/container-images/cloud-native-buildpacks.adoc[Hỗ trợ Cloud Native Buildpacks] của Spring Boot cùng với https://paketo.io/docs/reference/java-reference[Paketo Java buildpack] và https://paketo.io/docs/reference/java-reference/#spring-boot-applications[hỗ trợ Spring Boot] của buildpack này có thể được dùng để generate Docker image chứa application được optimize bằng AOT cache.
 
-Để enable AOT Cache trong generated Docker image, phải dùng Java 25 trở lên và set buildpack environment variable `BP_JVM_AOTCACHE_ENABLED` thành `true` khi build image như mô tả trong documentation xref:maven-plugin:build-image.adoc#build-image.examples.builder-configuration[Maven plugin] và xref:gradle-plugin:packaging-oci-image.adoc#build-image.examples.builder-configuration[Gradle plugin].
-Việc này khiến buildpack thực hiện training run của application, save AOT Cache vào image và dùng AOT Cache khi launch application.
+Để enable AOT cache trong Docker image được generate, phải dùng Java 25 trở lên và set buildpack environment variable `BP_JVM_AOTCACHE_ENABLED` thành `true` khi build image, như mô tả trong tài liệu của xref:maven-plugin:build-image.adoc#build-image.examples.builder-configuration[Maven plugin] và xref:gradle-plugin:packaging-oci-image.adoc#build-image.examples.builder-configuration[Gradle plugin].
+Điều này khiến buildpack thực hiện training run của application, lưu AOT cache vào image và dùng AOT cache khi launch application.
 
-https://github.com/paketo-buildpacks/spring-boot?tab=readme-ov-file#configuration[Documentation] của Paketo Buildpack for Spring Boot có thông tin về configuration option khác có thể enable bằng builder environment variable, như `TRAINING_RUN_JAVA_TOOL_OPTIONS` cho phép override default `JAVA_TOOL_OPTIONS` chỉ trong AOT Cache training run.
+https://github.com/paketo-buildpacks/spring-boot?tab=readme-ov-file#configuration[tài liệu] của Paketo Buildpack for Spring Boot có thông tin về các configuration option khác có thể được enable bằng builder environment variables, chẳng hạn như `TRAINING_RUN_JAVA_TOOL_OPTIONS`, cho phép override `JAVA_TOOL_OPTIONS` mặc định chỉ trong AOT cache training run.
 
 [[howto.aot-cache.dockerfiles]]
-== Package Application bằng AOT Cache và Dockerfiles
+== Đóng gói application bằng AOT cache và Dockerfiles
 
-Nếu không muốn dùng Cloud Native Buildpacks, có thể dùng AOT cache hoặc CDS với `Dockerfile`.
-Chi tiết xem xref:reference:packaging/container-images/dockerfiles.adoc#packaging.container-images.dockerfiles.aot-cache[Dockerfiles reference documentation].
+Nếu không muốn dùng Cloud Native Buildpacks, có thể dùng AOT cache (hoặc CDS) với một `Dockerfile`.
+Để biết thêm thông tin, xem xref:reference:packaging/container-images/dockerfiles.adoc#packaging.container-images.dockerfiles.aot-cache[tài liệu tham khảo về Dockerfiles].
 
 [[howto.aot-cache.training-run-configuration]]
-== Ngăn tương tác với Remote Service trong Training Run
+== Ngăn tương tác với remote services trong training run
 
-Khi thực hiện training run, có thể cần customize Spring Boot application configuration để ngăn connection tới remote service xảy ra trước khi Spring lifecycle start.
-Điều này thường xảy ra với early database interaction và có thể xử lý qua configuration liên quan apply mặc định cho application hoặc riêng training run để ngăn interaction này; xem https://github.com/spring-projects/spring-lifecycle-smoke-tests/blob/main/README.adoc#training-run-configuration[related documentation].
+Khi thực hiện training run, có thể cần customize configuration của Spring Boot application để ngăn các connection tới remote services xảy ra trước khi Spring lifecycle bắt đầu.
+Điều này thường xảy ra với các interaction sớm với database và có thể được xử lý bằng configuration liên quan, có thể được apply mặc định cho application (hoặc riêng cho training run), để ngăn các interaction như vậy; xem https://github.com/spring-projects/spring-lifecycle-smoke-tests/blob/main/README.adoc#training-run-configuration[tài liệu liên quan].

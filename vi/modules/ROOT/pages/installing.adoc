@@ -36,7 +36,7 @@ Nếu chưa cài Maven, bạn có thể làm theo hướng dẫn tại https://m
 TIP: Trên nhiều hệ điều hành, Maven có thể được cài bằng package manager.
 Nếu dùng OSX Homebrew, hãy thử `brew install maven`.
 Người dùng Ubuntu có thể chạy `sudo apt-get install maven`.
-Người dùng Windows có https://chocolatey.org/[Chocolatey] có thể chạy `choco install maven` từ cửa sổ dòng lệnh có quyền administrator.
+Người dùng Windows có https://chocolatey.org/[Chocolatey] có thể chạy `choco install maven` từ prompt với quyền administrator.
 
 Các dependency của Spring Boot sử dụng group id `org.springframework.boot`.
 Thông thường, file Maven POM kế thừa từ project `spring-boot-starter-parent` và khai báo dependency tới một hoặc nhiều xref:reference:using/build-systems.adoc#using.build-systems.starters[starter].
@@ -174,9 +174,9 @@ $ sudo port install spring-boot-cli
 
 
 [[getting-started.installing.cli.completion]]
-=== Tự động hoàn thành dòng lệnh
+=== Command-line Completion
 
-Spring Boot CLI có các script hỗ trợ tự động hoàn thành lệnh cho shell https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29[BASH] và https://en.wikipedia.org/wiki/Z_shell[zsh].
+Spring Boot CLI có các script cung cấp command completion cho shell https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29[BASH] và https://en.wikipedia.org/wiki/Z_shell[zsh].
 Bạn có thể `source` script tên `spring` (`_spring` với zsh), hoặc đưa nó vào phần khởi tạo bash completion của cá nhân hay toàn hệ thống.
 Trên Debian, các script toàn hệ thống nằm tại `<installation location>/shell-completion/<bash|zsh>` và mọi script trong thư mục đó được thực thi khi một shell mới khởi động.
 Ví dụ, để chạy script thủ công khi đã cài bằng SDKMAN!, hãy dùng các lệnh sau:
@@ -188,7 +188,7 @@ $ spring <HIT TAB HERE>
   encodepassword  help  init  shell  version
 ----
 
-NOTE: Nếu cài Spring Boot CLI bằng Homebrew hoặc MacPorts, các script tự động hoàn thành dòng lệnh sẽ được đăng ký tự động với shell.
+NOTE: Nếu cài Spring Boot CLI bằng Homebrew hoặc MacPorts, các command-line completion scripts sẽ được đăng ký tự động với shell.
 
 
 

@@ -2,8 +2,8 @@
 = Web
 
 Spring Boot rất phù hợp để phát triển web application.
-Bạn có thể tạo một HTTP server self-contained bằng embedded Tomcat, Jetty hoặc Netty.
-Hầu hết web application sử dụng module `spring-boot-starter-webmvc` để có thể bắt đầu nhanh chóng.
+Bạn có thể tạo một self-contained HTTP server bằng embedded Tomcat, Jetty hoặc Netty.
+Hầu hết web application sử dụng module `spring-boot-starter-webmvc` để nhanh chóng đưa ứng dụng vào hoạt động.
 Bạn cũng có thể chọn xây dựng reactive web application bằng module `spring-boot-starter-webflux`.
 
-Nếu chưa từng phát triển Spring Boot web application, bạn có thể làm theo ví dụ "`Hello World!`" trong phần xref:tutorial:first-application/index.adoc[Getting started].
+Nếu chưa từng phát triển một Spring Boot web application, bạn có thể làm theo ví dụ "`Hello World!`" trong phần xref:tutorial:first-application/index.adoc[Bắt đầu].

@@ -1,23 +1,23 @@
 [[actuator.monitoring]]
 = Monitoring và Management qua HTTP
 
-Nếu phát triển web application, Spring Boot Actuator auto-configure toàn bộ endpoint đã enable để expose qua HTTP.
+Nếu đang phát triển một web application, Spring Boot Actuator sẽ auto-configure tất cả endpoint đã enable để expose qua HTTP.
 Convention mặc định là dùng `id` của endpoint với prefix `/actuator` làm URL path.
 Ví dụ, `health` được expose tại `/actuator/health`.
 
-TIP: Actuator được hỗ trợ native với Spring MVC, Spring WebFlux và Jersey.
+TIP: Actuator được Spring MVC, Spring WebFlux và Jersey hỗ trợ native.
 Nếu cả Jersey và Spring MVC đều có sẵn, Spring MVC được dùng.
 
-NOTE: Jackson là dependency bắt buộc để nhận đúng JSON response như mô tả trong xref:api:rest/actuator/index.adoc[API documentation].
+NOTE: Jackson là dependency bắt buộc để nhận được JSON response chính xác như được mô tả trong xref:api:rest/actuator/index.adoc[tài liệu API].
 Nên dùng Jackson 3 cho Spring MVC và Spring WebFlux.
-Jersey hiện chưa có Jackson 3 module nên cần dùng Jackson 2.
+Jersey chưa có Jackson 3 module, vì vậy cần dùng Jackson 2.
 
 [[actuator.monitoring.customizing-management-server-context-path]]
-== Customize Management Endpoint Path
+== Tùy chỉnh path của management endpoint
 
-Đôi khi cần customize prefix cho management endpoint.
-Ví dụ application đã dùng `/actuator` cho mục đích khác.
-Có thể dùng configprop:management.endpoints.web.base-path[] để đổi prefix:
+Đôi khi việc tùy chỉnh prefix cho management endpoint sẽ hữu ích.
+Ví dụ, application của bạn có thể đã dùng `/actuator` cho mục đích khác.
+Bạn có thể dùng property configprop:management.endpoints.web.base-path[] để thay đổi prefix cho management endpoint, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -27,14 +27,14 @@ management:
       base-path: "/manage"
 ----
 
-Ví dụ trên đổi endpoint từ `/actuator/{id}` thành `/manage/{id}`, chẳng hạn `/manage/info`.
+Ví dụ `application.properties` ở trên thay đổi endpoint từ `/actuator/\{id}` thành `/manage/\{id}` (ví dụ `/manage/info`).
 
-NOTE: Trừ khi management port được cấu hình để xref:actuator/monitoring.adoc#actuator.monitoring.customizing-management-server-port[expose endpoint qua HTTP port khác], `management.endpoints.web.base-path` là relative với `server.servlet.context-path` (servlet web application) hoặc `spring.webflux.base-path` (reactive web application).
-Nếu cấu hình `management.server.port`, `management.endpoints.web.base-path` relative với `management.server.base-path`.
+NOTE: Trừ khi management port được cấu hình để xref:actuator/monitoring.adoc#actuator.monitoring.customizing-management-server-port[expose các endpoint bằng một HTTP port khác], `management.endpoints.web.base-path` là relative so với `server.servlet.context-path` (đối với servlet web application) hoặc `spring.webflux.base-path` (đối với reactive web application).
+Nếu `management.server.port` được cấu hình, `management.endpoints.web.base-path` là relative so với `management.server.base-path`.
 
-Nếu muốn map endpoint tới path khác, dùng configprop:management.endpoints.web.path-mapping[].
+Nếu muốn map endpoint tới một path khác, bạn có thể dùng property configprop:management.endpoints.web.path-mapping[].
 
-Ví dụ remap `/actuator/health` thành `/healthcheck`:
+Ví dụ sau remap `/actuator/health` thành `/healthcheck`:
 
 [configprops,yaml]
 ----
@@ -47,12 +47,12 @@ management:
 ----
 
 [[actuator.monitoring.customizing-management-server-port]]
-== Customize Management Server Port
+== Tùy chỉnh port của management server
 
-Expose management endpoint qua default HTTP port là lựa chọn hợp lý cho cloud deployment.
-Tuy nhiên nếu application chạy trong data center riêng, có thể muốn expose endpoint qua HTTP port khác.
+Expose các management endpoint bằng HTTP port mặc định là lựa chọn hợp lý cho cloud deployment.
+Tuy nhiên, nếu application chạy trong data center riêng, bạn có thể muốn expose endpoint bằng HTTP port khác.
 
-Đặt configprop:management.server.port[] để đổi HTTP port:
+Bạn có thể đặt property configprop:management.server.port[] để thay đổi HTTP port, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -62,13 +62,13 @@ management:
 ----
 
 NOTE: Trên Cloud Foundry, mặc định application chỉ nhận request trên port 8080 cho cả HTTP và TCP routing.
-Nếu muốn custom management port trên Cloud Foundry, cần explicit setup route của application để forward traffic tới custom port.
+Nếu muốn custom management port trên Cloud Foundry, cần cấu hình rõ ràng các route của application để forward traffic tới custom port.
 
 [[actuator.monitoring.management-specific-ssl]]
-== Cấu hình Management-specific SSL
+== Cấu hình SSL riêng cho management
 
-Khi dùng custom port, có thể cấu hình management server với SSL riêng bằng các property `management.server.ssl.*`.
-Ví dụ management server dùng HTTP trong khi main application dùng HTTPS:
+Khi đã cấu hình dùng custom port, bạn cũng có thể cấu hình management server với SSL riêng bằng các property `management.server.ssl.*`.
+Ví dụ, cách này cho phép truy cập management server qua HTTP trong khi main application dùng HTTPS, như các thiết lập property sau:
 
 [configprops,yaml]
 ----
@@ -85,7 +85,7 @@ management:
       enabled: false
 ----
 
-Ngoài ra cả main server và management server có thể dùng SSL nhưng với key store khác nhau:
+Ngoài ra, cả main server và management server có thể dùng SSL nhưng với các key store khác nhau, như sau:
 
 [configprops,yaml]
 ----
@@ -105,14 +105,14 @@ management:
 ----
 
 [[actuator.monitoring.customizing-management-server-address]]
-== Customize Management Server Address
+== Tùy chỉnh address của management server
 
-Có thể customize address nơi management endpoint available bằng configprop:management.server.address[].
-Điều này hữu ích nếu chỉ muốn listen trên internal hoặc ops-facing network, hoặc chỉ nhận connection từ `localhost`.
+Bạn có thể tùy chỉnh address nơi management endpoint có thể được truy cập bằng cách đặt property configprop:management.server.address[].
+Điều này hữu ích nếu chỉ muốn listen trên một internal network hoặc ops-facing network, hoặc chỉ nhận connection từ `localhost`.
 
-NOTE: Chỉ có thể listen trên address khác khi port khác main server port.
+NOTE: Bạn chỉ có thể listen trên một address khác khi port khác với port của main server.
 
-Ví dụ sau không cho phép remote management connection:
+Ví dụ `application.properties` sau đây không cho phép remote management connection:
 
 [configprops,yaml]
 ----
@@ -123,9 +123,9 @@ management:
 ----
 
 [[actuator.monitoring.disabling-http-endpoints]]
-== Disable HTTP Endpoint
+== Vô hiệu hóa các HTTP endpoint
 
-Nếu không muốn expose endpoint qua HTTP, đặt management port thành `-1`:
+Nếu không muốn expose các endpoint qua HTTP, bạn có thể đặt management port thành `-1`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -134,7 +134,7 @@ management:
     port: -1
 ----
 
-Cũng có thể dùng configprop:management.endpoints.web.exposure.exclude[]:
+Bạn cũng có thể thực hiện việc này bằng property configprop:management.endpoints.web.exposure.exclude[], như ví dụ sau:
 
 [configprops,yaml]
 ----

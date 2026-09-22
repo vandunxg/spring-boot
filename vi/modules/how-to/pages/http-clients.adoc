@@ -1,17 +1,19 @@
 [[howto.http-clients]]
 = HTTP Clients
 
-Spring Boot cung cấp một số starter làm việc với HTTP client.
+Spring Boot cung cấp một số starter hỗ trợ HTTP client.
 Phần này trả lời các câu hỏi liên quan đến việc sử dụng chúng.
 
-[[howto.http-clients.webclient-reactor-netty-customization]]
-== Configure TcpClient được Reactor Netty-based WebClient sử dụng
 
-Khi Reactor Netty có trên classpath, javadoc:org.springframework.web.reactive.function.client.WebClient[] dựa trên Reactor Netty được auto-configure.
-Để customize cách client xử lý network connection, cung cấp bean javadoc:org.springframework.http.client.reactive.ClientHttpConnector[].
-Ví dụ sau configure connect timeout 60 giây và thêm javadoc:io.netty.handler.timeout.ReadTimeoutHandler[]:
+
+[[howto.http-clients.webclient-reactor-netty-customization]]
+== Cấu hình TcpClient được WebClient dựa trên Reactor Netty sử dụng
+
+Khi Reactor Netty có trên classpath, một javadoc:org.springframework.web.reactive.function.client.WebClient[] dựa trên Reactor Netty sẽ được auto-configure.
+Để customize cách client xử lý network connection, hãy cung cấp một bean javadoc:org.springframework.http.client.reactive.ClientHttpConnector[].
+Ví dụ sau configure connect timeout là 60 giây và thêm một javadoc:io.netty.handler.timeout.ReadTimeoutHandler[]:
 
 include-code::MyReactorNettyClientConfiguration[]
 
-TIP: Lưu ý việc sử dụng javadoc:org.springframework.http.client.ReactorResourceFactory[] cho connection provider và event loop resource.
-Điều này đảm bảo resource được share hiệu quả giữa server nhận request và client gửi request.
+TIP: Lưu ý việc sử dụng javadoc:org.springframework.http.client.ReactorResourceFactory[] cho connection provider và các resource của event loop.
+Điều này đảm bảo các resource được chia sẻ hiệu quả giữa server nhận request và client gửi request.

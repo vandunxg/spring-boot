@@ -1,9 +1,10 @@
 [[messaging.kafka]]
 = Hỗ trợ Apache Kafka
 
-https://kafka.apache.org/[Apache Kafka] được hỗ trợ thông qua auto-configuration của project `spring-kafka`.
+https://kafka.apache.org/[Apache Kafka] được hỗ trợ bằng cách cung cấp auto-configuration cho project `spring-kafka`.
 
-Kafka configuration được điều khiển bởi external property trong `spring.kafka.*`:
+Kafka configuration được kiểm soát bởi external configuration properties trong `spring.kafka.*`.
+Ví dụ, có thể khai báo section sau trong `application.properties`:
 
 [configprops,yaml]
 ----
@@ -14,80 +15,88 @@ spring:
       group-id: "myGroup"
 ----
 
-TIP: Để tạo topic khi startup, thêm bean javadoc:org.apache.kafka.clients.admin.NewTopic[].
+TIP: Để tạo topic khi startup, thêm bean có type javadoc:org.apache.kafka.clients.admin.NewTopic[].
 Nếu topic đã tồn tại, bean bị bỏ qua.
 
-Xem javadoc:org.springframework.boot.kafka.autoconfigure.KafkaProperties[] để biết thêm option.
+Xem javadoc:org.springframework.boot.kafka.autoconfigure.KafkaProperties[] để biết thêm các option được hỗ trợ.
+
+
 
 [[messaging.kafka.sending]]
 == Gửi Message
 
-javadoc:org.springframework.kafka.core.KafkaTemplate[] được auto-configure và có thể autowire trực tiếp:
+javadoc:org.springframework.kafka.core.KafkaTemplate[] được auto-configure, và có thể autowire trực tiếp vào các bean của mình như trong ví dụ sau:
 
 include-code::MyBean[]
 
 NOTE: Nếu configprop:spring.kafka.producer.transaction-id-prefix[] được định nghĩa, javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[] được cấu hình tự động.
-Nếu có bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], nó tự động liên kết với javadoc:org.springframework.kafka.core.KafkaTemplate[].
+Cũng vậy, nếu có bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], bean đó được tự động liên kết với javadoc:org.springframework.kafka.core.KafkaTemplate[] đã được auto-configure.
 
-Nếu context có bean type `KafkaTemplateObservationConvention`, nó tự động register trên `KafkaTemplate`.
+Nếu trong context có bean type `KafkaTemplateObservationConvention`, bean đó được tự động register trên `KafkaTemplate`.
+
+
 
 [[messaging.kafka.receiving]]
 == Nhận Message
 
-Khi Apache Kafka infrastructure có mặt, bean có thể annotate javadoc:org.springframework.kafka.annotation.KafkaListener[format=annotation] để tạo listener endpoint.
-Nếu chưa định nghĩa javadoc:org.springframework.kafka.config.KafkaListenerContainerFactory[], default factory được cấu hình tự động với key trong `spring.kafka.listener.*`.
+Khi Apache Kafka infrastructure có mặt, bất kỳ bean nào cũng có thể được annotate bằng javadoc:org.springframework.kafka.annotation.KafkaListener[format=annotation] để tạo listener endpoint.
+Nếu chưa định nghĩa javadoc:org.springframework.kafka.config.KafkaListenerContainerFactory[], một default factory sẽ được cấu hình tự động với các key được định nghĩa trong `spring.kafka.listener.*`.
 
-Ví dụ listener endpoint trên topic `someTopic`:
+Component sau tạo listener endpoint trên topic `someTopic`:
 
 include-code::MyBean[]
 
 Nếu có bean javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[], nó tự động liên kết với container factory.
-Tương tự với bean javadoc:org.springframework.kafka.listener.adapter.RecordFilterStrategy[], javadoc:org.springframework.kafka.listener.CommonErrorHandler[], javadoc:org.springframework.kafka.listener.AfterRollbackProcessor[] hoặc javadoc:org.springframework.kafka.listener.ConsumerAwareRebalanceListener[].
+Tương tự, nếu có bean javadoc:org.springframework.kafka.listener.adapter.RecordFilterStrategy[], javadoc:org.springframework.kafka.listener.CommonErrorHandler[], javadoc:org.springframework.kafka.listener.AfterRollbackProcessor[] hoặc javadoc:org.springframework.kafka.listener.ConsumerAwareRebalanceListener[], bean đó sẽ được tự động liên kết với default factory.
 
 Tùy listener type, bean javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[] hoặc javadoc:org.springframework.kafka.support.converter.BatchMessageConverter[] được liên kết với default factory.
 Nếu batch listener chỉ có javadoc:org.springframework.kafka.support.converter.RecordMessageConverter[], nó được wrap trong javadoc:org.springframework.kafka.support.converter.BatchMessageConverter[].
 
 TIP: Custom javadoc:org.springframework.kafka.transaction.ChainedKafkaTransactionManager[] phải đánh dấu javadoc:org.springframework.context.annotation.Primary[format=annotation] vì thường reference auto-configured javadoc:org.springframework.kafka.transaction.KafkaTransactionManager[].
 
-Nếu context có bean type `KafkaListenerObservationConvention`, nó tự động register trên container factory.
+Nếu trong context có bean type `KafkaListenerObservationConvention`, bean đó được tự động register trên container factory.
+
+
 
 [[messaging.kafka.streams]]
 == Kafka Streams
 
-Spring for Apache Kafka cung cấp factory bean tạo javadoc:org.apache.kafka.streams.StreamsBuilder[] và quản lý lifecycle stream.
-Spring Boot auto-configure javadoc:org.springframework.kafka.config.KafkaStreamsConfiguration[] nếu `kafka-streams` có trên classpath và Kafka Streams được enable bằng javadoc:org.springframework.kafka.annotation.EnableKafkaStreams[format=annotation].
+Spring for Apache Kafka cung cấp factory bean để tạo object javadoc:org.apache.kafka.streams.StreamsBuilder[] và quản lý lifecycle của các stream.
+Spring Boot auto-configure bean javadoc:org.springframework.kafka.config.KafkaStreamsConfiguration[] cần thiết, miễn là `kafka-streams` có trên classpath và Kafka Streams được enable bằng annotation javadoc:org.springframework.kafka.annotation.EnableKafkaStreams[format=annotation].
 
-Enable Kafka Streams yêu cầu application id và bootstrap server.
-Application id cấu hình bằng `spring.kafka.streams.application-id`, mặc định dùng `spring.application.name`.
-Bootstrap server có thể đặt global hoặc override riêng cho streams.
+Việc enable Kafka Streams có nghĩa là application id và bootstrap servers phải được thiết lập.
+Application id có thể được cấu hình bằng `spring.kafka.streams.application-id`, mặc định là `spring.application.name` nếu chưa được thiết lập.
+Bootstrap servers có thể được thiết lập globally hoặc chỉ được override riêng cho streams.
 
-Có thêm property chuyên dụng; Kafka property khác có thể đặt dưới `spring.kafka.streams.properties`.
-Xem xref:messaging/kafka.adoc#messaging.kafka.additional-properties[].
+Có một số property bổ sung thông qua các property chuyên dụng; các Kafka property tùy ý khác có thể được thiết lập bằng namespace `spring.kafka.streams.properties`.
+Xem thêm xref:messaging/kafka.adoc#messaging.kafka.additional-properties[] để biết thêm thông tin.
 
-Để dùng factory bean, wire javadoc:org.apache.kafka.streams.StreamsBuilder[] vào javadoc:org.springframework.context.annotation.Bean[format=annotation]:
+Để dùng factory bean, wire javadoc:org.apache.kafka.streams.StreamsBuilder[] vào javadoc:org.springframework.context.annotation.Bean[format=annotation] như trong ví dụ sau:
 
 include-code::MyKafkaStreamsConfiguration[]
 
-Mặc định stream do javadoc:org.apache.kafka.streams.StreamsBuilder[] quản lý tự động start.
-Customize bằng configprop:spring.kafka.streams.auto-startup[].
+Mặc định, các stream do javadoc:org.apache.kafka.streams.StreamsBuilder[] quản lý sẽ tự động được start.
+Có thể customize hành vi này bằng property configprop:spring.kafka.streams.auto-startup[].
 
-TIP: Có thể register nhiều bean implement javadoc:org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer[].
+TIP: Bạn cũng có thể register số lượng bean tùy ý implement javadoc:org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer[] để thực hiện các customization nâng cao hơn.
+
+
 
 [[messaging.kafka.additional-properties]]
 == Kafka Property bổ sung
 
-Property được auto-configuration hỗ trợ nằm trong xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties].
-Lưu ý rằng phần lớn các property này (dạng hyphen hoặc camelCase) map trực tiếp tới Apache Kafka dotted property.
+Các property được auto-configuration hỗ trợ được liệt kê trong section xref:appendix:application-properties/index.adoc#appendix.application-properties.integration[Integration Properties] của Appendix.
+Lưu ý rằng phần lớn các property này (dạng hyphen hoặc camelCase) map trực tiếp tới các dotted property của Apache Kafka.
 Xem tài liệu Apache Kafka để biết chi tiết.
 
-Property không chứa client type (`producer`, `consumer`, `admin`, `streams`) được xem là common và áp dụng cho mọi client.
-Có thể override cho từng client type.
+Các property không chứa client type (`producer`, `consumer`, `admin`, hoặc `streams`) trong tên được xem là common và áp dụng cho tất cả client.
+Nếu cần, hầu hết các common property này có thể được override cho một hoặc nhiều client type.
 
 Apache Kafka đánh dấu property importance HIGH, MEDIUM hoặc LOW.
-Spring Boot hỗ trợ toàn bộ HIGH, một số MEDIUM/LOW và property không có default value.
+Spring Boot auto-configuration hỗ trợ tất cả property có importance HIGH, một số property MEDIUM và LOW được chọn, cùng mọi property không có default value.
 
-Chỉ subset Kafka property có trực tiếp trong javadoc:org.springframework.boot.kafka.autoconfigure.KafkaProperties[].
-Property bổ sung dùng như sau:
+Chỉ một subset các property được Kafka hỗ trợ có sẵn trực tiếp thông qua class javadoc:org.springframework.boot.kafka.autoconfigure.KafkaProperties[].
+Nếu muốn cấu hình từng client type bằng các property bổ sung chưa được hỗ trợ trực tiếp, hãy sử dụng các property sau:
 
 [configprops,yaml]
 ----
@@ -109,9 +118,9 @@ spring:
         "[prop.five]": "fifth"
 ----
 
-Cấu hình trên đặt common `prop.one=first`, admin `prop.two=second`, consumer `prop.three=third`, producer `prop.four=fourth` và streams `prop.five=fifth`.
+Cấu hình này đặt common Kafka property `prop.one` thành `first` (áp dụng cho producers, consumers, admins và streams), admin property `prop.two` thành `second`, consumer property `prop.three` thành `third`, producer property `prop.four` thành `fourth` và streams property `prop.five` thành `fifth`.
 
-Có thể cấu hình javadoc:org.springframework.kafka.support.serializer.JacksonJsonDeserializer[]:
+Bạn cũng có thể cấu hình Spring Kafka javadoc:org.springframework.kafka.support.serializer.JacksonJsonDeserializer[] như sau:
 
 [configprops,yaml]
 ----
@@ -124,7 +133,7 @@ spring:
         "[spring.json.trusted.packages]": "com.example.main,com.example.another"
 ----
 
-Tương tự, disable behavior mặc định của javadoc:org.springframework.kafka.support.serializer.JacksonJsonSerializer[] gửi type information trong header:
+Tương tự, bạn có thể disable behavior mặc định của javadoc:org.springframework.kafka.support.serializer.JacksonJsonSerializer[] là gửi type information trong header:
 
 [configprops,yaml]
 ----
@@ -136,27 +145,29 @@ spring:
         "[spring.json.add.type.headers]": false
 ----
 
-IMPORTANT: Property đặt theo cách này override configuration item Spring Boot hỗ trợ rõ ràng.
+IMPORTANT: Các property được thiết lập theo cách này sẽ override mọi configuration item được Spring Boot hỗ trợ rõ ràng.
+
+
 
 [[messaging.kafka.embedded]]
 == Test với Embedded Kafka
 
-Spring for Apache Kafka cung cấp cách tiện lợi test project với embedded Kafka broker.
-Dùng annotation javadoc:org.springframework.kafka.test.context.EmbeddedKafka[format=annotation] từ module `spring-kafka-test`.
-Xem {url-spring-kafka-docs}/testing.html#ekb[reference manual].
+Spring for Apache Kafka cung cấp một cách thuận tiện để test các project với embedded Apache Kafka broker.
+Để sử dụng feature này, annotate một test class bằng javadoc:org.springframework.kafka.test.context.EmbeddedKafka[format=annotation] từ module `spring-kafka-test`.
+Để biết thêm thông tin, xem {url-spring-kafka-docs}/testing.html#ekb[reference manual] của Spring for Apache Kafka.
 
-Để Spring Boot auto-configuration làm việc với embedded broker, cần remap system property chứa broker address từ javadoc:org.springframework.kafka.test.EmbeddedKafkaBroker[] sang configprop:spring.kafka.bootstrap-servers[].
-Có các cách:
+Để Spring Boot auto-configuration hoạt động với embedded Apache Kafka broker nói trên, cần remap một system property chứa các embedded broker address (được populate bởi javadoc:org.springframework.kafka.test.EmbeddedKafkaBroker[]) vào Spring Boot configuration property cho Apache Kafka.
+Có một số cách để thực hiện việc này:
 
-* Cung cấp system property trong test class:
+* Cung cấp một system property để map các embedded broker address vào configprop:spring.kafka.bootstrap-servers[] trong test class:
 
 include-code::property/MyTest[tag=*]
 
-* Cấu hình property name trên annotation:
+* Cấu hình một property name trên annotation javadoc:org.springframework.kafka.test.context.EmbeddedKafka[format=annotation]:
 
 include-code::annotation/MyTest[]
 
-* Dùng placeholder trong configuration:
+* Sử dụng một placeholder trong configuration properties:
 
 [configprops,yaml]
 ----

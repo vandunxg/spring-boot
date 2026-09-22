@@ -1,5 +1,7 @@
 [[publishing-your-application]]
-= Publishing Application
+= Publishing application của bạn
+
+
 
 [[publishing-your-application.maven-publish]]
 == Publishing bằng Maven-publish Plugin
@@ -24,10 +26,12 @@ include::example$publishing/maven-publish.gradle.kts[tags=publishing]
 ----
 ======
 
+
+
 [[publishing-your-application.distribution]]
 == Distributing bằng Application Plugin
 
 Khi {url-gradle-docs-application-plugin}[`application` plugin] được apply, distribution tên `boot` được tạo.
-Distribution này chứa archive do task `bootJar` hoặc `bootWar` tạo và script để launch nó trên Unix-like platform và Windows.
-Zip và tar distribution có thể build bằng task `bootDistZip` và `bootDistTar` tương ứng.
-Để dùng `application` plugin, property `mainClassName` phải configure với name của main class application.
+Distribution này chứa archive do task `bootJar` hoặc `bootWar` tạo và các script để launch nó trên Unix-like platform và Windows.
+Các Zip và tar distribution có thể build bằng task `bootDistZip` và `bootDistTar` tương ứng.
+Để dùng `application` plugin, property `mainClassName` phải được configure với main class của application.

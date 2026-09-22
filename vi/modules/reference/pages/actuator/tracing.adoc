@@ -1,34 +1,38 @@
 [[actuator.micrometer-tracing]]
 = Tracing
 
-Spring Boot Actuator cung cấp dependency management và auto-configuration cho {url-micrometer-tracing-docs}[Micrometer Tracing], facade cho các tracer library phổ biến.
+Spring Boot Actuator cung cấp dependency management và auto-configuration cho {url-micrometer-tracing-docs}[Micrometer Tracing], một facade cho các tracer library phổ biến.
 
-TIP: Xem {url-micrometer-tracing-docs}[reference documentation] để tìm hiểu capability của Micrometer Tracing.
+TIP: Để tìm hiểu thêm về các capability của Micrometer Tracing, xem {url-micrometer-tracing-docs}[reference documentation].
+
+
 
 [[actuator.micrometer-tracing.tracers]]
-== Tracer được hỗ trợ
+== Các Tracer được hỗ trợ
 
-Spring Boot cung cấp auto-configuration cho:
+Spring Boot cung cấp auto-configuration cho các tracer sau:
 
 * https://opentelemetry.io/[OpenTelemetry] với https://opentelemetry.io/docs/reference/specification/protocol/[OTLP].
 * https://github.com/openzipkin/brave[OpenZipkin Brave] với https://zipkin.io/[Zipkin].
 
+
+
 [[actuator.micrometer-tracing.getting-started]]
-== Getting Started
+== Bắt đầu
 
-Cần một example application để bắt đầu với tracing.
-Web application "`Hello World!`" đơn giản trong xref:tutorial:first-application/index.adoc[] là đủ.
-Ở đây dùng Brave tracer với Zipkin làm trace backend.
+Chúng ta cần một example application để bắt đầu với tracing.
+Với mục đích này, web application "`Hello World!`" đơn giản được đề cập trong section xref:tutorial:first-application/index.adoc[] là đủ.
+Chúng ta sẽ dùng Brave tracer với Zipkin làm trace backend.
 
-Main application code:
+Tóm lại, main application code của chúng ta như sau:
 
 include-code::MyApplication[]
 
-NOTE: Có thêm logger statement trong method `home()`, sẽ quan trọng ở phần sau.
+NOTE: Có thêm một logger statement trong method `home()`, điều này sẽ quan trọng ở phần sau.
 
-Tiếp theo thêm dependency `org.springframework.boot:spring-boot-starter-zipkin`.
+Bây giờ chúng ta phải thêm dependency `org.springframework.boot:spring-boot-starter-zipkin`.
 
-Sau đó thêm property:
+Sau đó thêm các application property sau:
 
 [configprops,yaml]
 ----
@@ -38,46 +42,48 @@ management:
       probability: 1.0
 ----
 
-Mặc định Spring Boot chỉ sample 10% request để tránh overload trace backend.
-Property trên chuyển thành 100% để mọi request được gửi tới trace backend.
+Mặc định, Spring Boot chỉ sample 10% request để tránh làm trace backend bị quá tải.
+Property này chuyển tỷ lệ đó thành 100% để mọi request được gửi tới trace backend.
 
-Để collect và visualize trace, cần running trace backend.
-Ở đây dùng Zipkin.
-https://zipkin.io/pages/quickstart[Zipkin Quickstart guide] mô tả cách start Zipkin local.
+Để collect và visualize các trace, chúng ta cần một trace backend đang chạy.
+Ở đây chúng ta dùng Zipkin làm trace backend.
+https://zipkin.io/pages/quickstart[Zipkin Quickstart guide] cung cấp hướng dẫn start Zipkin locally.
 
-Sau khi Zipkin chạy, start application.
+Sau khi Zipkin chạy, bạn có thể start application.
 
-Mở browser tại `http://localhost:8080`, output:
+Nếu mở web browser tới `http://localhost:8080`, bạn sẽ thấy output sau:
 
 [source]
 ----
 Hello World!
 ----
 
-Ở phía sau, một observation được tạo cho HTTP request, sau đó bridge sang Brave và report trace mới tới Zipkin.
+Ở phía sau, một observation được tạo cho HTTP request, sau đó được bridge sang Brave, rồi Brave report một trace mới tới Zipkin.
 
-Mở Zipkin UI tại `http://localhost:9411` và nhấn "Run Query" để list trace.
+Bây giờ mở Zipkin UI tại `http://localhost:9411` và nhấn nút "Run Query" để list tất cả trace đã collect.
 Bạn sẽ thấy một trace.
-Nhấn "Show" để xem detail.
+Nhấn nút "Show" để xem detail của trace đó.
+
+
 
 [[actuator.micrometer-tracing.logging]]
-== Logging Correlation IDs
+== Logging Correlation ID
 
-Correlation ID giúp link log line với span/trace.
-Nếu dùng Micrometer Tracing, Spring Boot mặc định include correlation ID trong log.
+Correlation ID cung cấp một cách hữu ích để link các dòng trong log file với span/trace.
+Nếu dùng Micrometer Tracing, Spring Boot mặc định sẽ include correlation ID trong log.
 
-Default correlation ID được build từ MDC value `traceId` và `spanId` https://logback.qos.ch/manual/mdc.html[MDC].
-Ví dụ nếu Micrometer Tracing thêm MDC `traceId=803B448A0489F84084905D3093480352` và `spanId=3425F23BB2432450`, log output include correlation ID `[803B448A0489F84084905D3093480352-3425F23BB2432450]`.
+Correlation ID mặc định được build từ các giá trị MDC `traceId` và `spanId` https://logback.qos.ch/manual/mdc.html[MDC].
+Ví dụ, nếu Micrometer Tracing đã thêm một MDC `traceId` có giá trị `803B448A0489F84084905D3093480352` và một MDC `spanId` có giá trị `3425F23BB2432450`, log output sẽ include correlation ID `[803B448A0489F84084905D3093480352-3425F23BB2432450]`.
 
-MDC key name `traceId` và `spanId` có thể customize bằng configprop:management.tracing.mdc.trace-id-key[] và configprop:management.tracing.mdc.span-id-key[].
-Default correlation ID format tự động theo các key này, padding lần lượt thành 32 và 16 character, nên log correlation tiếp tục hoạt động mà không cần configuration thêm.
+Tên MDC key `traceId` và `spanId` có thể được customize bằng các property configprop:management.tracing.mdc.trace-id-key[] và configprop:management.tracing.mdc.span-id-key[].
+Correlation ID format mặc định sẽ tự động tuân theo các key đó, padding chúng lần lượt thành 32 và 16 ký tự, nhờ vậy log correlation vẫn hoạt động mà không cần configuration thêm.
 
-NOTE: Với Brave, MDC key name chỉ áp dụng khi baggage được enable.
-Đặt configprop:management.tracing.baggage.enabled[] thành `false` khiến Brave ngừng ghi trace/span ID vào MDC, từ đó disable log correlation.
+NOTE: Với Brave, tên MDC key chỉ được áp dụng khi baggage được enable.
+Đặt configprop:management.tracing.baggage.enabled[] thành `false` sẽ khiến Brave ngừng ghi trace và span ID vào MDC, từ đó disable log correlation.
 
-Nếu muốn correlation ID format khác, dùng configprop:logging.pattern.correlation[].
-Value tự đặt có precedence hơn format derived từ MDC key name, nên phải tự reference custom key name.
-Ví dụ format từng được Spring Cloud Sleuth dùng:
+Nếu muốn dùng correlation ID format khác, bạn có thể dùng property configprop:logging.pattern.correlation[] để định nghĩa format đó.
+Value do bạn tự đặt sẽ có precedence hơn format được derive từ tên MDC key, vì vậy chính value đó phải reference các tên key đã customize.
+Ví dụ sau sẽ cung cấp correlation ID cho Logback theo format trước đây được Spring Cloud Sleuth sử dụng:
 
 [configprops,yaml]
 ----
@@ -87,55 +93,64 @@ logging:
   include-application-name: false
 ----
 
-NOTE: Trong ví dụ, configprop:logging.include-application-name[] = `false` để tránh duplicate application name vì configprop:logging.pattern.correlation[] đã chứa nó.
-configprop:logging.pattern.correlation[] có trailing space để tách khỏi logger name theo mặc định.
+NOTE: Trong ví dụ trên, configprop:logging.include-application-name[] được đặt thành `false` để tránh application name bị duplicate trong log message (configprop:logging.pattern.correlation[] đã chứa application name).
+Cũng cần lưu ý rằng configprop:logging.pattern.correlation[] có một khoảng trắng ở cuối để mặc định tách nó khỏi logger name ngay sau đó.
 
-TIP: Correlation ID dựa vào context propagation.
-Xem xref:reference:actuator/observability.adoc#actuator.observability.context-propagation[].
+TIP: Correlation ID phụ thuộc vào context propagation.
+Vui lòng đọc xref:reference:actuator/observability.adoc#actuator.observability.context-propagation[tài liệu này] để biết thêm chi tiết.
+
+
 
 [[actuator.micrometer-tracing.propagating-traces]]
-== Propagating Traces
+== Propagate Trace
 
-Để tự động propagate trace qua network, dùng auto-configured xref:io/rest-client.adoc#io.rest-client.restclient[`RestClient.Builder`] hoặc xref:io/rest-client.adoc#io.rest-client.webclient[`WebClient.Builder`] để construct client.
+Để tự động propagate trace qua network, dùng xref:io/rest-client.adoc#io.rest-client.restclient[`RestClient.Builder`] hoặc xref:io/rest-client.adoc#io.rest-client.webclient[`WebClient.Builder`] được auto-configure để construct client.
 
-WARNING: Nếu tạo javadoc:org.springframework.web.client.RestClient[] hoặc javadoc:org.springframework.web.reactive.function.client.WebClient[] mà không dùng auto-configured builder, automatic trace propagation sẽ không hoạt động.
+WARNING: Nếu tạo javadoc:org.springframework.web.client.RestClient[] hoặc javadoc:org.springframework.web.reactive.function.client.WebClient[] mà không dùng builder được auto-configure, automatic trace propagation sẽ không hoạt động!
+
+
 
 [[actuator.micrometer-tracing.tracer-implementations]]
-== Tracer Implementations
+== Các Tracer Implementation
 
-Micrometer Tracer hỗ trợ nhiều tracer implementation nên có nhiều dependency combination với Spring Boot.
-OpenTelemetry với OTLP và Brave với Zipkin là hai combination phổ biến và có dedicated starter.
+Vì Micrometer Tracer hỗ trợ nhiều tracer implementation, có nhiều dependency combination có thể dùng với Spring Boot.
+OpenTelemetry với OTLP và Brave với Zipkin là các combination phổ biến và có starter riêng.
+
 
 [[actuator.micrometer-tracing.tracer-implementations.otel-otlp]]
 === OpenTelemetry với OTLP
 
-Tracing bằng OpenTelemetry và reporting qua OTLP cần dependency:
+Tracing bằng OpenTelemetry và report bằng OTLP cần các dependency sau:
 
 * `org.springframework.boot:spring-boot-starter-opentelemetry`
 
-Dùng property `management.opentelemetry.tracing.export.otlp.*` để cấu hình reporting qua OTLP.
+Dùng các configuration property `management.opentelemetry.tracing.export.otlp.*` để cấu hình việc report bằng OTLP.
 
-NOTE: Nếu cần advanced customization cho OTLP span exporter, register bean javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpHttpSpanExporterBuilderCustomizer[] hoặc javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpGrpcSpanExporterBuilderCustomizer[].
-Chúng được invoke trước khi tạo `OtlpHttpSpanExporter` hoặc `OtlpGrpcSpanExporter`.
-Customizer có precedence hơn auto-configuration.
+NOTE: Nếu cần advanced customization cho OTLP span exporter, hãy register bean javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpHttpSpanExporterBuilderCustomizer[] hoặc javadoc:org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpGrpcSpanExporterBuilderCustomizer[].
+Các bean này sẽ được invoke trước khi tạo `OtlpHttpSpanExporter` hoặc `OtlpGrpcSpanExporter`.
+Các customizer có precedence hơn bất kỳ cấu hình nào được auto-configuration áp dụng.
+
+
 
 [[actuator.micrometer-tracing.tracer-implementations.brave-zipkin]]
 === OpenZipkin Brave với Zipkin
 
-Tracing bằng OpenZipkin Brave và reporting tới Zipkin cần dependency:
+Tracing bằng OpenZipkin Brave và report tới Zipkin cần dependency sau:
 
 * `org.springframework.boot:spring-boot-starter-zipkin`
 
-Dùng property `management.tracing.export.zipkin.*` để cấu hình reporting tới Zipkin.
+Dùng các configuration property `management.tracing.export.zipkin.*` để cấu hình việc report tới Zipkin.
+
+
 
 [[actuator.micrometer-tracing.sampling]]
 == Sampling
 
-Mặc định Spring Boot sample 10% request để tránh overload trace backend.
-configprop:management.tracing.sampling.probability[] dùng để cấu hình tỷ lệ này.
+Mặc định, Spring Boot chỉ sample 10% request để tránh làm trace backend bị quá tải.
+Property configprop:management.tracing.sampling.probability[] có thể được dùng để cấu hình tỷ lệ này.
 
-Khi dùng OpenTelemetry, có thể cấu hình sampler qua configprop:management.opentelemetry.tracing.sampler[].
-Các sampler được hỗ trợ:
+Khi dùng OpenTelemetry, bạn cũng có thể cấu hình sampler được sử dụng bằng property configprop:management.opentelemetry.tracing.sampler[].
+Các sampler sau được hỗ trợ:
 
 |===
 |Sampler |Mô tả
@@ -150,22 +165,24 @@ Các sampler được hỗ trợ:
 |Sample một phần trace dựa trên configprop:management.tracing.sampling.probability[].
 
 |`parent-based-always-on`
-|Nếu parent span được sample, sample child span. Nếu không có parent, sample mọi trace.
+|Nếu parent span được sample, child span cũng được sample. Nếu không có parent, sample mọi trace.
 
 |`parent-based-always-off`
-|Nếu parent span được sample, sample child span. Nếu không có parent, discard mọi trace.
+|Nếu parent span được sample, child span cũng được sample. Nếu không có parent, discard mọi trace.
 
 |`parent-based-trace-id-ratio` (default)
-|Nếu parent span được sample, sample child span. Nếu không có parent, sample một phần trace dựa trên configprop:management.tracing.sampling.probability[].
+|Nếu parent span được sample, child span cũng được sample. Nếu không có parent, sample một phần trace dựa trên configprop:management.tracing.sampling.probability[].
 |===
+
+
 
 [[actuator.micrometer-tracing.span-limits]]
 == Span Limits
 
-Khi dùng OpenTelemetry, có thể cấu hình span limit qua `management.opentelemetry.tracing.limits.*`.
-Các property kiểm soát max attribute, event, link mỗi span và max string attribute value length.
+Khi dùng OpenTelemetry, bạn có thể cấu hình span limits qua các configuration property `management.opentelemetry.tracing.limits.*`.
+Các property này cho phép kiểm soát số lượng attribute, event và link tối đa trên mỗi span, cũng như độ dài tối đa của string attribute value.
 
-Ví dụ giới hạn 64 attribute và max value length 256 character:
+Ví dụ, để giới hạn số attribute trên mỗi span là 64 và độ dài attribute value tối đa là 256 ký tự:
 
 [configprops,yaml]
 ----
@@ -177,47 +194,55 @@ management:
         max-attribute-value-length: 256
 ----
 
-Nếu cần kiểm soát hoàn toàn, register custom bean javadoc:io.opentelemetry.sdk.trace.SpanLimits[].
+Nếu cần kiểm soát hoàn toàn, bạn có thể register custom javadoc:io.opentelemetry.sdk.trace.SpanLimits[] bean.
+
+
 
 [[actuator.micrometer-tracing.micrometer-observation]]
 == Integration với Micrometer Observation
 
-javadoc:io.micrometer.tracing.handler.TracingAwareMeterObservationHandler[] tự động register trên javadoc:io.micrometer.observation.ObservationRegistry[], tạo span cho mỗi completed observation.
+javadoc:io.micrometer.tracing.handler.TracingAwareMeterObservationHandler[] được tự động register trên javadoc:io.micrometer.observation.ObservationRegistry[], tạo span cho mỗi observation đã hoàn tất.
+
+
 
 [[actuator.micrometer-tracing.creating-spans]]
 == Tạo Custom Span
 
-Có thể tạo span riêng bằng cách start observation.
-Inject javadoc:io.micrometer.observation.ObservationRegistry[]:
+Bạn có thể tạo span riêng bằng cách start một observation.
+Để làm vậy, inject javadoc:io.micrometer.observation.ObservationRegistry[] vào component của bạn:
 
 include-code::CustomObservation[]
 
-Điều này tạo observation tên `some-operation` với tag `some-tag=some-value`.
+Điều này sẽ tạo một observation có tên "some-operation" với tag "some-tag=some-value".
 
-TIP: Nếu muốn tạo span mà không tạo metric, dùng {url-micrometer-tracing-docs}/api[lower-level `Tracer` API] của Micrometer.
+TIP: Nếu muốn tạo span mà không tạo metric, bạn cần dùng {url-micrometer-tracing-docs}/api[lower-level `Tracer` API] của Micrometer.
+
+
 
 [[actuator.micrometer-tracing.baggage]]
 == Baggage
 
-Có thể tạo baggage bằng API javadoc:io.micrometer.tracing.Tracer[]:
+Bạn có thể tạo baggage bằng API javadoc:io.micrometer.tracing.Tracer[]:
 
 include-code::CreatingBaggage[]
 
-Ví dụ tạo baggage `baggage1=value1`.
-Baggage tự động propagate qua network nếu dùng W3C propagation.
-Nếu dùng B3 propagation, baggage không tự động propagate.
-Để propagate thủ công, dùng configprop:management.tracing.baggage.remote-fields[]; property này cũng hoạt động với W3C.
-Với ví dụ trên, đặt property thành `baggage1` tạo HTTP header `baggage1: value1`.
-Baggage được propagate ở nơi Micrometer Observation instrument transport, ví dụ xref:io/grpc.adoc#io.grpc.server.observability[gRPC metadata] và HTTP header.
+Ví dụ này tạo baggage có tên `baggage1` với value `value1`.
+Baggage được tự động propagate qua network nếu bạn dùng W3C propagation.
+Nếu bạn dùng B3 propagation, baggage không được tự động propagate.
+Để manually propagate baggage qua network, dùng configuration property configprop:management.tracing.baggage.remote-fields[] (property này cũng hoạt động với W3C).
+Với ví dụ trên, đặt property này thành `baggage1` sẽ tạo một HTTP header `baggage1: value1`.
+Baggage được propagate ở mọi nơi Micrometer Observation instrument transport, ví dụ như xref:io/grpc.adoc#io.grpc.server.observability[gRPC metadata] cũng như HTTP header.
 
-Để propagate baggage vào MDC, dùng configprop:management.tracing.baggage.correlation.fields[].
-Với ví dụ trên, setting `baggage1` tạo MDC entry tên `baggage1`.
+Nếu muốn propagate baggage vào MDC, dùng configuration property configprop:management.tracing.baggage.correlation.fields[].
+Với ví dụ trên, setting `baggage1` sẽ tạo một MDC entry có tên `baggage1`.
 
-Để thêm baggage value thành tag trên span, dùng configprop:management.tracing.baggage.tag-fields[].
-Với ví dụ trên, setting `baggage1` tạo span tag `baggage1=value1`.
+Nếu muốn thêm baggage value làm tag trên span, dùng configuration property configprop:management.tracing.baggage.tag-fields[].
+Với ví dụ trên, setting `baggage1` sẽ tạo các span được tag bằng `baggage1=value1`.
+
+
 
 [[actuator.micrometer-tracing.tests]]
 == Tests
 
-Tracing component report data không được auto-configure khi dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
-Xem xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.tracing[] để biết thêm.
+Các tracing component report data không được auto-configure khi dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
+Xem xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.tracing[] để biết thêm chi tiết.

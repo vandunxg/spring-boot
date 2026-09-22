@@ -1,16 +1,16 @@
 [[getting-started]]
-= Getting Started
+= Bắt đầu
 
-Để bắt đầu với plugin, cần apply nó vào project.
+Để bắt đầu sử dụng plugin, cần apply plugin vào project.
 
 ifeval::["{build-type}" == "commercial"]
-Plugin được publish tới Spring Commercial repository.
+Plugin được publish lên Spring Commercial repository.
 Cần configure build để access repository này.
-Thông thường thực hiện qua local artifact repository mirror content của Spring Commercial repository.
-Ngoài ra, dù không được khuyến nghị, Spring Commercial repository cũng có thể access trực tiếp.
-Trong cả hai case, xem https://docs.vmware.com/en/Tanzu-Spring-Runtime/Commercial/Tanzu-Spring-Runtime/spring-enterprise-subscription.html[Tanzu Spring Runtime documentation] để biết thêm.
+Thông thường, việc này được thực hiện thông qua một local artifact repository dùng để mirror content của Spring Commercial repository.
+Ngoài ra, dù không được khuyến nghị, có thể access trực tiếp Spring Commercial repository.
+Trong cả hai trường hợp, xem https://docs.vmware.com/en/Tanzu-Spring-Runtime/Commercial/Tanzu-Spring-Runtime/spring-enterprise-subscription.html[tài liệu Tanzu Spring Runtime] để biết thêm chi tiết.
 
-Khi access Spring Commercial repository đã configure trong `settings.gradle` hoặc `settings.gradle.kts`, plugin có thể apply bằng block `plugins`:
+Sau khi configure access tới Spring Commercial repository trong `settings.gradle` hoặc `settings.gradle.kts`, có thể apply plugin bằng block `plugins`:
 
 [tabs]
 ======
@@ -29,8 +29,9 @@ include::example$getting-started/apply-plugin-commercial.gradle.kts[]
 ======
 endif::[]
 
+
 ifeval::["{build-and-artifact-release-type}" == "opensource-release"]
-Plugin được https://plugins.gradle.org/plugin/org.springframework.boot[publish lên Gradle plugin portal] và có thể apply bằng block `plugins`:
+Plugin được https://plugins.gradle.org/plugin/org.springframework.boot[publish lên plugin portal của Gradle] và có thể apply bằng block `plugins`:
 
 [tabs]
 ======
@@ -50,9 +51,9 @@ include::example$getting-started/apply-plugin-release.gradle.kts[]
 endif::[]
 
 ifeval::["{build-and-artifact-release-type}" == "opensource-milestone"]
-Plugin được publish tới Spring milestones repository.
-Gradle có thể configure dùng milestones repository và plugin sau đó apply bằng block `plugins`.
-Để configure Gradle dùng milestones repository, thêm vào `settings.gradle` (Groovy) hoặc `settings.gradle.kts` (Kotlin):
+Plugin được publish lên Spring milestones repository.
+Có thể configure Gradle để sử dụng milestones repository, sau đó apply plugin bằng block `plugins`.
+Để configure Gradle sử dụng milestones repository, thêm vào `settings.gradle` (Groovy) hoặc `settings.gradle.kts` (Kotlin):
 
 [tabs]
 ======
@@ -70,7 +71,7 @@ include::example$getting-started/milestone-settings.gradle.kts[]
 ----
 ======
 
-Sau đó apply plugin bằng block `plugins`:
+Sau đó có thể apply plugin bằng block `plugins`:
 
 [tabs]
 ======
@@ -90,9 +91,9 @@ include::example$getting-started/apply-plugin-release.gradle.kts[]
 endif::[]
 
 ifeval::["{build-and-artifact-release-type}" == "opensource-snapshot"]
-Plugin được publish tới Spring snapshots repository.
-Gradle có thể configure dùng snapshots repository rồi plugin apply bằng block `plugins`.
-Để configure Gradle dùng snapshots repository, thêm vào `settings.gradle` hoặc `settings.gradle.kts`:
+Plugin được publish lên Spring snapshots repository.
+Có thể configure Gradle để sử dụng snapshots repository, sau đó apply plugin bằng block `plugins`.
+Để configure Gradle sử dụng snapshots repository, thêm vào `settings.gradle` (Groovy) hoặc `settings.gradle.kts` (Kotlin):
 
 [tabs]
 ======
@@ -110,7 +111,7 @@ include::example$getting-started/snapshot-settings.gradle.kts[]
 ----
 ======
 
-Sau đó apply plugin:
+Sau đó có thể apply plugin bằng block `plugins`:
 
 [tabs]
 ======
@@ -129,10 +130,10 @@ include::example$getting-started/apply-plugin-release.gradle.kts[]
 ======
 endif::[]
 
-Khi apply riêng lẻ, plugin chỉ thay đổi ít thứ trong project.
-Thay vào đó plugin detect khi một số plugin khác được apply và react tương ứng.
-Ví dụ khi `java` plugin apply, task build executable jar được auto-configure.
-Typical Spring Boot project tối thiểu apply {url-gradle-docs-groovy-plugin}[`groovy`], {url-gradle-docs-java-plugin}[`java`] hoặc {url-kotlin-docs-kotlin-plugin}[`org.jetbrains.kotlin.jvm`], đồng thời dùng {url-dependency-management-plugin-site}[`io.spring.dependency-management`] hoặc native bom support của Gradle cho dependency management.
+Khi được apply riêng lẻ, plugin chỉ thực hiện một vài thay đổi trên project.
+Thay vào đó, plugin detect khi một số plugin khác được apply và react tương ứng.
+Ví dụ, khi `java` plugin được apply, một task để build executable jar sẽ được auto-configure.
+Một Spring Boot project điển hình tối thiểu sẽ apply {url-gradle-docs-groovy-plugin}[`groovy`], {url-gradle-docs-java-plugin}[`java`] hoặc {url-kotlin-docs-kotlin-plugin}[`org.jetbrains.kotlin.jvm`], đồng thời dùng {url-dependency-management-plugin-site}[`io.spring.dependency-management`] hoặc native bom support của Gradle cho dependency management.
 Ví dụ:
 
 [tabs]
@@ -151,4 +152,4 @@ include::example$getting-started/typical-plugins.gradle.kts[tags=apply]
 ----
 ======
 
-Để hiểu cách Spring Boot plugin behavior khi plugin khác apply, xem section xref:reacting.adoc[reacting to other plugins].
+Để tìm hiểu thêm về cách Spring Boot plugin react khi các plugin khác được apply, xem section xref:reacting.adoc[react với các plugin khác].

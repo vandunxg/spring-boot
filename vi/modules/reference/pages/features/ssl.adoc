@@ -1,18 +1,18 @@
 [[features.ssl]]
 = SSL
 
-Spring Boot cung cấp khả năng cấu hình SSL trust material có thể áp dụng cho nhiều loại kết nối để hỗ trợ giao tiếp an toàn.
-Các configuration property có prefix `spring.ssl.bundle` có thể được dùng để chỉ định các tập trust material có tên cùng thông tin liên quan.
+Spring Boot cung cấp khả năng cấu hình trust material cho SSL để áp dụng cho nhiều loại connection, nhằm hỗ trợ giao tiếp an toàn.
+Các configuration property có prefix `spring.ssl.bundle` có thể được dùng để chỉ định các tập trust material được đặt tên cùng thông tin liên quan.
 
 
 
 [[features.ssl.jks]]
-== Cấu hình SSL với Java KeyStore file
+== Cấu hình SSL với các file Java KeyStore
 
-Các configuration property có prefix `spring.ssl.bundle.jks` có thể được dùng để cấu hình các bundle trust material được tạo bằng Java utility `keytool` và lưu trong Java KeyStore file định dạng JKS hoặc PKCS12.
-Mỗi bundle có một tên do user cung cấp để dùng khi tham chiếu bundle.
+Các configuration property có prefix `spring.ssl.bundle.jks` có thể được dùng để cấu hình các bundle trust material được tạo bằng utility Java `keytool` và lưu trong các file Java KeyStore ở format JKS hoặc PKCS12.
+Mỗi bundle có một tên do user cung cấp để dùng khi reference bundle.
 
-Khi dùng để bảo vệ embedded web server, `keystore` thường được cấu hình bằng Java KeyStore chứa certificate và private key như ví dụ sau:
+Khi dùng để secure embedded web server, `keystore` thường được cấu hình bằng Java KeyStore chứa certificate và private key, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -29,7 +29,7 @@ Khi dùng để bảo vệ embedded web server, `keystore` thường được c�
                 type: "PKCS12"
 ----
 
-Khi dùng để bảo vệ client-side connection, `truststore` thường được cấu hình bằng Java KeyStore chứa server certificate như ví dụ sau:
+Khi dùng để secure client-side connection, `truststore` thường được cấu hình bằng Java KeyStore chứa server certificate, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -45,7 +45,7 @@ Khi dùng để bảo vệ client-side connection, `truststore` thường đư�
 
 [TIP]
 ====
-Thay vì location tới file, có thể cung cấp xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion.base64[nội dung được encode Base64] của file đó.
+Thay vì chỉ định location tới file, có thể cung cấp xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion.base64[content được encode bằng Base64] của file đó.
 Nếu chọn cách này, giá trị property nên bắt đầu bằng `base64:`.
 ====
 
@@ -56,12 +56,12 @@ NOTE: Nếu dùng environment variable để cấu hình bundle, tên bundle xre
 
 
 [[features.ssl.pem]]
-== Cấu hình SSL với certificate được encode PEM
+== Cấu hình SSL với certificate được encode bằng PEM
 
-Các configuration property có prefix `spring.ssl.bundle.pem` có thể được dùng để cấu hình bundle trust material ở dạng text được encode PEM.
+Các configuration property có prefix `spring.ssl.bundle.pem` có thể được dùng để cấu hình bundle trust material ở dạng text được encode bằng PEM.
 Mỗi bundle có một tên do user cung cấp để dùng khi tham chiếu bundle.
 
-Khi dùng để bảo vệ embedded web server, `keystore` thường được cấu hình bằng certificate và private key như ví dụ sau:
+Khi dùng để secure embedded web server, `keystore` thường được cấu hình bằng certificate và private key, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -75,7 +75,7 @@ Khi dùng để bảo vệ embedded web server, `keystore` thường được c�
                 private-key: "classpath:application.key"
 ----
 
-Khi dùng để bảo vệ client-side connection, `truststore` thường được cấu hình bằng server certificate như ví dụ sau:
+Khi dùng để secure client-side connection, `truststore` thường được cấu hình bằng server certificate, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -90,13 +90,13 @@ Khi dùng để bảo vệ client-side connection, `truststore` thường đư�
 
 [TIP]
 ====
-Thay vì location tới file, có thể cung cấp xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion.base64[nội dung được encode Base64] của file đó.
+Thay vì chỉ định location tới file, có thể cung cấp xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion.base64[content được encode bằng Base64] của file đó.
 Nếu chọn cách này, giá trị property nên bắt đầu bằng `base64:`.
 
-PEM content cũng có thể được dùng trực tiếp cho cả property `certificate` và `private-key`.
-Nếu giá trị property chứa marker `BEGIN` và `END` thì chúng sẽ được xử lý như PEM content thay vì resource location.
+PEM content cũng có thể được dùng trực tiếp cho cả hai property `certificate` và `private-key`.
+Nếu giá trị của các property chứa marker `BEGIN` và `END` thì chúng sẽ được xử lý như PEM content thay vì resource location.
 
-Ví dụ sau cho thấy cách định nghĩa truststore certificate:
+Ví dụ sau cho thấy cách định nghĩa certificate cho truststore:
 
 [configprops,yaml]
 ----
@@ -125,45 +125,45 @@ NOTE: Nếu dùng environment variable để cấu hình bundle, tên bundle xre
 
 
 [[features.ssl.applying]]
-== Áp dụng SSL Bundle
+== Áp dụng SSL bundle
 
-Sau khi được cấu hình bằng property, SSL bundle có thể được tham chiếu theo tên trong configuration property cho nhiều loại kết nối được Spring Boot auto-configure.
+Sau khi được cấu hình bằng property, SSL bundle có thể được reference bằng tên trong các configuration property dành cho nhiều loại connection được Spring Boot auto-configure.
 Xem các phần về xref:how-to:webserver.adoc#howto.webserver.configure-ssl[embedded web server], xref:data/index.adoc[data technology] và xref:io/rest-client.adoc[REST client] để biết thêm thông tin.
 
 
 
 [[features.ssl.bundles]]
-== Sử dụng SSL Bundle
+== Sử dụng các SSL bundle
 
-Spring Boot auto-configure một bean type javadoc:org.springframework.boot.ssl.SslBundles[] cung cấp quyền truy cập tới từng named bundle được cấu hình bằng property `spring.ssl.bundle`.
+Spring Boot auto-configure một bean có type javadoc:org.springframework.boot.ssl.SslBundles[] cung cấp access tới từng bundle có tên được cấu hình bằng các property `spring.ssl.bundle`.
 
-Có thể lấy một javadoc:org.springframework.boot.ssl.SslBundle[] từ bean javadoc:org.springframework.boot.ssl.SslBundles[] đã được auto-configure và dùng nó để tạo các object phục vụ cấu hình SSL connectivity trong client library.
+Có thể lấy một javadoc:org.springframework.boot.ssl.SslBundle[] từ bean javadoc:org.springframework.boot.ssl.SslBundles[] đã được auto-configure và dùng nó để tạo các object dùng để cấu hình SSL connectivity trong client library.
 javadoc:org.springframework.boot.ssl.SslBundle[] cung cấp cách tiếp cận theo layer để lấy các SSL object này:
 
 - `getStores()` cung cấp quyền truy cập tới các instance javadoc:java.security.KeyStore[] của key store và trust store cũng như mọi key store password cần thiết.
-- `getManagers()` cung cấp quyền truy cập tới các instance javadoc:javax.net.ssl.KeyManagerFactory[] và javadoc:javax.net.ssl.TrustManagerFactory[] cũng như các array javadoc:javax.net.ssl.KeyManager[] và javadoc:javax.net.ssl.TrustManager[] mà chúng tạo.
+- `getManagers()` cung cấp quyền truy cập tới các instance javadoc:javax.net.ssl.KeyManagerFactory[] và javadoc:javax.net.ssl.TrustManagerFactory[] cũng như các array javadoc:javax.net.ssl.KeyManager[] và javadoc:javax.net.ssl.TrustManager[] mà các factory này tạo ra.
 - `createSslContext()` cung cấp cách thuận tiện để lấy instance javadoc:javax.net.ssl.SSLContext[] mới.
 
-Ngoài ra, javadoc:org.springframework.boot.ssl.SslBundle[] cung cấp thông tin chi tiết về key đang được dùng, protocol cần dùng và mọi option nên được áp dụng cho SSL engine.
+Ngoài ra, javadoc:org.springframework.boot.ssl.SslBundle[] cung cấp thông tin chi tiết về key đang được dùng, protocol sẽ dùng và mọi option cần áp dụng cho SSL engine.
 
-Ví dụ sau cho thấy cách lấy javadoc:org.springframework.boot.ssl.SslBundle[] và dùng nó để tạo javadoc:javax.net.ssl.SSLContext[]:
+Ví dụ sau cho thấy cách lấy một javadoc:org.springframework.boot.ssl.SslBundle[] và dùng nó để tạo một javadoc:javax.net.ssl.SSLContext[]:
 
 include-code::MyComponent[]
 
 
 
 [[features.ssl.reloading]]
-== Reload SSL Bundle
+== Nạp lại các SSL bundle
 
 SSL bundle có thể được reload khi key material thay đổi.
-Component sử dụng bundle phải tương thích với reloadable SSL bundle.
+Component sử dụng bundle phải tương thích với SSL bundle có hỗ trợ reload.
 Hiện tại các component sau tương thích:
 
 * Tomcat web server
 * Netty web server
 * LDAP client
 
-Để bật reload, bạn cần opt-in qua configuration property như ví dụ sau:
+Để bật tính năng reload, bạn cần opt-in thông qua configuration property, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -178,17 +178,17 @@ Hiện tại các component sau tương thích:
                 private-key: "file:/some/directory/application.key"
 ----
 
-Một file watcher sau đó sẽ theo dõi các file và nếu chúng thay đổi, SSL bundle sẽ được reload.
-Điều này tiếp tục trigger reload trong component đang sử dụng bundle; ví dụ Tomcat sẽ rotate certificate trong các connector đã bật SSL.
+Một file watcher sau đó sẽ theo dõi các file; nếu chúng thay đổi, SSL bundle sẽ được reload.
+Việc này sẽ trigger reload ở component đang dùng bundle; ví dụ, Tomcat sẽ rotate certificate trong các connector đã bật SSL.
 
-Bạn có thể cấu hình quiet period của file watcher (để đảm bảo không còn thay đổi nào nữa) bằng property configprop:spring.ssl.bundle.watch.file.quiet-period[].
+Bạn có thể cấu hình quiet period (để bảo đảm không còn thay đổi nào) của file watcher bằng property configprop:spring.ssl.bundle.watch.file.quiet-period[].
 
 [[features.ssl.reloading.lets-encrypt]]
-=== Reload SSL Bundle với Let's Encrypt
+=== Nạp lại SSL bundle với Let's Encrypt
 
-Nếu dùng certificate được cấp bởi https://letsencrypt.org/[Let's Encrypt] và được renew bởi external tool như https://certbot.eff.org/[Certbot], bạn có thể cấu hình PEM bundle để dùng các file được generate và bật reload.
-Certbot thường lưu chúng trong `/etc/letsencrypt/live/` dưới directory được đặt theo domain của bạn.
-Ví dụ sau cho thấy cách cấu hình PEM bundle cho `example.com`:
+Nếu dùng certificate được cấp bởi https://letsencrypt.org/[Let's Encrypt] và được renew bởi external tool, chẳng hạn https://certbot.eff.org/[Certbot], bạn có thể cấu hình PEM bundle để dùng các file được generate và bật reload.
+Certbot thường lưu các file này trong `/etc/letsencrypt/live/` dưới một directory đặt theo domain của bạn.
+Ví dụ sau cho thấy cách cấu hình một PEM bundle cho `example.com`:
 
 [configprops,yaml]
 ----
@@ -206,9 +206,9 @@ Ví dụ sau cho thấy cách cấu hình PEM bundle cho `example.com`:
         bundle: "webserver"
 ----
 
-Spring Boot không request hoặc renew certificate Let's Encrypt.
+Spring Boot không yêu cầu hoặc gia hạn certificate của Let's Encrypt.
 Khi Certbot hoặc ACME client khác cập nhật các file đã cấu hình, SSL bundle sẽ được reload.
-Các consumer tương thích như Tomcat và Netty web server sau đó có thể dùng certificate mới mà không cần restart ứng dụng.
+Các consumer tương thích, như Tomcat và Netty web server, sau đó có thể dùng certificate đã cập nhật mà không cần restart application.
 
-Các file trong `/etc/letsencrypt/live` thường là symbolic link tới file trong `/etc/letsencrypt/archive`.
-File watcher đi theo symbolic link để thay đổi ở target file có thể trigger reload.
+Các file trong `/etc/letsencrypt/live` thường là symbolic link tới các file trong `/etc/letsencrypt/archive`.
+File watcher sẽ follow các symbolic link để thay đổi ở các file đích có thể trigger reload.

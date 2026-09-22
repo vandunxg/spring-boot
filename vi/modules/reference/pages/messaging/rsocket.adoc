@@ -1,37 +1,42 @@
 [[messaging.rsocket]]
 = RSocket
 
-https://rsocket.io[RSocket] là binary protocol dùng trên byte-stream transport.
-Nó cho phép symmetric interaction model qua async message passing trên một connection.
+https://rsocket.io[RSocket] là binary protocol được sử dụng trên byte stream transport.
+Protocol này cho phép các interaction model đối xứng thông qua async message passing trên một connection.
 
-Module `spring-messaging` của Spring Framework hỗ trợ RSocket requester và responder ở cả client và server.
-Xem {url-spring-framework-docs}/rsocket.html#rsocket-spring[phần RSocket] trong Spring Framework reference.
+
+Module `spring-messaging` của Spring Framework cung cấp support cho RSocket requester và responder, ở cả phía client và phía server.
+Xem {url-spring-framework-docs}/rsocket.html#rsocket-spring[phần RSocket] trong Spring Framework reference để biết thêm chi tiết, bao gồm overview về RSocket protocol.
+
+
 
 [[messaging.rsocket.strategies-auto-configuration]]
 == RSocket Strategies Auto-configuration
 
-Spring Boot auto-configure bean javadoc:org.springframework.messaging.rsocket.RSocketStrategies[] cung cấp infrastructure cần để encode/decode RSocket payload.
-Mặc định auto-configuration thử cấu hình theo thứ tự:
+Spring Boot auto-configure một javadoc:org.springframework.messaging.rsocket.RSocketStrategies[] bean cung cấp toàn bộ infrastructure cần thiết để encode và decode RSocket payload.
+Mặc định, auto-configuration sẽ cố gắng cấu hình các codec sau theo thứ tự:
 
 . https://cbor.io/[CBOR] codec với Jackson
 . JSON codec với Jackson
 
 Starter `spring-boot-starter-rsocket` cung cấp cả hai dependency.
-Xem xref:features/json.adoc#features.json.jackson[phần Jackson support] để biết customization.
+Xem xref:features/json.adoc#features.json.jackson[phần Jackson support] để biết thêm về các khả năng customization.
 
-Developer có thể customize javadoc:org.springframework.messaging.rsocket.RSocketStrategies[] bằng bean implement javadoc:org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer[].
-javadoc:org.springframework.core.annotation.Order[format=annotation] quan trọng vì quyết định thứ tự codec.
+Developer có thể customize component javadoc:org.springframework.messaging.rsocket.RSocketStrategies[] bằng cách tạo các bean implement interface javadoc:org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer[].
+Lưu ý rằng javadoc:org.springframework.core.annotation.Order[format=annotation] của các bean này rất quan trọng vì nó quyết định thứ tự của các codec.
+
+
 
 [[messaging.rsocket.server-auto-configuration]]
 == RSocket Server Auto-configuration
 
 Spring Boot cung cấp RSocket server auto-configuration.
-Dependency cần thiết nằm trong `spring-boot-starter-rsocket`.
+Các dependency cần thiết được cung cấp bởi `spring-boot-starter-rsocket`.
 
-Spring Boot cho phép expose RSocket qua WebSocket từ WebFlux server hoặc chạy independent RSocket server.
-Điều này phụ thuộc application type và configuration.
+Spring Boot cho phép expose RSocket qua WebSocket từ một WebFlux server hoặc khởi chạy một RSocket server độc lập.
+Điều này phụ thuộc vào application type và configuration.
 
-Với WebFlux application, RSocket server chỉ được plug vào Web Server nếu property match:
+Với WebFlux application (tức là application có type javadoc:org.springframework.boot.WebApplicationType#REACTIVE[]), RSocket server sẽ chỉ được plug vào Web Server nếu các property sau khớp:
 
 [configprops,yaml]
 ----
@@ -42,10 +47,10 @@ spring:
       transport: "websocket"
 ----
 
-WARNING: Plug RSocket vào web server chỉ hỗ trợ Reactor Netty vì RSocket được build trên library này.
+WARNING: Việc plug RSocket vào web server chỉ được hỗ trợ với Reactor Netty vì bản thân RSocket được build bằng library này.
 
-Ngoài ra, RSocket TCP hoặc websocket server có thể chạy như independent embedded server.
-Configuration bắt buộc duy nhất là port:
+Ngoài ra, một RSocket TCP hoặc websocket server sẽ được khởi chạy như một embedded server độc lập.
+Ngoài các yêu cầu về dependency, configuration bắt buộc duy nhất là định nghĩa một port cho server đó:
 
 [configprops,yaml]
 ----
@@ -55,27 +60,31 @@ spring:
       port: 9898
 ----
 
+
+
 [[messaging.rsocket.messaging]]
 == Spring Messaging RSocket Support
 
-Spring Boot auto-configure Spring Messaging infrastructure cho RSocket.
+Spring Boot sẽ auto-configure Spring Messaging infrastructure cho RSocket.
 
-Spring Boot tạo bean javadoc:org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler[] xử lý RSocket request tới application.
+Điều này có nghĩa là Spring Boot sẽ tạo một javadoc:org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler[] bean để xử lý RSocket request gửi đến application.
 
-TIP: Có thể dùng {url-spring-framework-docs}/web/webmvc/mvc-controller/ann-advice.html[`@ControllerAdvice`] để handle exception.
+TIP: Bạn có thể sử dụng {url-spring-framework-docs}/web/webmvc/mvc-controller/ann-advice.html[`@ControllerAdvice`] để handle exception.
+
+
 
 [[messaging.rsocket.requester]]
-== Gọi RSocket Service bằng RSocketRequester
+== Gọi các RSocket service bằng RSocketRequester
 
-Sau khi channel javadoc:io.rsocket.RSocket[] được thiết lập giữa server và client, bên nào cũng có thể gửi hoặc nhận request.
+Sau khi channel javadoc:io.rsocket.RSocket[] được thiết lập giữa server và client, bất kỳ bên nào cũng có thể gửi hoặc nhận request từ bên kia.
 
-Ở server, có thể inject javadoc:org.springframework.messaging.rsocket.RSocketRequester[] vào handler method của RSocket javadoc:org.springframework.stereotype.Controller[format=annotation].
-Ở client, cần cấu hình và thiết lập RSocket connection trước.
-Spring Boot auto-configure javadoc:org.springframework.messaging.rsocket.RSocketRequester$Builder[] với codec phù hợp và áp dụng mọi bean javadoc:org.springframework.messaging.rsocket.RSocketConnectorConfigurer[].
+Ở phía server, bạn có thể được inject một instance javadoc:org.springframework.messaging.rsocket.RSocketRequester[] vào bất kỳ handler method nào của một RSocket javadoc:org.springframework.stereotype.Controller[format=annotation].
+Ở phía client, trước tiên bạn cần cấu hình và thiết lập một RSocket connection.
+Trong các trường hợp đó, Spring Boot auto-configure một javadoc:org.springframework.messaging.rsocket.RSocketRequester$Builder[] với các codec phù hợp và áp dụng mọi javadoc:org.springframework.messaging.rsocket.RSocketConnectorConfigurer[] bean.
 
-Builder là prototype bean, nghĩa là mỗi injection point nhận instance mới.
-Điều này có chủ ý vì builder stateful và không nên tạo requester với setup khác nhau từ cùng instance.
+Instance javadoc:org.springframework.messaging.rsocket.RSocketRequester$Builder[] là một prototype bean, nghĩa là mỗi injection point sẽ cung cấp cho bạn một instance mới.
+Điều này là có chủ ý vì builder này stateful, và bạn không nên tạo các requester có setup khác nhau bằng cùng một instance.
 
-Ví dụ:
+Đoạn code sau minh họa một ví dụ điển hình:
 
 include-code::MyService[]

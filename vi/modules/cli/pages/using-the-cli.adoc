@@ -148,8 +148,8 @@ Content saved to 'sample-app.zip'
 [[cli.using-the-cli.embedded-shell]]
 == Dùng Embedded Shell
 
-Spring Boot bao gồm script command-line completion cho shell BASH và zsh.
-Nếu bạn không dùng một trong hai shell này (có thể bạn là người dùng Windows), bạn có thể dùng command `shell` để khởi chạy một shell tích hợp, như ví dụ sau:
+Spring Boot bao gồm các command-line completion script cho shell BASH và zsh.
+Nếu bạn không dùng một trong hai shell này (có thể bạn là người dùng Windows), bạn có thể dùng command `shell` để khởi chạy một integrated shell, như ví dụ sau:
 
 [source,shell,subs="verbatim,quotes,attributes"]
 ----

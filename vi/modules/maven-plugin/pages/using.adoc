@@ -1,27 +1,27 @@
 [[using]]
-= Using the Plugin
+= Sử dụng Plugin
 
-Maven user có thể inherit từ project `spring-boot-starter-parent` để nhận sensible default.
+Người dùng Maven có thể kế thừa từ project `spring-boot-starter-parent` để nhận các default hợp lý.
 Parent project cung cấp các feature sau:
 
-* Java 17 làm default compiler level.
-* UTF-8 source encoding.
+* Java 17 làm compiler level mặc định.
+* Source encoding UTF-8.
 * Compile với `-parameters`.
-* Section dependency management, inherit từ POM `spring-boot-dependencies`, manage version của common dependency.
-Dependency management này cho phép omit tag `<version>` cho các dependency đó khi dùng trong POM riêng.
-* Execution của xref:maven-plugin:packaging.adoc#packaging.repackage-goal[goal `repackage`] với execution id `repackage`.
-* Profile `native` configure build để có thể generate Native image.
-* Sensible https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html[resource filtering].
-* Sensible plugin configuration ({url-git-commit-id-maven-plugin}[`Git Commit Id Plugin`], và https://maven.apache.org/plugins/maven-shade-plugin/[shade]).
-* Sensible resource filtering cho `application.properties` và `application.yml` gồm profile-specific file, ví dụ `application-dev.properties` và `application-dev.yml`.
+* Một section dependency management, được kế thừa từ POM `spring-boot-dependencies`, quản lý version của các dependency phổ biến.
+Section dependency management này cho phép bỏ tag `<version>` cho các dependency đó khi được dùng trong POM riêng.
+* Một execution của xref:maven-plugin:packaging.adoc#packaging.repackage-goal[`repackage` goal] với execution id `repackage`.
+* Một `native` profile cấu hình build để có thể generate Native image.
+* https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html[Resource filtering] hợp lý.
+* Plugin configuration hợp lý ({url-git-commit-id-maven-plugin}[`Git Commit Id Plugin`] và https://maven.apache.org/plugins/maven-shade-plugin/[shade]).
+* Resource filtering hợp lý cho `application.properties` và `application.yml`, bao gồm các file theo profile (ví dụ: `application-dev.properties` và `application-dev.yml`).
 
-NOTE: Vì file `application.properties` và `application.yml` accept Spring-style placeholder (`${...}`), Maven filtering được đổi sang dùng placeholder `@..@`.
-Có thể override bằng Maven property tên `resource.delimiter`.
+NOTE: Vì các file `application.properties` và `application.yml` chấp nhận Spring-style placeholder (`${...}`), Maven filtering được thay đổi để sử dụng placeholder `@..@`.
+(Bạn có thể override điều này bằng cách đặt một Maven property có tên `resource.delimiter`.)
 
 [NOTE]
 ====
-`spring-boot-starter-parent` set property `maven.compiler.release`, giới hạn option `--add-exports`, `--add-reads` và `--patch-module` https://openjdk.org/jeps/247[nếu chúng modify system module].
-Nếu cần dùng các option đó, unset `maven.compiler.release`:
+`spring-boot-starter-parent` set property `maven.compiler.release`, giới hạn các option `--add-exports`, `--add-reads` và `--patch-module` https://openjdk.org/jeps/247[nếu chúng modify system modules].
+Nếu cần sử dụng các option đó, hãy unset `maven.compiler.release`:
 
 [source,xml,indent=0,subs="verbatim,quotes,attributes"]
 ----
@@ -37,10 +37,12 @@ Sau đó configure source và target option:
 ----
 ====
 
-[[using.parent-pom]]
-== Inherit Starter Parent POM
 
-Để configure project inherit từ `spring-boot-starter-parent`, set `parent`:
+
+[[using.parent-pom]]
+== Kế thừa Starter Parent POM
+
+Để configure project kế thừa từ `spring-boot-starter-parent`, hãy set `parent` như sau:
 
 [source,xml,subs="verbatim,quotes,attributes"]
 ----
@@ -52,65 +54,69 @@ Sau đó configure source và target option:
 </parent>
 ----
 
-NOTE: Chỉ cần specify Spring Boot version number trên dependency này.
-Nếu import additional starter, có thể safely omit version number.
+NOTE: Bạn chỉ cần specify Spring Boot version number trên dependency này.
+Nếu import thêm starter, bạn có thể an toàn bỏ version number.
 
-Với setup đó, cũng có thể override individual dependency bằng cách override property trong project.
-Ví dụ để dùng version khác của SLF4J library và Spring Data release train, thêm vào `pom.xml`:
+Với setup đó, bạn cũng có thể override từng dependency bằng cách override một property trong project.
+Ví dụ, để sử dụng version khác của SLF4J library và Spring Data release train, thêm nội dung sau vào `pom.xml`:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$using/different-versions-pom.xml[tags=different-versions]
 ----
 
-Xem section xref:appendix:dependency-versions/properties.adoc[Dependency Versions Properties] trong Spring Boot reference để biết complete list dependency version property.
+Xem section xref:appendix:dependency-versions/properties.adoc[Dependency Versions Properties] trong Spring Boot reference để biết danh sách đầy đủ các dependency version property.
 
-WARNING: Mỗi Spring Boot release được design và test với specific set third-party dependency.
-Override version có thể gây compatibility issue và cần cẩn thận.
+WARNING: Mỗi Spring Boot release được design và test với một tập third-party dependency cụ thể.
+Việc override version có thể gây ra compatibility issue và nên được thực hiện cẩn thận.
+
+
 
 [[using.import]]
-== Dùng Spring Boot không có Parent POM
+== Sử dụng Spring Boot không có Parent POM
 
-Có thể có lý do không inherit từ POM `spring-boot-starter-parent`.
-Bạn có thể có corporate standard parent riêng hoặc muốn explicit declare toàn bộ Maven configuration.
+Có thể có lý do khiến bạn không kế thừa từ POM `spring-boot-starter-parent`.
+Bạn có thể có corporate standard parent riêng cần sử dụng hoặc muốn explicit declare toàn bộ Maven configuration.
 
-Nếu không muốn dùng `spring-boot-starter-parent`, vẫn có thể giữ lợi ích dependency management, nhưng không có plugin management, bằng dependency scope `import`:
+Nếu không muốn sử dụng `spring-boot-starter-parent`, bạn vẫn có thể giữ lợi ích của dependency management (nhưng không có plugin management) bằng một dependency có scope `import`, như sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$using/no-starter-parent-pom.xml[tags=no-starter-parent]
 ----
 
-Setup trên không cho phép override individual dependency bằng property như đã giải thích.
-Để đạt cùng result, cần thêm entry trong section `dependencyManagement` của project **trước** entry `spring-boot-dependencies`.
-Ví dụ để dùng version khác của SLF4J và Spring Data release train, thêm element:
+Cấu hình mẫu trên không cho phép bạn override từng dependency bằng property như đã giải thích ở trên.
+Để đạt được kết quả tương tự, bạn cần thêm các entry vào section `dependencyManagement` của project **trước** entry `spring-boot-dependencies`.
+Ví dụ, để sử dụng version khác của SLF4J library và Spring Data release train, bạn có thể thêm các element sau vào `pom.xml`:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$using/no-starter-parent-override-dependencies-pom.xml[tags=no-starter-parent-override-dependencies]
 ----
 
+
+
 [[using.overriding-command-line]]
 == Override Settings trên Command Line
 
-Plugin cung cấp một số user property bắt đầu bằng `spring-boot` để customize configuration từ command line.
+Plugin cung cấp một số user property bắt đầu bằng `spring-boot` để bạn customize configuration từ command line.
 
-Ví dụ tune profile enable khi chạy application:
+Ví dụ, bạn có thể điều chỉnh các profile được enable khi chạy application như sau:
 
 [source,shell]
 ----
 $ mvn spring-boot:run -Dspring-boot.run.profiles=dev,local
 ----
 
-Nếu muốn vừa có default vừa cho phép override trên command line, nên kết hợp user-provided project property và MOJO configuration.
+Nếu muốn vừa có default vừa cho phép override trên command line, bạn nên kết hợp một project property do user cung cấp với MOJO configuration.
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$using/default-and-override-pom.xml[tags=default-and-override]
 ----
 
-Configuration trên đảm bảo `local` và `dev` enable mặc định.
-Giờ dedicated property đã expose, cũng có thể override trên command line:
+Cấu hình trên đảm bảo `local` và `dev` được enable theo mặc định.
+Giờ đây một dedicated property đã được expose, và property này cũng có thể được override trên command line:
 
 [source,shell]
 ----

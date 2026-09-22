@@ -1,27 +1,29 @@
 [[packaging.container-images.efficient-images]]
-= Efficient Container Images
+= Container Image hiệu quả
 
-Có thể dễ dàng đóng gói Spring Boot uber jar thành Docker image.
-Tuy nhiên copy và chạy nguyên uber jar trong Docker image có nhiều nhược điểm.
-Chạy uber jar mà không unpack luôn có overhead nhất định, dễ nhận thấy trong containerized environment.
-Ngoài ra đặt application code và mọi dependency vào một Docker image layer không tối ưu.
-Vì code thường được recompile thường xuyên hơn việc upgrade Spring Boot, nên tách chúng ra sẽ tốt hơn.
-Nếu jar file nằm ở layer trước application class, Docker thường chỉ cần thay layer dưới cùng và reuse các layer khác từ cache.
+Có thể dễ dàng đóng gói một Spring Boot uber jar thành Docker image.
+Tuy nhiên, việc copy và chạy nguyên trạng uber jar trong Docker image có nhiều nhược điểm.
+Luôn có một overhead nhất định khi chạy uber jar mà không unpack, và điều này có thể dễ nhận thấy trong containerized environment.
+Một vấn đề khác là việc đặt application code và toàn bộ dependencies vào cùng một Docker image layer không tối ưu.
+Vì bạn có thể recompile code thường xuyên hơn upgrade version Spring Boot đang sử dụng, thường nên tách các thành phần này rõ hơn.
+Nếu đặt các jar file trong layer trước application classes, Docker thường chỉ cần thay đổi layer dưới cùng và có thể lấy các layer khác từ cache.
+
+
 
 [[packaging.container-images.efficient-images.layering]]
-== Layering Docker Images
+== Phân lớp Docker Image
 
-Để dễ tạo optimized Docker image, Spring Boot hỗ trợ thêm layer index file vào jar.
-File cung cấp danh sách layer và phần của jar thuộc từng layer.
-Danh sách được order theo thứ tự layer cần thêm vào Docker/OCI image.
-Mặc định hỗ trợ:
+Để dễ tạo các Docker image được optimized, Spring Boot hỗ trợ thêm layer index file vào jar.
+File này cung cấp danh sách các layer và những phần của jar cần được chứa trong từng layer.
+Danh sách các layer trong index được sắp xếp theo thứ tự cần thêm các layer vào Docker/OCI image.
+Mặc định, các layer sau được hỗ trợ:
 
-* `dependencies` (regular released dependency)
-* `spring-boot-loader` (mọi thứ dưới `org/springframework/boot/loader`)
-* `snapshot-dependencies` (snapshot dependency)
-* `application` (application class và resource)
+* `dependencies` (dành cho các dependencies của bản release thông thường)
+* `spring-boot-loader` (dành cho mọi thứ dưới `org/springframework/boot/loader`)
+* `snapshot-dependencies` (dành cho các snapshot dependencies)
+* `application` (dành cho application classes và resources)
 
-Ví dụ `layers.idx`:
+Sau đây là ví dụ về file `layers.idx`:
 
 [source,yaml]
 ----
@@ -38,11 +40,11 @@ Ví dụ `layers.idx`:
   - BOOT-INF/classes/a/b/C.class
 ----
 
-Layering này tách code dựa trên khả năng thay đổi giữa các application build.
-Library code ít thay đổi nên đặt trong layer riêng để tooling reuse từ cache.
-Application code dễ thay đổi hơn nên được isolate trong layer riêng.
+Cách phân lớp này được thiết kế để tách code dựa trên khả năng thay đổi giữa các application build.
+Library code ít có khả năng thay đổi giữa các lần build, vì vậy được đặt trong các layer riêng để tooling có thể reuse các layer từ cache.
+Application code có khả năng thay đổi cao hơn giữa các lần build, nên được cô lập trong một layer riêng.
 
-Spring Boot cũng hỗ trợ layering cho war file với `layers.idx`.
+Spring Boot cũng hỗ trợ phân lớp cho war file thông qua `layers.idx`.
 
-Với Maven, xem xref:maven-plugin:packaging.adoc#packaging.layers[packaging layered jar or war section].
-Với Gradle, xem xref:gradle-plugin:packaging.adoc#packaging-executable.configuring.layered-archives[packaging layered jar or war section].
+Với Maven, xem xref:maven-plugin:packaging.adoc#packaging.layers[phần packaging layered jar hoặc war].
+Với Gradle, xem xref:gradle-plugin:packaging.adoc#packaging-executable.configuring.layered-archives[phần packaging layered jar hoặc war] trong tài liệu Gradle plugin.

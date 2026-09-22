@@ -1,10 +1,10 @@
 [[using.structuring-your-code]]
-= Tổ chức cấu trúc code
+= Tổ chức code
 
 Spring Boot không yêu cầu một cách tổ chức code cụ thể để hoạt động.
-Tuy nhiên, một số best practice có thể hữu ích.
+Tuy nhiên, có một số best practice hữu ích.
 
-TIP: Để áp dụng cấu trúc dựa trên domain, hãy xem https://spring.io/projects/spring-modulith#overview[Spring Modulith].
+TIP: Nếu muốn áp dụng cấu trúc dựa trên domain, hãy xem https://spring.io/projects/spring-modulith#overview[Spring Modulith].
 
 
 
@@ -13,23 +13,23 @@ TIP: Để áp dụng cấu trúc dựa trên domain, hãy xem https://spring.io
 
 Khi một class không có khai báo `package`, nó được coi là nằm trong "`default package`".
 Việc sử dụng "`default package`" thường không được khuyến khích và nên tránh.
-Nó có thể gây vấn đề cụ thể cho ứng dụng Spring Boot sử dụng các annotation javadoc:org.springframework.context.annotation.ComponentScan[format=annotation], javadoc:org.springframework.boot.context.properties.ConfigurationPropertiesScan[format=annotation], javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], vì mọi class trong mọi jar đều được đọc.
+Nó có thể gây ra các vấn đề đặc thù cho ứng dụng Spring Boot sử dụng các annotation javadoc:org.springframework.context.annotation.ComponentScan[format=annotation], javadoc:org.springframework.boot.context.properties.ConfigurationPropertiesScan[format=annotation], javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], vì mọi class từ mọi jar đều được đọc.
 
-TIP: Chúng tôi khuyến nghị tuân theo quy ước đặt tên package được Java khuyến nghị và sử dụng tên miền đảo ngược (ví dụ `com.example.project`).
+TIP: Chúng tôi khuyến nghị tuân theo quy ước đặt tên package được Java khuyến nghị và sử dụng `reversed domain name` (ví dụ `com.example.project`).
 
 
 
 [[using.structuring-your-code.locating-the-main-class]]
-== Vị trí của class ứng dụng chính
+== Xác định main application class
 
-Chúng tôi thường khuyến nghị đặt class ứng dụng chính trong root package, phía trên các class khác.
-Annotation xref:using/using-the-springbootapplication-annotation.adoc[`@SpringBootApplication`] thường được đặt trên class chính và ngầm xác định "`package tìm kiếm`" cơ sở cho một số thành phần.
-Ví dụ, nếu viết ứng dụng JPA, package của class được gắn javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] sẽ được dùng để tìm các thành phần javadoc:jakarta.persistence.Entity[format=annotation].
-Sử dụng root package cũng giúp component scan chỉ áp dụng trong project của bạn.
+Chúng tôi thường khuyến nghị đặt main application class trong root package, phía trên các class khác.
+Annotation xref:using/using-the-springbootapplication-annotation.adoc[`@SpringBootApplication`] thường được đặt trên class chính và ngầm xác định "`package tìm kiếm`" cơ sở cho một số item.
+Ví dụ, nếu viết ứng dụng JPA, package của class được gắn javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] sẽ được dùng để tìm các item javadoc:jakarta.persistence.Entity[format=annotation].
+Sử dụng root package cũng giúp component scan chỉ áp dụng cho project của bạn.
 
-TIP: Nếu không muốn dùng javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], bạn có thể thay bằng các annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] mà nó import, vì chúng xác định hành vi đó.
+TIP: Nếu không muốn dùng javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], các annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] và javadoc:org.springframework.context.annotation.ComponentScan[format=annotation] mà nó import sẽ xác định hành vi này, vì vậy bạn cũng có thể dùng chúng thay thế.
 
-Cấu trúc thông thường có dạng như sau:
+Listing sau đây cho thấy một layout điển hình:
 
 [source]
 ----

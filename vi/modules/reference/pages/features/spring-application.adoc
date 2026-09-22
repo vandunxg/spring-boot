@@ -1,7 +1,7 @@
 [[features.spring-application]]
 = SpringApplication
 
-Class javadoc:org.springframework.boot.SpringApplication[] cung cấp cách thuận tiện để khởi tạo ứng dụng Spring được khởi động từ method `main()`.
+Class javadoc:org.springframework.boot.SpringApplication[] cung cấp cách thuận tiện để khởi động một Spring application từ method `main()`.
 Trong nhiều trường hợp, bạn có thể ủy quyền cho static method javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[], như ví dụ sau:
 
 include-code::MyApplication[]
@@ -48,7 +48,7 @@ Identify and stop the process that is listening on port 8080 or configure this a
 
 NOTE: Spring Boot cung cấp nhiều implementation của javadoc:org.springframework.boot.diagnostics.FailureAnalyzer[], và bạn có thể xref:how-to:application.adoc#howto.application.failure-analyzer[thêm implementation riêng].
 
-Nếu không failure analyzer nào xử lý được exception, bạn vẫn có thể hiển thị toàn bộ báo cáo điều kiện để hiểu rõ vấn đề.
+Nếu không có failure analyzer nào xử lý được exception, bạn vẫn có thể hiển thị toàn bộ báo cáo điều kiện để hiểu rõ vấn đề.
 Để làm vậy, bạn cần xref:features/external-config.adoc[bật property `debug`] hoặc xref:features/logging.adoc#features.logging.log-levels[bật logging mức `DEBUG`] cho javadoc:org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener[].
 
 Ví dụ, nếu chạy ứng dụng bằng `java -jar`, bạn có thể bật property `debug` như sau:
@@ -65,13 +65,13 @@ $ java -jar myproject-0.0.1-SNAPSHOT.jar --debug
 
 javadoc:org.springframework.boot.SpringApplication[] cho phép ứng dụng được khởi tạo theo cơ chế lazy.
 Khi bật lazy initialization, bean được tạo khi cần thay vì trong quá trình khởi động ứng dụng.
-Vì vậy, lazy initialization có thể giảm thời gian khởi động.
+Vì vậy, lazy initialization có thể giảm thời gian ứng dụng khởi động.
 Trong ứng dụng web, bật lazy initialization khiến nhiều bean liên quan đến web chỉ được khởi tạo khi nhận HTTP request.
 
 Một nhược điểm của lazy initialization là có thể làm chậm việc phát hiện vấn đề trong ứng dụng.
 Nếu một bean cấu hình sai được khởi tạo theo cơ chế lazy, lỗi không còn xuất hiện lúc khởi động mà chỉ bộc lộ khi bean được khởi tạo.
 Bạn cũng cần bảo đảm JVM có đủ bộ nhớ cho tất cả bean của ứng dụng, không chỉ những bean được khởi tạo lúc khởi động.
-Vì các lý do này, lazy initialization không được bật mặc định; nên tinh chỉnh heap size của JVM trước khi bật.
+Vì các lý do này, lazy initialization không được bật mặc định; nên tinh chỉnh heap size của JVM trước khi bật cơ chế này.
 
 Có thể bật lazy initialization bằng code thông qua method `lazyInitialization` trên javadoc:org.springframework.boot.builder.SpringApplicationBuilder[] hoặc method `setLazyInitialization` trên javadoc:org.springframework.boot.SpringApplication[].
 Ngoài ra, có thể bật bằng property configprop:spring.main.lazy-initialization[] như ví dụ sau:
@@ -83,7 +83,7 @@ spring:
     lazy-initialization: true
 ----
 
-TIP: Để tắt lazy initialization cho một số bean trong khi vẫn sử dụng cho phần còn lại của ứng dụng, bạn có thể đặt tường minh thuộc tính lazy của chúng thành false bằng annotation `@Lazy(false)`.
+TIP: Để tắt lazy initialization cho một số bean trong khi vẫn sử dụng cho phần còn lại của ứng dụng, bạn có thể chủ động đặt thuộc tính lazy của chúng thành false bằng annotation `@Lazy(false)`.
 
 
 
@@ -93,7 +93,7 @@ TIP: Để tắt lazy initialization cho một số bean trong khi vẫn sử d�
 Bạn có thể thay banner được in khi khởi động bằng cách thêm file `banner.txt` vào classpath hoặc đặt property configprop:spring.banner.location[] tới vị trí của file đó.
 Nếu file sử dụng encoding khác UTF-8, bạn có thể đặt `spring.banner.charset`.
 
-Trong file `banner.txt`, bạn có thể dùng mọi key có trong javadoc:org.springframework.core.env.Environment[] cùng các placeholder sau:
+Trong file `banner.txt`, bạn có thể dùng mọi key khả dụng trong javadoc:org.springframework.core.env.Environment[] cùng các placeholder sau:
 
 .Biến banner
 |===
@@ -104,7 +104,7 @@ Trong file `banner.txt`, bạn có thể dùng mọi key có trong javadoc:org.s
   Ví dụ, `Implementation-Version: 1.0` được in thành `1.0`.
 
 | `${application.formatted-version}`
-| Số phiên bản ứng dụng được khai báo trong `MANIFEST.MF`, định dạng để hiển thị (bao bởi dấu ngoặc và có tiền tố `v`).
+| Số phiên bản ứng dụng được khai báo trong `MANIFEST.MF`, được định dạng để hiển thị (được bao quanh bằng dấu ngoặc và có tiền tố `v`).
   Ví dụ `(v1.0)`.
 
 | `${spring-boot.version}`
@@ -127,7 +127,7 @@ Trong file `banner.txt`, bạn có thể dùng mọi key có trong javadoc:org.s
 TIP: Bạn có thể dùng method `SpringApplication.setBanner(...)` để tạo banner bằng code.
 Hãy sử dụng interface javadoc:org.springframework.boot.Banner[] và triển khai method `printBanner()` riêng.
 
-Bạn cũng có thể dùng property configprop:spring.main.banner-mode[] để quyết định banner được in ra javadoc:java.lang.System#out[] (`console`), gửi tới logger đã cấu hình (`log`) hay không được hiển thị (`off`).
+Bạn cũng có thể dùng property configprop:spring.main.banner-mode[] để quyết định banner được in ra javadoc:java.lang.System#out[] (`console`), gửi tới logger đã cấu hình (`log`) hay không được tạo ra (`off`).
 
 Banner đã in được đăng ký thành singleton bean với tên `springBootBanner`.
 
@@ -151,7 +151,7 @@ Ví dụ, để tắt banner, bạn có thể viết:
 
 include-code::MyApplication[]
 
-NOTE: Các đối số constructor truyền vào javadoc:org.springframework.boot.SpringApplication[] là source cấu hình cho Spring bean.
+NOTE: Các đối số constructor truyền vào javadoc:org.springframework.boot.SpringApplication[] là các source cấu hình cho Spring bean.
 Trong hầu hết trường hợp, chúng là tham chiếu tới các class javadoc:org.springframework.context.annotation.Configuration[format=annotation], nhưng cũng có thể tham chiếu trực tiếp tới class javadoc:org.springframework.stereotype.Component[format=annotation].
 
 Bạn cũng có thể cấu hình javadoc:org.springframework.boot.SpringApplication[] bằng file `application.properties`.
@@ -179,9 +179,9 @@ Xem tài liệu API javadoc:org.springframework.boot.builder.SpringApplicationBu
 [[features.spring-application.application-availability]]
 == Application Availability
 
-Khi được deploy lên các platform, ứng dụng có thể cung cấp thông tin về availability cho platform thông qua hạ tầng như https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes Probe].
+Khi được deploy lên các platform, ứng dụng có thể cung cấp thông tin về availability cho platform thông qua hạ tầng như https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes Probes].
 Spring Boot hỗ trợ sẵn các trạng thái availability phổ biến "`liveness`" và "`readiness`".
-Nếu sử dụng hỗ trợ "`actuator`" của Spring Boot, các trạng thái này được cung cấp dưới dạng health endpoint group.
+Nếu sử dụng hỗ trợ "`actuator`" của Spring Boot, các trạng thái này được cung cấp dưới dạng health endpoint groups.
 
 Ngoài ra, bạn cũng có thể lấy trạng thái availability bằng cách inject interface javadoc:org.springframework.boot.availability.ApplicationAvailability[] vào bean của mình.
 
@@ -193,7 +193,7 @@ Ngoài ra, bạn cũng có thể lấy trạng thái availability bằng cách i
 Trạng thái "`Liveness`" cho biết trạng thái nội bộ của ứng dụng có cho phép nó hoạt động đúng hoặc tự phục hồi khi đang gặp lỗi hay không.
 Trạng thái "`Liveness`" bị lỗi nghĩa là ứng dụng không thể tự phục hồi và hạ tầng nên restart ứng dụng.
 
-NOTE: Nhìn chung, trạng thái "Liveness" không nên dựa trên việc kiểm tra hệ thống bên ngoài, chẳng hạn xref:actuator/endpoints.adoc#actuator.endpoints.health[health check].
+NOTE: Nhìn chung, trạng thái "Liveness" không nên dựa trên các external check, chẳng hạn xref:actuator/endpoints.adoc#actuator.endpoints.health[health check].
 Nếu làm vậy, một hệ thống bên ngoài bị lỗi (database, Web API, cache bên ngoài) sẽ gây restart hàng loạt và lỗi dây chuyền trên toàn platform.
 
 Trạng thái nội bộ của ứng dụng Spring Boot chủ yếu được thể hiện qua Spring javadoc:org.springframework.context.ApplicationContext[].
@@ -209,7 +209,7 @@ Trạng thái "`Readiness`" cho biết ứng dụng đã sẵn sàng xử lý tr
 Trạng thái "`Readiness`" bị lỗi cho platform biết hiện tại không nên chuyển traffic tới ứng dụng.
 Điều này thường xảy ra khi khởi động, trong lúc các component javadoc:org.springframework.boot.CommandLineRunner[] và javadoc:org.springframework.boot.ApplicationRunner[] đang được xử lý, hoặc bất kỳ lúc nào ứng dụng quyết định nó quá bận để nhận thêm traffic.
 
-Ứng dụng được coi là ready ngay khi application runner và command-line runner đã được gọi; xem xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[lifecycle ứng dụng Spring Boot và các Application Event liên quan].
+Ứng dụng được coi là ready ngay khi các application runner và command-line runner đã được gọi; xem xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[lifecycle ứng dụng Spring Boot và các Application Event liên quan].
 
 TIP: Các task cần chạy khi khởi động nên được thực thi bởi component javadoc:org.springframework.boot.CommandLineRunner[] và javadoc:org.springframework.boot.ApplicationRunner[], thay vì sử dụng lifecycle callback của Spring component như javadoc:jakarta.annotation.PostConstruct[format=annotation].
 
@@ -219,7 +219,7 @@ TIP: Các task cần chạy khi khởi động nên được thực thi bởi co
 === Quản lý trạng thái availability của ứng dụng
 
 Các component có thể lấy trạng thái availability hiện tại bất kỳ lúc nào bằng cách inject interface javadoc:org.springframework.boot.availability.ApplicationAvailability[] và gọi method của nó.
-Thông thường hơn, ứng dụng sẽ muốn lắng nghe cập nhật trạng thái hoặc cập nhật trạng thái của chính mình.
+Thông thường, ứng dụng sẽ muốn lắng nghe các cập nhật trạng thái hoặc cập nhật trạng thái của chính ứng dụng.
 
 Ví dụ, chúng ta có thể xuất trạng thái "Readiness" của ứng dụng ra file để Kubernetes "exec Probe" kiểm tra file đó:
 
@@ -229,15 +229,15 @@ Chúng ta cũng có thể cập nhật trạng thái ứng dụng khi ứng dụ
 
 include-code::MyLocalCacheVerifier[]
 
-Spring Boot cung cấp xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes[Kubernetes HTTP probe cho "Liveness" và "Readiness" thông qua Actuator Health Endpoint].
+Spring Boot cung cấp xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes[Kubernetes HTTP probes cho "Liveness" và "Readiness" thông qua Actuator Health Endpoints].
 Bạn có thể tìm thêm hướng dẫn về xref:how-to:deployment/cloud.adoc#howto.deployment.cloud.kubernetes[deploy ứng dụng Spring Boot trên Kubernetes trong phần riêng].
 
 
 
 [[features.spring-application.application-events-and-listeners]]
-== Application Event và Listener
+== Application Events và Listeners
 
-Ngoài các event thông thường của Spring Framework như javadoc:org.springframework.context.event.ContextRefreshedEvent[], javadoc:org.springframework.boot.SpringApplication[] còn gửi một số application event bổ sung.
+Ngoài các event thông thường của Spring Framework như javadoc:org.springframework.context.event.ContextRefreshedEvent[], javadoc:org.springframework.boot.SpringApplication[] còn gửi một số application events bổ sung.
 
 [NOTE]
 ====
@@ -255,7 +255,7 @@ org.springframework.context.ApplicationListener=com.example.project.MyListener
 
 Khi ứng dụng chạy, các application event được gửi theo thứ tự sau:
 
-. javadoc:org.springframework.boot.context.event.ApplicationStartingEvent[] được gửi khi bắt đầu chạy nhưng trước mọi bước xử lý, ngoại trừ đăng ký listener và initializer.
+. Một javadoc:org.springframework.boot.context.event.ApplicationStartingEvent[] được gửi khi bắt đầu chạy nhưng trước mọi bước xử lý, ngoại trừ đăng ký listener và initializer.
 . javadoc:org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent[] được gửi khi javadoc:org.springframework.core.env.Environment[] sẽ dùng trong context đã được xác định, nhưng trước khi context được tạo.
 . javadoc:org.springframework.boot.context.event.ApplicationContextInitializedEvent[] được gửi khi javadoc:org.springframework.context.ApplicationContext[] đã được chuẩn bị và các ApplicationContextInitializer đã được gọi, nhưng trước khi bất kỳ bean definition nào được load.
 . javadoc:org.springframework.boot.context.event.ApplicationPreparedEvent[] được gửi ngay trước khi bắt đầu refresh, nhưng sau khi các bean definition đã được load.
@@ -282,7 +282,7 @@ Application event được gửi qua cơ chế publish event của Spring Framew
 Một phần của cơ chế này bảo đảm event được publish tới listener trong child context cũng được publish tới listener ở mọi ancestor context.
 Do đó, nếu ứng dụng sử dụng hệ phân cấp các instance javadoc:org.springframework.boot.SpringApplication[], một listener có thể nhận nhiều instance của cùng loại application event.
 
-Để listener phân biệt event dành cho context của nó với event dành cho descendant context, hãy inject application context vào listener rồi so sánh context được inject với context của event.
+Để listener phân biệt event dành cho context của nó với event dành cho descendant context, listener nên yêu cầu application context của nó được inject, rồi so sánh context được inject với context của event.
 Context có thể được inject bằng cách triển khai javadoc:org.springframework.context.ApplicationContextAware[] hoặc, nếu listener là bean, sử dụng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation].
 
 
@@ -310,7 +310,7 @@ TIP: Khi dùng javadoc:org.springframework.boot.SpringApplication[] trong JUnit 
 == Truy cập đối số ứng dụng
 
 Để truy cập các đối số ứng dụng đã truyền vào `SpringApplication.run(...)`, bạn có thể inject bean javadoc:org.springframework.boot.ApplicationArguments[].
-Interface javadoc:org.springframework.boot.ApplicationArguments[] cho phép truy cập cả đối số `String[]` thô lẫn các đối số `option` và `non-option` đã được phân tích, như ví dụ sau:
+Interface javadoc:org.springframework.boot.ApplicationArguments[] cho phép truy cập cả đối số `String[]` thô lẫn các đối số `option` và `non-option` đã được parse, như ví dụ sau:
 
 include-code::MyBean[]
 
@@ -325,7 +325,7 @@ Nhờ vậy, bạn có thể inject riêng từng đối số ứng dụng bằn
 Để chạy code cụ thể sau khi javadoc:org.springframework.boot.SpringApplication[] đã khởi động, bạn có thể triển khai interface javadoc:org.springframework.boot.ApplicationRunner[] hoặc javadoc:org.springframework.boot.CommandLineRunner[].
 Hai interface hoạt động giống nhau và cung cấp một method `run` duy nhất, được gọi ngay trước khi `SpringApplication.run(...)` hoàn tất.
 
-NOTE: Cơ chế này phù hợp với task cần chạy sau khi ứng dụng khởi động nhưng trước khi bắt đầu nhận traffic.
+NOTE: Contract này phù hợp với task cần chạy sau khi ứng dụng khởi động nhưng trước khi bắt đầu nhận traffic.
 
 
 Interface javadoc:org.springframework.boot.CommandLineRunner[] cho phép truy cập đối số ứng dụng dưới dạng mảng string, còn javadoc:org.springframework.boot.ApplicationRunner[] sử dụng interface javadoc:org.springframework.boot.ApplicationArguments[] đã trình bày trước đó.
@@ -362,7 +362,7 @@ Nếu có nhiều javadoc:org.springframework.boot.ExitCodeGenerator[], exit cod
 Bạn có thể bật các tính năng quản trị cho ứng dụng bằng property configprop:spring.application.admin.enabled[].
 Thao tác này công bố javadoc:org.springframework.boot.admin.SpringApplicationAdminMXBean[] trên platform javadoc:javax.management.MBeanServer[].
 Bạn có thể sử dụng tính năng này để quản trị ứng dụng Spring Boot từ xa.
-Tính năng này cũng có thể hữu ích cho các implementation service wrapper.
+Tính năng này cũng có thể hữu ích cho bất kỳ implementation nào của service wrapper.
 
 TIP: Để biết ứng dụng đang chạy trên HTTP port nào, lấy property có key `local.server.port`.
 
@@ -371,8 +371,8 @@ TIP: Để biết ứng dụng đang chạy trên HTTP port nào, lấy property
 [[features.spring-application.startup-tracking]]
 == Theo dõi quá trình khởi động ứng dụng
 
-Trong quá trình khởi động, javadoc:org.springframework.boot.SpringApplication[] và javadoc:org.springframework.context.ApplicationContext[] thực hiện nhiều task liên quan đến lifecycle ứng dụng,
-lifecycle bean và cả xử lý application event.
+Trong quá trình khởi động, javadoc:org.springframework.boot.SpringApplication[] và javadoc:org.springframework.context.ApplicationContext[] thực hiện nhiều task liên quan đến lifecycle của ứng dụng,
+lifecycle của bean và cả việc xử lý application event.
 Với javadoc:org.springframework.core.metrics.ApplicationStartup[], Spring Framework {url-spring-framework-docs}/core/beans/context-introduction.html#context-functionality-startup[cho phép theo dõi trình tự khởi động ứng dụng bằng các object javadoc:org.springframework.core.metrics.StartupStep[]].
 Dữ liệu này có thể được thu thập để profiling hoặc đơn giản là hiểu rõ hơn quá trình khởi động ứng dụng.
 
@@ -393,27 +393,27 @@ $ java -XX:StartFlightRecording:filename=recording.jfr,duration=10s -jar demo.ja
 Spring Boot cung cấp biến thể javadoc:org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup[]; implementation này lưu đệm các startup step rồi chuyển chúng sang hệ thống metrics bên ngoài.
 Ứng dụng có thể yêu cầu bean kiểu javadoc:org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup[] trong bất kỳ component nào.
 
-Spring Boot cũng có thể được cấu hình để cung cấp xref:api:rest/actuator/startup.adoc[endpoint `startup`], trả thông tin này dưới dạng JSON document.
+Spring Boot cũng có thể được cấu hình để cung cấp xref:api:rest/actuator/startup.adoc[endpoint `startup`], cung cấp thông tin này dưới dạng JSON document.
 
 
 
 [[features.spring-application.virtual-threads]]
-== Virtual thread
+== Virtual threads
 
-Virtual thread yêu cầu Java 21 trở lên.
+Virtual threads yêu cầu Java 21 trở lên.
 Để có trải nghiệm tốt nhất, rất nên sử dụng Java 24 trở lên.
 Để bật virtual thread, đặt property configprop:spring.threads.virtual.enabled[] thành `true`.
 
-Trước khi bật tùy chọn này cho ứng dụng, bạn nên cân nhắc https://docs.oracle.com/en/java/javase/24/core/virtual-threads.html[đọc tài liệu Java chính thức về virtual thread].
+Trước khi bật tùy chọn này cho ứng dụng, bạn nên cân nhắc https://docs.oracle.com/en/java/javase/24/core/virtual-threads.html[đọc tài liệu Java chính thức về virtual threads].
 Trong một số trường hợp, throughput của ứng dụng có thể giảm do "Pinned Virtual Threads"; trang này cũng giải thích cách phát hiện bằng JDK Flight Recorder hoặc CLI `jcmd`.
 
 NOTE: Nếu bật virtual thread, các property cấu hình thread pool không còn tác dụng.
 Lý do là virtual thread được lập lịch trên platform thread pool dùng chung toàn JVM, không phải các thread pool riêng.
 
-WARNING: Một đặc điểm kéo theo của virtual thread là chúng là daemon thread.
-JVM sẽ thoát nếu mọi thread của nó đều là daemon thread.
+WARNING: Một đặc điểm kéo theo của virtual threads là chúng là daemon threads.
+JVM sẽ thoát nếu mọi thread của nó đều là daemon threads.
 Điều này có thể gây vấn đề, ví dụ khi bạn dựa vào bean javadoc:org.springframework.scheduling.annotation.Scheduled[format=annotation] để duy trì ứng dụng.
 Nếu sử dụng virtual thread, scheduler thread là virtual thread, do đó cũng là daemon thread và không giữ JVM tiếp tục chạy.
-Điều này không chỉ ảnh hưởng scheduling mà còn có thể xảy ra với công nghệ khác.
+Điều này không chỉ ảnh hưởng scheduling mà còn có thể xảy ra với các công nghệ khác.
 Để giữ JVM chạy trong mọi trường hợp, nên đặt property configprop:spring.main.keep-alive[] thành `true`.
 Nhờ đó, JVM tiếp tục chạy ngay cả khi mọi thread đều là virtual thread.

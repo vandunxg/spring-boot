@@ -35,9 +35,9 @@ Bạn có thể kiểm soát hành vi này bằng system property `spring.devtoo
 Không được làm điều này trên môi trường production, nơi việc chạy devtools gây rủi ro bảo mật.
 Để vô hiệu hóa devtools, loại bỏ dependency hoặc đặt system property `-Dspring.devtools.restart.enabled=false`.
 
-TIP: Đánh dấu dependency là optional trong Maven hoặc dùng cấu hình `developmentOnly` trong Gradle (như trên) giúp tránh việc devtools được áp dụng bắc cầu sang các module sử dụng project của bạn.
+TIP: Đánh dấu dependency là optional trong Maven hoặc dùng cấu hình `developmentOnly` trong Gradle (như trên) giúp tránh việc devtools được áp dụng transitively cho các module sử dụng project của bạn.
 
-TIP: Theo mặc định, archive được đóng gói lại không chứa devtools.
+TIP: Theo mặc định, repackaged archive không chứa devtools.
 Để dùng xref:using/devtools.adoc#using.devtools.remote-applications[một số tính năng devtools từ xa], bạn cần đưa nó vào archive.
 Khi dùng Maven plugin, cho phép các optional dependency bằng cách đặt property `includeOptional` thành `true`.
 Bạn cũng cần đặt property `excludeDevtools` thành `false`.
@@ -70,7 +70,7 @@ Vì vậy, spring-boot-devtools mặc định vô hiệu hóa các tùy chọn c
 Tùy chọn cache thường được cấu hình trong file `application.properties`.
 Ví dụ, Thymeleaf cung cấp property configprop:spring.thymeleaf.cache[].
 
-Tương tự, xác suất tracing được đặt thành 100%, vì giá trị mặc định có thể không ghi lại mọi trace dùng để kiểm thử.
+Điều tương tự cũng áp dụng cho tracing probability, được đặt mặc định ở mức 100%, vì giá trị mặc định có thể không log mọi trace dùng để test.
 
 Thay vì phải tự đặt các property này, module `spring-boot-devtools` tự động áp dụng cấu hình phù hợp cho quá trình phát triển.
 
@@ -90,7 +90,7 @@ Vì cần thêm thông tin về web request khi phát triển ứng dụng Sprin
 == Tự động restart
 
 Ứng dụng sử dụng `spring-boot-devtools` tự động restart khi file trên classpath thay đổi.
-Tính năng này hữu ích khi làm việc trong IDE vì tạo vòng phản hồi rất nhanh cho các thay đổi code.
+Tính năng này hữu ích khi làm việc trong IDE vì tạo feedback loop rất nhanh cho các thay đổi code.
 Theo mặc định, mọi entry trên classpath trỏ tới thư mục đều được theo dõi thay đổi.
 Lưu ý rằng một số resource, như static asset và view template, xref:using/devtools.adoc#using.devtools.restart.excluding-resources[không cần restart ứng dụng].
 
@@ -179,7 +179,7 @@ TIP: Để giữ các giá trị mặc định và _thêm_ loại trừ, hãy d�
 
 Bạn có thể muốn ứng dụng restart hoặc reload khi thay đổi các file không nằm trên classpath.
 Để làm vậy, dùng property configprop:spring.devtools.restart.additional-paths[] để cấu hình thêm đường dẫn cần theo dõi.
-Bạn có thể dùng property configprop:spring.devtools.restart.exclude[] xref:using/devtools.adoc#using.devtools.restart.excluding-resources[đã mô tả trước đó] để quyết định thay đổi dưới các đường dẫn bổ sung sẽ kích hoạt restart toàn bộ hay xref:using/devtools.adoc#using.devtools.livereload[live reload].
+Bạn có thể dùng property configprop:spring.devtools.restart.exclude[] xref:using/devtools.adoc#using.devtools.restart.excluding-resources[đã mô tả trước đó] để quyết định thay đổi trong các đường dẫn bổ sung sẽ kích hoạt restart toàn bộ hay xref:using/devtools.adoc#using.devtools.livereload[live reload].
 
 
 
@@ -189,7 +189,7 @@ Bạn có thể dùng property configprop:spring.devtools.restart.exclude[] xref
 Nếu không muốn dùng tính năng restart, bạn có thể vô hiệu hóa nó bằng property configprop:spring.devtools.restart.enabled[].
 Trong hầu hết trường hợp, bạn có thể đặt property này trong `application.properties` (cách này vẫn khởi tạo restart classloader nhưng không theo dõi thay đổi file).
 
-Nếu cần vô hiệu hóa _hoàn toàn_ hỗ trợ restart (ví dụ vì không tương thích với một thư viện cụ thể), bạn cần đặt system property javadoc:java.lang.System[] configprop:spring.devtools.restart.enabled[] thành `false` trước khi gọi `SpringApplication.run(...)`, như ví dụ sau:
+Nếu cần vô hiệu hóa _hoàn toàn_ hỗ trợ restart (ví dụ vì không tương thích với một thư viện cụ thể), bạn cần đặt configprop:spring.devtools.restart.enabled[] của javadoc:java.lang.System[] thành `false` trước khi gọi `SpringApplication.run(...)`, như ví dụ sau:
 
 include-code::MyApplication[]
 
@@ -326,10 +326,10 @@ NOTE: Nếu không tìm thấy file cấu hình devtools trong `$HOME/.config/sp
 
 [NOTE]
 ====
-Profile không được hỗ trợ trong file properties/yaml của devtools.
+Profile không được hỗ trợ trong các file properties/yaml của devtools.
 
 Mọi profile được kích hoạt trong `.spring-boot-devtools.properties` không ảnh hưởng việc load xref:features/external-config.adoc#features.external-config.files.profile-specific[file cấu hình riêng theo profile].
-Tên file theo profile (dạng `spring-boot-devtools-<profile>.properties`) và document `spring.config.activate.on-profile` trong cả file YAML lẫn Properties đều không được hỗ trợ.
+Tên file theo profile (dạng `spring-boot-devtools-<profile>.properties`) và document cấu hình `spring.config.activate.on-profile` trong cả file YAML lẫn Properties đều không được hỗ trợ.
 ====
 
 
@@ -338,7 +338,7 @@ Tên file theo profile (dạng `spring-boot-devtools-<profile>.properties`) và 
 === Cấu hình File System Watcher
 
 javadoc:org.springframework.boot.devtools.filewatch.FileSystemWatcher[] hoạt động bằng cách định kỳ kiểm tra thay đổi class, rồi chờ một quiet period định trước để bảo đảm không còn thay đổi.
-Vì Spring Boot hoàn toàn dựa vào IDE để biên dịch và sao chép file tới vị trí có thể đọc, đôi khi một số thay đổi có thể chưa được phản ánh khi devtools restart ứng dụng.
+Vì Spring Boot hoàn toàn dựa vào IDE để biên dịch và sao chép file tới vị trí mà Spring Boot có thể đọc, đôi khi một số thay đổi có thể chưa được phản ánh khi devtools restart ứng dụng.
 Nếu thường xuyên gặp vấn đề này, thử tăng các tham số `spring.devtools.restart.poll-interval` và `spring.devtools.restart.quiet-period` tới giá trị phù hợp với môi trường phát triển:
 
 [configprops,yaml]
@@ -406,7 +406,7 @@ Ví dụ, nếu dùng Eclipse hoặc Spring Tools và có project `my-app` đã 
 
 * Chọn `Run Configurations...` từ menu `Run`.
 * Tạo "`launch configuration`" `Java Application` mới.
-* Chọn project `my-app`.
+* Duyệt đến project `my-app`.
 * Dùng javadoc:org.springframework.boot.devtools.RemoteSpringApplication[] làm main class.
 * Thêm `+++https://myapp.cfapps.io+++` vào `Program arguments` (hoặc URL từ xa của bạn).
 
@@ -417,10 +417,10 @@ Remote client đang chạy có thể giống như sau:
 include::ROOT:example$remote-spring-application.txt[]
 ----
 
-NOTE: Vì remote client dùng cùng classpath với ứng dụng thực tế, nó có thể đọc trực tiếp application property.
+NOTE: Vì remote client dùng cùng classpath với ứng dụng thực tế, nó có thể đọc trực tiếp các application properties.
 Đây là cách property configprop:spring.devtools.remote.secret[] được đọc và truyền tới server để xác thực.
 
-TIP: Luôn nên dùng `https://` làm giao thức kết nối để mã hóa lưu lượng và tránh bị chặn bắt password.
+TIP: Luôn nên dùng `https://` làm giao thức kết nối để traffic được mã hóa và password không thể bị intercept.
 
 TIP: Nếu cần dùng proxy để truy cập ứng dụng từ xa, hãy cấu hình các property `spring.devtools.remote.proxy.host` và `spring.devtools.remote.proxy.port`.
 

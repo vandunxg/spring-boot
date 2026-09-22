@@ -1,9 +1,9 @@
 [[testing.spring-boot-applications]]
-= Testing Spring Boot Applications
+= Test Spring Boot Application
 
-Spring Boot application là Spring javadoc:org.springframework.context.ApplicationContext[], vì vậy ngoài những gì thường làm với vanilla Spring context thì không cần gì quá đặc biệt để test.
+Spring Boot application là một Spring javadoc:org.springframework.context.ApplicationContext[], vì vậy ngoài những gì thường làm với vanilla Spring context thì không cần gì quá đặc biệt để test.
 
-NOTE: External property, logging và các feature khác của Spring Boot mặc định chỉ được install vào context nếu dùng javadoc:org.springframework.boot.SpringApplication[] để tạo context.
+NOTE: External properties, logging và các feature khác của Spring Boot mặc định chỉ được install vào context nếu dùng javadoc:org.springframework.boot.SpringApplication[] để tạo context.
 
 Spring Boot cung cấp annotation javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], có thể dùng thay standard `spring-test` javadoc:org.springframework.test.context.ContextConfiguration[format=annotation] khi cần Spring Boot feature.
 Annotation hoạt động bằng cách xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[tạo javadoc:org.springframework.context.ApplicationContext[] dùng trong test thông qua javadoc:org.springframework.boot.SpringApplication[]].
@@ -13,7 +13,7 @@ TIP: Nếu dùng JUnit 4, đừng quên thêm `@RunWith(SpringRunner.class)` và
 Nếu dùng JUnit 6, không cần thêm `@ExtendWith(SpringExtension.class)` vì javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] và các annotation `@...Test` khác đã annotate sẵn.
 
 Mặc định javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] không start server.
-Có thể dùng attribute `webEnvironment` để điều chỉnh cách test chạy:
+Có thể dùng attribute `webEnvironment` của javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] để điều chỉnh thêm cách test chạy:
 
 * `MOCK` (default): Load web javadoc:org.springframework.context.ApplicationContext[] và cung cấp mock web environment.
   Embedded server không start.
@@ -75,19 +75,18 @@ Do đó miễn là test share cùng configuration, bất kể được discover 
 Thông thường test configuration do javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] discover chính là main javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation].
 Trong phần lớn application structure tốt, configuration class này cũng chứa `main` method launch application.
 
-Pattern phổ biến:
+Ví dụ sau là một code pattern rất phổ biến cho một Spring Boot application điển hình:
 
 include-code::typical/MyApplication[]
 
-Trong ví dụ trên, `main` method chỉ delegate tới javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[]. Tuy nhiên `main` có thể phức tạp hơn và apply customization trước khi gọi `run`.
-
-Tuy nhiên, `main` method có thể phức tạp hơn và áp dụng customization trước khi gọi javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[].
+Trong ví dụ trên, `main` method không làm gì ngoài việc delegate tới javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[].
+Tuy nhiên, có thể có một `main` method phức tạp hơn, áp dụng customization trước khi gọi javadoc:org.springframework.boot.SpringApplication#run(java.lang.Class,java.lang.String...)[].
 
 Ví dụ, đây là một application đổi banner mode và set thêm profile:
 
 include-code::custom/MyApplication[]
 
-Vì customization trong `main` có thể ảnh hưởng javadoc:org.springframework.context.ApplicationContext[], bạn có thể muốn dùng `main` để tạo context dùng trong test.
+Vì customization trong `main` có thể ảnh hưởng javadoc:org.springframework.context.ApplicationContext[], bạn có thể muốn dùng `main` để tạo javadoc:org.springframework.context.ApplicationContext[] dùng trong test.
 Mặc định javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] không gọi `main`; class được dùng trực tiếp để tạo javadoc:org.springframework.context.ApplicationContext[].
 
 Để đổi behavior, thay attribute `useMainMethod` của javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] thành javadoc:org.springframework.boot.test.context.SpringBootTest$UseMainMethod#ALWAYS[] hoặc javadoc:org.springframework.boot.test.context.SpringBootTest$UseMainMethod#WHEN_AVAILABLE[].
@@ -95,7 +94,7 @@ Với `ALWAYS`, test fail nếu không tìm thấy `main`.
 Với `WHEN_AVAILABLE`, `main` được dùng nếu có, nếu không dùng standard loading mechanism.
 
 Ví dụ test sau invoke `main` của `MyApplication` để tạo javadoc:org.springframework.context.ApplicationContext[].
-Nếu main method set additional profile, các profile đó active khi context start.
+Nếu main method set additional profile, các profile đó active khi javadoc:org.springframework.context.ApplicationContext[] start.
 
 include-code::always/MyApplicationTests[]
 
@@ -106,7 +105,7 @@ Nếu application dùng component scanning, ví dụ javadoc:org.springframework
 
 Như xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[đã thấy], javadoc:org.springframework.boot.test.context.TestConfiguration[format=annotation] có thể dùng trên inner class của test để customize primary configuration.
 javadoc:org.springframework.boot.test.context.TestConfiguration[format=annotation] cũng có thể dùng trên top-level class; điều đó cho biết class không nên được scan.
-Sau đó import class explicit khi cần:
+Sau đó có thể import class một cách explicit ở nơi cần, như trong ví dụ sau:
 
 include-code::MyTests[]
 
@@ -119,7 +118,7 @@ Thông thường khác biệt ordering không có effect đáng kể nhưng cầ
 [[testing.spring-boot-applications.using-application-arguments]]
 == Sử dụng Application Arguments
 
-Nếu application mong đợi xref:features/spring-application.adoc#features.spring-application.application-arguments[argument], có thể để javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] inject bằng attribute `args`.
+Nếu application mong đợi xref:features/spring-application.adoc#features.spring-application.application-arguments[arguments], có thể để javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] inject chúng bằng attribute `args`.
 
 include-code::MyApplicationArgumentTests[]
 
@@ -136,7 +135,7 @@ Các integration available:
 * {url-spring-framework-docs}/testing/resttestclient.html[`RestTestClient`] nơi javadoc:org.springframework.test.web.servlet.MockMvc[] được plug làm server xử lý request.
 * {url-spring-framework-docs}/testing/webtestclient.html[`WebTestClient`] nơi javadoc:org.springframework.test.web.servlet.MockMvc[] được plug làm server xử lý request.
 
-Ví dụ:
+Ví dụ sau minh họa các integration hiện có:
 
 include-code::MyMockMvcTests[]
 
@@ -159,7 +158,7 @@ Nếu cần test concern lower-level này, start fully running server như phầ
 [[testing.spring-boot-applications.with-running-server]]
 == Test với Running Server
 
-Nếu cần start full server, khuyến nghị dùng random port.
+Nếu cần start full running server, khuyến nghị dùng random port.
 Với `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)`, available port được chọn ngẫu nhiên mỗi lần test chạy.
 
 Annotation javadoc:org.springframework.boot.test.web.server.LocalServerPort[format=annotation] dùng để xref:how-to:webserver.adoc#howto.webserver.discover-port[inject actual port] vào test.
@@ -176,7 +175,7 @@ include-code::MyRandomPortRestTestClientAssertJTests[]
 
 Nếu `spring-webflux` có trên classpath, cũng có thể autowire {url-spring-framework-docs}/testing/webtestclient.html[`WebTestClient`] bằng annotation javadoc:org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient[format=annotation].
 
-WebTestClient có API tương tự:
+`WebTestClient` có API tương tự:
 
 include-code::MyRandomPortWebTestClientTests[]
 
@@ -200,7 +199,7 @@ Các bean này được gọi với javadoc:org.springframework.test.web.reactiv
 == Sử dụng JMX
 
 Vì test context framework cache context, JMX mặc định disable để tránh component giống nhau register trên cùng domain.
-Nếu test cần access javadoc:javax.management.MBeanServer[], cân nhắc mark context dirty:
+Nếu test cần access javadoc:javax.management.MBeanServer[], cân nhắc đánh dấu context là dirty:
 
 include-code::MyJmxTests[]
 
@@ -217,7 +216,7 @@ Bất kể classpath, meter registry ngoài in-memory backed registry không đ�
 Nếu cần export metric tới backend khác trong integration test, annotate bằng javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation].
 
 Nếu annotate xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[sliced test] bằng javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation], nó auto-configure in-memory javadoc:io.micrometer.core.instrument.MeterRegistry[].
-Data exporting trong sliced test không được hỗ trợ bởi annotation này.
+Data exporting trong sliced test không được hỗ trợ với javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation] annotation.
 
 Meter registry mặc định không được thêm vào xref:actuator/metrics.adoc#actuator.metrics.getting-started[global registry] trong test.
 Nếu cần global registry, annotate javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation] với `useGlobalRegistry = true`, hoặc set configprop:management.metrics.use-global-registry[] thành `true`.
@@ -232,7 +231,7 @@ Nếu cần component đó trong integration test, annotate test bằng javadoc:
 Nếu đã tạo reporting component riêng, ví dụ custom javadoc:io.opentelemetry.sdk.trace.export.SpanExporter[] hoặc `brave.handler.SpanHandler`, và không muốn chúng active trong test, dùng javadoc:org.springframework.boot.micrometer.tracing.autoconfigure.ConditionalOnEnabledTracingExport[format=annotation] để disable.
 
 Nếu annotate xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-tests[sliced test] bằng javadoc:org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing[format=annotation], nó auto-configure no-op javadoc:io.micrometer.tracing.Tracer[].
-Data exporting trong sliced test không được hỗ trợ bằng annotation này.
+Data exporting trong sliced test không được hỗ trợ với javadoc:org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing[format=annotation] annotation.
 
 [[testing.spring-boot-applications.mocking-beans]]
 == Mocking và Spying Beans
@@ -252,18 +251,18 @@ Auto-configuration system của Spring Boot phù hợp cho application nhưng đ
 Thường hữu ích khi chỉ load phần configuration cần để test một "`slice`".
 Ví dụ có thể muốn test Spring MVC controller map URL đúng mà không gọi database, hoặc test JPA entity mà không quan tâm web layer.
 
-Khi kết hợp với `spring-boot-test-autoconfigure`, xref:reference:testing/test-modules.adoc[test module] của Spring Boot cung cấp nhiều annotation để auto-configure các "`slice`".
+Khi kết hợp với `spring-boot-test-autoconfigure`, xref:reference:testing/test-modules.adoc[test modules] của Spring Boot cung cấp nhiều annotation để auto-configure các "`slices`".
 Mỗi annotation hoạt động tương tự: cung cấp `@...Test` load javadoc:org.springframework.context.ApplicationContext[] và một hoặc nhiều `@AutoConfigure...` customize auto-configuration setting.
 
 NOTE: Mỗi slice giới hạn component scan vào component phù hợp và load rất ít auto-configuration class.
 Nếu cần exclude một class, phần lớn `@...Test` có attribute `excludeAutoConfiguration`.
 Ngoài ra dùng `@ImportAutoConfiguration#exclude`.
 
-NOTE: Không hỗ trợ include nhiều "`slice`" bằng nhiều `@...Test` trên cùng test.
-Nếu cần nhiều slice, chọn một `@...Test` rồi thêm thủ công `@AutoConfigure...` từ slice khác.
+NOTE: Không hỗ trợ include nhiều "`slices`" bằng nhiều `@...Test` trên cùng test.
+Nếu cần nhiều "`slices`", chọn một `@...Test` rồi thêm thủ công các annotation `@AutoConfigure...` của "`slices`" khác.
 
 TIP: Cũng có thể dùng `@AutoConfigure...` cùng standard javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
-Dùng combination này nếu không cần slicing application nhưng muốn một số auto-configured test bean.
+Dùng combination này nếu không quan tâm đến "`slicing`" application nhưng muốn một số auto-configured test bean.
 
 [[testing.spring-boot-applications.json-tests]]
 == Auto-configured JSON Tests
@@ -281,7 +280,7 @@ TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot
 Nếu cần configure element của auto-configuration, dùng annotation javadoc:org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters[format=annotation].
 
 Spring Boot có AssertJ-based helper dùng JSONAssert và JsonPath để kiểm tra JSON.
-javadoc:org.springframework.boot.test.json.JacksonTester[], javadoc:org.springframework.boot.test.json.GsonTester[], javadoc:org.springframework.boot.test.json.JsonbTester[] và javadoc:org.springframework.boot.test.json.BasicJsonTester[] dùng lần lượt cho Jackson, Gson, Jsonb và String.
+javadoc:org.springframework.boot.test.json.JacksonTester[], javadoc:org.springframework.boot.test.json.GsonTester[], javadoc:org.springframework.boot.test.json.JsonbTester[] và javadoc:org.springframework.boot.test.json.BasicJsonTester[] dùng lần lượt cho Jackson, Gson, Jsonb và Strings.
 Helper field trong test class có thể javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation] khi dùng javadoc:org.springframework.boot.test.autoconfigure.json.JsonTest[format=annotation].
 Ví dụ test class cho Jackson:
 
@@ -317,7 +316,7 @@ Nếu AssertJ available, support AssertJ của javadoc:org.springframework.test.
 include-code::MyControllerTests[]
 
 Nếu muốn dùng javadoc:org.springframework.test.web.servlet.client.RestTestClient[] trong test, annotate test class bằng javadoc:org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient[format=annotation].
-Sau đó RestTestClient dùng Mock MVC infrastructure được auto-configure.
+Sau đó `RestTestClient` dùng Mock MVC infrastructure được auto-configure.
 
 include-code::MockTransportTests[]
 
@@ -368,10 +367,10 @@ include-code::MyControllerTests[]
 TIP: Setup này chỉ hỗ trợ WebFlux application vì javadoc:org.springframework.test.web.reactive.server.WebTestClient[] trong mocked web application hiện chỉ hoạt động với WebFlux.
 
 NOTE: javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] không detect route register qua functional web framework.
-Để test bean javadoc:org.springframework.web.reactive.function.server.RouterFunction[] trong context, import javadoc:org.springframework.web.reactive.function.server.RouterFunction[] bằng javadoc:org.springframework.context.annotation.Import[format=annotation] hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
+Để test bean javadoc:org.springframework.web.reactive.function.server.RouterFunction[] trong context, import javadoc:org.springframework.web.reactive.function.server.RouterFunction[] bằng javadoc:org.springframework.context.annotation.Import[format=annotation] hoặc bằng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
 
 NOTE: javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] không detect custom security configuration register thành javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.security.web.server.SecurityWebFilterChain[].
-Để include, import configuration register bean hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
+Để include configuration đó trong test, cần import configuration đăng ký bean bằng javadoc:org.springframework.context.annotation.Import[format=annotation] hoặc bằng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation].
 
 TIP: Đôi khi Spring WebFlux test chưa đủ; Spring Boot có thể chạy xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.with-running-server[full end-to-end test với actual server].
 
@@ -443,7 +442,7 @@ Dùng javadoc:org.springframework.boot.data.cassandra.test.autoconfigure.DataCas
 Mặc định nó configure javadoc:org.springframework.data.cassandra.core.CassandraTemplate[], scan class javadoc:org.springframework.data.cassandra.core.mapping.Table[format=annotation] và configure Spring Data Cassandra repository.
 Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng javadoc:org.springframework.boot.data.cassandra.test.autoconfigure.DataCassandraTest[format=annotation].
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
-Xem xref:data/nosql.adoc#data.nosql.cassandra[].
+Về việc dùng Cassandra với Spring Boot, xem xref:data/nosql.adoc#data.nosql.cassandra[].
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.cassandra.test.autoconfigure.DataCassandraTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
@@ -456,9 +455,9 @@ include-code::MyDataCassandraTests[]
 
 Dùng javadoc:org.springframework.boot.data.couchbase.test.autoconfigure.DataCouchbaseTest[format=annotation] từ module `spring-boot-data-couchbase-test`.
 Mặc định nó configure javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] hoặc javadoc:org.springframework.data.couchbase.core.ReactiveCouchbaseTemplate[], scan javadoc:org.springframework.data.couchbase.core.mapping.Document[format=annotation] và configure Spring Data Couchbase repository.
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.data.couchbase.test.autoconfigure.DataCouchbaseTest[format=annotation].
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
-Xem xref:data/nosql.adoc#data.nosql.couchbase[].
+Về việc dùng Couchbase với Spring Boot, xem xref:data/nosql.adoc#data.nosql.couchbase[], ở phần trước của chapter này.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.couchbase.test.autoconfigure.DataCouchbaseTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
@@ -471,9 +470,9 @@ include-code::MyDataCouchbaseTests[]
 
 Dùng javadoc:org.springframework.boot.data.elasticsearch.test.autoconfigure.DataElasticsearchTest[format=annotation] từ module `spring-boot-data-elasticsearch-test`.
 Mặc định nó configure javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[], scan class javadoc:org.springframework.data.elasticsearch.annotations.Document[format=annotation] và configure Spring Data Elasticsearch repository.
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.data.elasticsearch.test.autoconfigure.DataElasticsearchTest[format=annotation].
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
-Xem xref:data/nosql.adoc#data.nosql.elasticsearch[].
+Về việc dùng Elasticsearch với Spring Boot, xem xref:data/nosql.adoc#data.nosql.elasticsearch[], ở phần trước của chapter này.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.elasticsearch.test.autoconfigure.DataElasticsearchTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
@@ -487,7 +486,7 @@ include-code::MyDataElasticsearchTests[]
 Dùng javadoc:org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest[format=annotation] từ module `spring-boot-data-jpa-test`.
 Mặc định nó scan class javadoc:jakarta.persistence.Entity[format=annotation] và configure Spring Data JPA repository.
 Nếu embedded database available trên classpath, nó cũng configure một database.
-SQL query được log mặc định bằng property `spring.jpa.show-sql=true`.
+SQL query được log mặc định bằng cách đặt property `spring.jpa.show-sql` thành `true`.
 Có thể disable qua attribute `showSql`.
 
 Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng javadoc:org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest[format=annotation].
@@ -501,18 +500,18 @@ Nếu không muốn, disable transaction management cho test hoặc class:
 
 include-code::MyNonTransactionalTests[]
 
-Data JPA test cũng có thể inject bean javadoc:org.springframework.boot.jpa.test.autoconfigure.TestEntityManager[], alternative cho standard JPA javadoc:jakarta.persistence.EntityManager[] được thiết kế cho test.
+Data JPA test cũng có thể inject bean javadoc:org.springframework.boot.jpa.test.autoconfigure.TestEntityManager[], một alternative cho standard JPA javadoc:jakarta.persistence.EntityManager[] được thiết kế riêng cho test.
 
 TIP: Có thể auto-configure javadoc:org.springframework.boot.jpa.test.autoconfigure.TestEntityManager[] cho Spring-based test class bằng javadoc:org.springframework.boot.jpa.test.autoconfigure.AutoConfigureTestEntityManager[format=annotation].
-Khi đó đảm bảo test chạy trong transaction, ví dụ thêm javadoc:org.springframework.transaction.annotation.Transactional[format=annotation].
+Khi đó cần đảm bảo test đang chạy trong transaction, chẳng hạn bằng cách thêm javadoc:org.springframework.transaction.annotation.Transactional[format=annotation] vào test class hoặc method.
 
 javadoc:org.springframework.jdbc.core.JdbcTemplate[] cũng available nếu cần.
-Ví dụ:
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest[format=annotation] đang được sử dụng:
 
 include-code::withoutdb/MyRepositoryTests[]
 
 In-memory embedded database thường phù hợp cho test vì nhanh và không cần install.
-Nếu muốn test với database thật, dùng javadoc:org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase[format=annotation]:
+Tuy nhiên, nếu muốn test với database thật, có thể dùng annotation javadoc:org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase[format=annotation], như trong ví dụ sau:
 
 include-code::withdb/MyRepositoryTests[]
 
@@ -521,7 +520,7 @@ include-code::withdb/MyRepositoryTests[]
 
 javadoc:org.springframework.boot.jdbc.test.autoconfigure.JdbcTest[format=annotation] từ module `spring-boot-jdbc-test` tương tự javadoc:org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest[format=annotation] nhưng dành cho test chỉ cần javadoc:javax.sql.DataSource[] và không dùng Spring Data JDBC.
 Mặc định configure in-memory embedded database và javadoc:org.springframework.jdbc.core.JdbcTemplate[].
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.jdbc.test.autoconfigure.JdbcTest[format=annotation].
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.jdbc.test.autoconfigure.JdbcTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
@@ -540,13 +539,13 @@ Xem xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.
 
 javadoc:org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest[format=annotation] từ module `spring-boot-data-jdbc-test` tương tự javadoc:org.springframework.boot.jdbc.test.autoconfigure.JdbcTest[format=annotation] nhưng dành cho test dùng Spring Data JDBC repository.
 Mặc định configure in-memory embedded database, javadoc:org.springframework.jdbc.core.JdbcTemplate[] và Spring Data JDBC repository.
-Chỉ subclass javadoc:org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration[] được scan; regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
+Chỉ các subclass của javadoc:org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration[] được scan khi dùng annotation javadoc:org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest[format=annotation]; regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
 Mặc định Data JDBC test transactional và rollback cuối mỗi test.
-Xem Spring Framework Reference Documentation.
+Xem {url-spring-framework-docs}/testing/testcontext-framework/tx.html#testcontext-tx-enabling-transactions[relevant section] trong Spring Framework Reference Documentation để biết thêm chi tiết.
 Nếu không muốn, disable transaction management như xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.autoconfigured-jdbc[JDBC example].
 
 Nếu muốn database thật, dùng javadoc:org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase[format=annotation] như javadoc:org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest[format=annotation].
@@ -557,7 +556,7 @@ Xem xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.
 
 javadoc:org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest[format=annotation] từ module `spring-boot-data-r2dbc-test` tương tự javadoc:org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest[format=annotation] nhưng dành cho Spring Data R2DBC repository.
 Mặc định configure in-memory embedded database, javadoc:org.springframework.data.r2dbc.core.R2dbcEntityTemplate[] và Spring Data R2DBC repository.
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest[format=annotation].
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
@@ -570,17 +569,17 @@ Xem xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.
 [[testing.spring-boot-applications.autoconfigured-jooq]]
 == Auto-configured jOOQ Tests
 
-Dùng javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation] từ `spring-boot-jooq-test` tương tự javadoc:org.springframework.boot.jdbc.test.autoconfigure.JdbcTest[format=annotation] nhưng cho jOOQ-related test.
-Vì jOOQ phụ thuộc nhiều vào Java-based schema tương ứng database schema, existing javadoc:javax.sql.DataSource[] được dùng.
-Nếu muốn replace bằng in-memory database, dùng javadoc:org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase[format=annotation].
-Xem xref:data/sql.adoc#data.sql.jooq[].
+Dùng javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation] từ `spring-boot-jooq-test` theo cách tương tự javadoc:org.springframework.boot.jdbc.test.autoconfigure.JdbcTest[format=annotation], nhưng dành cho các test liên quan đến jOOQ.
+Vì jOOQ phụ thuộc nhiều vào Java-based schema tương ứng với database schema, javadoc:javax.sql.DataSource[] hiện có sẽ được sử dụng.
+Nếu muốn thay thế bằng in-memory database, có thể dùng javadoc:org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase[format=annotation] để override các setting đó.
+(Để biết thêm về việc dùng jOOQ với Spring Boot, xem xref:data/sql.adoc#data.sql.jooq[].)
 Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation].
-Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
+Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation] configure javadoc:org.jooq.DSLContext[].
-Ví dụ:
+javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation] configure một javadoc:org.jooq.DSLContext[].
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.jooq.test.autoconfigure.JooqTest[format=annotation] đang được sử dụng:
 
 include-code::MyJooqTests[]
 
@@ -594,11 +593,11 @@ Dùng javadoc:org.springframework.boot.data.mongodb.test.autoconfigure.DataMongo
 Mặc định nó configure javadoc:org.springframework.data.mongodb.core.MongoTemplate[], scan class javadoc:org.springframework.data.mongodb.core.mapping.Document[format=annotation] và configure Spring Data MongoDB repository.
 Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng javadoc:org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest[format=annotation].
 Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
-Xem xref:data/nosql.adoc#data.nosql.mongodb[].
+Về việc dùng MongoDB với Spring Boot, xem xref:data/nosql.adoc#data.nosql.mongodb[].
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Ví dụ:
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest[format=annotation] đang được sử dụng:
 
 include-code::MyDataMongoDbTests[]
 
@@ -607,13 +606,13 @@ include-code::MyDataMongoDbTests[]
 
 Dùng javadoc:org.springframework.boot.data.neo4j.test.autoconfigure.DataNeo4jTest[format=annotation] từ module `spring-boot-data-neo4j-test`.
 Mặc định nó scan class javadoc:org.springframework.data.neo4j.core.schema.Node[format=annotation] và configure Spring Data Neo4j repository.
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
-Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
-Xem xref:data/nosql.adoc#data.nosql.neo4j[].
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.data.neo4j.test.autoconfigure.DataNeo4jTest[format=annotation].
+Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
+Về việc dùng Neo4J với Spring Boot, xem xref:data/nosql.adoc#data.nosql.neo4j[].
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.neo4j.test.autoconfigure.DataNeo4jTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Ví dụ:
+Ví dụ sau minh họa setup điển hình để dùng Neo4J test trong Spring Boot:
 
 include-code::propagation/MyDataNeo4jTests[]
 
@@ -631,13 +630,13 @@ Nếu dùng reactive style, cần configure javadoc:org.springframework.boot.dat
 
 Dùng javadoc:org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest[format=annotation] từ module `spring-boot-data-redis-test`.
 Mặc định nó scan class javadoc:org.springframework.data.redis.core.RedisHash[format=annotation] và configure Spring Data Redis repository.
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
-Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
-Xem xref:data/nosql.adoc#data.nosql.redis[].
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest[format=annotation].
+Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
+Về việc dùng Redis với Spring Boot, xem xref:data/nosql.adoc#data.nosql.redis[].
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Ví dụ:
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest[format=annotation] đang được sử dụng:
 
 include-code::MyDataRedisTests[]
 
@@ -646,13 +645,13 @@ include-code::MyDataRedisTests[]
 
 Dùng javadoc:org.springframework.boot.data.ldap.test.autoconfigure.DataLdapTest[format=annotation] để test Data LDAP application.
 Mặc định nó configure in-memory embedded LDAP nếu available, configure javadoc:org.springframework.ldap.core.LdapTemplate[], scan class javadoc:org.springframework.ldap.odm.annotations.Entry[format=annotation] và configure Spring Data LDAP repository.
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
-Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
-Xem xref:data/nosql.adoc#data.nosql.ldap[].
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.data.ldap.test.autoconfigure.DataLdapTest[format=annotation].
+Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
+Về việc dùng LDAP với Spring Boot, xem xref:data/nosql.adoc#data.nosql.ldap[].
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.data.ldap.test.autoconfigure.DataLdapTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Ví dụ:
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.data.ldap.test.autoconfigure.DataLdapTest[format=annotation] đang được sử dụng:
 
 include-code::inmemory/MyDataLdapTests[]
 
@@ -666,8 +665,8 @@ include-code::server/MyDataLdapTests[]
 
 Dùng annotation javadoc:org.springframework.boot.restclient.test.autoconfigure.RestClientTest[format=annotation] từ module `spring-boot-restclient-test` để test REST client.
 Mặc định nó auto-configure Jackson, GSON và Jsonb support, configure javadoc:org.springframework.web.client.RestClient$Builder[] và thêm support cho javadoc:org.springframework.test.web.client.MockRestServiceServer[].
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
-Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.restclient.test.autoconfigure.RestClientTest[format=annotation].
+Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.restclient.test.autoconfigure.RestClientTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
@@ -682,17 +681,17 @@ include-code::MyRestClientServiceTests[]
 
 Dùng annotation javadoc:org.springframework.boot.webclient.test.autoconfigure.WebClientTest[format=annotation] từ module `spring-boot-webclient-test` để test code dùng `WebClient`.
 Mặc định nó auto-configure Jackson, GSON và Jsonb support, và configure javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[].
-Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan.
-Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
+Regular javadoc:org.springframework.stereotype.Component[format=annotation] và javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean không được scan khi dùng annotation javadoc:org.springframework.boot.webclient.test.autoconfigure.WebClientTest[format=annotation].
+Có thể dùng javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] để include javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bean.
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.webclient.test.autoconfigure.WebClientTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Bean cụ thể cần test nên chỉ định bằng attribute `value` hoặc `components`.
+Bean cụ thể cần test nên chỉ định bằng attribute `value` hoặc `components` của javadoc:org.springframework.boot.webclient.test.autoconfigure.WebClientTest[format=annotation].
 
 [[testing.spring-boot-applications.autoconfigured-spring-restdocs]]
 == Auto-configured Spring REST Docs Tests
 
-Dùng annotation javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] từ module `spring-boot-restdocs-test` để dùng {url-spring-restdocs-site}[Spring REST Docs] trong test với Mock MVC hoặc WebTestClient.
+Dùng annotation javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] từ module `spring-boot-restdocs- module để dùng {url-spring-restdocs-site}[Spring REST Docs] trong test với Mock MVC hoặc WebTestClient.
 Nó loại bỏ nhu cầu dùng JUnit extension trong Spring REST Docs.
 
 javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] có thể override default output directory (`target/generated-snippets` với Maven hoặc `build/generated-snippets` với Gradle).
@@ -702,23 +701,23 @@ Nó cũng có thể cấu hình host, scheme và port xuất hiện trong docume
 === Auto-configured Spring REST Docs Tests với Mock MVC
 
 javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] customize bean javadoc:org.springframework.test.web.servlet.MockMvc[] để dùng Spring REST Docs khi test servlet-based web application.
-Có thể inject bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation] và dùng như bình thường:
+Có thể inject bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation] và dùng trong test như khi vẫn dùng Mock MVC và Spring REST Docs, như trong ví dụ sau:
 
 include-code::hamcrest/MyUserDocumentationTests[]
 
-Nếu thích AssertJ integration, javadoc:org.springframework.test.web.servlet.assertj.MockMvcTester[] cũng available:
+Nếu thích AssertJ integration, javadoc:org.springframework.test.web.servlet.assertj.MockMvcTester[] cũng available, như trong ví dụ sau:
 
 include-code::assertj/MyUserDocumentationTests[]
 
-Cả hai reuse cùng javadoc:org.springframework.test.web.servlet.MockMvc[] instance phía dưới nên configuration áp dụng cho cả hai.
+Cả hai cùng reuse một javadoc:org.springframework.test.web.servlet.MockMvc[] instance phía dưới, vì vậy mọi configuration áp dụng cho instance đó đều áp dụng cho cả hai.
 
-Nếu cần kiểm soát Spring REST Docs configuration nhiều hơn attribute javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation], dùng bean javadoc:org.springframework.boot.restdocs.test.autoconfigure.RestDocsMockMvcConfigurationCustomizer[]:
+Nếu cần kiểm soát Spring REST Docs configuration nhiều hơn mức các attribute của javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] cung cấp, có thể dùng bean javadoc:org.springframework.boot.restdocs.test.autoconfigure.RestDocsMockMvcConfigurationCustomizer[], như trong ví dụ sau:
 
 include-code::MyRestDocsConfiguration[]
 
-Nếu muốn dùng Spring REST Docs support cho parameterized output directory, tạo bean javadoc:org.springframework.restdocs.mockmvc.RestDocumentationResultHandler[].
+Nếu muốn dùng Spring REST Docs support cho parameterized output directory, có thể tạo bean javadoc:org.springframework.restdocs.mockmvc.RestDocumentationResultHandler[].
 Auto-configuration gọi `alwaysDo` với result handler này, khiến mỗi javadoc:org.springframework.test.web.servlet.MockMvc[] call tự động generate default snippet.
-Ví dụ:
+Ví dụ sau minh họa một javadoc:org.springframework.restdocs.mockmvc.RestDocumentationResultHandler[] được định nghĩa:
 
 include-code::MyResultHandlerConfiguration[]
 
@@ -726,15 +725,16 @@ include-code::MyResultHandlerConfiguration[]
 === Auto-configured Spring REST Docs Tests với WebTestClient
 
 javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] cũng dùng được với javadoc:org.springframework.test.web.reactive.server.WebTestClient[] khi test reactive web application.
-Inject bằng Autowired và dùng như khi dùng javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] với Spring REST Docs:
+Có thể inject bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation] và dùng trong test như khi dùng javadoc:org.springframework.boot.webflux.test.autoconfigure.WebFluxTest[format=annotation] và Spring REST Docs, như trong ví dụ sau:
 
 include-code::MyUsersDocumentationTests[]
 
-Nếu cần kiểm soát configuration nhiều hơn, dùng bean javadoc:org.springframework.boot.restdocs.test.autoconfigure.RestDocsWebTestClientConfigurationCustomizer[]:
+Nếu cần kiểm soát Spring REST Docs configuration nhiều hơn mức các attribute của javadoc:org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs[format=annotation] cung cấp, có thể dùng bean javadoc:org.springframework.boot.restdocs.test.autoconfigure.RestDocsWebTestClientConfigurationCustomizer[], như trong ví dụ sau:
 
 include-code::MyRestDocsConfiguration[]
 
-Nếu muốn parameterized output directory, dùng javadoc:org.springframework.boot.webtestclient.autoconfigure.WebTestClientBuilderCustomizer[] để configure consumer cho mỗi entity exchange result:
+Nếu muốn parameterized output directory, dùng javadoc:org.springframework.boot.webtestclient.autoconfigure.WebTestClientBuilderCustomizer[] để configure consumer cho mỗi entity exchange result.
+Ví dụ sau minh họa một javadoc:org.springframework.boot.webtestclient.autoconfigure.WebTestClientBuilderCustomizer[] được định nghĩa:
 
 include-code::MyWebTestClientBuilderCustomizerConfiguration[]
 
@@ -746,11 +746,11 @@ include-code::MyWebTestClientBuilderCustomizerConfiguration[]
 
 Dùng javadoc:org.springframework.boot.webservices.test.autoconfigure.client.WebServiceClientTest[format=annotation] từ module `spring-boot-webservices-test` để test application gọi web service bằng Spring Web Services.
 Mặc định nó configure bean javadoc:org.springframework.ws.test.client.MockWebServiceServer[] và tự động customize javadoc:org.springframework.boot.webservices.client.WebServiceTemplateBuilder[].
-Xem xref:io/webservices.adoc[].
+(Để biết thêm về việc dùng Web Services với Spring Boot, xem xref:io/webservices.adoc[].)
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.webservices.test.autoconfigure.client.WebServiceClientTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Ví dụ:
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.webservices.test.autoconfigure.client.WebServiceClientTest[format=annotation] đang được sử dụng:
 
 include-code::MyWebServiceClientTests[]
 
@@ -759,11 +759,11 @@ include-code::MyWebServiceClientTests[]
 
 Dùng javadoc:org.springframework.boot.webservices.test.autoconfigure.server.WebServiceServerTest[format=annotation] từ module `spring-boot-webservices-test` để test application implement web service bằng Spring Web Services.
 Mặc định nó configure bean javadoc:org.springframework.ws.test.server.MockWebServiceClient[] dùng gọi web service endpoint.
-Xem xref:io/webservices.adoc[].
+(Để biết thêm về việc dùng Web Services với Spring Boot, xem xref:io/webservices.adoc[].)
 
 TIP: Danh sách auto-configuration enable bởi javadoc:org.springframework.boot.webservices.test.autoconfigure.server.WebServiceServerTest[format=annotation] có trong xref:appendix:test-auto-configuration/index.adoc[appendix].
 
-Ví dụ:
+Ví dụ sau minh họa annotation javadoc:org.springframework.boot.webservices.test.autoconfigure.server.WebServiceServerTest[format=annotation] đang được sử dụng:
 
 include-code::MyWebServiceServerTests[]
 
@@ -771,7 +771,7 @@ include-code::MyWebServiceServerTests[]
 == Additional Auto-configuration và Slicing
 
 Mỗi slice cung cấp một hoặc nhiều annotation `@AutoConfigure...` định nghĩa auto-configuration include trong slice.
-Có thể thêm auto-configuration theo từng test bằng custom `@AutoConfigure...` hoặc thêm javadoc:org.springframework.boot.autoconfigure.ImportAutoConfiguration[format=annotation]:
+Có thể thêm auto-configuration theo từng test bằng cách tạo custom `@AutoConfigure...` annotation hoặc thêm javadoc:org.springframework.boot.autoconfigure.ImportAutoConfiguration[format=annotation] vào test, như trong ví dụ sau:
 
 include-code::MyJdbcTests[]
 
@@ -804,20 +804,20 @@ Có thể định nghĩa javadoc:org.springframework.boot.autoconfigure.SpringBo
 include-code::MyApplication[]
 
 Vì class này là source configuration cho test, mọi slice test sẽ thử enable Mongo auditing, điều chắc chắn không mong muốn.
-Cách khuyến nghị là move area-specific configuration sang javadoc:org.springframework.context.annotation.Configuration[format=annotation] class riêng cùng level với application:
+Cách khuyến nghị là move area-specific configuration sang một javadoc:org.springframework.context.annotation.Configuration[format=annotation] class riêng cùng level với application, như trong ví dụ sau:
 
 include-code::MyMongoConfiguration[]
 
 NOTE: Tùy complexity, có thể có một javadoc:org.springframework.context.annotation.Configuration[format=annotation] class cho customization hoặc một class mỗi domain area.
 Cách thứ hai cho phép enable trong test khi cần bằng javadoc:org.springframework.context.annotation.Import[format=annotation].
-Xem xref:how-to:testing.adoc#howto.testing.slice-tests[how-to section].
+Xem xref:how-to:testing.adoc#howto.testing.slice-tests[how-to section] để biết thêm chi tiết về thời điểm nên enable các javadoc:org.springframework.context.annotation.Configuration[format=annotation] class cụ thể cho slice test.
 
 Test slice exclude javadoc:org.springframework.context.annotation.Configuration[format=annotation] class khỏi scanning.
 Ví dụ với javadoc:org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest[format=annotation], configuration sau không include bean javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] vào context của test slice:
 
 include-code::MyWebConfiguration[]
 
-Configuration sau thì có:
+Tuy nhiên, configuration sau sẽ khiến custom javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] được load bởi test slice:
 
 include-code::MyWebMvcConfigurer[]
 
@@ -838,6 +838,6 @@ Ngoài ra có thể specify source cho test, disable việc tìm default source.
 == Sử dụng Spock để Test Spring Boot Application
 
 Spock 2.4 trở lên có thể dùng test Spring Boot application.
-Thêm dependency version `-groovy-5.0` của module `spock-spring`.
+Thêm dependency phiên bản `-groovy-5.0` của module `spock-spring` vào build của application.
 `spock-spring` tích hợp Spring test framework vào Spock.
 Xem https://spockframework.org/spock/docs/2.4/modules.html#spring-module[Spock Spring module documentation].

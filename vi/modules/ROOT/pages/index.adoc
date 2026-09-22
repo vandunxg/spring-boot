@@ -1,15 +1,15 @@
 :navtitle: Tổng quan
 = Spring Boot
 
-Spring Boot giúp bạn tạo các ứng dụng dựa trên Spring độc lập, sẵn sàng cho production và có thể chạy trực tiếp.
-Chúng tôi đưa ra những lựa chọn mặc định có chủ đích cho Spring platform và các thư viện bên thứ ba, giúp bạn bắt đầu thuận tiện nhất.
+Spring Boot giúp bạn tạo các ứng dụng Spring-based, stand-alone, production-grade mà bạn có thể chạy.
+Chúng tôi có cách tiếp cận opinionated với Spring platform và các thư viện bên thứ ba, giúp bạn bắt đầu với ít phiền toái nhất.
 Hầu hết ứng dụng Spring Boot chỉ cần rất ít cấu hình Spring.
 
-Bạn có thể dùng Spring Boot để tạo các ứng dụng Java khởi động bằng `java -jar` hoặc deploy theo cách truyền thống dưới dạng war.
+Bạn có thể dùng Spring Boot để tạo các ứng dụng Java khởi động bằng `java -jar` hoặc deploy war theo cách truyền thống.
 
 Các mục tiêu chính của chúng tôi là:
 
-* Giúp việc bắt đầu phát triển với Spring nhanh hơn đáng kể và dễ tiếp cận với mọi người.
-* Cung cấp các lựa chọn mặc định có chủ đích ngay từ đầu, nhưng nhanh chóng nhường quyền kiểm soát khi yêu cầu bắt đầu khác với mặc định.
+* Cung cấp trải nghiệm getting-started nhanh hơn đáng kể và dễ tiếp cận hơn cho mọi hoạt động phát triển Spring.
+* Đưa ra opinionated defaults ngay từ đầu, nhưng nhanh chóng không can thiệp khi requirements bắt đầu khác với defaults.
 * Cung cấp nhiều tính năng non-functional phổ biến trong nhiều loại dự án (chẳng hạn embedded server, security, metrics, health check và externalized configuration).
-* Hoàn toàn không sinh code (khi không nhắm tới native image) và không yêu cầu cấu hình XML.
+* Hoàn toàn không có code generation (khi không nhắm tới native image) và không yêu cầu cấu hình XML.

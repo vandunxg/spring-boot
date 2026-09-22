@@ -1,13 +1,13 @@
 [[appendix.configuration-metadata.annotation-processor]]
-= Sinh metadata riêng bằng Annotation Processor
+= Tự sinh metadata bằng Annotation Processor
 
-Bạn có thể dễ dàng sinh file configuration metadata riêng từ các item được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] nhờ jar `spring-boot-configuration-processor`.
-Jar này chứa một Java annotation processor được gọi khi project của bạn được compile.
+Bạn có thể dễ dàng tự sinh file configuration metadata từ các item được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] bằng cách sử dụng jar `spring-boot-configuration-processor`.
+Jar này chứa một Java annotation processor được invoke khi project của bạn được compile.
 
 [[appendix.configuration-metadata.annotation-processor.configuring]]
 == Cấu hình Annotation Processor
 
-Khi build bằng Maven, cấu hình compiler plugin (3.12.0 trở lên) để thêm `spring-boot-configuration-processor` vào annotation processor path:
+Khi build bằng Maven, cấu hình compiler plugin (3.12.0 trở lên) để thêm `spring-boot-configuration-processor` vào annotation processor paths:
 
 [source,xml]
 ----
@@ -84,7 +84,7 @@ Processor nhận cả class và method được annotate bằng javadoc:org.spri
 
 NOTE: Custom annotation được meta-annotate bằng một trong hai annotation đó không được hỗ trợ.
 
-Nếu class có một constructor có tham số duy nhất, mỗi constructor parameter sẽ tạo ra một property, trừ khi constructor được annotate bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation].
+Nếu class có một constructor có tham số, mỗi constructor parameter sẽ tạo ra một property, trừ khi constructor được annotate bằng javadoc:org.springframework.beans.factory.annotation.Autowired[format=annotation].
 Nếu class có constructor được annotate tường minh bằng javadoc:org.springframework.boot.context.properties.bind.ConstructorBinding[format=annotation], mỗi constructor parameter của constructor đó sẽ tạo ra một property.
 Ngược lại, property được phát hiện qua sự hiện diện của getter và setter chuẩn, với xử lý đặc biệt cho kiểu collection và map (được phát hiện ngay cả khi chỉ có getter).
 Annotation processor cũng hỗ trợ dùng các lombok annotation javadoc:{url-lombok-javadoc}/lombok.Data[format=annotation], javadoc:{url-lombok-javadoc}/lombok.Value[format=annotation], javadoc:{url-lombok-javadoc}/lombok.Getter[format=annotation] và javadoc:{url-lombok-javadoc}/lombok.Setter[format=annotation].
@@ -136,9 +136,9 @@ include-code::MyMessagingProperties[]
 NOTE: Chỉ cần `name` của property để tài liệu hóa metadata bổ sung cho property đã tồn tại.
 
 [[appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.nested-properties]]
-=== Nested Property
+=== Nested Properties
 
-Annotation processor tự động coi inner class là nested property.
+Annotation processor tự động coi các inner class là nested property.
 Thay vì tài liệu hóa `ip` và `port` ở gốc namespace, chúng ta có thể tạo một sub-namespace cho chúng.
 Xét ví dụ đã cập nhật:
 
@@ -147,7 +147,7 @@ include-code::MyServerProperties[]
 Ví dụ trên sinh thông tin metadata cho các property `my.server.name`, `my.server.host.ip` và `my.server.host.port`.
 Bạn có thể dùng annotation javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation] trên field hoặc getter method để chỉ ra rằng một class thông thường (không phải inner class) nên được xử lý như thể nó là nested.
 
-TIP: Điều này không ảnh hưởng tới collection và map, vì các type đó được nhận diện tự động và mỗi loại chỉ sinh ra một metadata property duy nhất.
+TIP: Điều này không ảnh hưởng tới collection và map, vì các type đó được nhận diện tự động và mỗi type chỉ sinh ra một metadata property duy nhất.
 
 [[appendix.configuration-metadata.annotation-processor.automatic-metadata-generation.source]]
 === Configuration Properties Source

@@ -1,16 +1,16 @@
 [[packaging.checkpoint-restore]]
-= Checkpoint and Restore với JVM
+= Checkpoint và Restore với JVM
 
-https://wiki.openjdk.org/display/crac/Main[Coordinated Restore at Checkpoint] (CRaC) là OpenJDK project định nghĩa Java API mới để checkpoint và restore application trên HotSpot JVM.
-Nó dựa trên https://github.com/checkpoint-restore/criu[CRIU], project implement checkpoint/restore trên Linux.
+https://wiki.openjdk.org/display/crac/Main[Coordinated Restore at Checkpoint] (CRaC) là một project của OpenJDK định nghĩa một Java API mới cho phép checkpoint và restore application trên HotSpot JVM.
+Nó dựa trên https://github.com/checkpoint-restore/criu[CRIU], một project triển khai chức năng checkpoint/restore trên Linux.
 
-Nguyên tắc: start application gần như bình thường nhưng dùng JDK hỗ trợ CRaC như https://bell-sw.com/pages/downloads/?package=jdk-crac[BellSoft Liberica JDK with CRaC] hoặc https://www.azul.com/downloads/?package=jdk-crac#zulu[Azul Zulu JDK with CRaC].
-Sau đó, có thể sau workload làm warm JVM bằng cách execute common code path, trigger checkpoint qua API call, lệnh `jcmd`, HTTP endpoint hoặc mechanism khác.
+Nguyên lý hoạt động như sau: bạn start application gần như bình thường, nhưng sử dụng một version của JDK được enable CRaC như https://bell-sw.com/pages/downloads/?package=jdk-crac[BellSoft Liberica JDK with CRaC] hoặc https://www.azul.com/downloads/?package=jdk-crac#zulu[Azul Zulu JDK with CRaC].
+Sau đó, tại một thời điểm nào đó, có thể là sau khi chạy một số workload để warm up JVM bằng cách execute tất cả common code path, bạn trigger checkpoint bằng một API call, command `jcmd`, HTTP endpoint hoặc mechanism khác.
 
-Memory representation của JVM đang chạy, gồm trạng thái warm, được serialize xuống disk, cho phép restore nhanh sau đó, có thể trên machine khác với operating system và CPU architecture tương tự.
-Process được restore giữ mọi capability của HotSpot JVM, gồm JIT optimization tiếp tục ở runtime.
+Memory representation của JVM đang chạy, bao gồm trạng thái warm của JVM, sau đó được serialize xuống disk, cho phép restore nhanh vào một thời điểm sau đó, có thể trên một machine khác có operating system và CPU architecture tương tự.
+Process được restore giữ lại mọi capability của HotSpot JVM, bao gồm khả năng tiếp tục thực hiện JIT optimization trong runtime.
 
-Dựa trên nền tảng Spring Framework, Spring Boot hỗ trợ checkpoint/restore application và quản lý lifecycle của resource như socket, file và thread pool https://github.com/spring-projects/spring-lifecycle-smoke-tests/blob/ci/STATUS.adoc[trong phạm vi giới hạn].
-Dependency khác và application code xử lý các resource này có thể cần lifecycle management bổ sung.
+Dựa trên nền tảng do Spring Framework cung cấp, Spring Boot hỗ trợ checkpoint/restore application và out-of-the-box quản lý lifecycle của các resource như socket, file và thread pool https://github.com/spring-projects/spring-lifecycle-smoke-tests/blob/ci/STATUS.adoc[trong một phạm vi giới hạn].
+Các dependency khác cần có lifecycle management bổ sung; application code xử lý những resource này cũng có thể cần như vậy.
 
-Chi tiết về hai mode ("on demand checkpoint/restore of a running application" và "automatic checkpoint/restore at startup"), cách enable và guideline xem {url-spring-framework-docs}/integration/checkpoint-restore.html[Spring Framework JVM Checkpoint Restore support documentation].
+Bạn có thể xem thêm chi tiết về hai mode ("on demand checkpoint/restore of a running application" và "automatic checkpoint/restore at startup"), cách enable hỗ trợ checkpoint và restore, cùng một số guideline trong {url-spring-framework-docs}/integration/checkpoint-restore.html[tài liệu hỗ trợ JVM Checkpoint Restore của Spring Framework].

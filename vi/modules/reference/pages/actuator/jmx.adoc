@@ -1,34 +1,36 @@
 [[actuator.jmx]]
 = Monitoring và Management qua JMX
 
-Java Management Extensions (JMX) cung cấp mechanism chuẩn để monitor và manage application.
-Mặc định feature này không enable.
-Có thể bật bằng configprop:spring.jmx.enabled[] = `true`.
-Spring Boot expose javadoc:javax.management.MBeanServer[] phù hợp nhất thành bean ID `mbeanServer`.
-Mọi bean annotate bằng Spring JMX annotation (`@org.springframework.jmx.export.annotation.ManagedResource`, javadoc:org.springframework.jmx.export.annotation.ManagedAttribute[format=annotation], hoặc javadoc:org.springframework.jmx.export.annotation.ManagedOperation[format=annotation]) đều được expose lên server này.
+Java Management Extensions (JMX) cung cấp cơ chế chuẩn để monitor và manage application.
+Mặc định, feature này không được enable.
+Bạn có thể bật feature này bằng cách đặt configprop:spring.jmx.enabled[] thành `true`.
+Spring Boot expose javadoc:javax.management.MBeanServer[] phù hợp nhất thành một bean có ID `mbeanServer`.
+Mọi bean được annotate bằng Spring JMX annotation (`@org.springframework.jmx.export.annotation.ManagedResource`, javadoc:org.springframework.jmx.export.annotation.ManagedAttribute[format=annotation], hoặc javadoc:org.springframework.jmx.export.annotation.ManagedOperation[format=annotation]) đều được expose vào đó.
 
-Nếu platform cung cấp standard javadoc:javax.management.MBeanServer[], Spring Boot dùng nó; nếu cần thì fallback về VM javadoc:javax.management.MBeanServer[].
-Nếu vẫn không có, một javadoc:javax.management.MBeanServer[] mới được tạo.
+Nếu platform cung cấp một standard javadoc:javax.management.MBeanServer[], Spring Boot sử dụng MBeanServer đó và nếu cần sẽ dùng VM javadoc:javax.management.MBeanServer[] làm mặc định.
+Nếu tất cả các cách trên đều thất bại, một javadoc:javax.management.MBeanServer[] mới sẽ được tạo.
 
-NOTE: `spring.jmx.enabled` chỉ ảnh hưởng management bean do Spring cung cấp.
-Enable management bean từ library khác, ví dụ {url-log4j2-docs}/jmx.html[Log4j2] hoặc {url-quartz-javadoc}/constant-values.html#org.quartz.impl.StdSchedulerFactory.PROP_SCHED_JMX_EXPORT[Quartz], là độc lập.
+NOTE: `spring.jmx.enabled` chỉ ảnh hưởng đến management bean do Spring cung cấp.
+Việc enable management bean do các library khác cung cấp, ví dụ {url-log4j2-docs}/jmx.html[Log4j2] hoặc {url-quartz-javadoc}/constant-values.html#org.quartz.impl.StdSchedulerFactory.PROP_SCHED_JMX_EXPORT[Quartz], là độc lập.
 
-Xem class {code-spring-boot-autoconfigure-src}/jmx/JmxAutoConfiguration.java[`JmxAutoConfiguration`] để biết thêm.
+Xem class {code-spring-boot-autoconfigure-src}/jmx/JmxAutoConfiguration.java[`JmxAutoConfiguration`] để biết thêm chi tiết.
 
-Mặc định Spring Boot cũng expose management endpoint thành JMX MBean dưới domain `org.springframework.boot`.
-Để kiểm soát hoàn toàn registration endpoint trong JMX domain, cân nhắc register implementation javadoc:org.springframework.boot.actuate.endpoint.jmx.EndpointObjectNameFactory[] riêng.
+Mặc định, Spring Boot cũng expose management endpoint thành JMX MBean dưới domain `org.springframework.boot`.
+Để kiểm soát hoàn toàn việc registration endpoint trong JMX domain, hãy cân nhắc register implementation javadoc:org.springframework.boot.actuate.endpoint.jmx.EndpointObjectNameFactory[] của riêng bạn.
+
+
 
 [[actuator.jmx.custom-mbean-names]]
-== Customize MBean Name
+== Customize MBean Names
 
 MBean name thường được generate từ `id` của endpoint.
-Ví dụ endpoint `health` được expose thành `org.springframework.boot:type=Endpoint,name=Health`.
+Ví dụ, endpoint `health` được expose thành `org.springframework.boot:type=Endpoint,name=Health`.
 
-Nếu application có nhiều hơn một Spring javadoc:org.springframework.context.ApplicationContext[], name có thể conflict.
-Để giải quyết, đặt configprop:spring.jmx.unique-names[] thành `true` để MBean name luôn unique.
+Nếu application có nhiều hơn một Spring javadoc:org.springframework.context.ApplicationContext[], các name có thể conflict.
+Để giải quyết vấn đề này, bạn có thể đặt property configprop:spring.jmx.unique-names[] thành `true` để MBean name luôn unique.
 
-Bạn cũng có thể customize JMX domain nơi endpoint được expose.
-Các setting sau minh họa cách làm điều đó trong `application.properties`:
+Bạn cũng có thể customize JMX domain mà endpoint được expose.
+Các setting sau minh họa cách thực hiện trong `application.properties`:
 
 [configprops,yaml]
 ----
@@ -41,10 +43,12 @@ management:
       domain: "com.example.myapp"
 ----
 
-[[actuator.jmx.disable-jmx-endpoints]]
-== Disable JMX Endpoint
 
-Nếu không muốn expose endpoint qua JMX, đặt configprop:management.endpoints.jmx.exposure.exclude[] thành `*`:
+
+[[actuator.jmx.disable-jmx-endpoints]]
+== Disable JMX Endpoints
+
+Nếu không muốn expose endpoint qua JMX, bạn có thể đặt property configprop:management.endpoints.jmx.exposure.exclude[] thành `*`, như trong ví dụ sau:
 
 [configprops,yaml]
 ----

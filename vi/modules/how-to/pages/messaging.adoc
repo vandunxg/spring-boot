@@ -1,16 +1,18 @@
 [[howto.messaging]]
 = Messaging
 
-Spring Boot cung cấp một số starter hỗ trợ messaging.
-Phần này trả lời các câu hỏi phát sinh khi dùng messaging với Spring Boot.
+Spring Boot cung cấp một số starter để hỗ trợ messaging.
+Phần này giải đáp các câu hỏi phát sinh khi sử dụng messaging với Spring Boot.
+
+
 
 [[howto.messaging.disable-transacted-jms-session]]
 == Disable Transacted JMS Session
 
-Nếu JMS broker không hỗ trợ transacted session, bạn phải disable transaction support hoàn toàn.
-Nếu tự tạo javadoc:org.springframework.jms.config.JmsListenerContainerFactory[], không cần làm gì vì mặc định nó không thể transacted.
-Nếu muốn dùng javadoc:org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer[] để reuse default của Spring Boot, có thể disable transacted session như sau:
+Nếu JMS broker không hỗ trợ transacted session, bạn phải disable hoàn toàn transaction support.
+Nếu tự tạo javadoc:org.springframework.jms.config.JmsListenerContainerFactory[], bạn không cần làm gì vì theo mặc định factory này không thể chạy ở chế độ transacted.
+Nếu muốn dùng javadoc:org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer[] để reuse default của Spring Boot, bạn có thể disable transacted session như sau:
 
 include-code::MyJmsConfiguration[]
 
-Ví dụ trên override default factory và cũng nên apply cho mọi factory khác mà application định nghĩa, nếu có.
+Ví dụ trên override default factory và nên được áp dụng cho mọi factory khác mà application của bạn định nghĩa, nếu có.

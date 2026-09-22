@@ -1,20 +1,22 @@
 [[actuator.process-monitoring]]
-= Process Monitoring
+= Giám sát process
 
-Module `spring-boot` có hai class tạo file thường hữu ích cho process monitoring:
+Trong module `spring-boot`, bạn có thể tìm thấy hai class để tạo các file thường hữu ích cho process monitoring:
 
-* javadoc:org.springframework.boot.context.ApplicationPidFileWriter[] tạo file chứa application PID (mặc định `application.pid` trong application directory).
-* javadoc:org.springframework.boot.web.server.context.WebServerPortFileWriter[] tạo file chứa port của running web server (mặc định `application.port` trong application directory).
+* javadoc:org.springframework.boot.context.ApplicationPidFileWriter[] tạo một file chứa application PID (theo mặc định, trong application directory với tên file là `application.pid`).
+* javadoc:org.springframework.boot.web.server.context.WebServerPortFileWriter[] tạo một hoặc nhiều file chứa các port của web server đang chạy (theo mặc định, trong application directory với tên file là `application.port`).
 
-Mặc định các writer không active, nhưng có thể enable:
+Mặc định, các writer này không được activate, nhưng bạn có thể enable chúng:
 
 * xref:actuator/process-monitoring.adoc#actuator.process-monitoring.configuration[]
 * xref:actuator/process-monitoring.adoc#actuator.process-monitoring.programmatically[]
 
-[[actuator.process-monitoring.configuration]]
-== Extending Configuration
 
-Trong file `META-INF/spring.factories`, activate listener ghi PID file:
+
+[[actuator.process-monitoring.configuration]]
+== Mở rộng cấu hình
+
+Trong file `META-INF/spring.factories`, bạn có thể activate listener (hoặc các listener) để ghi PID file:
 
 [source]
 ----
@@ -23,8 +25,10 @@ org.springframework.boot.context.ApplicationPidFileWriter,\
 org.springframework.boot.web.server.context.WebServerPortFileWriter
 ----
 
-[[actuator.process-monitoring.programmatically]]
-== Programmatically Enabling Process Monitoring
 
-Có thể activate listener bằng `SpringApplication.addListeners(...)` và truyền javadoc:java.io.Writer[] phù hợp.
-Method này cũng cho phép customize file name và path trong constructor javadoc:java.io.Writer[].
+
+[[actuator.process-monitoring.programmatically]]
+== Enable Process Monitoring bằng code
+
+Bạn cũng có thể activate một listener bằng cách gọi method `SpringApplication.addListeners(...)` và truyền vào object javadoc:java.io.Writer[] phù hợp.
+Method này cũng cho phép bạn customize file name và path trong constructor của javadoc:java.io.Writer[].

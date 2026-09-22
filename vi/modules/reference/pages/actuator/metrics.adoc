@@ -1,7 +1,7 @@
 [[actuator.metrics]]
 = Metrics
 
-Spring Boot Actuator cung cấp dependency management và auto-configuration cho {url-micrometer-site}[Micrometer], một application metrics facade hỗ trợ {url-micrometer-docs}[nhiều monitoring system], gồm:
+Spring Boot Actuator cung cấp dependency management và auto-configuration cho {url-micrometer-site}[Micrometer], một application metrics facade hỗ trợ {url-micrometer-docs}[nhiều monitoring system], bao gồm:
 
 - xref:actuator/metrics.adoc#actuator.metrics.export.atlas[]
 - xref:actuator/metrics.adoc#actuator.metrics.export.datadog[]
@@ -20,17 +20,17 @@ Spring Boot Actuator cung cấp dependency management và auto-configuration cho
 - xref:actuator/metrics.adoc#actuator.metrics.export.stackdriver[]
 - xref:actuator/metrics.adoc#actuator.metrics.export.statsd[]
 
-TIP: Để tìm hiểu thêm capability của Micrometer, xem {url-micrometer-docs}[reference documentation], đặc biệt {url-micrometer-docs-concepts}[concepts section].
+TIP: Để tìm hiểu thêm về capability của Micrometer, xem {url-micrometer-docs}[reference documentation] của Micrometer, đặc biệt là {url-micrometer-docs-concepts}[concepts section].
 
 [[actuator.metrics.getting-started]]
-== Getting Started
+== Bắt đầu
 
-Spring Boot auto-configure composite javadoc:io.micrometer.core.instrument.MeterRegistry[] và thêm một registry vào composite cho mỗi implementation được hỗ trợ tìm thấy trên classpath.
-Chỉ cần dependency `micrometer-registry-{system}` trên runtime classpath là Spring Boot cấu hình registry.
+Spring Boot auto-configure một composite javadoc:io.micrometer.core.instrument.MeterRegistry[] và thêm một registry vào composite cho mỗi implementation được hỗ trợ tìm thấy trên classpath.
+Chỉ cần có dependency `micrometer-registry-\{system}` trên runtime classpath là đủ để Spring Boot configure registry.
 
-Phần lớn registry share common feature.
-Ví dụ có thể disable một registry cụ thể dù implementation Micrometer registry có trên classpath.
-Ví dụ disable Datadog:
+Phần lớn registry có các feature chung.
+Ví dụ, bạn có thể disable một registry cụ thể ngay cả khi implementation của Micrometer registry có trên classpath.
+Ví dụ sau disable Datadog:
 
 [configprops,yaml]
 ----
@@ -41,7 +41,7 @@ management:
         enabled: false
 ----
 
-Cũng có thể disable mọi registry trừ khi registry-specific property nói khác:
+Bạn cũng có thể disable mọi registry, trừ khi registry-specific property quy định khác, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -52,7 +52,7 @@ management:
         enabled: false
 ----
 
-Spring Boot cũng thêm mọi auto-configured registry vào global static composite registry trên class javadoc:io.micrometer.core.instrument.Metrics[], trừ khi explicit disable:
+Spring Boot cũng thêm mọi registry được auto-configure vào global static composite registry trên class javadoc:io.micrometer.core.instrument.Metrics[], trừ khi bạn explicit disable hành vi này:
 
 [configprops,yaml]
 ----
@@ -61,29 +61,29 @@ management:
     use-global-registry: false
 ----
 
-NOTE: Trong test dùng `spring-boot-micrometer-metrics-test`, global registry mặc định disable.
-Nếu muốn dùng global registry, annotate test bằng javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation] với `useGlobalRegistry = true`, hoặc set configprop:management.metrics.use-global-registry[] thành `true`.
+NOTE: Trong test dùng `spring-boot-micrometer-metrics-test`, global registry mặc định bị disable.
+Nếu muốn dùng global registry trong test như vậy, hãy annotate test bằng javadoc:org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics[format=annotation] với `useGlobalRegistry = true`, hoặc explicit set property configprop:management.metrics.use-global-registry[] thành `true`.
 
-Có thể register bất kỳ số lượng bean javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.MeterRegistryCustomizer[] nào để configure registry thêm, ví dụ apply common tag, trước khi meter được register:
+Bạn có thể register bất kỳ số lượng bean javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.MeterRegistryCustomizer[] nào để configure thêm registry, chẳng hạn apply common tag, trước khi bất kỳ meter nào được register vào registry:
 
 include-code::commontags/MyMeterRegistryConfiguration[]
 
-Có thể apply customization cho registry implementation cụ thể bằng generic type cụ thể hơn:
+Bạn có thể apply customization cho implementation cụ thể của registry bằng cách chỉ rõ generic type cụ thể hơn:
 
 include-code::specifictype/MyMeterRegistryConfiguration[]
 
-Spring Boot cũng xref:actuator/metrics.adoc#actuator.metrics.supported[configure built-in instrumentation] có thể control qua configuration hoặc dedicated annotation marker.
+Spring Boot cũng xref:actuator/metrics.adoc#actuator.metrics.supported[configure built-in instrumentation] mà bạn có thể control thông qua configuration hoặc dedicated annotation marker.
 
 [[actuator.metrics.export]]
-== Supported Monitoring Systems
+== Monitoring System Được Hỗ Trợ
 
-Phần này mô tả ngắn từng monitoring system được hỗ trợ.
+Phần này mô tả ngắn gọn từng monitoring system được hỗ trợ.
 
 [[actuator.metrics.export.atlas]]
 === Atlas
 
-Mặc định metric được export tới {url-micrometer-docs-implementations}/atlas[Atlas] chạy trên local machine.
-Có thể cung cấp location của https://github.com/Netflix/atlas[Atlas server]:
+Mặc định, metrics được export tới {url-micrometer-docs-implementations}/atlas[Atlas] đang chạy trên local machine.
+Bạn có thể cung cấp location của https://github.com/Netflix/atlas[Atlas server]:
 
 [configprops,yaml]
 ----
@@ -97,8 +97,8 @@ management:
 [[actuator.metrics.export.datadog]]
 === Datadog
 
-Datadog registry định kỳ push metric tới https://www.datadoghq.com[datadoghq].
-Để export metric tới {url-micrometer-docs-implementations}/datadog[Datadog], phải cung cấp API key:
+Datadog registry định kỳ push metrics tới https://www.datadoghq.com[datadoghq].
+Để export metrics tới {url-micrometer-docs-implementations}/datadog[Datadog], bạn phải cung cấp API key:
 
 [configprops,yaml]
 ----
@@ -109,7 +109,7 @@ management:
         api-key: "YOUR_KEY"
 ----
 
-Nếu cung cấp thêm application key (optional), metadata như meter description, type và base unit cũng được export:
+Nếu cung cấp thêm application key (optional), metadata như meter description, type và base unit cũng sẽ được export:
 
 [configprops,yaml]
 ----
@@ -121,8 +121,8 @@ management:
         application-key: "YOUR_APPLICATION_KEY"
 ----
 
-Mặc định metric gửi tới Datadog US https://docs.datadoghq.com/getting_started/site[site] (`https://api.datadoghq.com`).
-Nếu project host ở site khác hoặc cần gửi qua proxy, configure URI:
+Mặc định, metrics được gửi tới https://docs.datadoghq.com/getting_started/site[Datadog US site] (`https://api.datadoghq.com`).
+Nếu Datadog project của bạn được host trên site khác hoặc bạn cần gửi metrics qua proxy, hãy configure URI tương ứng:
 
 [configprops,yaml]
 ----
@@ -133,7 +133,7 @@ management:
         uri: "https://api.datadoghq.eu"
 ----
 
-Có thể đổi interval gửi metric tới Datadog:
+Bạn cũng có thể thay đổi interval gửi metrics tới Datadog:
 
 [configprops,yaml]
 ----
@@ -147,49 +147,49 @@ management:
 [[actuator.metrics.export.dynatrace]]
 === Dynatrace
 
-Dynatrace có hai metrics ingest API, cả hai được implement cho {url-micrometer-docs-implementations}/dynatrace[Micrometer].
-Xem Dynatrace documentation về Micrometer metrics ingest {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest[tại đây].
+Dynatrace cung cấp hai metrics ingest API, cả hai đều được implement cho {url-micrometer-docs-implementations}/dynatrace[Micrometer].
+Bạn có thể xem Dynatrace documentation về Micrometer metrics ingest {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest[tại đây].
 
 Configuration property trong namespace `v1` chỉ áp dụng khi export tới {url-dynatrace-docs-shortlink}/api-metrics[Timeseries v1 API].
-Support V1 API đã deprecated.
+Support cho V1 API đã deprecated.
 
 Configuration property trong namespace `v2` chỉ áp dụng khi export tới {url-dynatrace-docs-shortlink}/api-metrics-v2-post-datapoints[Metrics v2 API].
 
-Integration chỉ export tới một trong `v1` hoặc `v2` tại một thời điểm; `v2` được khuyến nghị mạnh vì v1 deprecated.
-Nếu `device-id` được set trong namespace `v1` (bắt buộc cho v1, không dùng ở v2), metric export tới endpoint `v1`.
-Nếu không, mặc định `v2`.
+Integration chỉ có thể export tới `v1` hoặc `v2` tại một thời điểm; `v2` được khuyến nghị mạnh vì v1 đã deprecated.
+Nếu `device-id` được set trong namespace `v1` (bắt buộc với v1 nhưng không được dùng ở v2), metrics sẽ được export tới endpoint `v1`.
+Nếu không, `v2` được dùng mặc định.
 
 [[actuator.metrics.export.dynatrace.v2-api]]
 ==== v2 API
 
-Có thể dùng v2 API theo hai cách.
+Bạn có thể dùng v2 API theo hai cách.
 
 [[actuator.metrics.export.dynatrace.v2-api.auto-config]]
 ===== Auto-configuration
 
-Dynatrace auto-configuration available cho host được monitor bởi OneAgent hoặc Dynatrace Operator for Kubernetes.
+Dynatrace auto-configuration có sẵn cho các host được OneAgent hoặc Dynatrace Operator for Kubernetes monitor.
 
-**Local OneAgent:** Nếu OneAgent chạy trên host, metric tự động export tới {url-dynatrace-docs-shortlink}/local-api[local OneAgent ingest endpoint].
-Ingest endpoint forward metric tới Dynatrace backend.
+**Local OneAgent:** Nếu OneAgent đang chạy trên host, metrics được tự động export tới {url-dynatrace-docs-shortlink}/local-api[local OneAgent ingest endpoint].
+Ingest endpoint forward metrics tới Dynatrace backend.
 
-**Dynatrace Kubernetes Operator:** Khi chạy Kubernetes có Dynatrace Operator, registry tự động lấy endpoint URI và API token từ operator.
+**Dynatrace Kubernetes Operator:** Khi chạy Kubernetes với Dynatrace Operator đã được cài đặt, registry sẽ tự động lấy endpoint URI và API token từ operator.
 
-Đây là default behavior và không cần setup đặc biệt ngoài dependency `io.micrometer:micrometer-registry-dynatrace`.
+Đây là behavior mặc định và không cần setup đặc biệt ngoài dependency `io.micrometer:micrometer-registry-dynatrace`.
 
 [[actuator.metrics.export.dynatrace.v2-api.manual-config]]
-===== Manual Configuration
+===== Cấu hình thủ công
 
 Nếu không có auto-configuration, cần endpoint của {url-dynatrace-docs-shortlink}/api-metrics-v2-post-datapoints[Metrics v2 API] và API token.
 {url-dynatrace-docs-shortlink}/api-authentication[API token] phải có permission "`Ingest metrics`" (`metrics.ingest`).
-Khuyến nghị giới hạn token chỉ permission này.
+Bạn nên giới hạn scope của token chỉ ở permission này.
 Endpoint URI phải chứa path, ví dụ `/api/v2/metrics/ingest`.
 
-URL của Metrics API v2 ingest endpoint tùy deployment option:
+URL của Metrics API v2 ingest endpoint khác nhau tùy deployment option:
 
 * SaaS: `+https://{your-environment-id}.live.dynatrace.com/api/v2/metrics/ingest+`
 * Managed deployments: `+https://{your-domain}/e/{your-environment-id}/api/v2/metrics/ingest+`
 
-Ví dụ configure metric export với environment id `example`:
+Ví dụ sau configure metrics export bằng environment id `example`:
 
 [configprops,yaml]
 ----
@@ -201,21 +201,21 @@ management:
         api-token: "YOUR_TOKEN"
 ----
 
-Khi dùng Dynatrace v2 API, có các optional feature sau (chi tiết trong {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest#dt-configuration-properties[Dynatrace documentation]):
+Khi dùng Dynatrace v2 API, các optional feature sau có sẵn (xem thêm chi tiết trong {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest#dt-configuration-properties[Dynatrace documentation]):
 
-* Metric key prefix: Prefix được prepend vào mọi exported metric key.
-* Enrich with Dynatrace metadata: Nếu OneAgent hoặc Dynatrace operator đang chạy, enrich metric bằng metadata bổ sung như host, process hoặc pod.
-* Default dimensions: Chỉ định key-value pair thêm vào mọi exported metric.
-Nếu Micrometer chỉ định tag cùng key, tag override default dimension.
-* Use Dynatrace Summary instruments: Trong một số case Micrometer Dynatrace registry tạo metric bị reject.
-Micrometer 1.9.x fix bằng Dynatrace-specific summary instrument.
-Set toggle này `false` buộc Micrometer fallback về behavior mặc định trước 1.9.x.
-Chỉ nên dùng khi gặp vấn đề migrate từ Micrometer 1.8.x sang 1.9.x.
-* Export meter metadata: Từ Micrometer 1.12.0, Dynatrace exporter mặc định export cả meter metadata như unit và description.
-Dùng toggle `export-meter-metadata` để tắt.
+* Metric key prefix: Đặt prefix được prepend vào mọi exported metric key.
+* Enrich with Dynatrace metadata: Nếu OneAgent hoặc Dynatrace operator đang chạy, enrich metrics bằng metadata bổ sung, chẳng hạn host, process hoặc pod.
+* Default dimensions: Chỉ định các key-value pair được thêm vào mọi exported metric.
+Nếu Micrometer chỉ định tag có cùng key, tag đó sẽ override default dimension.
+* Use Dynatrace Summary instruments: Trong một số trường hợp, Micrometer Dynatrace registry tạo ra metrics bị reject.
+Micrometer 1.9.x đã fix việc này bằng cách giới thiệu Dynatrace-specific summary instrument.
+Set toggle này thành `false` sẽ buộc Micrometer fallback về behavior mặc định trước 1.9.x.
+Chỉ nên dùng khi gặp vấn đề trong quá trình migrate từ Micrometer 1.8.x sang 1.9.x.
+* Export meter metadata: Từ Micrometer 1.12.0, Dynatrace exporter cũng mặc định export meter metadata, chẳng hạn unit và description.
+Dùng toggle `export-meter-metadata` để tắt feature này.
 
-Bạn có thể không cần chỉ định URI và API token, như ví dụ sau.
-Trong trường hợp này, endpoint được cấu hình tự động sẽ được dùng:
+Bạn có thể không cần chỉ định URI và API token, như trong ví dụ sau.
+Trong trường hợp này, endpoint được auto-configure sẽ được dùng:
 
 [configprops,yaml]
 ----
@@ -223,7 +223,7 @@ management:
   dynatrace:
     metrics:
       export:
-        # Specify uri and api-token here if not using the local OneAgent endpoint.
+        # Chỉ định uri và api-token ở đây nếu không dùng local OneAgent endpoint.
         v2:
           metric-key-prefix: "your.key.prefix"
           enrich-with-dynatrace-metadata: true
@@ -235,11 +235,11 @@ management:
 ----
 
 [[actuator.metrics.export.dynatrace.v1-api]]
-==== v1 API (Deprecated)
+==== v1 API (Đã deprecated)
 
-Dynatrace v1 API metrics registry định kỳ push metric tới configured URI bằng {url-dynatrace-docs-shortlink}/api-metrics[Timeseries v1 API].
-Để backward-compatible với setup hiện có, khi `device-id` được set, metric export tới Timeseries v1 endpoint.
-Để export tới Dynatrace cần API token, device ID và URI:
+Dynatrace v1 API metrics registry định kỳ push metrics tới configured URI bằng {url-dynatrace-docs-shortlink}/api-metrics[Timeseries v1 API].
+Để backward-compatible với các setup hiện có, khi `device-id` được set (bắt buộc với v1 nhưng không dùng ở v2), metrics sẽ được export tới Timeseries v1 endpoint.
+Để export metrics tới {url-micrometer-docs-implementations}/dynatrace[Dynatrace], bạn phải cung cấp API token, device ID và URI:
 
 [configprops%novalidate,yaml]
 ----
@@ -253,14 +253,14 @@ management:
           device-id: "YOUR_DEVICE_ID"
 ----
 
-Với v1 API, phải specify base environment URI không có path vì v1 endpoint path được thêm tự động.
+Với v1 API, bạn phải specify base environment URI không có path vì v1 endpoint path được thêm tự động.
 
 [[actuator.metrics.export.dynatrace.version-independent-settings]]
-==== Version-independent Settings
+==== Cài đặt không phụ thuộc version
 
-Ngoài API endpoint và token, có thể đổi interval gửi metric tới Dynatrace.
+Ngoài API endpoint và token, bạn cũng có thể thay đổi interval gửi metrics tới Dynatrace.
 Default export interval là `60s`.
-Ví dụ set 30 giây:
+Ví dụ sau set export interval thành 30 giây:
 
 [configprops,yaml]
 ----
@@ -271,13 +271,13 @@ management:
         step: "30s"
 ----
 
-Xem thêm {url-micrometer-docs-implementations}/dynatrace[Micrometer documentation] và {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest[Dynatrace documentation].
+Xem thêm thông tin về cách setup Dynatrace exporter cho Micrometer trong {url-micrometer-docs-implementations}/dynatrace[Micrometer documentation] và {url-dynatrace-docs-shortlink}/micrometer-metrics-ingest[Dynatrace documentation].
 
 [[actuator.metrics.export.elastic]]
 === Elastic
 
-Mặc định metric export tới {url-micrometer-docs-implementations}/elastic[Elastic] trên local machine.
-Có thể cung cấp location Elastic server:
+Mặc định, metrics được export tới {url-micrometer-docs-implementations}/elastic[Elastic] đang chạy trên local machine.
+Bạn có thể cung cấp location của Elastic server:
 
 [configprops,yaml]
 ----
@@ -291,8 +291,8 @@ management:
 [[actuator.metrics.export.ganglia]]
 === Ganglia
 
-Mặc định metric export tới {url-micrometer-docs-implementations}/ganglia[Ganglia] trên local machine.
-Có thể cung cấp host và port của http://ganglia.sourceforge.net[Ganglia server]:
+Mặc định, metrics được export tới {url-micrometer-docs-implementations}/ganglia[Ganglia] đang chạy trên local machine.
+Bạn có thể cung cấp host và port của http://ganglia.sourceforge.net[Ganglia server], như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -307,8 +307,8 @@ management:
 [[actuator.metrics.export.graphite]]
 === Graphite
 
-Mặc định metric export tới {url-micrometer-docs-implementations}/graphite[Graphite] trên local machine.
-Có thể cung cấp host và port của https://graphiteapp.org[Graphite server]:
+Mặc định, metrics được export tới {url-micrometer-docs-implementations}/graphite[Graphite] đang chạy trên local machine.
+Bạn có thể cung cấp host và port của https://graphiteapp.org[Graphite server], như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -320,12 +320,12 @@ management:
          port: 9004
 ----
 
-Micrometer cung cấp default javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] chi phối cách dimensional meter ID được {url-micrometer-docs-implementations}/graphite#_hierarchical_name_mapping[map thành flat hierarchical name].
+Micrometer cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] mặc định, chi phối cách dimensional meter ID được {url-micrometer-docs-implementations}/graphite#_hierarchical_name_mapping[map thành flat hierarchical name].
 
 [TIP]
 ====
-Để kiểm soát behavior này, define javadoc:io.micrometer.graphite.GraphiteMeterRegistry[] riêng và cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] riêng.
-Auto-configured javadoc:io.micrometer.graphite.GraphiteConfig[] và javadoc:io.micrometer.core.instrument.Clock[] được cung cấp trừ khi tự define:
+Để control behavior này, hãy define javadoc:io.micrometer.graphite.GraphiteMeterRegistry[] và cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] của riêng bạn.
+Các bean javadoc:io.micrometer.graphite.GraphiteConfig[] và javadoc:io.micrometer.core.instrument.Clock[] được auto-configure sẽ được cung cấp, trừ khi bạn tự define:
 
 include-code::MyGraphiteConfiguration[]
 ====
@@ -333,8 +333,8 @@ include-code::MyGraphiteConfiguration[]
 [[actuator.metrics.export.humio]]
 === Humio
 
-Mặc định Humio registry định kỳ push metric tới https://cloud.humio.com.
-Để export metric tới SaaS {url-micrometer-docs-implementations}/humio[Humio], cần API token:
+Mặc định, Humio registry định kỳ push metrics tới https://cloud.humio.com.
+Để export metrics tới SaaS {url-micrometer-docs-implementations}/humio[Humio], bạn phải cung cấp API token:
 
 [configprops,yaml]
 ----
@@ -345,7 +345,7 @@ management:
         api-token: "YOUR_TOKEN"
 ----
 
-Nên configure một hoặc nhiều tag để identify data source nơi metric được push:
+Bạn cũng nên configure một hoặc nhiều tag để identify data source nơi metrics được push:
 
 [configprops,yaml]
 ----
@@ -361,9 +361,9 @@ management:
 [[actuator.metrics.export.influx]]
 === Influx
 
-Mặc định metric export tới instance {url-micrometer-docs-implementations}/influx[Influx] v1 trên local machine với default configuration.
-Để export tới InfluxDB v2, configure `org`, `bucket`, và authentication `token`.
-Có thể cung cấp location https://www.influxdata.com[Influx server]:
+Mặc định, metrics được export tới instance {url-micrometer-docs-implementations}/influx[Influx] v1 đang chạy trên local machine với default configuration.
+Để export tới InfluxDB v2, configure `org`, `bucket` và authentication `token` để ghi metrics.
+Bạn có thể cung cấp location của https://www.influxdata.com[Influx server] bằng:
 
 [configprops,yaml]
 ----
@@ -377,9 +377,9 @@ management:
 [[actuator.metrics.export.jmx]]
 === JMX
 
-Micrometer cung cấp hierarchical mapping tới {url-micrometer-docs-implementations}/jmx[JMX], chủ yếu như cách rẻ và portable để xem metric local.
-Mặc định metric export tới JMX domain `metrics`.
-Có thể cung cấp domain:
+Micrometer cung cấp hierarchical mapping tới {url-micrometer-docs-implementations}/jmx[JMX], chủ yếu như một cách rẻ và portable để xem metrics trên local machine.
+Mặc định, metrics được export tới JMX domain `metrics`.
+Bạn có thể cung cấp domain cần dùng bằng:
 
 [configprops,yaml]
 ----
@@ -390,12 +390,12 @@ management:
         domain: "com.example.app.metrics"
 ----
 
-Micrometer cung cấp default javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] chi phối cách dimensional meter ID được {url-micrometer-docs-implementations}/jmx#_hierarchical_name_mapping[map thành flat hierarchical name].
+Micrometer cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] mặc định, chi phối cách dimensional meter ID được {url-micrometer-docs-implementations}/jmx#_hierarchical_name_mapping[map thành flat hierarchical name].
 
 [TIP]
 ====
-Để kiểm soát behavior, define javadoc:io.micrometer.jmx.JmxMeterRegistry[] và cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] riêng.
-Auto-configured javadoc:io.micrometer.jmx.JmxConfig[] và javadoc:io.micrometer.core.instrument.Clock[] được cung cấp trừ khi tự define:
+Để control behavior này, hãy define javadoc:io.micrometer.jmx.JmxMeterRegistry[] và cung cấp javadoc:io.micrometer.core.instrument.util.HierarchicalNameMapper[] của riêng bạn.
+Các bean javadoc:io.micrometer.jmx.JmxConfig[] và javadoc:io.micrometer.core.instrument.Clock[] được auto-configure sẽ được cung cấp, trừ khi bạn tự define:
 
 include-code::MyJmxConfiguration[]
 ====
@@ -403,8 +403,8 @@ include-code::MyJmxConfiguration[]
 [[actuator.metrics.export.kairos]]
 === KairosDB
 
-Mặc định metric export tới {url-micrometer-docs-implementations}/kairos[KairosDB] trên local machine.
-Có thể cung cấp location https://kairosdb.github.io/[KairosDB server]:
+Mặc định, metrics được export tới {url-micrometer-docs-implementations}/kairos[KairosDB] đang chạy trên local machine.
+Bạn có thể cung cấp location của https://kairosdb.github.io/[KairosDB server] bằng:
 
 [configprops,yaml]
 ----
@@ -418,8 +418,8 @@ management:
 [[actuator.metrics.export.newrelic]]
 === New Relic
 
-New Relic registry định kỳ push metric tới {url-micrometer-docs-implementations}/new-relic[New Relic].
-Để export tới https://newrelic.com[New Relic], cần API key và account ID:
+New Relic registry định kỳ push metrics tới {url-micrometer-docs-implementations}/new-relic[New Relic].
+Để export metrics tới https://newrelic.com[New Relic], bạn phải cung cấp API key và account ID:
 
 [configprops,yaml]
 ----
@@ -431,7 +431,7 @@ management:
         account-id: "YOUR_ACCOUNT_ID"
 ----
 
-Có thể đổi interval gửi metric:
+Bạn cũng có thể thay đổi interval gửi metrics tới New Relic:
 
 [configprops,yaml]
 ----
@@ -442,7 +442,7 @@ management:
         step: "30s"
 ----
 
-Mặc định metric được publish qua REST call, nhưng cũng có thể dùng Java Agent API nếu có trên classpath:
+Mặc định, metrics được publish qua REST call, nhưng bạn cũng có thể dùng Java Agent API nếu API này có trên classpath:
 
 [configprops,yaml]
 ----
@@ -453,13 +453,13 @@ management:
         client-provider-type: "insights-agent"
 ----
 
-Cuối cùng có thể kiểm soát hoàn toàn bằng cách define bean javadoc:io.micrometer.newrelic.NewRelicClientProvider[] riêng.
+Cuối cùng, bạn có thể control hoàn toàn bằng cách define bean javadoc:io.micrometer.newrelic.NewRelicClientProvider[] của riêng mình.
 
 [[actuator.metrics.export.otlp]]
 === OTLP
 
-Mặc định metric export qua {url-micrometer-docs-implementations}/otlp[OpenTelemetry protocol (OTLP)] tới consumer chạy trên local machine.
-Để export tới location khác, cung cấp https://opentelemetry.io/[OTLP metrics endpoint] bằng configprop:management.otlp.metrics.export.url[]:
+Mặc định, metrics được export qua {url-micrometer-docs-implementations}/otlp[OpenTelemetry protocol (OTLP)] tới consumer đang chạy trên local machine.
+Để export tới location khác, hãy cung cấp https://opentelemetry.io/[OTLP metrics endpoint] bằng configprop:management.otlp.metrics.export.url[]:
 
 [configprops,yaml]
 ----
@@ -470,25 +470,25 @@ management:
         url: "https://otlp.example.com:4318/v1/metrics"
 ----
 
-Custom header, ví dụ authentication, có thể cung cấp bằng property configprop:management.otlp.metrics.export.headers.*[].
+Bạn cũng có thể cung cấp custom header, chẳng hạn header dùng cho authentication, bằng các property configprop:management.otlp.metrics.export.headers.*[].
 
-Nếu bean `OtlpMetricsSender` available, nó được configure trên `OtlpMeterRegistry` mà Spring Boot auto-configure.
+Nếu bean `OtlpMetricsSender` available, bean này sẽ được configure trên `OtlpMeterRegistry` mà Spring Boot auto-configure.
 
 https://opentelemetry.io/docs/specs/otel/metrics/data-model/#exemplars[OTLP Exemplars] cũng được hỗ trợ.
-Để enable, cần bean javadoc:io.micrometer.registry.otlp.ExemplarContextProvider[].
-Nếu dùng xref:actuator/tracing.adoc[Micrometer Tracing], bean được auto-configure.
-Mặc định chỉ sampled trace được include làm exemplar.
-Control behavior bằng configprop:management.tracing.exemplars.include[].
+Để enable feature này, cần có bean javadoc:io.micrometer.registry.otlp.ExemplarContextProvider[].
+Nếu dùng xref:actuator/tracing.adoc[Micrometer Tracing], bean này sẽ được auto-configure.
+Mặc định, chỉ sampled trace được include làm exemplar.
+Bạn có thể control behavior này bằng configprop:management.tracing.exemplars.include[].
 
 [[actuator.metrics.export.prometheus]]
 === Prometheus
 
-{url-micrometer-docs-implementations}/prometheus[Prometheus] mong đợi scrape hoặc poll từng application instance để lấy metric.
-Spring Boot cung cấp actuator endpoint `/actuator/prometheus` để present https://prometheus.io[Prometheus scrape] đúng format.
+{url-micrometer-docs-implementations}/prometheus[Prometheus] dự kiến sẽ scrape hoặc poll từng application instance để lấy metrics.
+Spring Boot cung cấp actuator endpoint `/actuator/prometheus` để present https://prometheus.io[Prometheus scrape] theo đúng format.
 
-TIP: Mặc định endpoint không available và phải expose. Xem xref:actuator/endpoints.adoc#actuator.endpoints.exposing[exposing endpoints].
+TIP: Mặc định endpoint không available và phải được expose. Xem xref:actuator/endpoints.adoc#actuator.endpoints.exposing[exposing endpoints] để biết thêm chi tiết.
 
-Ví dụ `scrape_config` thêm vào `prometheus.yml`:
+Ví dụ sau thêm `scrape_config` vào `prometheus.yml`:
 
 [source,yaml]
 ----
@@ -500,17 +500,17 @@ scrape_configs:
 ----
 
 https://prometheus.io/docs/prometheus/latest/feature_flags/#exemplars-storage[Prometheus Exemplars] cũng được hỗ trợ.
-Để enable feature này, cần bean javadoc:io.prometheus.metrics.tracer.common.SpanContext[].
-Nếu dùng deprecated Prometheus simpleclient support và muốn enable feature này, cần bean javadoc:io.prometheus.client.exemplars.tracer.common.SpanContextSupplier[].
-Nếu dùng {url-micrometer-tracing-docs}[Micrometer Tracing], bean được auto-configure, nhưng luôn có thể tự tạo.
-Mặc định chỉ sampled trace được include làm exemplar.
-Control bằng configprop:management.tracing.exemplars.include[].
-Value `all` không được Prometheus hỗ trợ.
-Xem https://prometheus.io/docs/prometheus/latest/feature_flags/#exemplars-storage[Prometheus Docs], vì feature này cần explicit enable phía Prometheus và chỉ hỗ trợ format https://github.com/OpenObservability/OpenMetrics/blob/v1.0.0/specification/OpenMetrics.md#exemplars[OpenMetrics].
+Để enable feature này, cần có bean javadoc:io.prometheus.metrics.tracer.common.SpanContext[].
+Nếu dùng deprecated Prometheus simpleclient support và muốn enable feature này, cần có bean javadoc:io.prometheus.client.exemplars.tracer.common.SpanContextSupplier[].
+Nếu dùng {url-micrometer-tracing-docs}[Micrometer Tracing], bean sẽ được auto-configure, nhưng bạn luôn có thể tự tạo bean nếu muốn.
+Mặc định, chỉ sampled trace được include làm exemplar.
+Bạn có thể control behavior này bằng configprop:management.tracing.exemplars.include[].
+Prometheus không hỗ trợ value `all`.
+Xem https://prometheus.io/docs/prometheus/latest/feature_flags/#exemplars-storage[Prometheus Docs], vì feature này cần được explicit enable ở phía Prometheus và chỉ hỗ trợ format https://github.com/OpenObservability/OpenMetrics/blob/v1.0.0/specification/OpenMetrics.md#exemplars[OpenMetrics].
 
-Với ephemeral hoặc batch job có thể không tồn tại đủ lâu để scrape, dùng https://github.com/prometheus/pushgateway[Prometheus Pushgateway] để expose metric cho Prometheus.
+Với ephemeral hoặc batch job có thể không tồn tại đủ lâu để được scrape, bạn có thể dùng https://github.com/prometheus/pushgateway[Prometheus Pushgateway] để expose metrics cho Prometheus.
 
-Để enable Prometheus Pushgateway support, thêm dependency:
+Để enable Prometheus Pushgateway support, thêm dependency sau vào project:
 
 [source,xml]
 ----
@@ -520,20 +520,20 @@ Với ephemeral hoặc batch job có thể không tồn tại đủ lâu để s
 </dependency>
 ----
 
-Khi Prometheus Pushgateway dependency có trên classpath và configprop:management.prometheus.metrics.export.pushgateway.enabled[] = `true`, bean javadoc:org.springframework.boot.micrometer.metrics.export.prometheus.PrometheusPushGatewayManager[] được auto-configure.
-Bean này quản lý việc push metric tới Prometheus Pushgateway.
+Khi Prometheus Pushgateway dependency có trên classpath và property configprop:management.prometheus.metrics.export.pushgateway.enabled[] được set thành `true`, bean javadoc:org.springframework.boot.micrometer.metrics.export.prometheus.PrometheusPushGatewayManager[] sẽ được auto-configure.
+Bean này quản lý việc push metrics tới Prometheus Pushgateway.
 
-Có thể tune javadoc:org.springframework.boot.micrometer.metrics.export.prometheus.PrometheusPushGatewayManager[] bằng property dưới `management.prometheus.metrics.export.pushgateway`.
-Với advanced configuration, có thể cung cấp bean javadoc:org.springframework.boot.micrometer.metrics.export.prometheus.PrometheusPushGatewayManager[] riêng.
+Bạn có thể tune javadoc:org.springframework.boot.micrometer.metrics.export.prometheus.PrometheusPushGatewayManager[] bằng các property dưới `management.prometheus.metrics.export.pushgateway`.
+Với advanced configuration, bạn cũng có thể cung cấp bean javadoc:org.springframework.boot.micrometer.metrics.export.prometheus.PrometheusPushGatewayManager[] của riêng mình.
 
 [[actuator.metrics.export.simple]]
 === Simple
 
-Micrometer có simple in-memory backend tự động dùng làm fallback nếu không registry khác được configure.
-Điều này cho phép xem metric collect trong xref:actuator/metrics.adoc#actuator.metrics.endpoint[metrics endpoint].
+Micrometer có một simple in-memory backend được tự động dùng làm fallback nếu không có registry nào khác được configure.
+Điều này cho phép xem các metrics được collect trong xref:actuator/metrics.adoc#actuator.metrics.endpoint[metrics endpoint].
 
-In-memory backend tự disable ngay khi dùng backend khác.
-Cũng có thể disable explicit:
+In-memory backend tự disable ngay khi bạn dùng backend khác.
+Bạn cũng có thể explicit disable backend này:
 
 [configprops,yaml]
 ----
@@ -547,8 +547,8 @@ management:
 [[actuator.metrics.export.stackdriver]]
 === Stackdriver
 
-Stackdriver registry định kỳ push metric tới https://cloud.google.com/stackdriver/[Stackdriver].
-Để export tới SaaS {url-micrometer-docs-implementations}/stackdriver[Stackdriver], cần Google Cloud project ID:
+Stackdriver registry định kỳ push metrics tới https://cloud.google.com/stackdriver/[Stackdriver].
+Để export metrics tới SaaS {url-micrometer-docs-implementations}/stackdriver[Stackdriver], bạn phải cung cấp Google Cloud project ID:
 
 [configprops,yaml]
 ----
@@ -559,7 +559,7 @@ management:
         project-id: "my-project"
 ----
 
-Có thể đổi interval gửi metric:
+Bạn cũng có thể thay đổi interval gửi metrics tới Stackdriver:
 
 [configprops,yaml]
 ----
@@ -573,9 +573,9 @@ management:
 [[actuator.metrics.export.statsd]]
 === StatsD
 
-StatsD registry eager push metric qua UDP tới StatsD agent.
-Mặc định metric export tới {url-micrometer-docs-implementations}/statsD[StatsD] agent trên local machine.
-Có thể cung cấp host, port và protocol:
+StatsD registry eager push metrics qua UDP tới StatsD agent.
+Mặc định, metrics được export tới {url-micrometer-docs-implementations}/statsD[StatsD] agent đang chạy trên local machine.
+Bạn có thể cung cấp host, port và protocol cần dùng bằng:
 
 [configprops,yaml]
 ----
@@ -588,7 +588,7 @@ management:
         protocol: "udp"
 ----
 
-Cũng có thể đổi StatsD line protocol, mặc định Datadog:
+Bạn cũng có thể thay đổi StatsD line protocol cần dùng, mặc định là Datadog:
 
 [configprops,yaml]
 ----
@@ -600,144 +600,144 @@ management:
 ----
 
 [[actuator.metrics.supported]]
-== Supported Metrics and Meters
+== Metrics và Meter Được Hỗ Trợ
 
 Spring Boot cung cấp automatic meter registration cho nhiều technology.
-Trong phần lớn trường hợp, default cung cấp metric hợp lý có thể publish tới bất kỳ monitoring system được hỗ trợ.
+Trong phần lớn trường hợp, default cung cấp các metrics hợp lý có thể được publish tới bất kỳ monitoring system nào được hỗ trợ.
 
 [[actuator.metrics.supported.jvm]]
 === JVM Metrics
 
 Auto-configuration enable JVM Metrics bằng core Micrometer class.
-JVM metric được publish dưới meter name `jvm.`.
+JVM metrics được publish dưới meter name `jvm.`.
 
-Các JVM metric được cung cấp:
+Các JVM metrics sau được cung cấp:
 
 * Nhiều detail về memory và buffer pool
-* Statistic liên quan garbage collection
+* Statistics liên quan đến garbage collection
 * Thread utilization
-* https://docs.micrometer.io/micrometer/reference/reference/jvm.html#_java_21_metrics[Virtual threads statistic] (cần `io.micrometer:micrometer-java21` trên classpath)
-* Số class loaded và unloaded
+* https://docs.micrometer.io/micrometer/reference/reference/jvm.html#_java_21_metrics[Virtual threads statistics] (cần `io.micrometer:micrometer-java21` trên classpath)
+* Số class được loaded và unloaded
 * JVM version information
 * JIT compilation time
 
 [[actuator.metrics.supported.system]]
 === System Metrics
 
-Auto-configuration enable system metric bằng core Micrometer class.
-System metric publish dưới meter name `system.`, `process.`, và `disk.`.
+Auto-configuration enable system metrics bằng core Micrometer class.
+System metrics được publish dưới các meter name `system.`, `process.` và `disk.`.
 
-Các system metric được cung cấp:
+Các system metrics sau được cung cấp:
 
-* CPU metric
-* File descriptor metric
-* Uptime metric, gồm thời gian application đã chạy và fixed gauge của absolute start time
+* CPU metrics
+* File descriptor metrics
+* Uptime metrics, gồm thời gian application đã chạy và fixed gauge của absolute start time
 * Disk space available
 
 [[actuator.metrics.supported.application-startup]]
 === Application Startup Metrics
 
-Auto-configuration expose application startup time metric:
+Auto-configuration expose các application startup time metrics:
 
-* `application.started.time`: thời gian start application.
-* `application.ready.time`: thời gian để application ready phục vụ request.
+* `application.started.time`: thời gian cần để start application.
+* `application.ready.time`: thời gian cần để application ready phục vụ request.
 
-Metric được tag bằng fully qualified name của application class.
+Metrics được tag bằng fully qualified name của application class.
 
 [[actuator.metrics.supported.logger]]
 === Logger Metrics
 
-Auto-configuration enable event metric cho cả Logback và Log4J2.
-Detail publish dưới meter name `log4j2.events.` hoặc `logback.events.`.
+Auto-configuration enable event metrics cho cả Logback và Log4J2.
+Các detail được publish dưới meter name `log4j2.events.` hoặc `logback.events.`.
 
 [[actuator.metrics.supported.tasks]]
-=== Task Execution and Scheduling Metrics
+=== Metrics về Thực Thi và Lập Lịch Task
 
-Auto-configuration enable instrumentation cho mọi bean javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor[] và javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler[] available, miễn underlying javadoc:java.util.concurrent.ThreadPoolExecutor[] available.
-Metric được tag bằng executor name derive từ bean name.
+Auto-configuration enable instrumentation cho mọi bean javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor[] và javadoc:org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler[] available, miễn là underlying javadoc:java.util.concurrent.ThreadPoolExecutor[] available.
+Metrics được tag bằng executor name derive từ bean name.
 
 [[actuator.metrics.supported.jms]]
 === JMS Metrics
 
-Auto-configuration enable instrumentation cho mọi bean javadoc:org.springframework.jms.core.JmsTemplate[] và method annotate javadoc:org.springframework.jms.annotation.JmsListener[format=annotation].
-Điều này tạo metric `"jms.message.publish"` và `"jms.message.process"` tương ứng.
-Xem {url-spring-framework-docs}/integration/observability.html#observability.jms[Spring Framework reference documentation] để biết thêm về observation được tạo.
+Auto-configuration enable instrumentation cho mọi bean javadoc:org.springframework.jms.core.JmsTemplate[] và các method được annotate bằng javadoc:org.springframework.jms.annotation.JmsListener[format=annotation].
+Điều này tạo ra metrics `"jms.message.publish"` và `"jms.message.process"` tương ứng.
+Xem {url-spring-framework-docs}/integration/observability.html#observability.jms[Spring Framework reference documentation] để biết thêm về các observation được tạo.
 
-NOTE: javadoc:org.springframework.jms.core.JmsClient[] và javadoc:org.springframework.jms.core.JmsMessagingTemplate[] dùng bean javadoc:org.springframework.jms.core.JmsTemplate[] cũng được instrument.
+NOTE: javadoc:org.springframework.jms.core.JmsClient[] và javadoc:org.springframework.jms.core.JmsMessagingTemplate[] sử dụng bean javadoc:org.springframework.jms.core.JmsTemplate[] cũng được instrument.
 
 [[actuator.metrics.supported.spring-mvc]]
 === Spring MVC Metrics
 
 Auto-configuration enable instrumentation cho mọi request được Spring MVC controller và functional handler xử lý.
-Mặc định metric generate với name `http.server.requests`.
-Nếu xref:actuator/observability.adoc#actuator.observability.semantic-conventions[dùng semantic convention của Micrometer], set configprop:management.observations.http.server.requests.name[] để customize name.
-Nếu dùng semantic convention của OpenTelemetry, name không customize được.
+Mặc định, metrics được generate với name `http.server.requests`.
+Nếu bạn xref:actuator/observability.adoc#actuator.observability.semantic-conventions[dùng semantic convention của Micrometer], hãy set property configprop:management.observations.http.server.requests.name[] để customize name.
+Nếu dùng semantic convention của OpenTelemetry, name không thể được customize.
 
-Xem {url-spring-framework-docs}/integration/observability.html#observability.http-server.servlet[Spring Framework reference documentation].
+Xem {url-spring-framework-docs}/integration/observability.html#observability.http-server.servlet[Spring Framework reference documentation] để biết thêm về các observation được tạo.
 
-Để thêm vào default tag, cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] extend javadoc:org.springframework.http.server.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.observation`.
-Để replace default tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.server.observation.ServerRequestObservationConvention[].
+Để thêm vào default tag, cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] extend javadoc:org.springframework.http.server.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.observation`.
+Để replace default tag, cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.server.observation.ServerRequestObservationConvention[].
 
-TIP: Trong một số case, exception handle trong web controller không được record làm request metric tag.
-Application có thể opt in bằng xref:web/servlet.adoc#web.servlet.spring-mvc.error-handling[setting handled exception làm request attribute].
+TIP: Trong một số trường hợp, các exception được handle trong web controller không được record thành request metric tag.
+Application có thể opt in và record exception bằng cách xref:web/servlet.adoc#web.servlet.spring-mvc.error-handling[set handled exception làm request attribute].
 
-Mặc định mọi request được handle.
-Để customize filter, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement `FilterRegistrationBean<ServerHttpObservationFilter>`.
+Mặc định, mọi request đều được handle.
+Để customize filter, cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] implement `FilterRegistrationBean<ServerHttpObservationFilter>`.
 
 [[actuator.metrics.supported.spring-webflux]]
 === Spring WebFlux Metrics
 
-Auto-configuration enable instrumentation mọi request do Spring WebFlux controller và functional handler xử lý.
-Mặc định metric name `http.server.requests`.
-Nếu xref:actuator/observability.adoc#actuator.observability.semantic-conventions[dùng semantic convention của Micrometer], set configprop:management.observations.http.server.requests.name[] để customize.
-Nếu dùng OpenTelemetry semantic convention, name không customize được.
+Auto-configuration enable instrumentation cho mọi request do Spring WebFlux controller và functional handler xử lý.
+Mặc định, metrics có name `http.server.requests`.
+Nếu bạn xref:actuator/observability.adoc#actuator.observability.semantic-conventions[dùng semantic convention của Micrometer], hãy set property configprop:management.observations.http.server.requests.name[] để customize name.
+Nếu dùng semantic convention của OpenTelemetry, name không thể được customize.
 
-Xem {url-spring-framework-docs}/integration/observability.html#observability.http-server.reactive[Spring Framework reference documentation].
+Xem {url-spring-framework-docs}/integration/observability.html#observability.http-server.reactive[Spring Framework reference documentation] để biết thêm về các observation được tạo.
 
-Để thêm default tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] extend javadoc:org.springframework.http.server.reactive.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.reactive.observation`.
-Để replace default tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.server.reactive.observation.ServerRequestObservationConvention[].
+Để thêm default tag, cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] extend javadoc:org.springframework.http.server.reactive.observation.DefaultServerRequestObservationConvention[] từ package `org.springframework.http.server.reactive.observation`.
+Để replace default tag, cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.server.reactive.observation.ServerRequestObservationConvention[].
 
-TIP: Trong một số case, exception handle trong controller và handler function không được record làm request metric tag.
-Application có thể opt in bằng xref:web/reactive.adoc#web.reactive.webflux.error-handling[setting handled exception làm request attribute].
+TIP: Trong một số trường hợp, các exception được handle trong controller và handler function không được record thành request metric tag.
+Application có thể opt in và record exception bằng cách xref:web/reactive.adoc#web.reactive.webflux.error-handling[set handled exception làm request attribute].
 
 [[actuator.metrics.supported.jersey]]
 === Jersey Server Metrics
 
-Auto-configuration enable instrumentation mọi request xử lý bởi Jersey JAX-RS implementation.
-Mặc định metric name `http.server.requests`.
-Customize name bằng configprop:management.observations.http.server.requests.name[].
+Auto-configuration enable instrumentation cho mọi request được xử lý bởi Jersey JAX-RS implementation.
+Mặc định, metrics có name `http.server.requests`.
+Customize name bằng property configprop:management.observations.http.server.requests.name[].
 
-Mặc định Jersey server metric được tag:
+Mặc định, Jersey server metrics được tag bằng thông tin sau:
 
 |===
 | Tag | Mô tả
 
 | `exception`
-| Simple class name của exception throw khi handle request.
+| Simple class name của exception được throw khi handle request.
 
 | `method`
-| Request method, ví dụ `GET` hoặc `POST`.
+| Method của request, ví dụ `GET` hoặc `POST`.
 
 | `outcome`
-| Request outcome dựa trên status code response.
-  1xx là `INFORMATIONAL`, 2xx `SUCCESS`, 3xx `REDIRECTION`, 4xx `CLIENT_ERROR`, 5xx `SERVER_ERROR`.
+| Outcome của request, dựa trên status code của response.
+  1xx là `INFORMATIONAL`, 2xx là `SUCCESS`, 3xx là `REDIRECTION`, 4xx là `CLIENT_ERROR` và 5xx là `SERVER_ERROR`.
 
 | `status`
-| HTTP status code response, ví dụ `200` hoặc `500`.
+| HTTP status code của response, ví dụ `200` hoặc `500`.
 
 | `uri`
-| URI template của request trước variable substitution nếu có thể, ví dụ `/api/person/{id}`.
+| URI template của request trước khi variable substitution, nếu có thể, ví dụ `/api/person/\{id}`.
 |===
 
-Để customize tag, cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:io.micrometer.core.instrument.binder.jersey.server.JerseyObservationConvention[].
+Để customize tag, cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:io.micrometer.core.instrument.binder.jersey.server.JerseyObservationConvention[].
 
 [[actuator.metrics.supported.ssl]]
 === SSL Bundle Metrics
 
-Spring Boot Actuator publish expiry metric về SSL bundle.
+Spring Boot Actuator publish expiry metrics về SSL bundle.
 Metric `ssl.chain.expiry` gauge expiry date của mỗi certificate chain trong key store và trust store theo giây.
-Số này âm nếu chain đã expire.
-Metric được tag:
+Giá trị này âm nếu chain đã expire.
+Metric này được tag bằng thông tin sau:
 
 |===
 | Tag | Mô tả
@@ -759,35 +759,35 @@ Metric được tag:
 === HTTP Client Metrics
 
 Spring Boot Actuator quản lý instrumentation của javadoc:org.springframework.web.reactive.function.client.WebClient[] và javadoc:org.springframework.web.client.RestClient[].
-Để làm vậy, phải inject auto-configured builder và dùng nó tạo instance:
+Để làm vậy, bạn phải inject builder được auto-configure và dùng builder này để tạo các instance:
 
 * javadoc:org.springframework.web.reactive.function.client.WebClient$Builder[] cho javadoc:org.springframework.web.reactive.function.client.WebClient[]
 * javadoc:org.springframework.web.client.RestClient$Builder[] cho javadoc:org.springframework.web.client.RestClient[]
 
-Cũng có thể manual apply customizer chịu trách nhiệm instrumentation: javadoc:org.springframework.boot.webclient.observation.ObservationWebClientCustomizer[] và javadoc:org.springframework.boot.restclient.observation.ObservationRestClientCustomizer[].
+Cũng có thể manual apply các customizer chịu trách nhiệm cho instrumentation này, cụ thể là javadoc:org.springframework.boot.webclient.observation.ObservationWebClientCustomizer[] và javadoc:org.springframework.boot.restclient.observation.ObservationRestClientCustomizer[].
 
-Mặc định metric name `http.client.requests`.
-Customize bằng configprop:management.observations.http.client.requests.name[].
+Mặc định, metrics có name `http.client.requests`.
+Customize name bằng property configprop:management.observations.http.client.requests.name[].
 
-Xem {url-spring-framework-docs}/integration/observability.html#observability.http-client[Spring Framework reference documentation].
+Xem {url-spring-framework-docs}/integration/observability.html#observability.http-client[Spring Framework reference documentation] để biết thêm về các observation được tạo.
 
-Để customize tag khi dùng javadoc:org.springframework.web.client.RestClient[], cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.client.observation.ClientRequestObservationConvention[] từ package `org.springframework.http.client.observation`.
-Với javadoc:org.springframework.web.reactive.function.client.WebClient[], cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.web.reactive.function.client.ClientRequestObservationConvention[] từ package `org.springframework.web.reactive.function.client`.
+Để customize tag khi dùng javadoc:org.springframework.web.client.RestClient[], cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.http.client.observation.ClientRequestObservationConvention[] từ package `org.springframework.http.client.observation`.
+Với javadoc:org.springframework.web.reactive.function.client.WebClient[], cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.web.reactive.function.client.ClientRequestObservationConvention[] từ package `org.springframework.web.reactive.function.client`.
 
 [[actuator.metrics.supported.tomcat]]
 === Tomcat Metrics
 
-Auto-configuration chỉ enable instrumentation Tomcat khi MBean javadoc:org.apache.tomcat.util.modeler.Registry[] được enable.
-Mặc định MBean registry disable, có thể enable bằng configprop:server.tomcat.mbeanregistry.enabled[] = `true`.
+Auto-configuration chỉ enable instrumentation cho Tomcat khi MBean javadoc:org.apache.tomcat.util.modeler.Registry[] được enable.
+Mặc định, MBean registry bị disable, nhưng bạn có thể enable bằng cách set configprop:server.tomcat.mbeanregistry.enabled[] thành `true`.
 
-Tomcat metric publish dưới meter name `tomcat.`.
+Tomcat metrics được publish dưới meter name `tomcat.`.
 
 [[actuator.metrics.supported.cache]]
 === Cache Metrics
 
-Auto-configuration enable instrumentation mọi instance javadoc:org.springframework.cache.Cache[] available khi startup, metric prefix `cache`.
-Cache instrumentation chuẩn hóa một basic set metric.
-Additional cache-specific metric cũng available.
+Auto-configuration enable instrumentation cho mọi instance javadoc:org.springframework.cache.Cache[] available khi startup, với metrics có prefix `cache`.
+Cache instrumentation được chuẩn hóa cho một basic set metrics.
+Các cache-specific metrics bổ sung cũng available.
 
 Các cache library được hỗ trợ:
 
@@ -797,14 +797,14 @@ Các cache library được hỗ trợ:
 * Mọi compliant JCache (JSR-107) implementation
 * Redis
 
-WARNING: Metric phải enable để auto-configuration pick up.
-Xem documentation của cache library đang dùng.
+WARNING: Metrics phải được enable để auto-configuration pick up.
+Xem documentation của cache library bạn đang dùng để biết thêm chi tiết.
 
-Metric được tag bằng cache name và javadoc:org.springframework.cache.CacheManager[] name derive từ bean name.
+Metrics được tag bằng cache name và name của javadoc:org.springframework.cache.CacheManager[], được derive từ bean name.
 
-NOTE: Chỉ cache configure lúc startup được bind vào registry.
-Với cache không định nghĩa trong cache configuration, như cache tạo on-the-fly hoặc programmatically sau startup, cần explicit registration.
-Bean javadoc:org.springframework.boot.cache.metrics.CacheMetricsRegistrar[] available để hỗ trợ process này.
+NOTE: Chỉ các cache được configure lúc startup mới được bind vào registry.
+Với các cache không được định nghĩa trong cache configuration, chẳng hạn cache được tạo on-the-fly hoặc programmatically sau startup, cần explicit registration.
+Bean javadoc:org.springframework.boot.cache.metrics.CacheMetricsRegistrar[] được cung cấp để hỗ trợ process này.
 
 [[actuator.metrics.supported.spring-batch]]
 === Spring Batch Metrics
@@ -819,27 +819,27 @@ Xem {url-spring-graphql-docs}/observability.html[Spring GraphQL reference docume
 [[actuator.metrics.supported.jdbc]]
 === DataSource Metrics
 
-Auto-configuration enable instrumentation mọi object javadoc:javax.sql.DataSource[] available với metric prefix `jdbc.connections`.
-Data source instrumentation tạo gauge biểu diễn connection active, idle, maximum allowed và minimum allowed trong pool.
+Auto-configuration enable instrumentation cho mọi object javadoc:javax.sql.DataSource[] available với metrics có prefix `jdbc.connections`.
+Data source instrumentation tạo các gauge biểu diễn số connection active, idle, maximum allowed và minimum allowed hiện tại trong pool.
 
-Metric cũng tag bằng javadoc:javax.sql.DataSource[] name tính từ bean name.
+Metrics cũng được tag bằng name của javadoc:javax.sql.DataSource[], được tính từ bean name.
 
-TIP: Mặc định Spring Boot cung cấp metadata cho mọi supported data source.
-Có thể thêm bean javadoc:org.springframework.boot.jdbc.metadata.DataSourcePoolMetadataProvider[] nếu data source ưa thích chưa được hỗ trợ.
-Xem javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourcePoolMetadataProvidersConfiguration[].
+TIP: Mặc định, Spring Boot cung cấp metadata cho mọi supported data source.
+Bạn có thể thêm các bean javadoc:org.springframework.boot.jdbc.metadata.DataSourcePoolMetadataProvider[] nếu data source ưa thích của bạn chưa được hỗ trợ.
+Xem javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourcePoolMetadataProvidersConfiguration[] để biết ví dụ.
 
-Ngoài ra Hikari-specific metric expose với prefix `hikaricp`.
-Mỗi metric tag bằng pool name, có thể control bằng `spring.datasource.name`.
+Ngoài ra, Hikari-specific metrics được expose với prefix `hikaricp`.
+Mỗi metric được tag bằng pool name, có thể control bằng `spring.datasource.name`.
 
 [[actuator.metrics.supported.hibernate]]
 === Hibernate Metrics
 
-Nếu `org.hibernate.orm:hibernate-micrometer` trên classpath, mọi javadoc:jakarta.persistence.EntityManagerFactory[] available có statistics enabled được instrument với metric name `hibernate`.
+Nếu `org.hibernate.orm:hibernate-micrometer` có trên classpath, mọi javadoc:jakarta.persistence.EntityManagerFactory[] available có statistics enabled sẽ được instrument với metric name `hibernate`.
 
-Metric tag bằng javadoc:jakarta.persistence.EntityManagerFactory[] name derive từ bean name.
+Metrics được tag bằng name của javadoc:jakarta.persistence.EntityManagerFactory[], được derive từ bean name.
 
-Để enable statistic, standard JPA property `hibernate.generate_statistics` phải = `true`.
-Có thể enable trên auto-configured javadoc:jakarta.persistence.EntityManagerFactory[]:
+Để enable statistics, standard JPA property `hibernate.generate_statistics` phải được set thành `true`.
+Bạn có thể enable property này trên javadoc:jakarta.persistence.EntityManagerFactory[] được auto-configure:
 
 [configprops,yaml]
 ----
@@ -852,17 +852,17 @@ spring:
 [[actuator.metrics.supported.spring-data-repository]]
 === Spring Data Repository Metrics
 
-Auto-configuration enable instrumentation mọi method invocation của Spring Data javadoc:org.springframework.data.repository.Repository[].
-Mặc định metric name `spring.data.repository.invocations`.
-Customize bằng configprop:management.metrics.data.repository.metric-name[].
+Auto-configuration enable instrumentation cho mọi method invocation của Spring Data javadoc:org.springframework.data.repository.Repository[].
+Mặc định, metrics có name `spring.data.repository.invocations`.
+Customize name bằng property configprop:management.metrics.data.repository.metric-name[].
 
-Annotation javadoc:io.micrometer.core.annotation.Timed[format=annotation] từ package `io.micrometer.core.annotation` được hỗ trợ trên javadoc:org.springframework.data.repository.Repository[] interface và method.
-Nếu không muốn record metric cho mọi javadoc:org.springframework.data.repository.Repository[] invocation, set configprop:management.metrics.data.repository.autotime.enabled[] = `false` và chỉ dùng javadoc:io.micrometer.core.annotation.Timed[format=annotation] annotation.
+Annotation javadoc:io.micrometer.core.annotation.Timed[format=annotation] từ package `io.micrometer.core.annotation` được hỗ trợ trên interface và method của javadoc:org.springframework.data.repository.Repository[].
+Nếu không muốn record metrics cho mọi invocation của javadoc:org.springframework.data.repository.Repository[], bạn có thể set configprop:management.metrics.data.repository.autotime.enabled[] thành `false` và chỉ dùng annotation javadoc:io.micrometer.core.annotation.Timed[format=annotation].
 
 NOTE: Annotation javadoc:io.micrometer.core.annotation.Timed[format=annotation] với `longTask = true` enable long task timer cho method.
-Long task timer cần metric name riêng và có thể stack với short task timer.
+Long task timer yêu cầu metric name riêng và có thể stack với short task timer.
 
-Mặc định repository invocation metric được tag:
+Mặc định, repository invocation metrics được tag bằng thông tin sau:
 
 |===
 | Tag | Mô tả
@@ -871,47 +871,47 @@ Mặc định repository invocation metric được tag:
 | Simple class name của source javadoc:org.springframework.data.repository.Repository[].
 
 | `method`
-| Tên javadoc:org.springframework.data.repository.Repository[] method được invoke.
+| Tên method của javadoc:org.springframework.data.repository.Repository[] đã được invoke.
 
 | `state`
-| Result state (`SUCCESS`, `ERROR`, `CANCELED`, hoặc `RUNNING`).
+| Result state (`SUCCESS`, `ERROR`, `CANCELED` hoặc `RUNNING`).
 
 | `exception`
-| Simple class name của exception throw từ invocation.
+| Simple class name của exception được throw từ invocation.
 |===
 
-Để replace default tag, cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.boot.data.metrics.RepositoryTagsProvider[].
+Để replace default tag, cung cấp một bean javadoc:org.springframework.context.annotation.Bean[format=annotation] implement javadoc:org.springframework.boot.data.metrics.RepositoryTagsProvider[].
 
 [[actuator.metrics.supported.rabbitmq]]
 === RabbitMQ Metrics
 
-Auto-configuration enable instrumentation mọi available RabbitMQ connection factory với metric name `rabbitmq`.
+Auto-configuration enable instrumentation cho mọi RabbitMQ connection factory available với metric name `rabbitmq`.
 
 [[actuator.metrics.supported.spring-integration]]
 === Spring Integration Metrics
 
 Spring Integration tự động cung cấp {url-spring-integration-docs}/metrics.html#micrometer-integration[Micrometer support] khi bean javadoc:io.micrometer.core.instrument.MeterRegistry[] available.
-Metric publish dưới meter name `spring.integration.`.
+Metrics được publish dưới meter name `spring.integration.`.
 
 [[actuator.metrics.supported.kafka]]
 === Kafka Metrics
 
-Auto-configuration register javadoc:org.springframework.kafka.core.MicrometerConsumerListener[] và javadoc:org.springframework.kafka.core.MicrometerProducerListener[] lần lượt cho auto-configured consumer factory và producer factory.
+Auto-configuration register javadoc:org.springframework.kafka.core.MicrometerConsumerListener[] và javadoc:org.springframework.kafka.core.MicrometerProducerListener[] lần lượt cho consumer factory và producer factory được auto-configure.
 Nó cũng register javadoc:org.springframework.kafka.streams.KafkaStreamsMicrometerListener[] cho javadoc:org.springframework.kafka.config.StreamsBuilderFactoryBean[].
-Chi tiết xem phần {url-spring-kafka-docs}/kafka/micrometer.html#micrometer-native[Micrometer Native Metrics] trong Spring Kafka documentation.
+Để biết thêm chi tiết, xem phần {url-spring-kafka-docs}/kafka/micrometer.html#micrometer-native[Micrometer Native Metrics] trong Spring Kafka documentation.
 
 [[actuator.metrics.supported.mongodb]]
 === MongoDB Metrics
 
-Phần này mô tả ngắn các metric available cho MongoDB.
+Phần này mô tả ngắn gọn các metrics available cho MongoDB.
 
 [[actuator.metrics.supported.mongodb.command]]
 ==== MongoDB Command Metrics
 
-Auto-configuration register javadoc:io.micrometer.core.instrument.binder.mongodb.MongoMetricsCommandListener[] với auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[].
+Auto-configuration register javadoc:io.micrometer.core.instrument.binder.mongodb.MongoMetricsCommandListener[] với javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] được auto-configure.
 
-Timer metric tên `mongodb.driver.commands` được tạo cho mỗi command gửi tới underlying MongoDB driver.
-Mỗi metric mặc định tag:
+Timer metric có tên `mongodb.driver.commands` được tạo cho mỗi command được issue tới underlying MongoDB driver.
+Mặc định, mỗi metric được tag bằng thông tin sau:
 
 |===
 | Tag | Mô tả
@@ -920,20 +920,20 @@ Mỗi metric mặc định tag:
 | Tên command được issue.
 
 | `cluster.id`
-| Identifier của cluster nơi command được gửi.
+| Identifier của cluster mà command được gửi tới.
 
 | `server.address`
-| Address của server nơi command được gửi.
+| Address của server mà command được gửi tới.
 
 | `status`
 | Outcome của command (`SUCCESS` hoặc `FAILED`).
 |===
 
-Để replace default metric tag, define bean javadoc:io.micrometer.core.instrument.binder.mongodb.MongoCommandTagsProvider[]:
+Để replace default metric tag, define bean javadoc:io.micrometer.core.instrument.binder.mongodb.MongoCommandTagsProvider[], như trong ví dụ sau:
 
 include-code::MyCommandTagsProviderConfiguration[]
 
-Để disable auto-configured command metric:
+Để disable auto-configured command metrics, set property sau:
 
 [configprops,yaml]
 ----
@@ -947,31 +947,31 @@ management:
 [[actuator.metrics.supported.mongodb.connection-pool]]
 ==== MongoDB Connection Pool Metrics
 
-Auto-configuration register javadoc:io.micrometer.core.instrument.binder.mongodb.MongoMetricsConnectionPoolListener[] với auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[].
+Auto-configuration register javadoc:io.micrometer.core.instrument.binder.mongodb.MongoMetricsConnectionPoolListener[] với javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] được auto-configure.
 
-Các gauge metric được tạo cho connection pool:
+Các gauge metrics sau được tạo cho connection pool:
 
-* `mongodb.driver.pool.size` report current size của connection pool, gồm idle và in-use member.
+* `mongodb.driver.pool.size` report current size của connection pool, gồm các member idle và in-use.
 * `mongodb.driver.pool.checkedout` report số connection hiện đang in use.
 * `mongodb.driver.pool.waitqueuesize` report current size của wait queue chờ connection từ pool.
 
-Mỗi metric mặc định tag:
+Mặc định, mỗi metric được tag bằng thông tin sau:
 
 |===
 | Tag | Mô tả
 
 | `cluster.id`
-| Identifier của cluster tương ứng connection pool.
+| Identifier của cluster tương ứng với connection pool.
 
 | `server.address`
-| Address của server tương ứng connection pool.
+| Address của server tương ứng với connection pool.
 |===
 
 Để replace default metric tag, define bean javadoc:io.micrometer.core.instrument.binder.mongodb.MongoConnectionPoolTagsProvider[]:
 
 include-code::MyConnectionPoolTagsProviderConfiguration[]
 
-Để disable auto-configured connection pool metric:
+Để disable auto-configured connection pool metrics, set property sau:
 
 [configprops,yaml]
 ----
@@ -985,56 +985,56 @@ management:
 [[actuator.metrics.supported.neo4j]]
 === Neo4j Metrics
 
-Auto-configuration register javadoc:org.neo4j.driver.observation.micrometer.MicrometerObservationProvider[] cho auto-configured javadoc:org.neo4j.driver.Driver[].
+Auto-configuration register javadoc:org.neo4j.driver.observation.micrometer.MicrometerObservationProvider[] cho javadoc:org.neo4j.driver.Driver[] được auto-configure.
 
-Để override behavior này, register bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[] với order lớn hơn 0.
+Để override behavior này, bạn có thể register bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[] với order lớn hơn 0.
 
 [[actuator.metrics.supported.jetty]]
 === Jetty Metrics
 
-Auto-configuration bind metric cho javadoc:org.eclipse.jetty.util.thread.ThreadPool[] của Jetty bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettyServerThreadPoolMetrics[] của Micrometer.
-Metric cho instance javadoc:org.eclipse.jetty.server.Connector[] được bind bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettyConnectionMetrics[] và, khi configprop:server.ssl.enabled[] = `true`, bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettySslHandshakeMetrics[].
+Auto-configuration bind metrics cho javadoc:org.eclipse.jetty.util.thread.ThreadPool[] của Jetty bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettyServerThreadPoolMetrics[] của Micrometer.
+Metrics cho các instance javadoc:org.eclipse.jetty.server.Connector[] được bind bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettyConnectionMetrics[] và, khi configprop:server.ssl.enabled[] được set thành `true`, bằng javadoc:io.micrometer.core.instrument.binder.jetty.JettySslHandshakeMetrics[].
 
 [[actuator.metrics.supported.redis]]
 === Redis Metrics
 
-Auto-configuration register javadoc:io.lettuce.core.tracing.MicrometerTracing[] cho auto-configured javadoc:org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory[].
-Chi tiết xem phần {url-lettuce-docs}/advanced-usage/observability[Observability] trong Lettuce documentation.
+Auto-configuration register javadoc:io.lettuce.core.tracing.MicrometerTracing[] cho javadoc:org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory[] được auto-configure.
+Để biết thêm chi tiết, xem {url-lettuce-docs}/advanced-usage/observability[Observability section] trong Lettuce documentation.
 
 [[actuator.metrics.registering-custom]]
 == Register Custom Metrics
 
-Để register custom metric, inject javadoc:io.micrometer.core.instrument.MeterRegistry[] vào component:
+Để register custom metrics, inject javadoc:io.micrometer.core.instrument.MeterRegistry[] vào component:
 
 include-code::MyBean[]
 
-Nếu metric phụ thuộc bean khác, khuyến nghị dùng javadoc:io.micrometer.core.instrument.binder.MeterBinder[] để register:
+Nếu metrics phụ thuộc vào các bean khác, chúng tôi khuyến nghị dùng javadoc:io.micrometer.core.instrument.binder.MeterBinder[] để register:
 
 include-code::MyMeterBinderConfiguration[]
 
 Dùng javadoc:io.micrometer.core.instrument.binder.MeterBinder[] đảm bảo correct dependency relationship được setup và bean available khi metric value được retrieve.
-Implementation javadoc:io.micrometer.core.instrument.binder.MeterBinder[] cũng hữu ích nếu thường xuyên instrument cùng một suite metric qua nhiều component hoặc application.
+Implementation javadoc:io.micrometer.core.instrument.binder.MeterBinder[] cũng hữu ích nếu bạn thường xuyên instrument cùng một suite metrics qua nhiều component hoặc application.
 
-NOTE: Mặc định metric từ mọi bean javadoc:io.micrometer.core.instrument.binder.MeterBinder[] tự động bind vào Spring-managed javadoc:io.micrometer.core.instrument.MeterRegistry[].
+NOTE: Mặc định, metrics từ mọi bean javadoc:io.micrometer.core.instrument.binder.MeterBinder[] được tự động bind vào Spring-managed javadoc:io.micrometer.core.instrument.MeterRegistry[].
 
 [[actuator.metrics.customizing]]
 == Customize Individual Metrics
 
-Nếu cần apply customization cho specific instance javadoc:io.micrometer.core.instrument.Meter[], dùng interface javadoc:io.micrometer.core.instrument.config.MeterFilter[].
+Nếu cần apply customization cho các instance javadoc:io.micrometer.core.instrument.Meter[] cụ thể, bạn có thể dùng interface javadoc:io.micrometer.core.instrument.config.MeterFilter[].
 
-Ví dụ rename tag `mytag.region` thành `mytag.area` cho mọi meter ID bắt đầu bằng `com.example`:
+Ví dụ sau rename tag `mytag.region` thành `mytag.area` cho mọi meter ID bắt đầu bằng `com.example`:
 
 include-code::MyMetricsFilterConfiguration[]
 
-NOTE: Mặc định mọi bean javadoc:io.micrometer.core.instrument.config.MeterFilter[] tự động bind vào Spring-managed javadoc:io.micrometer.core.instrument.MeterRegistry[].
-Hãy register metric bằng Spring-managed javadoc:io.micrometer.core.instrument.MeterRegistry[], không dùng static method trên javadoc:io.micrometer.core.instrument.Metrics[].
-Static method dùng global registry không do Spring manage.
+NOTE: Mặc định, mọi bean javadoc:io.micrometer.core.instrument.config.MeterFilter[] được tự động bind vào Spring-managed javadoc:io.micrometer.core.instrument.MeterRegistry[].
+Hãy register metrics bằng Spring-managed javadoc:io.micrometer.core.instrument.MeterRegistry[], không dùng static method trên javadoc:io.micrometer.core.instrument.Metrics[].
+Các static method này dùng global registry không do Spring manage.
 
 [[actuator.metrics.customizing.common-tags]]
 === Common Tags
 
-Common tag thường dùng để dimensional drill-down operating environment như host, instance, region, stack, v.v.
-Common tag được apply cho mọi meter và có thể configure:
+Common tag thường được dùng để dimensional drill-down operating environment, chẳng hạn host, instance, region, stack và các thành phần khác.
+Common tag được apply cho mọi meter và có thể được configure như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -1045,17 +1045,17 @@ management:
       stack: "prod"
 ----
 
-Ví dụ thêm tag `region=us-east-1` và `stack=prod` vào mọi meter.
+Ví dụ trên thêm tag `region` và `stack` vào mọi meter, lần lượt có value `us-east-1` và `prod`.
 
 NOTE: Order của common tag quan trọng nếu dùng Graphite.
-Vì cách này không guarantee common tag order, user Graphite được khuyến nghị define custom javadoc:io.micrometer.core.instrument.config.MeterFilter[].
+Vì cách này không guarantee order của common tag, Graphite user được khuyến nghị define custom javadoc:io.micrometer.core.instrument.config.MeterFilter[].
 
 [[actuator.metrics.customizing.per-meter-properties]]
 === Per-meter Properties
 
-Ngoài bean javadoc:io.micrometer.core.instrument.config.MeterFilter[], có thể apply một limited set customization theo từng meter bằng property.
-Per-meter customization được apply qua javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.PropertiesMeterFilter[] tới mọi meter ID bắt đầu với name được cho.
-Ví dụ filter mọi meter có ID bắt đầu bằng `example.remote`:
+Ngoài bean javadoc:io.micrometer.core.instrument.config.MeterFilter[], bạn có thể apply một limited set customization theo từng meter bằng property.
+Per-meter customization được apply qua javadoc:org.springframework.boot.micrometer.metrics.autoconfigure.PropertiesMeterFilter[] tới mọi meter ID bắt đầu bằng name được cho.
+Ví dụ sau filter mọi meter có ID bắt đầu bằng `example.remote`:
 
 [configprops,yaml]
 ----
@@ -1066,60 +1066,60 @@ management:
         remote: false
 ----
 
-Các property hỗ trợ per-meter customization:
+Các property sau hỗ trợ per-meter customization:
 
 .Per-meter customizations
 |===
 | Property | Mô tả
 
 | configprop:management.metrics.enable[]
-| Có accept meter với ID nhất định hay không.
-  Meter không accepted bị filter khỏi javadoc:io.micrometer.core.instrument.MeterRegistry[].
+| Có accept các meter với ID nhất định hay không.
+  Các meter không được accept sẽ bị filter khỏi javadoc:io.micrometer.core.instrument.MeterRegistry[].
 
 | configprop:management.metrics.distribution.percentiles-histogram[]
 | Có publish histogram phù hợp để compute aggregable percentile approximation qua dimension hay không.
 
 | configprop:management.metrics.distribution.minimum-expected-value[], configprop:management.metrics.distribution.maximum-expected-value[]
-| Publish ít histogram bucket hơn bằng cách clamp range expected value.
+| Publish ít histogram bucket hơn bằng cách clamp range của expected value.
 
 | configprop:management.metrics.distribution.percentiles[]
-| Publish percentile value compute trong application.
+| Publish percentile value được compute trong application.
 
 | configprop:management.metrics.distribution.expiry[], configprop:management.metrics.distribution.buffer-length[]
 | Tăng trọng số recent sample bằng cách accumulate chúng trong ring buffer rotate sau configurable expiry, với configurable buffer length.
 
 | configprop:management.metrics.distribution.slo[]
-| Publish cumulative histogram với bucket định nghĩa bởi service-level objective.
+| Publish cumulative histogram với các bucket được định nghĩa bởi service-level objective.
 |===
 
-Để biết thêm về concept phía sau `percentiles-histogram`, `percentiles`, và `slo`, xem phần {url-micrometer-docs-concepts}/histogram-quantiles.html[Histograms and percentiles] trong Micrometer documentation.
+Để biết thêm về các concept phía sau `percentiles-histogram`, `percentiles` và `slo`, xem phần {url-micrometer-docs-concepts}/histogram-quantiles.html[Histograms and percentiles] trong Micrometer documentation.
 
 [[actuator.metrics.endpoint]]
 == Metrics Endpoint
 
-Spring Boot cung cấp endpoint `metrics` dùng diagnostically để examine metric application collect.
-Endpoint mặc định không available và phải expose.
-Xem xref:actuator/endpoints.adoc#actuator.endpoints.exposing[exposing endpoints].
+Spring Boot cung cấp endpoint `metrics` để dùng cho mục đích diagnostic, giúp examine metrics mà application collect.
+Endpoint mặc định không available và phải được expose.
+Xem xref:actuator/endpoints.adoc#actuator.endpoints.exposing[exposing endpoints] để biết thêm chi tiết.
 
-Đi tới `/actuator/metrics` hiển thị list available meter name.
-Có thể drill down để xem information của meter cụ thể bằng name làm selector, ví dụ `/actuator/metrics/jvm.memory.max`.
-
-[TIP]
-====
-Name dùng ở đây phải match name dùng trong code, không phải name sau khi normalized theo naming convention của monitoring system nơi metric được ship.
-Nói cách khác, nếu `jvm.memory.max` xuất hiện thành `jvm_memory_max` trong Prometheus do snake case naming convention, vẫn dùng `jvm.memory.max` làm selector khi inspect meter trong endpoint `metrics`.
-====
-
-Có thể thêm bất kỳ số lượng query parameter `tag=KEY:VALUE` nào vào cuối URL để dimensional drill down, ví dụ `/actuator/metrics/jvm.memory.max?tag=area:nonheap`.
+Đi tới `/actuator/metrics` sẽ hiển thị list available meter name.
+Bạn có thể drill down để xem information của một meter cụ thể bằng cách cung cấp name của meter làm selector, ví dụ `/actuator/metrics/jvm.memory.max`.
 
 [TIP]
 ====
-Measurement report là _sum_ statistic của mọi meter match meter name và tag đã apply.
-Trong ví dụ trên, statistic `Value` trả về là tổng maximum memory footprint của area `"`Code Cache`"`, `"`Compressed Class Space`"`, và `"`Metaspace`"` của heap.
-Nếu chỉ muốn maximum size cho `"`Metaspace`"`, thêm `tag=id:Metaspace`, tức `/actuator/metrics/jvm.memory.max?tag=area:nonheap&tag=id:Metaspace`.
+Name bạn dùng ở đây phải match name được dùng trong code, không phải name sau khi được normalized theo naming convention của monitoring system nơi metric được ship.
+Nói cách khác, nếu `jvm.memory.max` xuất hiện thành `jvm_memory_max` trong Prometheus do snake case naming convention, bạn vẫn phải dùng `jvm.memory.max` làm selector khi inspect meter trong endpoint `metrics`.
+====
+
+Bạn cũng có thể thêm bất kỳ số lượng query parameter `tag=KEY:VALUE` nào vào cuối URL để dimensional drill down trên một meter, ví dụ `/actuator/metrics/jvm.memory.max?tag=area:nonheap`.
+
+[TIP]
+====
+Measurement được report là statistic _sum_ của mọi meter match với meter name và các tag đã apply.
+Trong ví dụ trên, statistic `Value` trả về là tổng maximum memory footprint của các area `"`Code Cache`"`, `"`Compressed Class Space`"` và `"`Metaspace`"` trong heap.
+Nếu chỉ muốn maximum size của `"`Metaspace`"`, hãy thêm `tag=id:Metaspace`, tức `/actuator/metrics/jvm.memory.max?tag=area:nonheap&tag=id:Metaspace`.
 ====
 
 [[actuator.metrics.micrometer-observation]]
 == Integration với Micrometer Observation
 
-javadoc:io.micrometer.core.instrument.observation.DefaultMeterObservationHandler[] tự động register trên javadoc:io.micrometer.observation.ObservationRegistry[], tạo metric cho mỗi completed observation.
+javadoc:io.micrometer.core.instrument.observation.DefaultMeterObservationHandler[] được tự động register trên javadoc:io.micrometer.observation.ObservationRegistry[], tạo metrics cho mỗi completed observation.

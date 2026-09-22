@@ -1,4 +1,4 @@
 [[data]]
-= Data
+= Dữ liệu
 
-Spring Boot tích hợp với nhiều data technology, gồm cả SQL và NoSQL.
+Spring Boot tích hợp với nhiều công nghệ dữ liệu, bao gồm cả SQL và NoSQL.

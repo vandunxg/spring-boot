@@ -1,8 +1,8 @@
 [[howto]]
-= Hướng dẫn How-to
+= Các hướng dẫn How-to
 
 Phần này cung cấp câu trả lời cho một số câu hỏi phổ biến kiểu '`làm thế nào để...?`' thường gặp khi sử dụng Spring Boot.
-Phạm vi không bao quát mọi trường hợp, nhưng vẫn đề cập khá nhiều nội dung.
+Nội dung không bao quát mọi trường hợp, nhưng vẫn đề cập khá nhiều vấn đề.
 
 Nếu bạn có một vấn đề cụ thể chưa được đề cập ở đây, có thể kiểm tra https://stackoverflow.com/tags/spring-boot[stackoverflow.com] để xem đã có ai cung cấp câu trả lời chưa.
 Đây cũng là nơi phù hợp để đặt câu hỏi mới (hãy dùng tag `spring-boot`).

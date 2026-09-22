@@ -1,7 +1,7 @@
 [appendix]
 [[appendix.auto-configuration-classes]]
-= Auto-configuration Class
+= Các auto-configuration class
 
-Appendix này chứa chi tiết về toàn bộ auto-configuration class do Spring Boot cung cấp, kèm link tới tài liệu và source code.
+Phụ lục này chứa chi tiết về toàn bộ các auto-configuration class do Spring Boot cung cấp, kèm link tới tài liệu và source code.
 Hãy nhớ xem thêm conditions report trong application để biết chi tiết hơn về feature nào đang được bật.
 (Để làm vậy, khởi động app với `--debug` hoặc `-Ddebug`, hoặc trong application có Actuator thì dùng endpoint `conditions`).

@@ -1,73 +1,73 @@
 [[packaging]]
-= Packaging Executable Archives
+= Đóng gói Executable Archive
 
-Plugin có thể tạo executable archive (jar file và war file) chứa toàn bộ dependency của application và sau đó chạy bằng `java -jar`.
+Plugin có thể tạo executable archive (jar file và war file) chứa toàn bộ dependency của application, sau đó có thể chạy bằng `java -jar`.
 
-Packaging executable archive được thực hiện bởi goal `repackage`:
+Việc đóng gói executable archive được thực hiện bởi goal `repackage`, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/repackage-pom.xml[tags=repackage]
 ----
 
-WARNING: Goal `repackage` không được thiết kế để dùng một mình trên command line vì nó operate trên source `jar` hoặc `war` do phase `package` tạo.
-Để dùng goal này trên command line, phải include phase `package`: `mvn package spring-boot:repackage`.
+WARNING: Goal `repackage` không nhằm được sử dụng độc lập trên command line vì nó operate trên source `jar` (hoặc `war`) được tạo bởi phase `package`.
+Để sử dụng goal này trên command line, phải include phase `package`: `mvn package spring-boot:repackage`.
 
-TIP: Nếu dùng `spring-boot-starter-parent`, execution này đã pre-configure với execution ID `repackage` nên chỉ cần thêm plugin definition.
+TIP: Nếu sử dụng `spring-boot-starter-parent`, execution như vậy đã được pre-configure với execution ID `repackage`, nên chỉ cần thêm plugin definition.
 
-Ví dụ trên repackage archive `jar` hoặc `war` được build trong package phase của Maven lifecycle, gồm mọi dependency `provided` define trong project.
-Nếu cần exclude một số dependency, dùng option `exclude`; xem xref:packaging.adoc#packaging.examples.exclude-dependency[dependency exclusion].
+Ví dụ trên repackage archive `jar` hoặc `war` được build trong package phase của Maven lifecycle, bao gồm mọi dependency `provided` được define trong project.
+Nếu cần exclude một số dependency, có thể dùng một trong các option `exclude`; xem xref:packaging.adoc#packaging.examples.exclude-dependency[loại trừ dependency] để biết thêm chi tiết.
 
-Original artifact, tức non-executable artifact, mặc định được rename thành `.original` nhưng cũng có thể giữ original artifact bằng custom classifier.
+Artifact gốc (tức artifact không executable) mặc định được rename thành `.original`, nhưng cũng có thể giữ artifact gốc bằng custom classifier.
 
 NOTE: Feature `outputFileNameMapping` của `maven-war-plugin` hiện không được support.
 
-Module `spring-boot-devtools` và `spring-boot-docker-compose` mặc định tự động exclude; có thể control bằng property `excludeDevtools` và `excludeDockerCompose`.
-Để hoạt động với `war` packaging, dependency `spring-boot-devtools` và `spring-boot-docker-compose` phải set `optional` hoặc scope `provided`.
-Cũng lưu ý optional dependency mặc định không include.
-Nếu define các module này optional, cũng cần set property `includeOptional` thành `true`.
+Các module `spring-boot-devtools` và `spring-boot-docker-compose` mặc định được tự động exclude (có thể control việc này bằng các property `excludeDevtools` và `excludeDockerCompose`).
+Để hoạt động với `war` packaging, các dependency `spring-boot-devtools` và `spring-boot-docker-compose` phải được set là `optional` hoặc có scope `provided`.
+Cũng lưu ý rằng optional dependency mặc định không được include.
+Nếu đã define các module đó là optional, cũng cần set property `includeOptional` thành `true`.
 
-Plugin rewrite manifest, đặc biệt manage entry `Main-Class` và `Start-Class`.
-Nếu default không phù hợp, phải configure value trong Spring Boot plugin, không phải jar plugin.
-`Main-Class` trong manifest được control bởi property `layout` của Spring Boot plugin:
+Plugin rewrite manifest và đặc biệt quản lý các entry `Main-Class` và `Start-Class`.
+Nếu các giá trị mặc định không phù hợp, phải configure chúng trong Spring Boot plugin, không phải trong jar plugin.
+`Main-Class` trong manifest được control bởi property `layout` của Spring Boot plugin, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/non-default-pom.xml[tags=non-default]
 ----
 
-Property `layout` mặc định theo archive type (`jar` hoặc `war`). Available layout:
+Property `layout` mặc định theo archive type (`jar` hoặc `war`). Các layout sau đây khả dụng:
 
-* `JAR`: regular executable JAR layout.
-* `WAR`: executable WAR layout. Dependency `provided` đặt trong `WEB-INF/lib-provided` để tránh clash khi `war` deploy vào servlet container.
-* `ZIP` (alias `DIR`): tương tự `JAR` layout dùng `PropertiesLauncher`.
-* `NONE`: Bundle mọi dependency và project resource. Không bundle bootstrap loader.
+* `JAR`: layout JAR executable thông thường.
+* `WAR`: layout WAR executable. Các dependency `provided` được đặt trong `WEB-INF/lib-provided` để tránh clash khi `war` được deploy trong servlet container.
+* `ZIP` (alias của `DIR`): tương tự layout `JAR`, sử dụng `PropertiesLauncher`.
+* `NONE`: Bundle toàn bộ dependency và resource của project. Không bundle bootstrap loader.
 
 [[packaging.layers]]
-== Layered Jar hoặc War
+== Layered JAR hoặc WAR
 
-Repackaged jar chứa application class và dependency trong `BOOT-INF/classes` và `BOOT-INF/lib`.
-Tương tự, executable war chứa application class trong `WEB-INF/classes` và dependency trong `WEB-INF/lib` và `WEB-INF/lib-provided`.
-Khi cần build Docker image từ content jar/war, hữu ích khi tách thêm các directory này để write thành distinct layer.
+Repackaged jar lần lượt chứa class và dependency của application trong `BOOT-INF/classes` và `BOOT-INF/lib`.
+Tương tự, executable war chứa class của application trong `WEB-INF/classes`, còn dependency trong `WEB-INF/lib` và `WEB-INF/lib-provided`.
+Trong trường hợp cần build Docker image từ content của jar hoặc war, việc có thể tách tiếp các directory này để ghi chúng vào các layer riêng biệt sẽ rất hữu ích.
 
-Layered archive dùng cùng layout với regular repackaged jar/war nhưng include additional metadata file mô tả từng layer.
+Layered archive dùng cùng layout với repackaged jar hoặc war thông thường, nhưng include thêm một metadata file mô tả từng layer.
 
-Mặc định định nghĩa các layer:
+Theo mặc định, các layer sau được định nghĩa:
 
-* `dependencies` cho dependency có version không chứa `SNAPSHOT`.
-* `spring-boot-loader` cho loader class.
-* `snapshot-dependencies` cho dependency có version chứa `SNAPSHOT`.
-* `application` cho local module dependency, application class và resource.
+* `dependencies` dành cho mọi dependency có version không chứa `SNAPSHOT`.
+* `spring-boot-loader` dành cho các loader class.
+* `snapshot-dependencies` dành cho mọi dependency có version chứa `SNAPSHOT`.
+* `application` dành cho local module dependency, class của application và resource.
 
-Module dependency được identify bằng cách xem mọi module thuộc current build.
-Nếu module dependency chỉ resolve được vì đã install vào Maven local cache và không thuộc current build, nó được identify như regular dependency.
+Module dependency được identify bằng cách xem tất cả module thuộc current build.
+Nếu một module dependency chỉ resolve được vì đã được install vào Maven local cache và không thuộc current build, nó sẽ được identify là regular dependency.
 
-Order layer quan trọng vì quyết định khả năng previous layer được cache khi một phần application change.
-Default order là `dependencies`, `spring-boot-loader`, `snapshot-dependencies`, `application`.
-Content ít khả năng change nhất nên add trước, sau đó layer dễ change hơn.
+Order của các layer rất quan trọng vì nó quyết định khả năng các layer trước đó được cache khi một phần của application thay đổi.
+Order mặc định là `dependencies`, `spring-boot-loader`, `snapshot-dependencies`, `application`.
+Content ít có khả năng thay đổi nhất nên được add trước, tiếp theo là các layer có khả năng thay đổi nhiều hơn.
 
 Repackaged archive mặc định include file `layers.idx`.
-Để disable feature:
+Để disable feature này, có thể làm như sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -75,107 +75,107 @@ include::example$packaging/disable-layers-pom.xml[tags=disable-layers]
 ----
 
 [[packaging.layers.configuration]]
-=== Custom Layers Configuration
+=== Cấu hình Layer tùy chỉnh
 
-Tùy application, có thể muốn tune cách layer được tạo và thêm layer mới.
-Có thể làm bằng configuration load từ file hoặc classpath.
+Tùy application, bạn có thể muốn tune cách các layer được tạo và thêm layer mới.
+Việc này có thể được thực hiện bằng configuration được load từ file hoặc từ classpath.
 
-Để dùng configuration file, register:
+Để sử dụng configuration file, hãy register file đó như sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/custom-layers-pom.xml[tags=custom-layers]
 ----
 
-Ngoài ra configuration có thể load từ classpath bằng cách specify name.
-Expected matching file tại `META-INF/spring/layers/<name>.xml` trên plugin classpath.
-Jar chứa configuration có thể add làm plugin dependency:
+Ngoài ra, configuration có thể được load từ classpath bằng cách chỉ định tên của nó.
+Một file tương ứng được kỳ vọng ở `META-INF/spring/layers/<name>.xml` trên classpath của plugin.
+Jar chứa configuration có thể được add làm plugin dependency, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/custom-layers-classpath-pom.xml[tags=custom-layers-classpath]
 ----
 
-Trong ví dụ trên, `META-INF/spring/layers/custom.xml` được expected available trên plugin classpath.
+Trong ví dụ trên, `META-INF/spring/layers/custom.xml` được kỳ vọng là available trên classpath của plugin.
 
-Configuration file mô tả cách archive tách thành layer và order các layer.
-Ví dụ sau explicit define default ordering ở trên:
+Configuration file mô tả cách một archive được tách thành các layer và order của các layer đó.
+Ví dụ sau explicit define order mặc định được mô tả ở trên:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/layers.xml[tags=layers]
 ----
 
-XML format `layers` define ba section:
+XML format `layers` được định nghĩa trong ba section:
 
-* Block `<application>` define cách application class/resource được layer.
-* Block `<dependencies>` define cách dependency được layer.
-* Block `<layerOrder>` define order layer được write.
+* Block `<application>` định nghĩa cách class và resource của application được phân bổ vào các layer.
+* Block `<dependencies>` định nghĩa cách dependency được phân bổ vào các layer.
+* Block `<layerOrder>` định nghĩa order mà các layer được write.
 
-Nested block `<into>` dùng trong section `<application>` và `<dependencies>` để claim content cho layer.
-Các block evaluate theo order define từ trên xuống.
-Content không được block trước claim vẫn available cho block sau.
+Các block `<into>` lồng nhau được dùng trong section `<application>` và `<dependencies>` để claim content cho một layer.
+Các block được evaluate theo order mà chúng được define, từ trên xuống dưới.
+Content không được block trước claim vẫn available để các block sau xem xét.
 
-Block `<into>` claim content bằng nested element `<include>` và `<exclude>`.
-Section `<application>` dùng Ant-style path matching cho include/exclude expression.
-Section `<dependencies>` dùng pattern `group:artifact[:version]`.
-Nó cũng có element `<includeModuleDependencies />` và `<excludeModuleDependencies />` để include/exclude local module dependency.
+Block `<into>` claim content bằng các element `<include>` và `<exclude>` lồng nhau.
+Section `<application>` sử dụng Ant-style path matching cho các include/exclude expression.
+Section `<dependencies>` sử dụng pattern `group:artifact[:version]`.
+Section này cũng cung cấp các element `<includeModuleDependencies />` và `<excludeModuleDependencies />`, có thể dùng để include hoặc exclude local module dependency.
 
-Nếu không define `<include>`, mọi content chưa bị block trước claim được xét.
+Nếu không define `<include>`, toàn bộ content chưa được block trước claim sẽ được xem xét.
 
-Nếu không define `<exclude>`, không apply exclusion.
+Nếu không define `<exclude>`, không có exclusion nào được apply.
 
-Nhìn vào example `<dependencies>` ở trên, `<into>` đầu claim mọi module dependency cho layer `application.layer`.
-`<into>` tiếp theo claim mọi SNAPSHOT dependency cho layer `snapshot-dependencies`.
-`<into>` cuối claim mọi thứ còn lại, trong case này dependency không phải SNAPSHOT, cho layer `dependencies`.
+Xét example `<dependencies>` ở trên, `<into>` đầu tiên sẽ claim mọi module dependency cho layer `application.layer`.
+`<into>` tiếp theo sẽ claim mọi SNAPSHOT dependency cho layer `snapshot-dependencies`.
+`<into>` cuối cùng sẽ claim mọi thứ còn lại (trong trường hợp này là mọi dependency không phải SNAPSHOT) cho layer `dependencies`.
 
-Block `<application>` có rule tương tự.
-Đầu tiên claim content `org/springframework/boot/loader/**` cho layer `spring-boot-loader`.
-Sau đó claim class/resource còn lại cho layer `application`.
+Block `<application>` có các rule tương tự.
+Đầu tiên, block này claim content `org/springframework/boot/loader/**` cho layer `spring-boot-loader`.
+Sau đó, nó claim mọi class và resource còn lại cho layer `application`.
 
-NOTE: Order block `<into>` define thường khác order layer được write.
-Vì vậy element `<layerOrder>` luôn phải include và _phải_ cover mọi layer reference bởi block `<into>`.
+NOTE: Order mà các block `<into>` được define thường khác với order mà các layer được write.
+Vì lý do đó, element `<layerOrder>` luôn phải được include và _phải_ cover mọi layer được reference bởi các block `<into>`.
 
 include::partial$goals/repackage.adoc[leveloffset=+1]
 
 [[packaging.examples]]
-== Examples
+== Ví dụ
 
 [[packaging.examples.custom-classifier]]
-=== Custom Classifier
+=== Classifier tùy chỉnh
 
-Mặc định goal `repackage` replace original artifact bằng repackaged artifact.
-Đây là sensible behavior cho module đại diện application, nhưng nếu module dùng làm dependency của module khác, cần classifier cho repackaged artifact.
-Lý do là application class được package trong `BOOT-INF/classes` nên dependent module không load được class của repackaged jar.
+Mặc định, goal `repackage` replace artifact gốc bằng artifact đã được repackage.
+Đây là behavior hợp lý đối với các module đại diện cho một application, nhưng nếu module được dùng làm dependency của module khác, cần cung cấp classifier cho artifact đã được repackage.
+Lý do là các class của application được package trong `BOOT-INF/classes`, nên dependent module không thể load class từ repackaged jar.
 
-Nếu vậy, hoặc nếu muốn giữ original artifact và attach repackaged one với classifier khác, configure plugin:
+Nếu thuộc trường hợp đó, hoặc nếu muốn giữ artifact gốc và attach artifact đã được repackage với một classifier khác, hãy configure plugin như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/different-classifier-pom.xml[tags=different-classifier]
 ----
 
-Nếu dùng `spring-boot-starter-parent`, goal `repackage` execute tự động trong execution id `repackage`.
-Trong setup đó chỉ cần specify configuration:
+Nếu sử dụng `spring-boot-starter-parent`, goal `repackage` được execute tự động trong một execution có id `repackage`.
+Trong setup đó, chỉ cần specify configuration như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/repackage-configuration-pom.xml[tags=repackage-configuration]
 ----
 
-Configuration này generate hai artifact: original và repackaged counterpart do goal repackage tạo.
-Cả hai install/deploy transparently.
+Configuration này generate hai artifact: artifact gốc và artifact tương ứng đã được repackage do goal repackage tạo ra.
+Cả hai đều được install/deploy một cách transparent.
 
-Cũng có thể dùng cùng configuration nếu muốn repackage secondary artifact giống cách main artifact được replace.
-Configuration sau install/deploy một artifact classifier `task` chứa repackaged application:
+Cũng có thể dùng cùng configuration nếu muốn repackage một secondary artifact theo cách tương tự như main artifact được replace.
+Configuration sau install/deploy một artifact duy nhất có classifier `task`, chứa application đã được repackage:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/classified-artifact-pom.xml[tags=classified-artifact]
 ----
 
-Vì cả `maven-jar-plugin` và `spring-boot-maven-plugin` chạy cùng phase, jar plugin phải define trước để chạy trước goal repackage.
-Nếu dùng `spring-boot-starter-parent`, có thể simplify:
+Vì `maven-jar-plugin` và `spring-boot-maven-plugin` chạy trong cùng phase, jar plugin phải được define trước để chạy trước goal repackage.
+Nếu sử dụng `spring-boot-starter-parent`, có thể simplify như sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -183,9 +183,9 @@ include::example$packaging/jar-plugin-first-pom.xml[tags=jar-plugin-first]
 ----
 
 [[packaging.examples.custom-name]]
-=== Custom Name
+=== Tên tùy chỉnh
 
-Nếu cần repackaged jar có local name khác name define bởi attribute `artifactId` của project, dùng standard `finalName`:
+Nếu cần repackaged jar có local name khác với tên được define bởi attribute `artifactId` của project, hãy dùng `finalName` theo chuẩn, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -195,58 +195,58 @@ include::example$packaging/custom-name-pom.xml[tags=custom-name]
 Configuration này generate repackaged artifact tại `target/my-app.jar`.
 
 [[packaging.examples.local-artifact]]
-=== Local Repackaged Artifact
+=== Repackaged Artifact cục bộ
 
-Mặc định goal `repackage` replace original artifact bằng executable one.
-Nếu chỉ muốn deploy original jar nhưng vẫn chạy app với regular file name, configure:
+Mặc định, goal `repackage` replace artifact gốc bằng artifact executable.
+Nếu chỉ muốn deploy jar gốc nhưng vẫn có thể chạy app bằng regular file name, hãy configure plugin như sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/local-repackaged-artifact-pom.xml[tags=local-repackaged-artifact]
 ----
 
-Configuration này generate hai artifact: original và executable counterpart do `repackage` tạo.
-Chỉ original được install/deploy.
+Configuration này generate hai artifact: artifact gốc và artifact executable tương ứng do `repackage` tạo ra.
+Chỉ artifact gốc được install/deploy.
 
 [[packaging.examples.custom-layout]]
-=== Custom Layout
+=== Layout tùy chỉnh
 
-Spring Boot repackage jar file cho project bằng custom layout factory define trong additional jar file, được cung cấp làm dependency cho build plugin:
+Spring Boot repackage jar file cho project bằng một custom layout factory được define trong additional jar file, được cung cấp dưới dạng dependency cho build plugin:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/custom-layout-pom.xml[tags=custom-layout]
 ----
 
-Layout factory được cung cấp dưới dạng implementation của `LayoutFactory` từ `spring-boot-loader-tools`, explicit specify trong POM.
-Nếu chỉ có một custom `LayoutFactory` trên plugin classpath và được list trong `META-INF/spring.factories` thì không cần explicit set trong plugin configuration.
+Layout factory được cung cấp dưới dạng implementation của `LayoutFactory` (từ `spring-boot-loader-tools`) và được explicit specify trong POM.
+Nếu chỉ có một custom `LayoutFactory` trên plugin classpath và nó được list trong `META-INF/spring.factories`, không cần explicit set nó trong plugin configuration.
 
-Layout factory luôn bị ignore nếu explicit xref:#packaging.repackage-goal.parameter-details.layout-factory[layout] được set.
+Layout factory luôn bị ignore nếu xref:#packaging.repackage-goal.parameter-details.layout-factory[layout] được set một cách explicit.
 
 [[packaging.examples.exclude-dependency]]
-=== Dependency Exclusion
+=== Loại trừ Dependency
 
-Mặc định cả goal `repackage` và `run` include mọi dependency `provided` define trong project.
-Spring Boot project nên xem `provided` dependency như "container" dependency cần để chạy application.
-Nói chung Spring Boot project không dùng làm dependency nên ít có optional dependency.
-Khi project có optional dependency, chúng cũng được include bởi goal `repackage` và `run`.
+Mặc định, cả goal `repackage` và `run` đều include mọi dependency `provided` được define trong project.
+Một Spring Boot project nên xem `provided` dependency là các "container" dependency cần thiết để chạy application.
+Nói chung, Spring Boot project không được dùng làm dependency, nên thường không có `optional` dependency.
+Khi project có optional dependency, các dependency đó cũng được include bởi goal `repackage` và `run`.
 
-Một số dependency có thể hoàn toàn không cần và nên exclude khỏi executable jar.
-Để consistent, chúng cũng không nên present khi chạy application.
+Một số dependency có thể hoàn toàn không cần thiết và nên được exclude khỏi executable jar.
+Để nhất quán, chúng cũng không nên present khi chạy application.
 
-Có hai cách exclude dependency khỏi packaging/runtime:
+Có hai cách để exclude một dependency khỏi packaging hoặc runtime:
 
-* Exclude specific artifact identify bởi `groupId` và `artifactId`, optional có `classifier`.
-* Exclude mọi artifact thuộc một `groupId`.
+* Exclude một artifact cụ thể được identify bởi `groupId` và `artifactId`, tùy chọn thêm `classifier` nếu cần.
+* Exclude mọi artifact thuộc một `groupId` nhất định.
 
-Ví dụ exclude chỉ `com.example:module1`:
+Ví dụ sau exclude `com.example:module1` và chỉ artifact đó:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/exclude-artifact-pom.xml[tags=exclude-artifact]
 ----
 
-Ví dụ exclude mọi artifact thuộc group `com.example`:
+Ví dụ sau exclude mọi artifact thuộc group `com.example`:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -254,11 +254,11 @@ include::example$packaging/exclude-artifact-group-pom.xml[tags=exclude-artifact-
 ----
 
 [[packaging.examples.layered-archive-tools]]
-=== JAR Tools
+=== Công cụ JAR
 
-Khi layered jar hoặc war được tạo, jar `spring-boot-jarmode-tools` được thêm làm dependency vào archive.
-Với jar này trên classpath, có thể launch application ở special mode để bootstrap code chạy task hoàn toàn khác application, ví dụ extract layer.
-Nếu muốn exclude dependency:
+Khi layered jar hoặc war được tạo, jar `spring-boot-jarmode-tools` được thêm vào archive dưới dạng dependency.
+Với jar này trên classpath, có thể launch application ở special mode, cho phép bootstrap code chạy một việc hoàn toàn khác với application, chẳng hạn extract các layer.
+Nếu muốn exclude dependency, có thể làm như sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -266,15 +266,15 @@ include::example$packaging/exclude-dependency-pom.xml[tags=exclude-dependency]
 ----
 
 [[packaging.examples.custom-layers-configuration]]
-=== Custom Layers Configuration
+=== Cấu hình Layer tùy chỉnh
 
-Default setup split dependency thành snapshot và non-snapshot, nhưng có thể có rule phức tạp hơn.
-Ví dụ có thể muốn isolate company-specific dependency của project vào dedicated layer.
-Configuration `layers.xml` sau là một setup:
+Setup mặc định split dependency thành snapshot và non-snapshot, tuy nhiên có thể bạn có các rule phức tạp hơn.
+Ví dụ, bạn có thể muốn isolate các dependency dành riêng cho company của project vào một layer riêng.
+Configuration `layers.xml` sau minh họa một setup như vậy:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$packaging/layers-configuration.xml[tags=layers-configuration]
 ----
 
-Configuration trên tạo additional layer `company-dependencies` với mọi library có groupId `com.acme`.
+Configuration trên tạo thêm layer `company-dependencies`, chứa mọi library có groupId `com.acme`.

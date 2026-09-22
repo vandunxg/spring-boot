@@ -1,16 +1,19 @@
 [[actuator.http-exchanges]]
-= Ghi lại HTTP Exchange
+= Ghi lại HTTP exchanges
 
-Enable recording HTTP exchange bằng bean javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[] trong application configuration.
-Spring Boot cung cấp javadoc:org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository[], mặc định lưu 100 request-response exchange gần nhất.
-Implementation này hạn chế hơn tracing solution và chỉ khuyến nghị cho development.
-Production nên dùng production-ready tracing/observability solution như Zipkin hoặc OpenTelemetry, hoặc tự tạo HttpExchangeRepository.
+Bạn có thể bật việc ghi lại HTTP exchanges bằng cách cung cấp một bean kiểu javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[] trong configuration của application.
+Để thuận tiện, Spring Boot cung cấp javadoc:org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository[], theo mặc định lưu trữ 100 request-response exchange gần nhất.
+javadoc:org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository[] có giới hạn so với tracing solution và chúng tôi khuyến nghị chỉ sử dụng nó trong development environment.
+Trong production environment, chúng tôi khuyến nghị sử dụng production-ready tracing hoặc observability solution, chẳng hạn như Zipkin hoặc OpenTelemetry.
+Ngoài ra, bạn có thể tự tạo javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[].
 
-Endpoint `httpexchanges` cung cấp thông tin về request-response exchange lưu trong repository.
+Bạn có thể sử dụng endpoint `httpexchanges` để lấy thông tin về các request-response exchange được lưu trong javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[].
+
+
 
 [[actuator.http-exchanges.custom]]
-== Custom HTTP Exchange Recording
+== Tùy chỉnh việc ghi lại HTTP exchanges
 
-Để customize item được include trong mỗi recorded exchange, dùng configprop:management.httpexchanges.recording.include[].
+Để customize các item được include trong mỗi exchange được ghi lại, hãy sử dụng configuration property configprop:management.httpexchanges.recording.include[].
 
-Để disable recording hoàn toàn, đặt configprop:management.httpexchanges.recording.enabled[] thành `false`.
+Để disable việc ghi lại hoàn toàn, đặt configprop:management.httpexchanges.recording.enabled[] thành `false`.

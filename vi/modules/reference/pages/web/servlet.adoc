@@ -1,75 +1,75 @@
 [[web.servlet]]
-= Servlet Web Application
+= Web Application dựa trên Servlet
 
-Nếu muốn xây dựng servlet-based web application, bạn có thể tận dụng auto-configuration của Spring Boot cho Spring MVC hoặc Jersey.
+Nếu muốn xây dựng web application dựa trên Servlet, bạn có thể tận dụng auto-configuration của Spring Boot cho Spring MVC hoặc Jersey.
 
 
 
 [[web.servlet.spring-mvc]]
 == "`Spring Web MVC Framework`"
 
-{url-spring-framework-docs}/web/webmvc.html[Spring Web MVC framework] (thường được gọi là "`Spring MVC`") là một web framework "`model view controller`" đầy đủ tính năng.
+{url-spring-framework-docs}/web/webmvc.html[Spring Web MVC framework] (thường được gọi là "`Spring MVC`") là một web framework "`model view controller`" phong phú.
 Spring MVC cho phép bạn tạo các bean javadoc:org.springframework.stereotype.Controller[format=annotation] hoặc javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] đặc biệt để xử lý HTTP request đến.
-Các method trong controller được map tới HTTP bằng annotation javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
+Các method trong controller được map với HTTP bằng annotation javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
 
 Code sau cho thấy một javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] điển hình phục vụ JSON data:
 
 include-code::MyRestController[]
 
-"`WebMvc.fn`", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế, như ví dụ sau:
+"`WebMvc.fn`", biến thể functional, tách routing configuration khỏi phần xử lý request thực tế như trong ví dụ sau:
 
 include-code::MyRoutingConfiguration[]
 
 include-code::MyUserHandler[]
 
-Spring MVC là một phần của core Spring Framework và thông tin chi tiết có trong {url-spring-framework-docs}/web/webmvc.html[reference documentation].
-Ngoài ra có nhiều guide về Spring MVC tại https://spring.io/guides.
+Spring MVC là một phần của Spring Framework core và thông tin chi tiết có trong {url-spring-framework-docs}/web/webmvc.html[tài liệu tham khảo].
+Ngoài ra, có một số guide về Spring MVC tại https://spring.io/guides.
 
-TIP: Bạn có thể định nghĩa bao nhiêu bean javadoc:org.springframework.web.servlet.function.RouterFunction[] tùy ý để modularize định nghĩa router.
-Các bean có thể được sắp thứ tự nếu cần áp dụng precedence.
+TIP: Bạn có thể định nghĩa bao nhiêu bean javadoc:org.springframework.web.servlet.function.RouterFunction[] tùy ý để modularize việc định nghĩa router.
+Bạn có thể sắp thứ tự các bean nếu cần áp dụng precedence.
 
 
 
 [[web.servlet.spring-mvc.auto-configuration]]
 === Spring MVC Auto-configuration
 
-Spring Boot cung cấp auto-configuration cho Spring MVC hoạt động tốt với hầu hết application.
+Spring Boot cung cấp auto-configuration cho Spring MVC, hoạt động tốt với hầu hết application.
 Nó thay thế nhu cầu dùng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation] và hai cách này không thể dùng cùng nhau.
-Ngoài default của Spring MVC, auto-configuration cung cấp các feature sau:
+Ngoài các default của Spring MVC, auto-configuration cung cấp các feature sau:
 
-* Include các bean javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[] và javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[].
+* Bao gồm các bean javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[] và javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[].
 * Hỗ trợ phục vụ static resource, bao gồm WebJars (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.static-content[ở phần sau của tài liệu]).
 * Tự động register các bean javadoc:org.springframework.core.convert.converter.Converter[], javadoc:org.springframework.core.convert.converter.GenericConverter[] và javadoc:org.springframework.format.Formatter[].
-* Hỗ trợ javadoc:org.springframework.http.converter.HttpMessageConverters[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.message-converters[ở phần sau]).
-* Tự động register javadoc:org.springframework.validation.MessageCodesResolver[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.message-codes[ở phần sau]).
+* Hỗ trợ javadoc:org.springframework.http.converter.HttpMessageConverters[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.message-converters[ở phần sau của tài liệu]).
+* Tự động register javadoc:org.springframework.validation.MessageCodesResolver[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.message-codes[ở phần sau của tài liệu]).
 * Hỗ trợ static `index.html`.
-* Tự động dùng bean javadoc:org.springframework.web.bind.support.ConfigurableWebBindingInitializer[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.binding-initializer[ở phần sau]).
+* Tự động sử dụng bean javadoc:org.springframework.web.bind.support.ConfigurableWebBindingInitializer[] (được trình bày xref:web/servlet.adoc#web.servlet.spring-mvc.binding-initializer[ở phần sau của tài liệu]).
 
-Nếu muốn giữ các customization MVC của Spring Boot và thêm {url-spring-framework-docs}/web/webmvc.html[MVC customization] khác (interceptor, formatter, view controller và feature khác), bạn có thể thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng kiểu javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] nhưng *không* dùng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+Nếu muốn giữ các MVC customization của Spring Boot và thêm {url-spring-framework-docs}/web/webmvc.html[MVC customization] khác (interceptor, formatter, view controller và feature khác), bạn có thể thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng thuộc kiểu javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] nhưng *không* dùng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
 
-Nếu muốn cung cấp custom instance của javadoc:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping[], javadoc:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter[] hoặc javadoc:org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver[], đồng thời vẫn giữ Spring Boot MVC customization, bạn có thể khai báo bean javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcRegistrations[] và dùng nó để cung cấp custom instance của các component đó.
-Các custom instance vẫn tiếp tục được Spring MVC initialize và configure.
-Để tham gia, và nếu muốn override phần xử lý tiếp theo đó, nên dùng javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[].
+Nếu muốn cung cấp custom instance của javadoc:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping[], javadoc:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter[] hoặc javadoc:org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver[], đồng thời vẫn giữ các MVC customization của Spring Boot, bạn có thể khai báo bean javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcRegistrations[] và dùng nó để cung cấp custom instance của các component đó.
+Spring MVC vẫn tiếp tục initialize và configure các custom instance này.
+Để tham gia vào quá trình xử lý tiếp theo và, nếu muốn, override quá trình đó, nên dùng javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[].
 
-Nếu không muốn dùng auto-configuration và muốn kiểm soát hoàn toàn Spring MVC, thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng được annotate bằng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
-Hoặc thêm javadoc:org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration[] được annotate bằng javadoc:org.springframework.context.annotation.Configuration[format=annotation] như mô tả trong API documentation của javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+Nếu không muốn dùng auto-configuration và muốn kiểm soát hoàn toàn Spring MVC, hãy thêm class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng được annotate bằng javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+Hoặc thêm javadoc:org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration[] được annotate bằng javadoc:org.springframework.context.annotation.Configuration[format=annotation], như mô tả trong API documentation của javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
 
 
 
 [[web.servlet.spring-mvc.conversion-service]]
 === Spring MVC Conversion Service
 
-Spring MVC dùng một javadoc:org.springframework.core.convert.ConversionService[] khác với cái dùng để convert value từ file `application.properties` hoặc `application.yaml`.
+Spring MVC dùng một javadoc:org.springframework.core.convert.ConversionService[] khác với service được dùng để convert value từ file `application.properties` hoặc `application.yaml`.
 Điều đó có nghĩa converter cho javadoc:java.time.Period[], javadoc:java.time.Duration[] và javadoc:org.springframework.util.unit.DataSize[] không có sẵn, đồng thời annotation javadoc:org.springframework.boot.convert.DurationUnit[format=annotation] và javadoc:org.springframework.boot.convert.DataSizeUnit[format=annotation] sẽ bị bỏ qua.
 
 Nếu muốn customize javadoc:org.springframework.core.convert.ConversionService[] được Spring MVC dùng, bạn có thể cung cấp bean javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] với method `addFormatters`.
-Từ method này bạn có thể register converter tùy ý, hoặc delegate sang các static method trên javadoc:org.springframework.boot.convert.ApplicationConversionService[].
+Từ method này, bạn có thể register converter tùy ý hoặc delegate sang các static method có trên javadoc:org.springframework.boot.convert.ApplicationConversionService[].
 
-Conversion cũng có thể customize bằng configuration property `spring.mvc.format.*`.
-Khi chưa cấu hình, dùng các default sau:
+Conversion cũng có thể được customize bằng configuration property `spring.mvc.format.*`.
+Khi chưa được cấu hình, các default sau được sử dụng:
 
 |===
-|Property |`DateTimeFormatter` |Format
+|Property |`DateTimeFormatter` |Formats
 
 |configprop:spring.mvc.format.date[]
 |`ofLocalizedDate(FormatStyle.SHORT)`

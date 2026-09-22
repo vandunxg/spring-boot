@@ -1,7 +1,7 @@
 [[using.auto-configuration]]
 = Auto-configuration
 
-Auto-configuration của Spring Boot cố gắng tự động cấu hình ứng dụng Spring dựa trên các jar dependency bạn đã thêm.
+Auto-configuration của Spring Boot cố gắng tự động cấu hình ứng dụng Spring dựa trên các dependency dạng JAR mà bạn đã thêm vào.
 Ví dụ, nếu `HSQLDB` có trên classpath và bạn chưa tự cấu hình bean kết nối database nào, Spring Boot sẽ auto-configure một in-memory database.
 
 Bạn cần bật auto-configuration bằng cách thêm annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] vào một trong các class javadoc:org.springframework.context.annotation.Configuration[format=annotation].
@@ -19,31 +19,31 @@ Bất kỳ lúc nào, bạn cũng có thể bắt đầu định nghĩa cấu h�
 Ví dụ, nếu thêm bean javadoc:javax.sql.DataSource[] riêng, phần hỗ trợ embedded database mặc định sẽ không còn được áp dụng.
 
 Để biết auto-configuration nào đang được áp dụng và vì sao, hãy khởi động ứng dụng với tùy chọn `--debug`.
-Thao tác này bật debug log cho một số core logger và ghi báo cáo điều kiện ra console.
+Thao tác này bật debug logging cho một số core logger và ghi conditions report ra console.
 
 
 
 [[using.auto-configuration.disabling-specific]]
-== Vô hiệu hóa class auto-configuration cụ thể
+== Vô hiệu hóa auto-configuration class cụ thể
 
-Nếu thấy các class auto-configuration không mong muốn đang được áp dụng, bạn có thể dùng thuộc tính exclude của javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] để vô hiệu hóa chúng, như ví dụ sau:
+Nếu thấy các auto-configuration class không mong muốn đang được áp dụng, bạn có thể dùng thuộc tính exclude của javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] để vô hiệu hóa chúng, như ví dụ sau:
 
 include-code::MyApplication[]
 
-Nếu class không có trên classpath, bạn có thể dùng thuộc tính `excludeName` của annotation và chỉ định tên đầy đủ của class.
+Nếu class không có trên classpath, bạn có thể dùng thuộc tính `excludeName` của annotation và chỉ định fully qualified name của class.
 Nếu thích dùng javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] thay cho javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], các thuộc tính `exclude` và `excludeName` cũng có sẵn.
-Cuối cùng, bạn cũng có thể kiểm soát danh sách class auto-configuration bị loại trừ bằng property configprop:spring.autoconfigure.exclude[].
+Cuối cùng, bạn cũng có thể kiểm soát danh sách auto-configuration class bị loại trừ bằng property configprop:spring.autoconfigure.exclude[].
 
 TIP: Bạn có thể khai báo loại trừ cả ở cấp annotation lẫn bằng property.
 
-NOTE: Dù class auto-configuration là `public`, phần duy nhất được xem là public API là tên class, dùng để vô hiệu hóa auto-configuration.
-Nội dung thực tế của các class đó, như class cấu hình lồng nhau hoặc bean method, chỉ dành cho sử dụng nội bộ và chúng tôi không khuyến nghị dùng trực tiếp.
+NOTE: Dù auto-configuration class là `public`, phần duy nhất được xem là public API là tên class, dùng để vô hiệu hóa auto-configuration.
+Nội dung thực tế của các class đó, như nested configuration class hoặc các bean method, chỉ dành cho sử dụng nội bộ và chúng tôi không khuyến nghị dùng trực tiếp.
 
 
 
 [[using.auto-configuration.packages]]
-== Package auto-configuration
+== Các auto-configuration package
 
-Package auto-configuration là các package mà những tính năng được auto-configure mặc định tìm kiếm khi scan các thành phần như entity và Spring Data repository.
-Annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] (dùng trực tiếp hoặc thông qua javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation]) xác định package auto-configuration mặc định.
-Có thể cấu hình thêm package bằng annotation javadoc:org.springframework.boot.autoconfigure.AutoConfigurationPackage[format=annotation].
+Các auto-configuration package là những package mà các feature được auto-configure khác nhau mặc định sẽ tìm kiếm khi scan các thành phần như entity và Spring Data repository.
+Annotation javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation] (dùng trực tiếp hoặc thông qua javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation]) xác định auto-configuration package mặc định.
+Có thể cấu hình thêm các package bằng annotation javadoc:org.springframework.boot.autoconfigure.AutoConfigurationPackage[format=annotation].

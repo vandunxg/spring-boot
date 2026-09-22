@@ -1,12 +1,13 @@
 [[io.webservices]]
 = Web Services
 
-Spring Boot cung cấp Web Services auto-configuration nên bạn chỉ cần định nghĩa các bean javadoc:org.springframework.ws.server.endpoint.annotation.Endpoint[format=annotation].
+Spring Boot cung cấp auto-configuration cho Web Services, nên tất cả những gì bạn cần làm là định nghĩa các bean javadoc:org.springframework.ws.server.endpoint.annotation.Endpoint[format=annotation].
 
-Có thể dễ dàng dùng {url-spring-webservices-docs}[Spring Web Services features] qua module `spring-boot-starter-webservices`.
+Các {url-spring-webservices-docs}[tính năng của Spring Web Services] có thể dễ dàng được sử dụng với module `spring-boot-starter-webservices`.
 
-Bean javadoc:org.springframework.ws.wsdl.wsdl11.SimpleWsdl11Definition[] và javadoc:org.springframework.xml.xsd.SimpleXsdSchema[] có thể tự động được tạo lần lượt cho WSDL và XSD.
-Để làm vậy, cấu hình location:
+Các bean javadoc:org.springframework.ws.wsdl.wsdl11.SimpleWsdl11Definition[] và javadoc:org.springframework.xml.xsd.SimpleXsdSchema[] có thể được tự động tạo tương ứng cho các WSDL và XSD.
+Để thực hiện việc này, hãy cấu hình location của chúng như trong ví dụ sau:
+
 
 [configprops,yaml]
 ----
@@ -15,20 +16,22 @@ spring:
     wsdl-locations: "classpath:/wsdl"
 ----
 
+
+
 [[io.webservices.template]]
 == Gọi Web Services bằng WebServiceTemplate
 
-Nếu cần gọi remote Web service từ application, có thể dùng class {url-spring-webservices-docs}#client-web-service-template[`WebServiceTemplate`].
-Vì instance javadoc:org.springframework.ws.client.core.WebServiceTemplate[] thường cần customize trước khi dùng, Spring Boot không cung cấp một auto-configured bean duy nhất.
-Thay vào đó, Spring Boot auto-configure javadoc:org.springframework.boot.webservices.client.WebServiceTemplateBuilder[] để tạo instance khi cần.
+Nếu application cần gọi các remote Web services, bạn có thể sử dụng class {url-spring-webservices-docs}#client-web-service-template[`WebServiceTemplate`].
+Vì các instance javadoc:org.springframework.ws.client.core.WebServiceTemplate[] thường cần được tùy chỉnh trước khi sử dụng, Spring Boot không cung cấp một bean javadoc:org.springframework.ws.client.core.WebServiceTemplate[] duy nhất được auto-configure.
+Tuy nhiên, Spring Boot auto-configure một javadoc:org.springframework.boot.webservices.client.WebServiceTemplateBuilder[], có thể được dùng để tạo các instance javadoc:org.springframework.ws.client.core.WebServiceTemplate[] khi cần.
 
-Ví dụ điển hình:
+Đoạn code sau đây cho thấy một ví dụ điển hình:
 
 include-code::MyService[]
 
-Mặc định javadoc:org.springframework.boot.webservices.client.WebServiceTemplateBuilder[] detect HTTP-based javadoc:org.springframework.ws.transport.WebServiceMessageSender[] phù hợp từ HTTP client library trên classpath.
-Bạn cũng có thể customize read và connection timeout cho từng builder:
+Theo mặc định, javadoc:org.springframework.boot.webservices.client.WebServiceTemplateBuilder[] phát hiện một javadoc:org.springframework.ws.transport.WebServiceMessageSender[] dựa trên HTTP phù hợp, sử dụng các HTTP client library hiện có trên classpath.
+Bạn cũng có thể tùy chỉnh read timeout và connection timeout cho từng builder như sau:
 
 include-code::MyWebServiceTemplateConfiguration[]
 
-TIP: Bạn cũng có thể thay đổi xref:io/rest-client.adoc#io.rest-client.clienthttprequestfactory.configuration[global HTTP client configuration] được dùng nếu không áp dụng template customization code cụ thể.
+TIP: Bạn cũng có thể thay đổi xref:io/rest-client.adoc#io.rest-client.clienthttprequestfactory.configuration[cấu hình HTTP client ở cấp global] được sử dụng khi không áp dụng code tùy chỉnh cụ thể cho template.

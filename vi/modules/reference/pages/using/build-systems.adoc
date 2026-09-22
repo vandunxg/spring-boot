@@ -1,5 +1,5 @@
 [[using.build-systems]]
-= Build System
+= Build Systems
 
 Bạn rất nên chọn build system hỗ trợ xref:using/build-systems.adoc#using.build-systems.dependency-management[dependency management] và có thể sử dụng artifact được phát hành lên Maven Central repository.
 Chúng tôi khuyến nghị chọn Maven hoặc Gradle.
@@ -10,17 +10,17 @@ Spring Boot có thể hoạt động với build system khác (ví dụ Ant), nh
 [[using.build-systems.dependency-management]]
 == Dependency Management
 
-Mỗi bản phát hành Spring Boot cung cấp một danh sách dependency được lựa chọn và hỗ trợ.
+Mỗi bản phát hành Spring Boot cung cấp một danh sách dependency được chọn lọc mà Spring Boot hỗ trợ.
 Trong thực tế, bạn không cần khai báo phiên bản cho các dependency này trong cấu hình build, vì Spring Boot quản lý việc đó.
 Khi nâng cấp Spring Boot, các dependency này cũng được nâng cấp một cách nhất quán.
 
 NOTE: Bạn vẫn có thể chỉ định phiên bản và ghi đè khuyến nghị của Spring Boot khi cần.
 
-Danh sách được lựa chọn bao gồm mọi Spring module có thể dùng với Spring Boot cùng danh sách các thư viện bên thứ ba đã được chọn lọc.
+Danh sách được chọn lọc này bao gồm tất cả Spring module có thể dùng với Spring Boot, cùng với danh sách các thư viện bên thứ ba được chọn lọc kỹ.
 Danh sách này được cung cấp dưới dạng Bill of Materials tiêu chuẩn (`spring-boot-dependencies`), có thể dùng với cả xref:using/build-systems.adoc#using.build-systems.maven[Maven] và xref:using/build-systems.adoc#using.build-systems.gradle[Gradle].
 
 WARNING: Mỗi bản phát hành Spring Boot gắn với một phiên bản cơ sở của Spring Framework.
-Chúng tôi **đặc biệt** khuyến nghị bạn không tự chỉ định phiên bản Spring Framework.
+Chúng tôi **đặc biệt** khuyến nghị bạn không chỉ định phiên bản Spring Framework.
 
 
 
@@ -47,8 +47,8 @@ Chúng tôi **đặc biệt** khuyến nghị bạn không tự chỉ định ph
 [[using.build-systems.ant]]
 ==  Ant
 
-Bạn có thể build project Spring Boot bằng Apache Ant+Ivy.
-Module "`AntLib`" `spring-boot-antlib` cũng được cung cấp để giúp Ant tạo executable jar.
+Có thể build một project Spring Boot bằng Apache Ant+Ivy.
+Module `spring-boot-antlib` "`AntLib`" cũng có sẵn để giúp Ant tạo các executable jar.
 
 Để khai báo dependency, file `ivy.xml` thông thường có dạng như ví dụ sau:
 
@@ -111,13 +111,13 @@ TIP: Nếu không muốn dùng module `spring-boot-antlib`, xem phần xref:how-
 
 
 [[using.build-systems.starters]]
-== Starter
+== Starters
 
-Starter là tập hợp các descriptor dependency tiện dụng mà bạn có thể đưa vào ứng dụng.
+Starters là một tập hợp các descriptor dependency tiện dụng mà bạn có thể đưa vào application.
 Bạn có được đầy đủ Spring và các công nghệ liên quan cần thiết tại một nơi, không phải tìm trong code mẫu rồi sao chép hàng loạt descriptor dependency.
-Ví dụ, để bắt đầu sử dụng Spring và JPA truy cập database, hãy thêm dependency `spring-boot-starter-data-jpa` vào project.
+Ví dụ, nếu muốn bắt đầu sử dụng Spring và JPA cho việc truy cập database, hãy thêm dependency `spring-boot-starter-data-jpa` vào project.
 
-Starter chứa nhiều dependency cần thiết để project nhanh chóng hoạt động, cùng một tập hợp transitive dependency được quản lý nhất quán và được hỗ trợ.
+Các starter chứa nhiều dependency cần thiết để project nhanh chóng hoạt động, cùng một tập hợp transitive dependency được quản lý nhất quán và được hỗ trợ.
 
 .Ý nghĩa cách đặt tên
 ****
@@ -133,19 +133,19 @@ Ví dụ, một project starter bên thứ ba tên `thirdpartyproject` thường
 
 Spring Boot cung cấp các application starter sau trong group `org.springframework.boot`:
 
-.Application starter của Spring Boot
+.Các application starter của Spring Boot
 include::ROOT:partial$starters/application-starters.adoc[]
 
-Ngoài application starter, có thể dùng các starter sau để thêm tính năng xref:how-to:actuator.adoc[sẵn sàng cho production]:
+Ngoài các application starter, có thể dùng các starter sau để thêm tính năng xref:how-to:actuator.adoc[sẵn sàng cho production]:
 
-.Production starter của Spring Boot
+.Các production starter của Spring Boot
 include::ROOT:partial$starters/production-starters.adoc[]
 
 Cuối cùng, Spring Boot còn có các starter sau để bạn loại trừ hoặc thay thế một số thành phần kỹ thuật cụ thể:
 
-.Technical starter của Spring Boot
+.Các technical starter của Spring Boot
 include::ROOT:partial$starters/technical-starters.adoc[]
 
 Để tìm hiểu cách thay thế thành phần kỹ thuật, xem tài liệu How-to về xref:how-to:webserver.adoc#howto.webserver.use-another[thay web server] và xref:how-to:logging.adoc#howto.logging.log4j[hệ thống logging].
 
-TIP: Để xem danh sách starter bổ sung do cộng đồng đóng góp, xem {code-spring-boot-latest}/starter/README.adoc[file README] trong module `spring-boot-starters` trên GitHub.
+TIP: Để xem danh sách các starter bổ sung do cộng đồng đóng góp, xem {code-spring-boot-latest}/starter/README.adoc[file README] trong module `spring-boot-starters` trên GitHub.

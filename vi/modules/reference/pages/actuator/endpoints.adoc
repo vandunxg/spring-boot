@@ -2,57 +2,57 @@
 = Endpoints
 
 Actuator endpoint cho phép monitor và tương tác với application.
-Spring Boot có nhiều built-in endpoint và cho phép thêm endpoint riêng.
-Ví dụ endpoint `health` cung cấp basic application health information.
+Spring Boot tích hợp nhiều built-in endpoint và cho phép thêm endpoint riêng.
+Ví dụ, endpoint `health` cung cấp thông tin health cơ bản của application.
 
-Có thể xref:actuator/endpoints.adoc#actuator.endpoints.controlling-access[kiểm soát access] tới từng endpoint và xref:actuator/endpoints.adoc#actuator.endpoints.exposing[expose chúng (cho phép remote access) qua HTTP hoặc JMX].
-Endpoint được xem là available khi access được permit và endpoint được expose.
+Bạn có thể xref:actuator/endpoints.adoc#actuator.endpoints.controlling-access[kiểm soát access] tới từng endpoint và xref:actuator/endpoints.adoc#actuator.endpoints.exposing[expose chúng (cho phép truy cập từ xa) qua HTTP hoặc JMX].
+Endpoint được xem là available khi access tới endpoint được cho phép và endpoint được expose.
 Built-in endpoint chỉ được auto-configure khi available.
-Phần lớn application chọn expose qua HTTP, trong đó endpoint ID cùng prefix `/actuator` được map thành URL.
-Ví dụ mặc định endpoint `health` map tới `/actuator/health`.
+Phần lớn application chọn expose qua HTTP, trong đó ID của endpoint và prefix `/actuator` được map thành một URL.
+Ví dụ, theo mặc định endpoint `health` được map tới `/actuator/health`.
 
-TIP: Để tìm hiểu thêm về Actuator endpoint cùng request/response format, xem xref:api:rest/actuator/index.adoc[API documentation].
+TIP: Để tìm hiểu thêm về endpoint của Actuator cũng như format của request và response, xem xref:api:rest/actuator/index.adoc[tài liệu API].
 
-Các technology-agnostic endpoint sau available:
+Các endpoint không phụ thuộc technology sau đây available:
 
 [cols="2,5"]
 |===
 | ID | Mô tả
 
 | `auditevents`
-| Expose audit event information cho current application.
-  Cần bean javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[].
+| Expose thông tin audit event của application hiện tại.
+  Cần một bean javadoc:org.springframework.boot.actuate.audit.AuditEventRepository[].
 
 | `beans`
-| Hiển thị complete list mọi Spring bean trong application.
+| Hiển thị danh sách đầy đủ tất cả Spring bean trong application.
 
 | `caches`
-| Expose available cache.
+| Expose các cache available.
 
 | `conditions`
-| Hiển thị condition được evaluate trên configuration và auto-configuration class cùng lý do match hoặc không match.
+| Hiển thị các condition được evaluate trên configuration và auto-configuration class, cùng lý do chúng match hoặc không match.
 
 | `configprops`
-| Hiển thị collated list của mọi javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
+| Hiển thị danh sách tổng hợp tất cả javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
 Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitization].
 
 | `env`
-| Expose property từ javadoc:org.springframework.core.env.ConfigurableEnvironment[] của Spring.
+| Expose các property từ javadoc:org.springframework.core.env.ConfigurableEnvironment[] của Spring.
 Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitization].
 
 | `flyway`
-| Hiển thị Flyway database migration đã apply.
+| Hiển thị các Flyway database migration đã được apply.
   Cần một hoặc nhiều bean javadoc:org.flywaydb.core.Flyway[].
 
 | `health`
-| Hiển thị application health information.
+| Hiển thị thông tin health của application.
 
 | `httpexchanges`
-| Hiển thị HTTP exchange information, mặc định 100 HTTP request-response exchange gần nhất.
-  Cần bean javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[].
+| Hiển thị thông tin HTTP exchange (theo mặc định là 100 HTTP request-response exchange gần nhất).
+  Cần một bean javadoc:org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository[].
 
 | `info`
-| Hiển thị arbitrary application info.
+| Hiển thị application info tùy ý.
 
 | `integrationgraph`
 | Hiển thị Spring Integration graph.
@@ -62,65 +62,65 @@ Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitiza
 | Hiển thị và modify logger configuration trong application.
 
 | `liquibase`
-| Hiển thị Liquibase database migration đã apply.
+| Hiển thị các Liquibase database migration đã được apply.
   Cần một hoặc nhiều bean javadoc:{url-liquibase-javadoc}/liquibase.Liquibase[].
 
 | `metrics`
-| Hiển thị "`metrics`" information cho current application để diagnose metric application đã record.
+| Hiển thị thông tin "`metrics`" của application hiện tại để diagnose các metric mà application đã record.
 
 | `mappings`
-| Hiển thị collated list mọi path javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
+| Hiển thị danh sách tổng hợp tất cả path javadoc:org.springframework.web.bind.annotation.RequestMapping[format=annotation].
 
 |`quartz`
-|Hiển thị information về Quartz Scheduler job.
+|Hiển thị thông tin về Quartz Scheduler job.
 Tuân theo xref:actuator/endpoints.adoc#actuator.endpoints.sanitization[sanitization].
 
 | `scheduledtasks`
-| Hiển thị scheduled task trong application.
+| Hiển thị các scheduled task trong application.
 
 | `sessions`
-| Cho phép retrieve và delete user session từ Spring Session-backed session store.
-  Cần servlet-based web application dùng Spring Session.
+| Cho phép retrieve và delete user session từ session store được Spring Session hỗ trợ.
+  Cần một servlet-based web application sử dụng Spring Session.
 
 | `shutdown`
-| Cho phép graceful shutdown application.
-  Chỉ hoạt động với jar packaging.
-  Mặc định disable.
+| Cho phép application shutdown gracefully.
+  Chỉ hoạt động khi dùng jar packaging.
+  Mặc định disabled.
 
 | `startup`
-| Hiển thị xref:features/spring-application.adoc#features.spring-application.startup-tracking[startup steps data] collect bởi javadoc:org.springframework.core.metrics.ApplicationStartup[].
-  Cần javadoc:org.springframework.boot.SpringApplication[] được configure với javadoc:org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup[].
+| Hiển thị xref:features/spring-application.adoc#features.spring-application.startup-tracking[dữ liệu startup step] được collect bởi javadoc:org.springframework.core.metrics.ApplicationStartup[].
+  Cần configure javadoc:org.springframework.boot.SpringApplication[] với javadoc:org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup[].
 
 | `threaddump`
 | Thực hiện thread dump.
 |===
 
-Nếu application là web application (Spring MVC, Spring WebFlux hoặc Jersey), có thêm endpoint:
+Nếu application là web application (Spring MVC, Spring WebFlux hoặc Jersey), bạn có thể dùng thêm các endpoint sau:
 
 [cols="2,5"]
 |===
 | ID | Mô tả
 
 | `heapdump`
-| Trả heap dump file.
-  Trên HotSpot JVM trả file format `HPROF`.
-  Trên OpenJ9 JVM trả file format `PHD`.
+| Trả về một heap dump file.
+  Trên HotSpot JVM, file format `HPROF` được trả về.
+  Trên OpenJ9 JVM, file format `PHD` được trả về.
 
 | `logfile`
-| Trả content logfile nếu property `logging.file.name` hoặc `logging.file.path` được set.
-  Hỗ trợ HTTP header `Range` để retrieve một phần content log file.
+| Trả về content của logfile nếu property `logging.file.name` hoặc `logging.file.path` được set.
+  Hỗ trợ HTTP `Range` header để retrieve một phần content của log file.
 
 | `prometheus`
-| Expose metric ở format Prometheus server có thể scrape.
+| Expose metric ở format mà Prometheus server có thể scrape.
   Cần dependency `micrometer-registry-prometheus`.
 |===
 
 [[actuator.endpoints.controlling-access]]
 == Kiểm soát Access tới Endpoint
 
-Mặc định access tới mọi endpoint trừ `shutdown` và `heapdump` là unrestricted.
-Để configure permitted access cho endpoint, dùng property `management.endpoint.<id>.access`.
-Ví dụ cho phép unrestricted access tới `shutdown`:
+Theo mặc định, access tới mọi endpoint ngoại trừ `shutdown` và `heapdump` là unrestricted.
+Để configure access được phép cho một endpoint, dùng property `management.endpoint.<id>.access`.
+Ví dụ sau cho phép unrestricted access tới `shutdown`:
 
 [configprops,yaml]
 ----
@@ -130,8 +130,8 @@ management:
       access: unrestricted
 ----
 
-Nếu muốn access theo opt-in thay vì opt-out, đặt configprop:management.endpoints.access.default[] thành `none` rồi dùng property `access` của từng endpoint để opt back in.
-Ví dụ chỉ cho read-only access tới `loggers` và deny mọi endpoint khác:
+Nếu muốn access theo opt-in thay vì opt-out, đặt configprop:management.endpoints.access.default[] thành `none`, sau đó dùng property `access` của từng endpoint để opt back in.
+Ví dụ sau chỉ cho phép read-only access tới `loggers` và deny access tới mọi endpoint khác:
 
 [configprops,yaml]
 ----
@@ -145,27 +145,27 @@ management:
 ----
 
 NOTE: Endpoint inaccessible bị remove hoàn toàn khỏi application context.
-Nếu chỉ muốn đổi technology qua đó endpoint được expose, dùng xref:actuator/endpoints.adoc#actuator.endpoints.exposing[property `include` và `exclude`] thay thế.
+Nếu chỉ muốn thay đổi technology mà endpoint được expose, hãy dùng xref:actuator/endpoints.adoc#actuator.endpoints.exposing[property `include` và `exclude`] thay thế.
 
 [[actuator.endpoints.controlling-access.limiting]]
 === Giới hạn Access
 
-Application-wide endpoint access có thể limit bằng configprop:management.endpoints.access.max-permitted[].
-Property này có precedence hơn default access hoặc access level của endpoint riêng.
+Có thể limit application-wide endpoint access bằng configprop:management.endpoints.access.max-permitted[].
+Property này có precedence cao hơn default access hoặc access level của từng endpoint.
 Đặt `none` để mọi endpoint inaccessible.
 Đặt `read-only` để chỉ allow read access.
 
-Với javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation], read access tương ứng endpoint method annotate javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation].
-Với javadoc:org.springframework.boot.actuate.endpoint.web.annotation.ControllerEndpoint[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.web.annotation.RestControllerEndpoint[format=annotation], read access tương ứng request mapping xử lý `GET` và `HEAD`.
-Với javadoc:org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpoint[format=annotation], read access tương ứng `GET` và `HEAD`.
+Với javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation], read access tương ứng với các endpoint method được annotate bằng javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation].
+Với javadoc:org.springframework.boot.actuate.endpoint.web.annotation.ControllerEndpoint[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.web.annotation.RestControllerEndpoint[format=annotation], read access tương ứng với các request mapping có thể xử lý request `GET` và `HEAD`.
+Với javadoc:org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpoint[format=annotation], read access tương ứng với request `GET` và `HEAD`.
 
 [[actuator.endpoints.exposing]]
-== Expose Endpoints
+== Expose các Endpoint
 
-Mặc định chỉ endpoint health được expose qua HTTP và JMX.
-Vì Endpoint có thể chứa sensitive information, cần cân nhắc kỹ khi expose.
+Theo mặc định, chỉ endpoint `health` được expose qua HTTP và JMX.
+Endpoint có thể chứa sensitive information, vì vậy cần cân nhắc kỹ trước khi expose.
 
-Để đổi endpoint được expose, dùng property `include` và `exclude` theo technology:
+Để thay đổi các endpoint được expose, dùng các property `include` và `exclude` theo từng technology:
 
 [cols="3,1"]
 |===
@@ -184,10 +184,10 @@ Vì Endpoint có thể chứa sensitive information, cần cân nhắc kỹ khi 
 | `health`
 |===
 
-Property `include` liệt kê ID endpoint được expose.
-Property `exclude` liệt kê endpoint không expose.
-`exclude` có precedence hơn `include`.
-Cả hai có thể cấu hình bằng list endpoint ID.
+Property `include` liệt kê ID của các endpoint được expose.
+Property `exclude` liệt kê ID của các endpoint không được expose.
+`exclude` có precedence cao hơn `include`.
+Cả hai property đều có thể được configure bằng một list endpoint ID.
 
 Ví dụ chỉ expose `health` và `info` qua JMX:
 
@@ -200,8 +200,8 @@ management:
         include: "health,info"
 ----
 
-`*` chọn mọi endpoint.
-Ví dụ expose mọi thứ qua HTTP trừ `env` và `beans`:
+`*` có thể được dùng để chọn tất cả endpoint.
+Ví dụ sau expose mọi endpoint qua HTTP, ngoại trừ `env` và `beans`:
 
 [configprops,yaml]
 ----
@@ -213,37 +213,37 @@ management:
         exclude: "env,beans"
 ----
 
-NOTE: `*` có meaning đặc biệt trong YAML, nên thêm quote nếu muốn include hoặc exclude toàn bộ endpoint.
+NOTE: `*` có meaning đặc biệt trong YAML, vì vậy hãy thêm quotation marks nếu muốn include hoặc exclude tất cả endpoint.
 
-NOTE: Nếu application expose public, khuyến nghị mạnh xref:actuator/endpoints.adoc#actuator.endpoints.security[secure endpoint].
+NOTE: Nếu application được expose public, chúng tôi đặc biệt khuyến nghị bạn xref:actuator/endpoints.adoc#actuator.endpoints.security[secure các endpoint].
 
-TIP: Nếu muốn implement strategy riêng quyết định khi nào endpoint được expose, register bean javadoc:org.springframework.boot.actuate.endpoint.EndpointFilter[].
+TIP: Nếu muốn implement strategy riêng để quyết định khi nào endpoint được expose, bạn có thể register bean javadoc:org.springframework.boot.actuate.endpoint.EndpointFilter[].
 
 [[actuator.endpoints.security]]
 == Security
 
-Vì security, mặc định chỉ endpoint `/health` được expose qua HTTP.
-Dùng configprop:management.endpoints.web.exposure.include[] để configure endpoint expose.
+Vì lý do security, theo mặc định chỉ endpoint `/health` được expose qua HTTP.
+Bạn có thể dùng configprop:management.endpoints.web.exposure.include[] để configure các endpoint được expose.
 
-NOTE: Trước khi set `management.endpoints.web.exposure.include`, đảm bảo actuator được expose không chứa sensitive information, được protect sau firewall hoặc secure bằng Spring Security.
+NOTE: Trước khi set `management.endpoints.web.exposure.include`, hãy đảm bảo các actuator được expose không chứa sensitive information, được đặt sau firewall hoặc được secure bằng Spring Security.
 
-Nếu Spring Security trên classpath và không có bean javadoc:org.springframework.security.web.SecurityFilterChain[] khác, mọi actuator ngoài `/health` được Spring Boot auto-configuration secure.
-Nếu define custom javadoc:org.springframework.security.web.SecurityFilterChain[] bean, Spring Boot auto-configuration back off và bạn kiểm soát hoàn toàn actuator access rule.
+Nếu Spring Security có trên classpath và không có bean javadoc:org.springframework.security.web.SecurityFilterChain[] nào khác, Spring Boot auto-configuration sẽ secure mọi actuator ngoại trừ `/health`.
+Nếu define một custom javadoc:org.springframework.security.web.SecurityFilterChain[] bean, Spring Boot auto-configuration sẽ back off và cho phép bạn kiểm soát hoàn toàn actuator access rule.
 
-Nếu muốn custom security cho HTTP endpoint, ví dụ chỉ role cụ thể được access, Spring Boot cung cấp convenient javadoc:org.springframework.security.web.util.matcher.RequestMatcher[] dùng với Spring Security.
+Nếu muốn custom security cho HTTP endpoint, ví dụ chỉ cho phép user có một role cụ thể access endpoint, Spring Boot cung cấp một số javadoc:org.springframework.security.web.util.matcher.RequestMatcher[] tiện dụng để dùng cùng Spring Security.
 
-Typical configuration:
+Một Spring Security configuration điển hình có thể như sau:
 
 include-code::typical/MySecurityConfiguration[]
 
-Ví dụ trên dùng `EndpointRequest.toAnyEndpoint()` để match request tới bất kỳ endpoint rồi yêu cầu role `ENDPOINT_ADMIN`.
-Có nhiều matcher method khác trên javadoc:org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest[].
-Xem xref:api:rest/actuator/index.adoc[API documentation].
+Ví dụ trên dùng `EndpointRequest.toAnyEndpoint()` để match request tới bất kỳ endpoint nào, sau đó đảm bảo tất cả endpoint đều yêu cầu role `ENDPOINT_ADMIN`.
+Ngoài ra còn có một số matcher method khác trên javadoc:org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest[].
+Xem xref:api:rest/actuator/index.adoc[tài liệu API] để biết chi tiết.
 
-NOTE: Khi match Actuator endpoint, `EndpointRequest.to("endpoint")` xem xét endpoint root và mọi subpath, thực tế match `"/actuator/endpoint/**"` ngay cả khi endpoint không khai báo nested route.
+NOTE: Khi match Actuator endpoint, `EndpointRequest.to("endpoint")` sẽ xét endpoint root và tất cả subpath của endpoint đó, thực tế match `"/actuator/endpoint/**"` ngay cả khi endpoint không khai báo nested route.
 
-Nếu deploy application sau firewall, có thể muốn mọi actuator endpoint accessible không cần authentication.
-Thay configprop:management.endpoints.web.exposure.include[]:
+Nếu deploy application phía sau firewall, bạn có thể muốn tất cả actuator endpoint accessible mà không cần authentication.
+Bạn có thể thay đổi configprop:management.endpoints.web.exposure.include[] như sau:
 
 [configprops,yaml]
 ----
@@ -254,29 +254,29 @@ management:
         include: "*"
 ----
 
-Nếu Spring Security có mặt, cần thêm custom security configuration cho unauthenticated access:
+Nếu có Spring Security, bạn cần thêm custom security configuration để cho phép unauthenticated access:
 
 include-code::exposeall/MySecurityConfiguration[]
 
-NOTE: Trong hai ví dụ trên, configuration chỉ áp dụng actuator endpoint.
-Vì Spring Boot security configuration back off hoàn toàn khi có bất kỳ javadoc:org.springframework.security.web.SecurityFilterChain[] bean nào, cần configure thêm javadoc:org.springframework.security.web.SecurityFilterChain[] bean với rule cho phần còn lại của application.
+NOTE: Trong cả hai ví dụ trên, configuration chỉ áp dụng cho actuator endpoint.
+Vì Spring Boot security configuration back off hoàn toàn khi có bất kỳ javadoc:org.springframework.security.web.SecurityFilterChain[] bean nào, bạn cần configure thêm một javadoc:org.springframework.security.web.SecurityFilterChain[] bean với rule áp dụng cho phần còn lại của application.
 
 [[actuator.endpoints.security.csrf]]
-=== Cross Site Request Forgery Protection
+=== Cross-Site Request Forgery Protection
 
-Vì Spring Boot dựa trên default của Spring Security, CSRF protection mặc định bật.
-Điều này nghĩa là actuator endpoint cần `POST` như shutdown và loggers, `PUT`, hoặc `DELETE` sẽ nhận 403 forbidden khi dùng default security configuration.
+Vì Spring Boot dựa trên default của Spring Security, CSRF protection được bật theo mặc định.
+Điều này có nghĩa là các actuator endpoint cần `POST` như endpoint `shutdown` và `loggers`, hoặc cần `PUT` hay `DELETE`, sẽ nhận lỗi 403 (forbidden) khi dùng default security configuration.
 
-NOTE: Chỉ khuyến nghị disable hoàn toàn CSRF protection nếu tạo service dùng bởi non-browser client.
+NOTE: Chúng tôi chỉ khuyến nghị disable hoàn toàn CSRF protection nếu bạn đang tạo một service được dùng bởi non-browser client.
 
-Xem thêm {url-spring-security-docs}/features/exploits/csrf.html[Spring Security Reference Guide].
+Bạn có thể tìm thêm thông tin về CSRF protection trong {url-spring-security-docs}/features/exploits/csrf.html[Spring Security Reference Guide].
 
 [[actuator.endpoints.caching]]
-== Configure Endpoints
+== Configure Endpoint
 
-Endpoint tự động cache response của read operation không nhận parameter.
-Để cấu hình thời gian cache response, dùng property `cache.time-to-live`.
-Ví dụ cache endpoint `beans` trong 10 giây:
+Endpoint tự động cache response của các read operation không nhận parameter.
+Để configure khoảng thời gian endpoint cache response, dùng property `cache.time-to-live`.
+Ví dụ sau đặt time-to-live cho cache của endpoint `beans` là 10 giây:
 
 [configprops,yaml]
 ----
@@ -287,32 +287,32 @@ management:
         time-to-live: "10s"
 ----
 
-NOTE: Prefix `management.endpoint.<name>` uniquely identify endpoint đang configure.
+NOTE: Prefix `management.endpoint.<name>` uniquely identify endpoint đang được configure.
 
 [[actuator.endpoints.sanitization]]
-== Sanitize Sensitive Values
+== Sanitize Sensitive Value
 
-Information trả bởi endpoint `/env`, `/configprops` và `/quartz` có thể sensitive, nên mặc định value luôn fully sanitized, được replace bằng `+******+`.
+Information được trả bởi các endpoint `/env`, `/configprops` và `/quartz` có thể sensitive, vì vậy theo mặc định value luôn được fully sanitize (thay bằng `+******+`).
 
-Value chỉ có thể xem unsanitized khi:
+Chỉ có thể xem value ở dạng unsanitized khi:
 
 - Property `show-values` được set khác `never`
 - Không có custom xref:how-to:actuator.adoc#howto.actuator.customizing-sanitization[`SanitizingFunction`] bean áp dụng
 
-Property `show-values` có thể cấu hình cho sanitizable endpoint:
+Property `show-values` có thể được configure cho các sanitizable endpoint với một trong các value sau:
 
-- `never` - value luôn fully sanitized, replace bằng `+******+`
-- `always` - value hiển thị cho mọi user miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng
+- `never`  - value luôn được fully sanitize (thay bằng `+******+`)
+- `always` - value hiển thị cho mọi user (miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng)
 
-- `when-authorized` - value chỉ hiển thị cho authorized user, miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng.
+- `when-authorized` - value chỉ hiển thị cho authorized user (miễn là không có bean javadoc:org.springframework.boot.actuate.endpoint.SanitizingFunction[] áp dụng)
 
-Với HTTP endpoint, user được xem là authorized nếu đã authenticate và có role được cấu hình bởi property `roles` của endpoint.
+Với HTTP endpoint, user được xem là authorized nếu đã authenticate và có các role được configure bởi property `roles` của endpoint.
 Mặc định mọi authenticated user đều authorized.
 
 Với JMX endpoint, mọi user luôn authorized.
 
-Ví dụ sau cho phép user có role `admin` xem original value từ endpoint `/env`.
-Unauthorized user hoặc user không có role `admin` chỉ thấy sanitized value.
+Ví dụ sau cho phép tất cả user có role `admin` xem value gốc từ endpoint `/env`.
+Unauthorized user hoặc user không có role `admin` sẽ chỉ thấy sanitized value.
 
 [configprops,yaml]
 ----
@@ -323,15 +323,15 @@ management:
       roles: "admin"
 ----
 
-NOTE: Ví dụ này giả định không có bean xref:how-to:actuator.adoc#howto.actuator.customizing-sanitization[`SanitizingFunction`] được định nghĩa.
+NOTE: Ví dụ này giả định không có bean xref:how-to:actuator.adoc#howto.actuator.customizing-sanitization[`SanitizingFunction`] nào được define.
 
 [[actuator.endpoints.hypermedia]]
-== Hypermedia cho Actuator Web Endpoints
+== Hypermedia cho Actuator Web Endpoint
 
-Một "`discovery page`" được thêm với link tới tất cả endpoint.
-Mặc định discovery page available tại `/actuator`.
+Một "`discovery page`" được thêm vào cùng các link tới tất cả endpoint.
+"`discovery page`" available tại `/actuator` theo mặc định.
 
-Để disable discovery page:
+Để disable "`discovery page`", thêm property sau vào application properties:
 
 [configprops,yaml]
 ----
@@ -342,18 +342,18 @@ management:
         enabled: false
 ----
 
-Khi custom management context path được cấu hình, discovery page tự động move từ `/actuator` tới root của management context.
-Ví dụ management context path là `/management`, discovery page available tại `/management`.
-Khi management context path là `/`, discovery page bị disable để tránh clash với mapping khác.
+Khi custom management context path được configure, "`discovery page`" tự động move từ `/actuator` tới root của management context.
+Ví dụ, nếu management context path là `/management`, discovery page available tại `/management`.
+Khi management context path được đặt thành `/`, discovery page bị disable để tránh clash với các mapping khác.
 
 [[actuator.endpoints.cors]]
 == CORS Support
 
-https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) là https://www.w3.org/TR/cors/[W3C specification] cho phép specify linh hoạt loại cross-domain request được authorize.
-Nếu dùng Spring MVC hoặc Spring WebFlux, có thể configure web endpoint của Actuator hỗ trợ scenario này.
+https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) là https://www.w3.org/TR/cors/[W3C specification] cho phép bạn linh hoạt chỉ định loại cross-domain request nào được authorize.
+Nếu dùng Spring MVC hoặc Spring WebFlux, bạn có thể configure Actuator web endpoint để hỗ trợ scenario này.
 
-CORS support mặc định disable và chỉ enable sau khi set configprop:management.endpoints.web.cors.allowed-origins[].
-Configuration sau cho phép `GET` và `POST` từ domain `example.com`:
+CORS support mặc định disabled và chỉ được enabled sau khi bạn set configprop:management.endpoints.web.cors.allowed-origins[].
+Configuration sau cho phép các call `GET` và `POST` từ domain `example.com`:
 
 [configprops,yaml]
 ----
@@ -365,51 +365,51 @@ management:
         allowed-methods: "GET,POST"
 ----
 
-TIP: Xem javadoc:org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties[] để biết đầy đủ option.
+TIP: Xem javadoc:org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties[] để biết danh sách đầy đủ các option.
 
 [[actuator.endpoints.json]]
 == JSON
 
-Khi làm việc với JSON, Jackson được dùng cho serialization và deserialization.
-Mặc định dùng isolated javadoc:tools.jackson.databind.json.JsonMapper[].
-Isolation nghĩa là nó không share configuration với `JsonMapper` của application và không bị ảnh hưởng bởi property `spring.jackson.*`.
-Để disable behavior này và dùng JsonMapper của application, đặt configprop:management.endpoints.jackson.isolated-json-mapper[] thành `false`.
-Ngoài ra có thể define bean javadoc:org.springframework.boot.actuate.endpoint.jackson.EndpointJsonMapper[] riêng tạo JsonMapper phù hợp.
-Actuator sẽ dùng nó cho JSON processing.
+Khi làm việc với JSON, Jackson được dùng để serialization và deserialization.
+Theo mặc định, một javadoc:tools.jackson.databind.json.JsonMapper[] isolated được sử dụng.
+Isolation này có nghĩa là nó không dùng chung configuration với `JsonMapper` của application và không bị ảnh hưởng bởi property `spring.jackson.*`.
+Để disable behavior này và configure Actuator sử dụng `JsonMapper` của application, đặt configprop:management.endpoints.jackson.isolated-json-mapper[] thành `false`.
+Ngoài ra, bạn có thể define một bean javadoc:org.springframework.boot.actuate.endpoint.jackson.EndpointJsonMapper[] riêng để tạo `JsonMapper` phù hợp.
+Sau đó Actuator sẽ dùng bean này cho JSON processing.
 
 [[actuator.endpoints.implementing-custom]]
-== Implement Custom Endpoints
+== Implement Custom Endpoint
 
-Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] annotate javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], mọi method annotate javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation], hoặc javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation] tự động expose qua JMX và, với web application, qua HTTP.
-Endpoint có thể expose qua HTTP bằng Jersey, Spring MVC hoặc Spring WebFlux.
+Nếu bạn thêm một javadoc:org.springframework.context.annotation.Bean[format=annotation] được annotate bằng javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], mọi method được annotate bằng javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation] sẽ tự động được expose qua JMX và, trong web application, qua HTTP.
+Endpoint có thể được expose qua HTTP bằng Jersey, Spring MVC hoặc Spring WebFlux.
 Nếu cả Jersey và Spring MVC có sẵn, Spring MVC được dùng.
 
-Ví dụ expose read operation trả custom object:
+Ví dụ sau expose một read operation trả về custom object:
 
 include-code::MyEndpoint[tag=read]
 
-Cũng có thể viết technology-specific endpoint bằng javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation].
-Endpoint này giới hạn ở technology tương ứng.
-Ví dụ javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation] chỉ expose qua HTTP, không qua JMX.
+Bạn cũng có thể viết technology-specific endpoint bằng javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.JmxEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation].
+Các endpoint này bị giới hạn ở technology tương ứng.
+Ví dụ, javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation] chỉ được expose qua HTTP, không qua JMX.
 
-Có thể viết technology-specific extension bằng javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.EndpointJmxExtension[format=annotation].
-Annotation này cho phép cung cấp technology-specific operation để augment existing endpoint.
-Một endpoint có tối đa một extension mỗi type.
+Bạn có thể viết technology-specific extension bằng javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.jmx.annotation.EndpointJmxExtension[format=annotation].
+Các annotation này cho phép bạn cung cấp technology-specific operation để augment existing endpoint.
+Một endpoint có nhiều nhất một extension của mỗi type.
 
-Cuối cùng, nếu cần web-framework-specific functionality, có thể implement servlet hoặc endpoint Spring javadoc:org.springframework.stereotype.Controller[format=annotation] và javadoc:org.springframework.web.bind.annotation.RestController[format=annotation], đổi lại chúng không available qua JMX hoặc khi dùng web framework khác.
+Cuối cùng, nếu cần web-framework-specific functionality, bạn có thể implement servlet endpoint hoặc Spring javadoc:org.springframework.stereotype.Controller[format=annotation] và javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] endpoint, đổi lại các endpoint này sẽ không available qua JMX hoặc khi dùng web framework khác.
 
 [[actuator.endpoints.implementing-custom.input]]
 === Nhận Input
 
-Operation trên endpoint nhận input qua parameter.
-Khi expose qua web, value parameter lấy từ URL query parameter và JSON request body.
-Khi expose qua JMX, parameter map tới parameter của MBean operation.
-Parameter mặc định required.
-Có thể làm optional bằng annotation JSpecify javadoc:org.jspecify.annotations.Nullable[format=annotation].
+Operation trên endpoint nhận input thông qua parameter.
+Khi được expose qua web, value của các parameter này được lấy từ URL query parameter và JSON request body.
+Khi được expose qua JMX, các parameter được map tới parameter của MBean operation.
+Theo mặc định, parameter là required.
+Có thể làm parameter optional bằng cách annotate chúng với JSpecify javadoc:org.jspecify.annotations.Nullable[format=annotation].
 Kotlin null safety cũng được hỗ trợ.
 
-Có thể map mỗi root property trong JSON request body tới một endpoint parameter.
-Ví dụ request body:
+Bạn có thể map mỗi root property trong JSON request body tới một endpoint parameter.
+Xét JSON request body sau:
 
 [source,json]
 ----
@@ -419,50 +419,50 @@ Ví dụ request body:
 }
 ----
 
-Có thể dùng để invoke write operation nhận parameter `String name` và `int counter`:
+Bạn có thể dùng body này để invoke một write operation nhận parameter `String name` và `int counter`, như ví dụ sau:
 
 include-code::../MyEndpoint[tag=write]
 
-TIP: Vì endpoint technology agnostic, chỉ simple type có thể dùng trong method signature.
-Cụ thể, single parameter type javadoc:liquibase.report.CustomData[] định nghĩa property `name` và `counter` không được hỗ trợ.
+TIP: Vì endpoint không phụ thuộc technology, chỉ có thể chỉ định simple type trong method signature.
+Cụ thể, không hỗ trợ khai báo một parameter duy nhất có type javadoc:liquibase.report.CustomData[] định nghĩa các property `name` và `counter`.
 
-NOTE: Để input map tới parameter của operation method, Java code implement endpoint nên compile với `-parameters`.
-Với Kotlin, xem {url-spring-framework-docs}/languages/kotlin/classes-interfaces.html[recommendation] của Spring Framework reference.
+NOTE: Để input được map tới parameter của operation method, Java code implement endpoint nên được compile với `-parameters`.
+Với Kotlin, xem {url-spring-framework-docs}/languages/kotlin/classes-interfaces.html[recommendation] trong Spring Framework reference.
 Điều này tự động xảy ra nếu dùng Spring Boot Gradle plugin hoặc Maven cùng `spring-boot-starter-parent`.
 
 [[actuator.endpoints.implementing-custom.input.conversion]]
 ==== Input Type Conversion
 
-Parameter truyền vào endpoint operation method được tự động convert sang required type khi cần.
-Trước khi gọi operation method, input nhận qua JMX hoặc HTTP được convert bằng instance javadoc:org.springframework.boot.convert.ApplicationConversionService[] cùng mọi bean javadoc:org.springframework.core.convert.converter.Converter[] hoặc javadoc:org.springframework.core.convert.converter.GenericConverter[] qualified bằng javadoc:org.springframework.boot.actuate.endpoint.annotation.EndpointConverter[format=annotation].
+Các parameter truyền vào endpoint operation method sẽ được tự động convert sang required type khi cần.
+Trước khi gọi operation method, input nhận qua JMX hoặc HTTP được convert bằng một instance của javadoc:org.springframework.boot.convert.ApplicationConversionService[] cùng với mọi bean javadoc:org.springframework.core.convert.converter.Converter[] hoặc javadoc:org.springframework.core.convert.converter.GenericConverter[] được qualify bằng javadoc:org.springframework.boot.actuate.endpoint.annotation.EndpointConverter[format=annotation].
 
 [[actuator.endpoints.implementing-custom.web]]
 === Custom Web Endpoints
 
-Operation trên javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] tự động expose qua HTTP bằng Jersey, Spring MVC hoặc Spring WebFlux.
+Operation trên javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension[format=annotation] tự động được expose qua HTTP bằng Jersey, Spring MVC hoặc Spring WebFlux.
 Nếu cả Jersey và Spring MVC có sẵn, Spring MVC được dùng.
 
 [[actuator.endpoints.implementing-custom.web.request-predicates]]
-==== Web Endpoint Request Predicates
+==== Web Endpoint Request Predicate
 
-Request predicate tự động generate cho mỗi operation trên web-exposed endpoint.
+Một request predicate được tự động generate cho mỗi operation trên web-exposed endpoint.
 
 [[actuator.endpoints.implementing-custom.web.path-predicates]]
 ==== Path
 
-Path của predicate được xác định bởi endpoint ID và base path của web-exposed endpoint.
-Default base path là `/actuator`.
-Ví dụ endpoint ID `sessions` dùng `/actuator/sessions` làm path trong predicate.
+Path của predicate được xác định bởi ID của endpoint và base path của web-exposed endpoint.
+Base path mặc định là `/actuator`.
+Ví dụ, endpoint có ID `sessions` dùng `/actuator/sessions` làm path trong predicate.
 
-Có thể customize path thêm bằng cách annotate một hoặc nhiều parameter của operation method với javadoc:org.springframework.boot.actuate.endpoint.annotation.Selector[format=annotation].
-Parameter này được thêm vào path predicate như path variable.
-Value được truyền vào operation method khi endpoint operation invoke.
-Nếu muốn capture mọi remaining path element, thêm `@Selector(Match=ALL_REMAINING)` vào parameter cuối và dùng type conversion-compatible với `String[]`.
+Bạn có thể customize path thêm bằng cách annotate một hoặc nhiều parameter của operation method với javadoc:org.springframework.boot.actuate.endpoint.annotation.Selector[format=annotation].
+Parameter này được thêm vào path predicate dưới dạng path variable.
+Value của variable được truyền vào operation method khi endpoint operation được invoke.
+Nếu muốn capture tất cả path element còn lại, bạn có thể thêm `@Selector(Match=ALL_REMAINING)` vào parameter cuối và đặt type của parameter tương thích khi conversion với `String[]`.
 
 [[actuator.endpoints.implementing-custom.web.method-predicates]]
 ==== HTTP Method
 
-HTTP method của predicate được xác định bởi operation type:
+HTTP method của predicate được xác định bởi operation type, như trong bảng sau:
 
 [cols="3, 1"]
 |===
@@ -481,54 +481,54 @@ HTTP method của predicate được xác định bởi operation type:
 [[actuator.endpoints.implementing-custom.web.consumes-predicates]]
 ==== Consumes
 
-Với javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] (HTTP `POST`) dùng request body, clause `consumes` của predicate là `application/vnd.spring-boot.actuator.v2+json, application/json`.
-Với mọi operation khác, clause `consumes` rỗng.
+Với javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] (HTTP `POST`) sử dụng request body, clause `consumes` của predicate là `application/vnd.spring-boot.actuator.v2+json, application/json`.
+Với mọi operation khác, clause `consumes` là empty.
 
 [[actuator.endpoints.implementing-custom.web.produces-predicates]]
 ==== Produces
 
-Clause `produces` có thể được xác định bởi attribute `produces` của annotation javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation].
-Attribute optional.
+Clause `produces` có thể được xác định bởi attribute `produces` của các annotation javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation], javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation] và javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation].
+Attribute này là optional.
 Nếu không dùng, `produces` được xác định tự động.
 
-Nếu operation method trả `void` hoặc javadoc:java.lang.Void[], clause `produces` rỗng.
-Nếu trả javadoc:org.springframework.core.io.Resource[], clause là `application/octet-stream`.
-Với operation khác, clause là `application/vnd.spring-boot.actuator.v2+json, application/json`.
+Nếu operation method trả về `void` hoặc javadoc:java.lang.Void[], clause `produces` là empty.
+Nếu operation method trả về javadoc:org.springframework.core.io.Resource[], clause là `application/octet-stream`.
+Với mọi operation khác, clause là `application/vnd.spring-boot.actuator.v2+json, application/json`.
 
 [[actuator.endpoints.implementing-custom.web.response-status]]
 ==== Web Endpoint Response Status
 
-Default response status phụ thuộc operation type và value operation trả về.
+Default response status của endpoint operation phụ thuộc vào operation type (read, write hoặc delete) và value mà operation trả về, nếu có.
 
-Nếu javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation] trả value, response status 200 (OK).
-Nếu không trả value, status 404 (Not Found).
+Nếu javadoc:org.springframework.boot.actuate.endpoint.annotation.ReadOperation[format=annotation] trả về value, response status sẽ là 200 (OK).
+Nếu không trả về value, response status sẽ là 404 (Not Found).
 
-Nếu javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation] trả value, response status 200 (OK).
-Nếu không trả value, status 204 (No Content).
+Nếu javadoc:org.springframework.boot.actuate.endpoint.annotation.WriteOperation[format=annotation] hoặc javadoc:org.springframework.boot.actuate.endpoint.annotation.DeleteOperation[format=annotation] trả về value, response status sẽ là 200 (OK).
+Nếu không trả về value, response status sẽ là 204 (No Content).
 
-Nếu operation invoke thiếu required parameter hoặc parameter không convert được sang required type, operation method không được gọi và response status 400 (Bad Request).
+Nếu operation được invoke mà thiếu required parameter hoặc có parameter không thể convert sang required type, operation method sẽ không được gọi và response status sẽ là 400 (Bad Request).
 
 [[actuator.endpoints.implementing-custom.web.range-requests]]
 ==== Web Endpoint Range Requests
 
-Có thể dùng HTTP range request để request một phần HTTP resource.
-Khi dùng Spring MVC hoặc Spring WebFlux, operation trả javadoc:org.springframework.core.io.Resource[] tự động hỗ trợ range request.
+Bạn có thể dùng HTTP range request để request một phần HTTP resource.
+Khi dùng Spring MVC hoặc Spring WebFlux, các operation trả về javadoc:org.springframework.core.io.Resource[] tự động hỗ trợ range request.
 
 NOTE: Range request không được hỗ trợ với Jersey.
 
 [[actuator.endpoints.implementing-custom.web.security]]
 ==== Web Endpoint Security
 
-Operation trên web endpoint hoặc web-specific endpoint extension có thể nhận current javadoc:java.security.Principal[] hoặc javadoc:org.springframework.boot.actuate.endpoint.SecurityContext[] làm method parameter.
-Principal thường dùng cùng javadoc:org.jspecify.annotations.Nullable[format=annotation] để cung cấp behavior khác cho authenticated và unauthenticated user.
-SecurityContext thường dùng để authorization check qua method `isUserInRole(String)`.
+Operation trên web endpoint hoặc web-specific endpoint extension có thể nhận javadoc:java.security.Principal[] hiện tại hoặc javadoc:org.springframework.boot.actuate.endpoint.SecurityContext[] làm method parameter.
+Principal thường được dùng cùng javadoc:org.jspecify.annotations.Nullable[format=annotation] để cung cấp behavior khác nhau cho authenticated và unauthenticated user.
+SecurityContext thường được dùng để thực hiện authorization check bằng method `isUserInRole(String)`.
 
 [[actuator.endpoints.health]]
-== Health Information
+== Thông tin Health
 
-Có thể dùng health information để check status của running application.
-Monitoring software thường dùng để alert khi production system down.
-Information expose bởi endpoint `health` phụ thuộc configprop:management.endpoint.health.show-details[] và configprop:management.endpoint.health.show-components[], với value:
+Bạn có thể dùng health information để check status của application đang chạy.
+Monitoring software thường dùng information này để alert khi production system down.
+Information được expose bởi endpoint `health` phụ thuộc vào configprop:management.endpoint.health.show-details[] và configprop:management.endpoint.health.show-components[], có thể được configure bằng một trong các value sau:
 
 [cols="1, 3"]
 |===
@@ -539,38 +539,38 @@ Information expose bởi endpoint `health` phụ thuộc configprop:management.e
 
 | `when-authorized`
 | Chỉ hiển thị detail cho authorized user.
-  Authorized role configure bằng `management.endpoint.health.roles`.
+  Authorized role có thể được configure bằng `management.endpoint.health.roles`.
 
 | `always`
 | Hiển thị detail cho mọi user.
 |===
 
-Default là `never`.
-User authorized khi thuộc một hoặc nhiều role của endpoint.
-Nếu endpoint không cấu hình role, mặc định mọi authenticated user authorized.
-Configure role bằng configprop:management.endpoint.health.roles[].
+Value mặc định là `never`.
+User được xem là authorized khi có một hoặc nhiều role của endpoint.
+Nếu endpoint không configure role (mặc định), mọi authenticated user được xem là authorized.
+Bạn có thể configure role bằng configprop:management.endpoint.health.roles[].
 
-NOTE: Nếu application đã secure và muốn dùng `always`, security configuration phải permit access health endpoint cho cả authenticated và unauthenticated user.
+NOTE: Nếu application đã được secure và muốn dùng `always`, security configuration phải permit access tới health endpoint cho cả authenticated và unauthenticated user.
 
-Health information được collect từ javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[]; mặc định là mọi instance javadoc:org.springframework.boot.health.contributor.HealthContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
-Spring Boot có nhiều auto-configured javadoc:org.springframework.boot.health.contributor.HealthContributor[] bean, và bạn cũng có thể viết riêng.
+Health information được collect từ javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[] (theo mặc định là tất cả instance javadoc:org.springframework.boot.health.contributor.HealthContributor[] được define trong javadoc:org.springframework.context.ApplicationContext[]).
+Spring Boot tích hợp nhiều javadoc:org.springframework.boot.health.contributor.HealthContributor[] bean được auto-configure, và bạn cũng có thể viết bean riêng.
 
 javadoc:org.springframework.boot.health.contributor.HealthContributor[] có thể là javadoc:org.springframework.boot.health.contributor.HealthIndicator[] hoặc javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
-javadoc:org.springframework.boot.health.contributor.HealthIndicator[] cung cấp actual health information gồm javadoc:org.springframework.boot.health.contributor.Status[].
-javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[] cung cấp composite của javadoc:org.springframework.boot.health.contributor.HealthContributor[] khác.
-Together, contributor tạo tree structure biểu diễn overall system health.
+javadoc:org.springframework.boot.health.contributor.HealthIndicator[] cung cấp health information thực tế, bao gồm một javadoc:org.springframework.boot.health.contributor.Status[].
+javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[] cung cấp một composite gồm các instance javadoc:org.springframework.boot.health.contributor.HealthContributor[] khác.
+Kết hợp lại, các contributor tạo thành một tree structure biểu diễn overall system health.
 
-Mặc định final system health derive bởi javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], sort status từ mỗi javadoc:org.springframework.boot.health.contributor.HealthIndicator[] dựa trên ordered list status.
+Theo mặc định, system health cuối cùng được derive bởi javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], component này sort status từ mỗi javadoc:org.springframework.boot.health.contributor.HealthIndicator[] dựa trên một ordered list các status.
 Status đầu tiên trong sorted list được dùng làm overall health status.
-Nếu không javadoc:org.springframework.boot.health.contributor.HealthIndicator[] nào trả status được javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] biết, dùng `UNKNOWN`.
+Nếu không javadoc:org.springframework.boot.health.contributor.HealthIndicator[] nào trả về status được javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] biết, status `UNKNOWN` sẽ được sử dụng.
 
-TIP: Có thể dùng javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[] để register/unregister health indicator runtime.
+TIP: Bạn có thể dùng javadoc:org.springframework.boot.health.registry.HealthContributorRegistry[] để register và unregister health indicator tại runtime.
 
 [[actuator.endpoints.health.auto-configured-health-indicators]]
 === Auto-configured HealthIndicators
 
-Khi phù hợp, Spring Boot auto-configure các bean javadoc:org.springframework.boot.health.contributor.HealthIndicator[] trong table sau.
-Cũng có thể enable/disable indicator bằng `management.health.key.enabled`, với `key` trong table:
+Khi phù hợp, Spring Boot sẽ auto-configure các javadoc:org.springframework.boot.health.contributor.HealthIndicator[] bean được liệt kê trong bảng sau.
+Bạn cũng có thể enable hoặc disable từng indicator bằng `management.health.key.enabled`, trong đó `key` được liệt kê trong bảng:
 
 [cols="2,4,6"]
 |===
@@ -578,11 +578,11 @@ Cũng có thể enable/disable indicator bằng `management.health.key.enabled`,
 
 | `cassandra`
 | javadoc:org.springframework.boot.cassandra.health.CassandraDriverHealthIndicator[]
-| Kiểm tra Cassandra database up.
+| Kiểm tra Cassandra database đang up.
 
 | `couchbase`
 | javadoc:org.springframework.boot.couchbase.health.CouchbaseHealthIndicator[]
-| Kiểm tra Couchbase cluster up.
+| Kiểm tra Couchbase cluster đang up.
 
 | `db`
 | javadoc:org.springframework.boot.jdbc.health.DataSourceHealthIndicator[]
@@ -590,36 +590,35 @@ Cũng có thể enable/disable indicator bằng `management.health.key.enabled`,
 
 | `diskspace`
 | javadoc:org.springframework.boot.health.application.DiskSpaceHealthIndicator[]
-
-| Kiểm tra low disk space.
+| Kiểm tra disk space còn ít.
 
 | `elasticsearch`
 | javadoc:org.springframework.boot.elasticsearch.health.ElasticsearchRestClientHealthIndicator[]
-| Kiểm tra Elasticsearch cluster up.
+| Kiểm tra Elasticsearch cluster đang up.
 
 | `hazelcast`
 | javadoc:org.springframework.boot.hazelcast.health.HazelcastHealthIndicator[]
-| Kiểm tra Hazelcast server up.
+| Kiểm tra Hazelcast server đang up.
 
 | `jms`
 | javadoc:org.springframework.boot.jms.health.JmsHealthIndicator[]
-| Kiểm tra JMS broker up.
+| Kiểm tra JMS broker đang up.
 
 | `ldap`
 | javadoc:org.springframework.boot.ldap.health.LdapHealthIndicator[]
-| Kiểm tra LDAP server up.
+| Kiểm tra LDAP server đang up.
 
 | `mail`
 | javadoc:org.springframework.boot.mail.health.MailHealthIndicator[]
-| Kiểm tra mail server up.
+| Kiểm tra mail server đang up.
 
 | `mongodb`
 | javadoc:org.springframework.boot.mongodb.health.MongoHealthIndicator[]
-| Kiểm tra Mongo database up.
+| Kiểm tra Mongo database đang up.
 
 | `neo4j`
 | javadoc:org.springframework.boot.neo4j.health.Neo4jHealthIndicator[]
-| Kiểm tra Neo4j database up.
+| Kiểm tra Neo4j database đang up.
 
 | `ping`
 | javadoc:org.springframework.boot.health.contributor.PingHealthIndicator[]
@@ -627,24 +626,24 @@ Cũng có thể enable/disable indicator bằng `management.health.key.enabled`,
 
 | `rabbit`
 | javadoc:org.springframework.boot.rabbitmq.health.RabbitHealthIndicator[]
-| Kiểm tra Rabbit server up.
+| Kiểm tra Rabbit server đang up.
 
 | `redis`
 | javadoc:org.springframework.boot.data.redis.health.DataRedisHealthIndicator[]
-| Kiểm tra Redis server up.
+| Kiểm tra Redis server đang up.
 
 | `ssl`
 | javadoc:org.springframework.boot.health.application.SslHealthIndicator[]
-| Kiểm tra SSL certificate ổn.
+| Kiểm tra SSL certificate hợp lệ.
 |===
 
-TIP: Có thể disable toàn bộ bằng configprop:management.health.defaults.enabled[].
+TIP: Bạn có thể disable tất cả indicator bằng configprop:management.health.defaults.enabled[].
 
-TIP: `ssl` javadoc:org.springframework.boot.health.contributor.HealthIndicator[] có property "warning threshold" tên configprop:management.health.ssl.certificate-validity-warning-threshold[].
-Có thể dùng threshold để đủ lead time rotate certificate sắp expire.
-Nếu SSL certificate sắp invalid trong period định nghĩa bởi threshold, javadoc:org.springframework.boot.health.contributor.HealthIndicator[] report trong detail response nơi `details.validChains.certificates.[*].validity.status` có value `WILL_EXPIRE_SOON`.
+TIP: `ssl` javadoc:org.springframework.boot.health.contributor.HealthIndicator[] có một property "warning threshold" tên configprop:management.health.ssl.certificate-validity-warning-threshold[].
+Bạn có thể dùng threshold này để có đủ lead time rotate certificate sắp expire.
+Nếu SSL certificate sẽ invalid trong period do threshold định nghĩa, javadoc:org.springframework.boot.health.contributor.HealthIndicator[] sẽ report điều này trong detail section của response, tại đó `details.validChains.certificates.[*].validity.status` có value `WILL_EXPIRE_SOON`.
 
-Các javadoc:org.springframework.boot.health.contributor.HealthIndicator[] bean bổ sung mặc định enable:
+Các javadoc:org.springframework.boot.health.contributor.HealthIndicator[] bean bổ sung được enable theo mặc định:
 
 [cols="3,4,6"]
 |===
@@ -652,37 +651,37 @@ Các javadoc:org.springframework.boot.health.contributor.HealthIndicator[] bean 
 
 | `livenessstate`
 | javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[]
-| Expose application availability state "Liveness".
+| Expose application availability state "Liveness" của application.
 
 | `readinessstate`
 | javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[]
-| Expose application availability state "Readiness".
+| Expose application availability state "Readiness" của application.
 |===
 
-Có thể disable bằng configprop:management.endpoint.health.probes.enabled[].
+Có thể disable các indicator này bằng configprop:management.endpoint.health.probes.enabled[].
 
 [[actuator.endpoints.health.writing-custom-health-indicators]]
-=== Viết Custom HealthIndicators
+=== Viết Custom HealthIndicator
 
-Để cung cấp custom health information, register Spring bean implement interface javadoc:org.springframework.boot.health.contributor.HealthIndicator[].
-Cần implement method `health()` và trả javadoc:org.springframework.boot.health.contributor.Health[].
-javadoc:org.springframework.boot.health.contributor.Health[] response nên include status và optional additional detail.
-Ví dụ:
+Để cung cấp custom health information, bạn có thể register Spring bean implement interface javadoc:org.springframework.boot.health.contributor.HealthIndicator[].
+Bạn cần implement method `health()` và trả về một javadoc:org.springframework.boot.health.contributor.Health[] response.
+javadoc:org.springframework.boot.health.contributor.Health[] response nên include một status và có thể include thêm detail.
+Code sau minh họa một implementation javadoc:org.springframework.boot.health.contributor.HealthIndicator[]:
 
 include-code::MyHealthIndicator[]
 
-NOTE: Identifier của javadoc:org.springframework.boot.health.contributor.HealthIndicator[] là bean name bỏ suffix javadoc:org.springframework.boot.health.contributor.HealthIndicator[] nếu có.
-Trong ví dụ trên, health information available trong entry tên `my`.
+NOTE: Identifier của một javadoc:org.springframework.boot.health.contributor.HealthIndicator[] là bean name sau khi bỏ suffix javadoc:org.springframework.boot.health.contributor.HealthIndicator[] nếu suffix này tồn tại.
+Trong ví dụ trên, health information available trong entry có tên `my`.
 
-TIP: Health indicator thường được gọi qua HTTP và cần response trước connection timeout.
-Spring Boot log warning nếu health indicator mất hơn 10 giây.
-Configure threshold bằng configprop:management.endpoint.health.logging.slow-indicator-threshold[].
+TIP: Health indicator thường được gọi qua HTTP và cần response trước khi connection timeout.
+Spring Boot sẽ log một warning message cho health indicator mất hơn 10 giây để response.
+Bạn có thể configure threshold này bằng configprop:management.endpoint.health.logging.slow-indicator-threshold[].
 
-Ngoài predefined javadoc:org.springframework.boot.health.contributor.Status[] type, javadoc:org.springframework.boot.health.contributor.Health[] có thể trả custom javadoc:org.springframework.boot.health.contributor.Status[] đại diện system state mới.
-Khi đó cũng cần custom implementation javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], hoặc configure default bằng configprop:management.endpoint.health.status.order[].
+Ngoài các javadoc:org.springframework.boot.health.contributor.Status[] type được predefined, javadoc:org.springframework.boot.health.contributor.Health[] có thể trả về một custom javadoc:org.springframework.boot.health.contributor.Status[] đại diện cho system state mới.
+Trong trường hợp đó, bạn cũng cần cung cấp custom implementation của javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[], hoặc configure default implementation bằng configprop:management.endpoint.health.status.order[].
 
-Ví dụ có javadoc:org.springframework.boot.health.contributor.Status[] code `FATAL`.
-Configure severity order:
+Ví dụ, giả sử một javadoc:org.springframework.boot.health.contributor.Status[] có code `FATAL` được dùng trong một implementation javadoc:org.springframework.boot.health.contributor.HealthIndicator[].
+Để configure severity order, thêm property sau vào application properties:
 
 [configprops,yaml]
 ----
@@ -694,12 +693,12 @@ management:
 ----
 
 HTTP status code trong response phản ánh overall health status.
-Mặc định `OUT_OF_SERVICE` và `DOWN` map 503.
-Health status không map, gồm `UP`, map 200.
-Có thể register custom status mapping nếu access health endpoint qua HTTP.
-Configure custom mapping sẽ disable default mapping của `DOWN` và `OUT_OF_SERVICE`.
-Nếu muốn giữ default, cần explicit configure cùng custom mapping.
-Ví dụ map `FATAL` thành 503 và giữ default mapping:
+Theo mặc định, `OUT_OF_SERVICE` và `DOWN` map tới 503.
+Mọi health status không được map, bao gồm `UP`, map tới 200.
+Bạn cũng có thể register custom status mapping nếu access health endpoint qua HTTP.
+Configure custom mapping sẽ disable default mapping cho `DOWN` và `OUT_OF_SERVICE`.
+Nếu muốn giữ default mapping, bạn phải explicit configure chúng cùng với custom mapping.
+Ví dụ sau map `FATAL` tới 503 và giữ default mapping cho `DOWN` và `OUT_OF_SERVICE`:
 
 [configprops,yaml]
 ----
@@ -713,9 +712,9 @@ management:
           out-of-service: 503
 ----
 
-TIP: Nếu cần kiểm soát nhiều hơn, define bean javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] riêng.
+TIP: Nếu cần nhiều quyền kiểm soát hơn, bạn có thể define bean javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] riêng.
 
-Default status mapping:
+Bảng sau thể hiện default status mapping cho các status built-in:
 
 [cols="1,3"]
 |===
@@ -728,33 +727,33 @@ Default status mapping:
 | `SERVICE_UNAVAILABLE` (`503`)
 
 | `UP`
-| Mặc định không mapping, HTTP status `200`
+| Theo mặc định không có mapping, vì vậy HTTP status là `200`
 
 | `UNKNOWN`
-| Mặc định không mapping, HTTP status `200`
+| Theo mặc định không có mapping, vì vậy HTTP status là `200`
 |===
 
 [[actuator.endpoints.health.reactive-health-indicators]]
 === Reactive Health Indicators
 
-Với reactive application như Spring WebFlux, javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] cung cấp non-blocking contract để lấy application health.
-Tương tự regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[]; mặc định gồm mọi javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
-Regular javadoc:org.springframework.boot.health.contributor.HealthContributor[] không check qua reactive API được execute trên elastic scheduler.
+Với reactive application, chẳng hạn application sử dụng Spring WebFlux, javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] cung cấp non-blocking contract để lấy application health.
+Tương tự một javadoc:org.springframework.boot.health.contributor.HealthContributor[] thông thường, health information được collect từ javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[] (theo mặc định là tất cả instance javadoc:org.springframework.boot.health.contributor.HealthContributor[] và javadoc:org.springframework.boot.health.contributor.ReactiveHealthContributor[] được define trong javadoc:org.springframework.context.ApplicationContext[]).
+Các javadoc:org.springframework.boot.health.contributor.HealthContributor[] thông thường không check reactive API sẽ được execute trên elastic scheduler.
 
-TIP: Trong reactive application, nên dùng javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[] để register/unregister health indicator runtime.
-Nếu cần register regular javadoc:org.springframework.boot.health.contributor.HealthContributor[], wrap bằng `ReactiveHealthContributor#adapt`.
+TIP: Trong reactive application, bạn nên dùng javadoc:org.springframework.boot.health.registry.ReactiveHealthContributorRegistry[] để register và unregister health indicator tại runtime.
+Nếu cần register một javadoc:org.springframework.boot.health.contributor.HealthContributor[] thông thường, bạn nên wrap nó bằng `ReactiveHealthContributor#adapt`.
 
 Để cung cấp custom health information từ reactive API, bạn có thể register Spring bean implement javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[].
-Đoạn code sau minh họa một implementation javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] mẫu:
+Code sau minh họa một implementation javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] mẫu:
 
 include-code::MyReactiveHealthIndicator[]
 
-TIP: Để tự động handle error, cân nhắc extend javadoc:org.springframework.boot.health.contributor.AbstractReactiveHealthIndicator[].
+TIP: Để tự động handle error, hãy cân nhắc extend javadoc:org.springframework.boot.health.contributor.AbstractReactiveHealthIndicator[].
 
 [[actuator.endpoints.health.auto-configured-reactive-health-indicators]]
 === Auto-configured ReactiveHealthIndicators
 
-Khi phù hợp, Spring Boot auto-configure các javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] sau:
+Khi phù hợp, Spring Boot sẽ auto-configure các javadoc:org.springframework.boot.health.contributor.ReactiveHealthIndicator[] sau:
 
 [cols="2,4,6"]
 |===
@@ -762,39 +761,39 @@ Khi phù hợp, Spring Boot auto-configure các javadoc:org.springframework.boot
 
 | `cassandra`
 | javadoc:org.springframework.boot.cassandra.health.CassandraDriverReactiveHealthIndicator[]
-| Kiểm tra Cassandra database up.
+| Kiểm tra Cassandra database đang up.
 
 | `couchbase`
 | javadoc:org.springframework.boot.couchbase.health.CouchbaseReactiveHealthIndicator[]
-| Kiểm tra Couchbase cluster up.
+| Kiểm tra Couchbase cluster đang up.
 
 | `elasticsearch`
 | javadoc:org.springframework.boot.data.elasticsearch.health.DataElasticsearchReactiveHealthIndicator[]
-| Kiểm tra Elasticsearch cluster up.
+| Kiểm tra Elasticsearch cluster đang up.
 
 | `mongodb`
 | javadoc:org.springframework.boot.mongodb.health.MongoReactiveHealthIndicator[]
-| Kiểm tra Mongo database up.
+| Kiểm tra Mongo database đang up.
 
 | `neo4j`
 | javadoc:org.springframework.boot.neo4j.health.Neo4jReactiveHealthIndicator[]
-| Kiểm tra Neo4j database up.
+| Kiểm tra Neo4j database đang up.
 
 | `redis`
 | javadoc:org.springframework.boot.data.redis.health.DataRedisReactiveHealthIndicator[]
-| Kiểm tra Redis server up.
+| Kiểm tra Redis server đang up.
 |===
 
-TIP: Khi cần, reactive indicator replace regular indicator.
-Mọi javadoc:org.springframework.boot.health.contributor.HealthIndicator[] không explicit handle cũng tự động được wrap.
+TIP: Khi cần, reactive indicator sẽ replace regular indicator.
+Mọi javadoc:org.springframework.boot.health.contributor.HealthIndicator[] không được handle explicit cũng sẽ tự động được wrap.
 
 [[actuator.endpoints.health.groups]]
-=== Health Groups
+=== Health Group
 
-Đôi khi hữu ích khi organize health indicator thành group dùng cho mục đích khác nhau.
+Đôi khi việc organize health indicator thành các group để dùng cho những mục đích khác nhau sẽ hữu ích.
 
-Để tạo health indicator group, dùng property `management.endpoint.health.group.<name>` và specify list health indicator ID trong `include` hoặc `exclude`.
-Ví dụ group chỉ gồm database indicator:
+Để tạo một health indicator group, bạn có thể dùng property `management.endpoint.health.group.<name>` và specify một list health indicator ID trong `include` hoặc `exclude`.
+Ví dụ sau tạo một group chỉ include database indicator:
 
 [configprops,yaml]
 ----
@@ -806,9 +805,9 @@ management:
           include: "db"
 ----
 
-Check result tại `http://localhost:8080/actuator/health/custom`.
+Sau đó bạn có thể check result tại `http://localhost:8080/actuator/health/custom`.
 
-Tương tự, để group exclude database indicator và include indicator khác:
+Tương tự, để tạo một group exclude database indicator và include tất cả indicator khác:
 
 [configprops,yaml]
 ----
@@ -820,12 +819,12 @@ management:
           exclude: "db"
 ----
 
-Mặc định startup fail nếu health group include/exclude health indicator không tồn tại.
-Disable behavior bằng configprop:management.endpoint.health.validate-group-membership[] = `false`.
+Theo mặc định, startup sẽ fail nếu health group include hoặc exclude một health indicator không tồn tại.
+Để disable behavior này, đặt configprop:management.endpoint.health.validate-group-membership[] thành `false`.
 
-Mặc định group inherit cùng javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] và javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] như system health.
-Tuy nhiên có thể define riêng theo group.
-Cũng có thể override `show-details` và `roles`:
+Theo mặc định, các group inherit cùng javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] và javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] settings với system health.
+Tuy nhiên, bạn cũng có thể define các setting này cho từng group.
+Bạn cũng có thể override các property `show-details` và `roles` nếu cần:
 
 [configprops,yaml]
 ----
@@ -843,11 +842,11 @@ management:
               out-of-service: 500
 ----
 
-TIP: Dùng `@Qualifier("groupname")` nếu cần register custom javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] hoặc javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] bean cho group.
+TIP: Bạn có thể dùng `@Qualifier("groupname")` nếu cần register custom javadoc:org.springframework.boot.health.actuate.endpoint.StatusAggregator[] hoặc javadoc:org.springframework.boot.health.actuate.endpoint.HttpCodeStatusMapper[] bean để dùng với group.
 
-Health group cũng có thể include/exclude javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
-Bạn cũng có thể include/exclude chỉ một component nhất định của javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
-Việc này thực hiện bằng fully qualified name của component như sau:
+Một health group cũng có thể include hoặc exclude một javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+Bạn cũng có thể chỉ include hoặc exclude một component cụ thể của javadoc:org.springframework.boot.health.contributor.CompositeHealthContributor[].
+Việc này được thực hiện bằng fully qualified name của component như sau:
 
 [source,properties]
 ----
@@ -855,50 +854,49 @@ management.endpoint.health.group.custom.include="test/primary"
 management.endpoint.health.group.custom.exclude="test/primary/b"
 ----
 
-Trong ví dụ, group `custom` include javadoc:org.springframework.boot.health.contributor.HealthContributor[] tên `primary`, component của composite `test`.
-`primary` cũng là composite và javadoc:org.springframework.boot.health.contributor.HealthContributor[] tên `b` bị exclude.
+Trong ví dụ trên, group `custom` sẽ include javadoc:org.springframework.boot.health.contributor.HealthContributor[] có tên `primary`, là một component của composite `test`.
+`primary` cũng là một composite và javadoc:org.springframework.boot.health.contributor.HealthContributor[] có tên `b` sẽ bị exclude khỏi group `custom`.
 
-Health group có thể available tại additional path trên main hoặc management port.
-Điều này hữu ích trong cloud environment như Kubernetes, nơi thường dùng separate management port cho actuator endpoint vì security.
-Separate port có thể dẫn tới unreliable health check vì main application có thể hỏng dù health check success.
-Configure additional path:
+Health group có thể available tại một additional path trên main port hoặc management port.
+Điều này hữu ích trong cloud environment như Kubernetes, nơi thường dùng separate management port cho actuator endpoint vì lý do security.
+Separate port có thể dẫn tới health check không đáng tin cậy vì main application có thể không hoạt động đúng dù health check thành công.
+Bạn có thể configure additional path như sau:
 
 [source,properties]
 ----
 management.endpoint.health.group.live.additional-path="server:/healthz"
 ----
 
-Điều này expose group `live` trên main server port tại `/healthz`.
-Prefix bắt buộc và phải là `server:` (main server port) hoặc `management:` (management port nếu configured).
-Path có thể chứa một hoặc nhiều segment.
+Điều này sẽ expose health group `live` trên main server port tại `/healthz`.
+Prefix là bắt buộc và phải là `server:` (đại diện cho main server port) hoặc `management:` (đại diện cho management port nếu được configure).
+Path có thể chứa một hoặc nhiều path segment.
 
 [[actuator.endpoints.health.datasource]]
-=== DataSource Health
+=== Health của DataSource
 
-javadoc:javax.sql.DataSource[] health indicator hiển thị health của standard data source và routing data source bean.
-Health của routing data source gồm health mỗi target data source.
-Trong health endpoint response, mỗi target được đặt tên bằng routing key.
-Nếu không muốn include routing data source trong output, set configprop:management.health.db.ignore-routing-data-sources[] = `true`.
+javadoc:javax.sql.DataSource[] health indicator hiển thị health của cả standard data source và routing data source bean.
+Health của một routing data source bao gồm health của từng target data source.
+Trong health endpoint response, mỗi target data source được đặt tên bằng routing key.
+Nếu không muốn include routing data source trong output của indicator, set configprop:management.health.db.ignore-routing-data-sources[] thành `true`.
 
 [[actuator.endpoints.kubernetes-probes]]
 == Kubernetes Probes
 
-Application deploy trên Kubernetes có thể cung cấp internal state qua https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes[Container Probes].
-Tùy https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes configuration], kubelet gọi probe và react theo result.
+Application được deploy trên Kubernetes có thể cung cấp internal state thông qua https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes[Container Probes].
+Tùy thuộc vào https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[Kubernetes configuration], kubelet sẽ gọi các probe và react theo result.
 
-Mặc định Spring Boot manage xref:features/spring-application.adoc#features.spring-application.application-availability[Application Availability] state.
-Nếu deploy trong Kubernetes environment, actuator collect "`Liveness`" và "`Readiness`" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và dùng trong dedicated xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator]: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
-Các indicator hiển thị trên global health endpoint (`"/actuator/health"`).
-Chúng cũng expose thành separate HTTP Probe qua xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health group]: `"/actuator/health/liveness"` và `"/actuator/health/readiness"`.
+Theo mặc định, Spring Boot manage xref:features/spring-application.adoc#features.spring-application.application-availability[Application Availability] state.
+Nếu được deploy trong Kubernetes environment, actuator collect "`Liveness`" và "`Readiness`" từ javadoc:org.springframework.boot.availability.ApplicationAvailability[] và sử dụng information đó trong các xref:actuator/endpoints.adoc#actuator.endpoints.health.auto-configured-health-indicators[health indicator] riêng: javadoc:org.springframework.boot.health.application.LivenessStateHealthIndicator[] và javadoc:org.springframework.boot.health.application.ReadinessStateHealthIndicator[].
+Các indicator này được hiển thị trên global health endpoint (`"/actuator/health"`).
+Chúng cũng được expose dưới dạng các HTTP Probe riêng thông qua xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health group]: `"/actuator/health/liveness"` và `"/actuator/health/readiness"`.
 
-Có thể configure Kubernetes infrastructure bằng endpoint information:
+Bạn có thể configure Kubernetes infrastructure bằng endpoint information sau:
 
 [source,yaml]
 ----
 livenessProbe:
   httpGet:
     path: "/actuator/health/liveness"
-
     port: <actuator-port>
   failureThreshold: ...
   periodSeconds: ...
@@ -911,37 +909,37 @@ readinessProbe:
   periodSeconds: ...
 ----
 
-NOTE: `<actuator-port>` nên đặt thành port nơi actuator endpoint available.
-Có thể là main web server port hoặc separate management port nếu property `"management.server.port"` được set.
+NOTE: `<actuator-port>` nên được đặt thành port nơi actuator endpoint available.
+Port này có thể là main web server port hoặc separate management port nếu property `"management.server.port"` được set.
 
-Các health group này tự động enable.
-Có thể disable bằng configprop:management.endpoint.health.probes.enabled[].
+Các health group này được enable tự động.
+Bạn có thể disable chúng bằng configprop:management.endpoint.health.probes.enabled[].
 
-NOTE: Nếu application mất nhiều thời gian start hơn configured liveness period, Kubernetes https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#when-should-you-use-a-startup-probe[đề cập `"startupProbe"` như một solution].
-Nói chung `"startupProbe"` không nhất thiết cần vì `"readinessProbe"` fail cho tới khi mọi startup task hoàn tất.
-Nghĩa là application không nhận traffic trước khi ready.
-Tuy nhiên nếu application start lâu, cân nhắc https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes[cấu hình `"startupProbe"`] dùng liveness HTTP probe để đảm bảo Kubernetes không kill application trong khi đang start.
-Xem phần xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes.lifecycle[mô tả probe behavior trong application lifecycle].
+NOTE: Nếu application mất nhiều thời gian start hơn liveness period đã configure, Kubernetes https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#when-should-you-use-a-startup-probe[đề cập `"startupProbe"` như một solution khả thi].
+Nói chung, `"startupProbe"` không nhất thiết cần thiết ở đây vì `"readinessProbe"` sẽ fail cho tới khi mọi startup task hoàn tất.
+Điều này có nghĩa application sẽ không nhận traffic cho tới khi ready.
+Tuy nhiên, nếu application mất nhiều thời gian để start, hãy cân nhắc https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes[cấu hình một `"startupProbe"`] sử dụng liveness HTTP probe để đảm bảo Kubernetes không kill application trong khi application đang start.
+Xem section xref:actuator/endpoints.adoc#actuator.endpoints.kubernetes-probes.lifecycle[mô tả cách probe hoạt động trong application lifecycle].
 
-Nếu Actuator endpoint deploy trên separate management context, endpoint không dùng cùng web infrastructure (port, connection pool, framework component) với main application.
-Trong trường hợp này probe check có thể success dù main application không hoạt động đúng, ví dụ không accept new connection.
-Vì vậy nên expose health group `liveness` và `readiness` trên main server port.
-Việc này thực hiện bằng cách set property sau:
+Nếu Actuator endpoint được deploy trên separate management context, các endpoint không sử dụng cùng web infrastructure (port, connection pool, framework component) với main application.
+Trong trường hợp này, probe check có thể thành công dù main application không hoạt động đúng, ví dụ không thể accept connection mới.
+Vì vậy, bạn nên làm cho health group `liveness` và `readiness` available trên main server port.
+Bạn có thể thực hiện việc này bằng cách set property sau:
 
 [source,properties]
 ----
 management.endpoint.health.probes.add-additional-paths=true
 ----
 
-Điều này expose group `liveness` tại `/livez` và `readiness` tại `/readyz` trên main server port.
-Path có thể customize bằng property `additional-path` trên từng group; xem xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health groups].
+Điều này sẽ expose group `liveness` tại `/livez` và group `readiness` tại `/readyz` trên main server port.
+Path có thể được customize bằng property `additional-path` trên từng group; xem xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health groups] để biết chi tiết.
 
 [[actuator.endpoints.kubernetes-probes.external-state]]
-=== Kiểm tra External State bằng Kubernetes Probes
+=== Kiểm tra External State bằng Kubernetes Probe
 
-Actuator configure probe `"`liveness`"` và `"`readiness`"` như Health Groups.
-Do đó mọi xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[health groups feature] đều available.
-Ví dụ configure additional Health Indicator:
+Actuator configure probe "`liveness`" và "`readiness`" dưới dạng Health Group.
+Do đó, mọi xref:actuator/endpoints.adoc#actuator.endpoints.health.groups[tính năng health group] đều available cho các probe này.
+Ví dụ, bạn có thể configure additional Health Indicator:
 
 [configprops,yaml]
 ----
@@ -953,37 +951,37 @@ management:
           include: "readinessState,customCheck"
 ----
 
-Mặc định Spring Boot không thêm health indicator khác vào các group này.
+Theo mặc định, Spring Boot không thêm health indicator khác vào các group này.
 
-Probe `"`liveness`"` không nên depend vào health check của external system.
-Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.liveness[liveness state của application] broken, Kubernetes cố solve bằng restart application instance.
-Nếu external system như database, Web API hoặc external cache fail, Kubernetes có thể restart mọi application instance và tạo cascading failure.
+Probe "`liveness`" không nên depend vào health check của external system.
+Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.liveness[liveness state của application] broken, Kubernetes sẽ cố solve vấn đề đó bằng cách restart application instance.
+Điều này có nghĩa nếu external system như database, Web API hoặc external cache fail, Kubernetes có thể restart mọi application instance và tạo cascading failure.
 
-Với probe `"`readiness`"`, việc check external system cần được developer cân nhắc kỹ.
-Vì vậy Spring Boot không include additional health check nào trong readiness probe.
-Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.readiness[readiness state của application instance] là unready, Kubernetes không route traffic tới instance đó.
-Một số external system không shared giữa application instance, khi đó có thể include trong readiness probe.
-External system khác có thể không essential cho application, ví dụ application có circuit breaker và fallback, khi đó chắc chắn không nên include.
-External system shared giữa mọi application instance là case phổ biến và cần judgement call: include trong readiness probe và chấp nhận application bị đưa out-of-service khi service ngoài down, hoặc không include và xử lý failure ở layer cao hơn, ví dụ circuit breaker ở caller.
+Với probe "`readiness`", developer cần cân nhắc kỹ việc check external system.
+Vì vậy, Spring Boot không include additional health check nào trong readiness probe.
+Nếu xref:features/spring-application.adoc#features.spring-application.application-availability.readiness[readiness state của application instance] là unready, Kubernetes sẽ không route traffic tới instance đó.
+Một số external system có thể không shared giữa các application instance, trong trường hợp đó chúng có thể được include trong readiness probe.
+Các external system khác có thể không essential đối với application, ví dụ application có circuit breaker và fallback, trong trường hợp đó chúng chắc chắn không nên được include.
+External system shared giữa tất cả application instance là một case phổ biến và bạn phải đưa ra judgement call: include nó trong readiness probe và chấp nhận application bị đưa out-of-service khi external service down, hoặc không include nó và xử lý failure ở layer cao hơn, có thể bằng circuit breaker ở caller.
 
-NOTE: Nếu mọi instance của application đều unready, Kubernetes Service với `type=ClusterIP` hoặc `NodePort` không accept incoming connection.
+NOTE: Nếu mọi instance của application đều unready, Kubernetes Service với `type=ClusterIP` hoặc `NodePort` sẽ không accept incoming connection.
 Không có HTTP error response như 503 vì không có connection.
-Service `type=LoadBalancer` có thể accept hoặc không tùy provider.
-Service có explicit https://kubernetes.io/docs/concepts/services-networking/ingress/[ingress] cũng response tùy implementation; ingress service phải quyết định cách handle `"`connection refused`"` từ downstream.
-HTTP 503 khá có khả năng xảy ra với load balancer và ingress.
+Service `type=LoadBalancer` có thể accept connection hoặc không, tùy provider.
+Service có https://kubernetes.io/docs/concepts/services-networking/ingress/[ingress] explicit cũng response tùy implementation; ingress service phải quyết định cách handle `"connection refused"` từ downstream.
+HTTP 503 khá có khả năng xảy ra trong trường hợp dùng cả load balancer và ingress.
 
-Ngoài ra nếu application dùng Kubernetes https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/[autoscaling], behavior khi application bị remove khỏi load balancer phụ thuộc autoscaler configuration.
+Ngoài ra, nếu application dùng Kubernetes https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/[autoscaling], behavior khi application bị remove khỏi load balancer có thể khác nhau, tùy autoscaler configuration.
 
 [[actuator.endpoints.kubernetes-probes.lifecycle]]
-=== Application Lifecycle và Probe States
+=== Application Lifecycle và Probe State
 
-Aspect quan trọng của Kubernetes Probes support là consistency với application lifecycle.
-Có khác biệt đáng kể giữa javadoc:org.springframework.boot.availability.AvailabilityState[] (in-memory internal state) và actual probe expose state đó.
-Tùy phase lifecycle, probe có thể chưa available.
+Một aspect quan trọng của Kubernetes Probes support là consistency với application lifecycle.
+Có khác biệt đáng kể giữa javadoc:org.springframework.boot.availability.AvailabilityState[] (in-memory internal state của application) và actual probe expose state đó.
+Tùy phase của application lifecycle, probe có thể chưa available.
 
-Spring Boot publish xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[application event trong startup và shutdown], và probe có thể listen event để expose javadoc:org.springframework.boot.availability.AvailabilityState[] information.
+Spring Boot publish xref:features/spring-application.adoc#features.spring-application.application-events-and-listeners[application event trong startup và shutdown], probe có thể listen các event này và expose information của javadoc:org.springframework.boot.availability.AvailabilityState[].
 
-Các table sau cho biết javadoc:org.springframework.boot.availability.AvailabilityState[] và HTTP connector state ở từng stage.
+Các bảng sau thể hiện javadoc:org.springframework.boot.availability.AvailabilityState[] và state của HTTP connector ở các stage khác nhau.
 
 Khi Spring Boot application start:
 
@@ -994,20 +992,20 @@ Khi Spring Boot application start:
 |Starting
 |`BROKEN`
 |`REFUSING_TRAFFIC`
-|Not started
-|Kubernetes check "liveness" Probe và restart application nếu mất quá nhiều thời gian.
+|Chưa start
+|Kubernetes check "liveness" Probe và restart application nếu application mất quá nhiều thời gian.
 
 |Started
 |`CORRECT`
 |`REFUSING_TRAFFIC`
-|Refuses requests
-|Application context đã refresh. Application thực hiện startup task và chưa nhận traffic.
+|Từ chối request
+|Application context đã được refresh. Application thực hiện startup task và chưa nhận traffic.
 
 |Ready
 |`CORRECT`
 |`ACCEPTING_TRAFFIC`
-|Accepts requests
-|Startup task hoàn tất. Application nhận traffic.
+|Accept request
+|Startup task đã hoàn tất. Application đang nhận traffic.
 |===
 
 Khi Spring Boot application shutdown:
@@ -1025,30 +1023,30 @@ Khi Spring Boot application shutdown:
 |Graceful shutdown
 |`CORRECT`
 |`REFUSING_TRAFFIC`
-|New requests are rejected
-|Nếu enable, xref:web/graceful-shutdown.adoc[graceful shutdown xử lý in-flight request].
-HTTP probe cũng ngừng accept traffic nên availability state không readily available externally.
+|Request mới bị reject
+|Nếu enabled, xref:web/graceful-shutdown.adoc[graceful shutdown sẽ process in-flight request].
+HTTP probe cũng ngừng accept traffic, vì vậy availability state không readily available từ bên ngoài.
 
 |Shutdown complete
 |N/A
 |N/A
-|Server is shut down
-|Application context đóng và application shutdown.
+|Server đã shutdown
+|Application context được đóng và application shutdown.
 |===
 
 TIP: Xem xref:how-to:deployment/cloud.adoc#howto.deployment.cloud.kubernetes.container-lifecycle[] để biết thêm về Kubernetes deployment.
-Đặc biệt phần này mô tả dùng hook `preStop` để cho application thời gian graceful shutdown trước khi Kubernetes kill.
+Đặc biệt, section này mô tả cách dùng hook `preStop` để cho application thời gian graceful shutdown trước khi Kubernetes kill application.
 
 [[actuator.endpoints.info]]
-== Application Information
+== Thông tin Application
 
-Application information expose information collect từ mọi bean javadoc:org.springframework.boot.actuate.info.InfoContributor[] trong javadoc:org.springframework.context.ApplicationContext[].
-Spring Boot có nhiều auto-configured javadoc:org.springframework.boot.actuate.info.InfoContributor[] bean và bạn có thể viết riêng.
+Application information expose nhiều information được collect từ tất cả javadoc:org.springframework.boot.actuate.info.InfoContributor[] bean được define trong javadoc:org.springframework.context.ApplicationContext[].
+Spring Boot tích hợp nhiều javadoc:org.springframework.boot.actuate.info.InfoContributor[] bean được auto-configure, và bạn có thể viết bean riêng.
 
 [[actuator.endpoints.info.auto-configured-info-contributors]]
 === Auto-configured InfoContributors
 
-Khi phù hợp, Spring auto-configure các javadoc:org.springframework.boot.actuate.info.InfoContributor[] sau:
+Khi phù hợp, Spring sẽ auto-configure các javadoc:org.springframework.boot.actuate.info.InfoContributor[] bean sau:
 
 [cols="1,4,8,4"]
 |===
@@ -1056,58 +1054,58 @@ Khi phù hợp, Spring auto-configure các javadoc:org.springframework.boot.actu
 
 | `build`
 | javadoc:org.springframework.boot.actuate.info.BuildInfoContributor[]
-| Expose build information.
-| Resource `META-INF/build-info.properties`.
+| Expose thông tin build.
+| Một resource `META-INF/build-info.properties`.
 
 | `env`
 | javadoc:org.springframework.boot.actuate.info.EnvironmentInfoContributor[]
-| Expose property từ javadoc:org.springframework.core.env.Environment[] có name bắt đầu bằng `info.`.
-| None.
+| Expose mọi property từ javadoc:org.springframework.core.env.Environment[] có name bắt đầu bằng `info.`.
+| Không có.
 
 | `git`
 | javadoc:org.springframework.boot.actuate.info.GitInfoContributor[]
-| Expose git information.
-| Resource `git.properties`.
+| Expose thông tin git.
+| Một resource `git.properties`.
 
 | `java`
 | javadoc:org.springframework.boot.actuate.info.JavaInfoContributor[]
-| Expose Java runtime information.
-| None.
+| Expose thông tin Java runtime.
+| Không có.
 
 | `os`
 | javadoc:org.springframework.boot.actuate.info.OsInfoContributor[]
-| Expose Operating System information.
-| None.
+| Expose thông tin Operating System.
+| Không có.
 
 | `process`
 | javadoc:org.springframework.boot.actuate.info.ProcessInfoContributor[]
-| Expose process information.
+| Expose thông tin process.
 | None.
 
 | `ssl`
 | javadoc:org.springframework.boot.actuate.info.SslInfoContributor[]
-| Expose SSL certificate information.
-| Có xref:features/ssl.adoc#features.ssl.bundles[SSL Bundle] configured.
+| Expose thông tin SSL certificate.
+| Một xref:features/ssl.adoc#features.ssl.bundles[SSL Bundle] được configure.
 
 |===
 
-Contributor riêng có enable hay không được control bởi property `management.info.<id>.enabled`.
-Mỗi contributor có default khác nhau tùy prerequisite và nature của information expose.
+Việc một contributor riêng có enabled hay không được control bởi property `management.info.<id>.enabled`.
+Mỗi contributor có default khác nhau tùy prerequisite và nature của information mà contributor expose.
 
-Không có prerequisite cho thấy nên enable, các contributor `env`, `java`, `os`, và `process` mặc định disable.
-Contributor `ssl` có prerequisite là SSL Bundle được configure nhưng vẫn default disable.
-Mỗi contributor có thể enable bằng `management.info.<id>.enabled=true`.
+Vì không có prerequisite để cho biết chúng nên được enabled, các contributor `env`, `java`, `os`, và `process` mặc định disabled.
+Contributor `ssl` có prerequisite là một SSL Bundle được configure nhưng cũng mặc định disabled.
+Bạn có thể enable từng contributor bằng cách set `management.info.<id>.enabled=true`.
 
-Contributor `build` và `git` mặc định enable.
-Có thể disable từng cái bằng `management.info.<id>.enabled=false`.
-Hoặc disable mọi contributor thường default enable bằng configprop:management.info.defaults.enabled[] = `false`.
+Contributor `build` và `git` mặc định enabled.
+Bạn có thể disable từng contributor bằng cách set `management.info.<id>.enabled=false`.
+Hoặc để disable mọi contributor thường được enabled theo mặc định, set configprop:management.info.defaults.enabled[] thành `false`.
 
 [[actuator.endpoints.info.custom-application-information]]
 === Custom Application Information
 
-Khi contributor `env` enable, có thể customize data expose bởi endpoint `info` bằng Spring property `+info.*+`.
-Mọi property javadoc:org.springframework.core.env.Environment[] dưới key `info` tự động expose.
-Ví dụ:
+Khi contributor `env` được enabled, bạn có thể customize data được expose bởi endpoint `info` bằng Spring property `+info.*+`.
+Mọi property của javadoc:org.springframework.core.env.Environment[] dưới key `info` sẽ tự động được expose.
+Ví dụ, bạn có thể thêm các setting sau vào file `application.properties`:
 
 [configprops,yaml]
 ----
@@ -1121,9 +1119,9 @@ info:
 
 [TIP]
 ====
-Thay vì hardcode value, có thể xref:how-to:properties-and-configuration.adoc#howto.properties-and-configuration.expand-properties[expand info property ở build time].
+Thay vì hardcode các value đó, bạn cũng có thể xref:how-to:properties-and-configuration.adoc#howto.properties-and-configuration.expand-properties[expand info property tại build time].
 
-Với Maven, có thể viết:
+Giả sử dùng Maven, bạn có thể viết lại ví dụ trên như sau:
 
 [configprops,yaml]
 ----
@@ -1137,17 +1135,17 @@ info:
 ====
 
 [[actuator.endpoints.info.git-commit-information]]
-=== Git Commit Information
+=== Thông tin Git Commit
 
-Feature hữu ích khác của endpoint `info` là publish information về state của `git` source code repository khi project được build.
-Nếu bean javadoc:org.springframework.boot.info.GitProperties[] available, endpoint `info` có thể expose property này.
+Một feature hữu ích khác của endpoint `info` là khả năng publish information về state của `git` source code repository tại thời điểm project được build.
+Nếu có bean javadoc:org.springframework.boot.info.GitProperties[], bạn có thể dùng endpoint `info` để expose các property này.
 
-TIP: Bean javadoc:org.springframework.boot.info.GitProperties[] được auto-configure nếu file `git.properties` available ở root classpath.
-Xem xref:how-to:build.adoc#howto.build.generate-git-info[].
+TIP: Bean javadoc:org.springframework.boot.info.GitProperties[] được auto-configure nếu file `git.properties` available tại root của classpath.
+Xem xref:how-to:build.adoc#howto.build.generate-git-info[] để biết thêm chi tiết.
 
-Mặc định endpoint expose property `git.branch`, `git.commit.id`, và `git.commit.time` nếu có.
-Nếu không muốn property nào trong response, cần exclude khỏi `git.properties`.
-Nếu muốn display full git information, tức full content `git.properties`, dùng configprop:management.info.git.mode[]:
+Theo mặc định, endpoint expose các property `git.branch`, `git.commit.id` và `git.commit.time` nếu chúng tồn tại.
+Nếu không muốn bất kỳ property nào trong số này xuất hiện trong endpoint response, chúng cần được exclude khỏi file `git.properties`.
+Nếu muốn hiển thị full git information (nghĩa là toàn bộ content của `git.properties`), dùng configprop:management.info.git.mode[] như sau:
 
 [configprops,yaml]
 ----
@@ -1157,7 +1155,7 @@ management:
       mode: "full"
 ----
 
-Để disable hoàn toàn git commit information khỏi endpoint `info`, set configprop:management.info.git.enabled[] = `false`:
+Để disable hoàn toàn git commit information từ endpoint `info`, set configprop:management.info.git.enabled[] thành `false` như sau:
 
 [configprops,yaml]
 ----
@@ -1168,44 +1166,44 @@ management:
 ----
 
 [[actuator.endpoints.info.build-information]]
-=== Build Information
+=== Thông tin Build
 
-Nếu bean javadoc:org.springframework.boot.info.BuildProperties[] available, endpoint `info` cũng có thể publish build information.
+Nếu có bean javadoc:org.springframework.boot.info.BuildProperties[], endpoint `info` cũng có thể publish build information.
 Điều này xảy ra khi file `META-INF/build-info.properties` available trên classpath.
 
 TIP: Cả Maven và Gradle plugin đều có thể generate file này.
-Xem xref:how-to:build.adoc#howto.build.generate-info[].
+Xem xref:how-to:build.adoc#howto.build.generate-info[] để biết thêm chi tiết.
 
 [[actuator.endpoints.info.java-information]]
-=== Java Information
+=== Thông tin Java
 
-Endpoint `info` publish information về Java runtime environment; xem javadoc:org.springframework.boot.info.JavaInfo[].
+Endpoint `info` publish information về Java runtime environment; xem javadoc:org.springframework.boot.info.JavaInfo[] để biết thêm chi tiết.
 
 [[actuator.endpoints.info.os-information]]
-=== OS Information
+=== Thông tin OS
 
-Endpoint `info` publish Operating System information; xem javadoc:org.springframework.boot.info.OsInfo[].
+Endpoint `info` publish Operating System information; xem javadoc:org.springframework.boot.info.OsInfo[] để biết thêm chi tiết.
 
 [[actuator.endpoints.info.process-information]]
-=== Process Information
+=== Thông tin Process
 
-Endpoint `info` publish process information; xem javadoc:org.springframework.boot.info.ProcessInfo[].
+Endpoint `info` publish information về process; xem javadoc:org.springframework.boot.info.ProcessInfo[] để biết thêm chi tiết.
 
 [[actuator.endpoints.info.ssl-information]]
-=== SSL Information
+=== Thông tin SSL
 
-Endpoint `info` publish SSL certificate information được cấu hình qua xref:features/ssl.adoc#features.ssl.bundles[SSL Bundles]; xem javadoc:org.springframework.boot.info.SslInfo[].
+Endpoint `info` publish information về SSL certificate được configure thông qua xref:features/ssl.adoc#features.ssl.bundles[SSL Bundles]; xem javadoc:org.springframework.boot.info.SslInfo[] để biết thêm chi tiết.
 
 [[actuator.endpoints.info.writing-custom-info-contributors]]
-=== Viết Custom InfoContributors
+=== Viết Custom InfoContributor
 
-Để cung cấp custom application information, register Spring bean implement interface javadoc:org.springframework.boot.actuate.info.InfoContributor[].
+Để cung cấp custom application information, bạn có thể register Spring bean implement interface javadoc:org.springframework.boot.actuate.info.InfoContributor[].
 
-Ví dụ contribute entry `example` với một value:
+Ví dụ sau contribute một entry `example` với một value:
 
 include-code::MyInfoContributor[]
 
-Khi gọi endpoint `info`, response có additional entry:
+Khi gọi endpoint `info`, bạn sẽ thấy response có additional entry sau:
 
 [source,json]
 ----
@@ -1220,28 +1218,28 @@ Khi gọi endpoint `info`, response có additional entry:
 == Software Bill of Materials (SBOM)
 
 Endpoint `sbom` expose https://en.wikipedia.org/wiki/Software_supply_chain[Software Bill of Materials].
-CycloneDX SBOM có thể auto-detect, format khác có thể manual configure.
+CycloneDX SBOM có thể được auto-detect, nhưng bạn cũng có thể manual configure format khác.
 
-Actuator endpoint `sbom` expose SBOM tên "application", mô tả content của application.
+Actuator endpoint `sbom` sau đó sẽ expose một SBOM tên "application", mô tả content của application.
 
-TIP: Để tự động generate CycloneDX SBOM khi build project, xem xref:how-to:build.adoc#howto.build.generate-cyclonedx-sbom[].
+TIP: Để tự động generate CycloneDX SBOM tại thời điểm build project, xem section xref:how-to:build.adoc#howto.build.generate-cyclonedx-sbom[].
 
 [[actuator.endpoints.sbom.other-formats]]
-=== SBOM Format khác
+=== Format SBOM khác
 
-Nếu muốn publish SBOM format khác, có configuration property để dùng.
+Nếu muốn publish SBOM ở format khác, có một số configuration property bạn có thể dùng.
 
-configprop:management.endpoint.sbom.application.location[] đặt location application SBOM.
-Ví dụ `classpath:sbom.json` dùng content resource `/sbom.json` trên classpath.
+Configuration property configprop:management.endpoint.sbom.application.location[] đặt location cho application SBOM.
+Ví dụ, set property này thành `classpath:sbom.json` sẽ dùng content của resource `/sbom.json` trên classpath.
 
-Media type cho SBOM format CycloneDX, SPDX và Syft được detect tự động.
-Để override auto-detected media type, dùng configprop:management.endpoint.sbom.application.media-type[].
+Media type cho SBOM ở format CycloneDX, SPDX và Syft được detect tự động.
+Để override media type được auto-detect, dùng configuration property configprop:management.endpoint.sbom.application.media-type[].
 
 [[actuator.endpoints.sbom.additional]]
-=== Additional SBOMs
+=== SBOM bổ sung
 
 Actuator endpoint có thể handle nhiều SBOM.
-Để thêm SBOM, dùng configprop:management.endpoint.sbom.additional[]:
+Để thêm SBOM, dùng configuration property configprop:management.endpoint.sbom.additional[], như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -1254,5 +1252,5 @@ management:
           media-type: "application/spdx+json"
 ----
 
-Điều này thêm SBOM tên `system`, lưu tại `/system.spdx.json`.
-Prefix `optional:` có thể dùng để tránh startup failure nếu file không tồn tại.
+Điều này sẽ thêm một SBOM tên "system", được lưu tại `/system.spdx.json`.
+Prefix `optional:` có thể được dùng để tránh startup failure nếu file không tồn tại.

@@ -1,16 +1,16 @@
 [[actuator.enabling]]
-= Enable Production-ready Features
+= Bật các production-ready feature
 
 Module {code-spring-boot}/module/spring-boot-actuator[`spring-boot-actuator`] cung cấp toàn bộ production-ready feature của Spring Boot.
-Cách được khuyến nghị để enable là thêm dependency starter `spring-boot-starter-actuator`.
+Cách được khuyến nghị để enable các feature là thêm dependency vào starter `spring-boot-starter-actuator`.
 
 .Định nghĩa Actuator
 ****
-Actuator là thuật ngữ manufacturing chỉ mechanical device dùng để di chuyển hoặc điều khiển thứ gì đó.
+Actuator là thuật ngữ trong manufacturing, dùng để chỉ một mechanical device có chức năng di chuyển hoặc điều khiển một thứ gì đó.
 Actuator có thể tạo chuyển động lớn từ một thay đổi nhỏ.
 ****
 
-Với Maven:
+Để thêm actuator vào một project dựa trên Maven, hãy thêm dependency starter sau:
 
 [source,xml]
 ----
@@ -22,7 +22,7 @@ Với Maven:
 </dependencies>
 ----
 
-Với Gradle:
+Với Gradle, sử dụng declaration sau:
 
 [source,gradle]
 ----

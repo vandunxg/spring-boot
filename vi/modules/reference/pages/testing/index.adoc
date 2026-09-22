@@ -1,16 +1,16 @@
 [[testing]]
 = Testing
 
-Spring Boot cung cấp nhiều utility và annotation để hỗ trợ test application.
+Spring Boot cung cấp nhiều utility và annotation để hỗ trợ khi test application.
 
-Test support được cung cấp bởi hai general-purpose module – `spring-boot-test` chứa core item và `spring-boot-test-autoconfigure` hỗ trợ auto-configuration cho test – cùng một số focused `-test` module hỗ trợ test cho feature cụ thể.
+Test support được cung cấp bởi hai general-purpose module – `spring-boot-test` chứa các thành phần cốt lõi và `spring-boot-test-autoconfigure` hỗ trợ auto-configuration cho test – cùng một số module `-test` chuyên biệt cung cấp test support cho từng feature cụ thể.
 
-Phần lớn developer dùng starter `spring-boot-starter-test`, import cả hai general-purpose Spring Boot test module cùng JUnit Jupiter, AssertJ, Hamcrest, nhiều library hữu ích khác và focused `-test` module áp dụng cho application cụ thể.
+Phần lớn developer sử dụng starter `spring-boot-starter-test`, import cả hai general-purpose Spring Boot test module cũng như JUnit Jupiter, AssertJ, Hamcrest và một số library hữu ích khác, cùng các module `-test` chuyên biệt áp dụng cho application cụ thể của họ.
 
 [TIP]
 ====
-Nếu có test dùng JUnit 4, vintage engine của JUnit 6 có thể dùng để chạy chúng.
-Để dùng vintage engine, thêm dependency `junit-vintage-engine`:
+Nếu bạn có các test sử dụng JUnit 4, vintage engine của JUnit 6 có thể được dùng để chạy chúng.
+Để sử dụng vintage engine, thêm dependency `junit-vintage-engine`, như trong ví dụ sau:
 
 [source,xml]
 ----
@@ -28,4 +28,4 @@ Nếu có test dùng JUnit 4, vintage engine của JUnit 6 có thể dùng để
 ----
 ====
 
-`hamcrest-core` được exclude để dùng `org.hamcrest:hamcrest`, vốn là một phần của `spring-boot-starter-test`.
+`hamcrest-core` được exclude để dùng `org.hamcrest:hamcrest` thay cho nó; đây là một phần của `spring-boot-starter-test`.

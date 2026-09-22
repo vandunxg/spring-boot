@@ -1,5 +1,5 @@
 [appendix]
 [[appendix.dependency-versions]]
-= Dependency Version
+= Dependency Versions
 
 Appendix này cung cấp chi tiết về các dependency được Spring Boot quản lý.

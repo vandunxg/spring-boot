@@ -1,30 +1,30 @@
 [[features.developing-auto-configuration]]
-= Tạo Auto-configuration riêng
+= Tạo auto-configuration riêng
 
-Nếu bạn làm việc trong một công ty phát triển shared library, hoặc làm việc với một open-source hay commercial library, bạn có thể muốn phát triển auto-configuration riêng.
-Các class auto-configuration có thể được đóng gói trong external jar và vẫn được Spring Boot phát hiện.
+Nếu bạn làm việc tại một công ty phát triển shared library, hoặc làm việc với một open-source hay commercial library, bạn có thể muốn phát triển auto-configuration riêng.
+Các class auto-configuration có thể được đóng gói trong external jar mà Spring Boot vẫn có thể phát hiện.
 
-Auto-configuration có thể được gắn với một "`starter`" cung cấp code auto-configuration cũng như các library điển hình mà bạn sẽ dùng cùng nó.
+Auto-configuration có thể được liên kết với một "`starter`" cung cấp code auto-configuration cũng như các library điển hình mà bạn sẽ dùng cùng nó.
 Trước tiên, chúng tôi trình bày những gì bạn cần biết để xây dựng auto-configuration riêng, sau đó chuyển sang xref:features/developing-auto-configuration.adoc#features.developing-auto-configuration.custom-starter[các bước điển hình cần thiết để tạo custom starter].
 
 
 
 [[features.developing-auto-configuration.understanding-auto-configured-beans]]
-== Hiểu các bean được Auto-configure
+== Tìm hiểu các bean được auto-configure
 
 Các class triển khai auto-configuration được annotate bằng javadoc:org.springframework.boot.autoconfigure.AutoConfiguration[format=annotation].
-Annotation này bản thân cũng được meta-annotate bằng javadoc:org.springframework.context.annotation.Configuration[format=annotation], khiến auto-configuration trở thành các class javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn.
-Các annotation javadoc:org.springframework.context.annotation.Conditional[format=annotation] bổ sung được dùng để giới hạn khi nào auto-configuration nên được áp dụng.
+Bản thân annotation này cũng được meta-annotate bằng javadoc:org.springframework.context.annotation.Configuration[format=annotation], khiến auto-configuration trở thành các class javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn.
+Các annotation javadoc:org.springframework.context.annotation.Conditional[format=annotation] bổ sung được dùng để giới hạn thời điểm auto-configuration được áp dụng.
 Thông thường, các class auto-configuration dùng annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnClass[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation].
 Điều này đảm bảo auto-configuration chỉ được áp dụng khi tìm thấy các class liên quan và khi bạn chưa tự khai báo javadoc:org.springframework.context.annotation.Configuration[format=annotation].
 
 Bạn có thể duyệt source code của {code-spring-boot-autoconfigure-src}[`spring-boot-autoconfigure`] để xem các class javadoc:org.springframework.boot.autoconfigure.AutoConfiguration[format=annotation] cốt lõi mà Spring cung cấp (xem file {code-spring-boot}/core/spring-boot-autoconfigure/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports[`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`]).
-Bạn cũng có thể xem file tương đương trong các module khác để thấy các auto-configuration mà chúng cung cấp.
+Bạn cũng có thể xem file tương ứng trong các module khác để biết các auto-configuration mà chúng cung cấp.
 
 
 
 [[features.developing-auto-configuration.locating-auto-configuration-candidates]]
-== Xác định ứng viên Auto-configuration
+== Xác định các candidate của auto-configuration
 
 Spring Boot kiểm tra sự tồn tại của file `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` trong jar đã publish.
 File này nên liệt kê các configuration class, mỗi dòng một class name, như ví dụ sau:
@@ -37,32 +37,32 @@ com.mycorp.libx.autoconfigure.LibXWebAutoConfiguration
 
 TIP: Bạn có thể thêm comment vào file imports bằng ký tự `#`.
 
-TIP: Trong trường hợp hiếm khi một auto-configuration class không phải top-level class, class name nên dùng `$` để phân tách khỏi containing class, ví dụ `com.example.Outer$NestedAutoConfiguration`.
+TIP: Trong trường hợp hiếm khi auto-configuration class không phải là top-level class, class name nên dùng `$` để phân tách class đó khỏi containing class, ví dụ `com.example.Outer$NestedAutoConfiguration`.
 
-NOTE: Auto-configuration phải được load _chỉ_ bằng cách được khai báo trong file imports.
-Hãy đảm bảo chúng được định nghĩa trong package riêng biệt và không bao giờ là target của component scanning.
-Ngoài ra, class auto-configuration không nên bật component scanning để tìm thêm component.
-Thay vào đó nên dùng annotation javadoc:org.springframework.context.annotation.Import[format=annotation] cụ thể.
+NOTE: Auto-configuration phải được load _chỉ_ bằng cách được nêu tên trong file imports.
+Hãy đảm bảo chúng được định nghĩa trong một package riêng và không bao giờ là target của component scanning.
+Ngoài ra, các class auto-configuration không nên bật component scanning để tìm thêm component.
+Thay vào đó, nên dùng các annotation javadoc:org.springframework.context.annotation.Import[format=annotation] cụ thể.
 
-Nếu configuration cần được áp dụng theo thứ tự cụ thể, bạn có thể dùng attribute `before`, `beforeName`, `after` và `afterName` trên annotation javadoc:org.springframework.boot.autoconfigure.AutoConfiguration[format=annotation], hoặc các annotation chuyên dụng javadoc:org.springframework.boot.autoconfigure.AutoConfigureBefore[format=annotation] và javadoc:org.springframework.boot.autoconfigure.AutoConfigureAfter[format=annotation].
-Ví dụ, nếu cung cấp web-specific configuration, class có thể cần được áp dụng sau javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration[].
+Nếu configuration cần được áp dụng theo một thứ tự cụ thể, bạn có thể dùng các attribute `before`, `beforeName`, `after` và `afterName` trên annotation javadoc:org.springframework.boot.autoconfigure.AutoConfiguration[format=annotation], hoặc các annotation chuyên dụng javadoc:org.springframework.boot.autoconfigure.AutoConfigureBefore[format=annotation] và javadoc:org.springframework.boot.autoconfigure.AutoConfigureAfter[format=annotation].
+Ví dụ, nếu cung cấp web-specific configuration, class của bạn có thể cần được áp dụng sau javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration[].
 
-Nếu muốn sắp thứ tự một số auto-configuration mà không nên biết trực tiếp về nhau, bạn cũng có thể dùng javadoc:org.springframework.boot.autoconfigure.AutoConfigureOrder[format=annotation].
-Annotation này có cùng semantic với annotation javadoc:org.springframework.core.annotation.Order[format=annotation] thông thường nhưng cung cấp thứ tự riêng cho class auto-configuration.
+Nếu muốn sắp thứ tự một số auto-configuration không nên biết trực tiếp về nhau, bạn cũng có thể dùng javadoc:org.springframework.boot.autoconfigure.AutoConfigureOrder[format=annotation].
+Annotation này có semantic giống annotation javadoc:org.springframework.core.annotation.Order[format=annotation] thông thường nhưng cung cấp thứ tự riêng cho các class auto-configuration.
 
-Tương tự class javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn, thứ tự áp dụng class auto-configuration chỉ ảnh hưởng tới thứ tự bean được định nghĩa.
+Giống các class javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn, thứ tự áp dụng các class auto-configuration chỉ ảnh hưởng đến thứ tự bean được định nghĩa.
 Thứ tự các bean đó được tạo sau này không bị ảnh hưởng và được xác định bởi dependency của từng bean cùng các quan hệ javadoc:org.springframework.context.annotation.DependsOn[format=annotation].
 
 
 
 [[features.developing-auto-configuration.locating-auto-configuration-candidates.deprecating]]
-=== Deprecate và thay thế class Auto-configuration
+=== Deprecate và thay thế các class auto-configuration
 
-Đôi khi bạn có thể cần deprecate class auto-configuration và cung cấp lựa chọn thay thế.
+Đôi khi bạn có thể cần deprecate các class auto-configuration và cung cấp lựa chọn thay thế.
 Ví dụ, bạn có thể muốn đổi package name nơi class auto-configuration được đặt.
 
-Vì class auto-configuration có thể được tham chiếu trong thứ tự `before`/`after` và trong `excludes`, bạn cần thêm một file để cho Spring Boot biết cách xử lý replacement.
-Để định nghĩa replacement, tạo file `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.replacements` chỉ ra liên kết giữa class cũ và class mới.
+Vì các class auto-configuration có thể được tham chiếu trong thứ tự `before`/`after` và trong `excludes`, bạn cần thêm một file để cho Spring Boot biết cách xử lý replacement.
+Để định nghĩa replacement, hãy tạo file `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.replacements` chỉ ra liên kết giữa class cũ và class mới.
 
 Ví dụ:
 
@@ -76,12 +76,12 @@ NOTE: File `AutoConfiguration.imports` cũng nên được cập nhật để _c
 
 
 [[features.developing-auto-configuration.condition-annotations]]
-== Condition Annotation
+== Các annotation condition
 
 Bạn gần như luôn muốn thêm một hoặc nhiều annotation javadoc:org.springframework.context.annotation.Conditional[format=annotation] vào class auto-configuration.
-Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] là ví dụ phổ biến được dùng để cho phép developer override auto-configuration nếu không hài lòng với default.
+Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] là một ví dụ phổ biến, được dùng để cho phép developer override auto-configuration nếu không hài lòng với các default của bạn.
 
-Spring Boot gồm một số annotation javadoc:org.springframework.context.annotation.Conditional[format=annotation] mà bạn có thể tái sử dụng trong code riêng bằng cách annotate class javadoc:org.springframework.context.annotation.Configuration[format=annotation] hoặc từng method javadoc:org.springframework.context.annotation.Bean[format=annotation].
+Spring Boot cung cấp một số annotation javadoc:org.springframework.context.annotation.Conditional[format=annotation] mà bạn có thể tái sử dụng trong code riêng bằng cách annotate các class javadoc:org.springframework.context.annotation.Configuration[format=annotation] hoặc từng method javadoc:org.springframework.context.annotation.Bean[format=annotation].
 Các annotation này gồm:
 
 * xref:features/developing-auto-configuration.adoc#features.developing-auto-configuration.condition-annotations.class-conditions[]
@@ -94,54 +94,54 @@ Các annotation này gồm:
 
 
 [[features.developing-auto-configuration.condition-annotations.class-conditions]]
-=== Class Condition
+=== Class conditions
 
-Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnClass[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass[format=annotation] cho phép class javadoc:org.springframework.context.annotation.Configuration[format=annotation] được include dựa trên sự tồn tại hoặc không tồn tại của các class cụ thể.
-Vì annotation metadata được parse bằng https://asm.ow2.io/[ASM], bạn có thể dùng attribute `value` để tham chiếu tới class thật dù class đó có thể không thực sự xuất hiện trên runtime classpath của ứng dụng.
-Bạn cũng có thể dùng attribute `name` nếu muốn chỉ định class name bằng giá trị javadoc:java.lang.String[].
+Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnClass[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass[format=annotation] cho phép include các class javadoc:org.springframework.context.annotation.Configuration[format=annotation] dựa trên sự tồn tại hoặc không tồn tại của các class cụ thể.
+Vì annotation metadata được parse bằng https://asm.ow2.io/[ASM], bạn có thể dùng attribute `value` để tham chiếu đến class thật, ngay cả khi class đó có thể không thực sự xuất hiện trên runtime classpath của ứng dụng.
+Bạn cũng có thể dùng attribute `name` nếu muốn chỉ định class name bằng một giá trị javadoc:java.lang.String[].
 
-Cơ chế này không áp dụng giống như vậy cho method javadoc:org.springframework.context.annotation.Bean[format=annotation], nơi return type thường là target của condition: trước khi condition trên method được áp dụng, JVM đã load class và có thể đã xử lý method reference, điều này sẽ fail nếu class không tồn tại.
+Cơ chế này không áp dụng theo cách tương tự cho các method javadoc:org.springframework.context.annotation.Bean[format=annotation], trong đó return type thường là target của condition: trước khi condition trên method được áp dụng, JVM đã load class và có thể đã xử lý các method reference, việc này sẽ fail nếu class không tồn tại.
 
-Để xử lý trường hợp này, có thể dùng một class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng để cô lập condition, như ví dụ sau:
+Để xử lý trường hợp này, có thể dùng một class javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng để isolate condition, như ví dụ sau:
 
 include-code::MyAutoConfiguration[]
 
-TIP: Nếu dùng javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnClass[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass[format=annotation] như một phần của meta-annotation để tạo composed annotation riêng, bạn phải dùng `name`, vì việc tham chiếu trực tiếp class trong trường hợp này không được xử lý.
+TIP: Nếu dùng javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnClass[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass[format=annotation] như một phần của meta-annotation để tạo composed annotation riêng, bạn phải dùng `name`, vì việc tham chiếu đến class theo cách đó không được xử lý.
 
 
 
 [[features.developing-auto-configuration.condition-annotations.bean-conditions]]
-=== Bean Condition
+=== Bean conditions
 
-Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBean[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] cho phép một bean được include dựa trên sự tồn tại hoặc không tồn tại của bean cụ thể.
+Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBean[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] cho phép include một bean dựa trên sự tồn tại hoặc không tồn tại của các bean cụ thể.
 Bạn có thể dùng attribute `value` để chỉ định bean theo type hoặc `name` để chỉ định bean theo tên.
-Attribute `search` cho phép giới hạn hierarchy javadoc:org.springframework.context.ApplicationContext[] được xem xét khi tìm bean.
+Attribute `search` cho phép giới hạn hierarchy của javadoc:org.springframework.context.ApplicationContext[] được xem xét khi tìm bean.
 
-Khi đặt trên method javadoc:org.springframework.context.annotation.Bean[format=annotation], target type mặc định là return type của method, như ví dụ sau:
+Khi đặt trên một method javadoc:org.springframework.context.annotation.Bean[format=annotation], target type mặc định là return type của method, như ví dụ sau:
 
 include-code::MyAutoConfiguration[]
 
-Trong ví dụ trên, bean `someService` sẽ được tạo nếu chưa có bean type `SomeService` trong javadoc:org.springframework.context.ApplicationContext[].
+Trong ví dụ trên, bean `someService` sẽ được tạo nếu trong javadoc:org.springframework.context.ApplicationContext[] chưa có bean có type `SomeService`.
 
-TIP: Bạn cần đặc biệt cẩn thận với thứ tự bean definition được thêm vào, vì các condition này được evaluate dựa trên những gì đã được xử lý tới thời điểm đó.
-Vì lý do này, chúng tôi khuyến nghị chỉ dùng annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBean[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] trên class auto-configuration, vì chúng được đảm bảo load sau khi mọi bean definition do user định nghĩa đã được thêm.
+TIP: Bạn cần đặc biệt cẩn thận với thứ tự thêm các bean definition, vì những condition này được evaluate dựa trên những gì đã được xử lý cho đến thời điểm đó.
+Vì lý do này, chúng tôi khuyến nghị chỉ dùng annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBean[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] trên các class auto-configuration, vì chúng được đảm bảo load sau khi mọi bean definition do user định nghĩa đã được thêm.
 
-NOTE: javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBean[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] không ngăn class javadoc:org.springframework.context.annotation.Configuration[format=annotation] được tạo.
-Khác biệt duy nhất giữa việc dùng condition ở class level và đánh dấu từng method javadoc:org.springframework.context.annotation.Bean[format=annotation] bên trong là cách trước ngăn class javadoc:org.springframework.context.annotation.Configuration[format=annotation] được register thành bean nếu condition không match.
+NOTE: javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBean[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean[format=annotation] không ngăn các class javadoc:org.springframework.context.annotation.Configuration[format=annotation] được tạo.
+Khác biệt duy nhất giữa việc dùng condition ở class level và annotate từng method javadoc:org.springframework.context.annotation.Bean[format=annotation] bên trong là cách trước ngăn class javadoc:org.springframework.context.annotation.Configuration[format=annotation] được register thành bean nếu condition không match.
 
-TIP: Khi khai báo method javadoc:org.springframework.context.annotation.Bean[format=annotation], hãy cung cấp càng nhiều type information càng tốt trong return type của method.
-Ví dụ, nếu concrete class của bean implement interface, return type của bean method nên là concrete class chứ không phải interface.
-Việc cung cấp càng nhiều type information càng tốt đặc biệt quan trọng khi dùng javadoc:org.springframework.context.annotation.Bean[format=annotation] condition, vì quá trình evaluate chỉ có thể dựa vào type information có sẵn trong method signature.
+TIP: Khi khai báo method javadoc:org.springframework.context.annotation.Bean[format=annotation], hãy cung cấp nhiều type information nhất có thể trong return type của method.
+Ví dụ, nếu concrete class của bean implement một interface, return type của bean method nên là concrete class chứ không phải interface.
+Việc cung cấp nhiều type information nhất có thể trong các method javadoc:org.springframework.context.annotation.Bean[format=annotation] đặc biệt quan trọng khi dùng bean condition, vì quá trình evaluate chỉ có thể dựa vào type information có sẵn trong method signature.
 
 
 
 [[features.developing-auto-configuration.condition-annotations.property-conditions]]
-=== Property Condition
+=== Property conditions
 
-Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnProperty[format=annotation] cho phép configuration được include dựa trên một Spring Environment property.
+Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnProperty[format=annotation] cho phép include configuration dựa trên một Spring Environment property.
 Dùng attribute `prefix` và `name` để chỉ định property cần kiểm tra.
-Mặc định, mọi property tồn tại và không bằng `false` đều match.
-Ngoài ra còn có annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty[format=annotation] dành riêng cho boolean property.
+Theo mặc định, mọi property tồn tại và không bằng `false` đều match.
+Ngoài ra còn có annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty[format=annotation] được thiết kế riêng cho boolean property.
 Với cả hai annotation, bạn cũng có thể tạo kiểm tra nâng cao bằng attribute `havingValue` và `matchIfMissing`.
 
 Nếu attribute `name` có nhiều tên, tất cả property đều phải vượt qua kiểm tra để condition match.
@@ -149,80 +149,80 @@ Nếu attribute `name` có nhiều tên, tất cả property đều phải vư�
 
 
 [[features.developing-auto-configuration.condition-annotations.resource-conditions]]
-=== Resource Condition
+=== Resource conditions
 
-Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnResource[format=annotation] cho phép configuration chỉ được include khi một resource cụ thể tồn tại.
-Resource có thể được chỉ định theo convention thông thường của Spring, ví dụ: `file:/home/user/test.dat`.
+Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnResource[format=annotation] cho phép chỉ include configuration khi một resource cụ thể tồn tại.
+Resource có thể được chỉ định bằng các convention thông thường của Spring, ví dụ: `file:/home/user/test.dat`.
 
 
 
 [[features.developing-auto-configuration.condition-annotations.web-application-conditions]]
-=== Web Application Condition
+=== Web application conditions
 
-Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication[format=annotation] cho phép configuration được include tùy theo ứng dụng có phải web application hay không.
+Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication[format=annotation] cho phép include configuration tùy theo ứng dụng có phải là web application hay không.
 Một servlet-based web application là ứng dụng dùng Spring javadoc:org.springframework.web.context.WebApplicationContext[], định nghĩa scope `session`, hoặc có javadoc:org.springframework.web.context.ConfigurableWebEnvironment[].
 Một reactive web application là ứng dụng dùng javadoc:org.springframework.boot.web.context.reactive.ReactiveWebApplicationContext[], hoặc có javadoc:org.springframework.boot.web.context.reactive.ConfigurableReactiveWebEnvironment[].
 
-Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnWarDeployment[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnNotWarDeployment[format=annotation] cho phép configuration được include tùy theo ứng dụng có phải traditional WAR application được deploy tới servlet container hay không.
-Condition này sẽ không match với ứng dụng chạy bằng embedded web server.
+Các annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnWarDeployment[format=annotation] và javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnNotWarDeployment[format=annotation] cho phép include configuration tùy theo ứng dụng có phải là traditional WAR application được deploy đến servlet container hay không.
+Condition này sẽ không match với các ứng dụng chạy bằng embedded web server.
 
 
 
 [[features.developing-auto-configuration.condition-annotations.spel-conditions]]
-=== SpEL Expression Condition
+=== SpEL expression conditions
 
-Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnExpression[format=annotation] cho phép configuration được include dựa trên kết quả của một {url-spring-framework-docs}/core/expressions.html[SpEL expression].
+Annotation javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnExpression[format=annotation] cho phép include configuration dựa trên kết quả của một {url-spring-framework-docs}/core/expressions.html[SpEL expression].
 
-NOTE: Tham chiếu bean trong expression sẽ khiến bean đó được initialize rất sớm trong quá trình context refresh.
-Do đó, bean sẽ không đủ điều kiện để post-processing, chẳng hạn configuration properties binding, và state của nó có thể chưa hoàn chỉnh.
+NOTE: Tham chiếu một bean trong expression sẽ khiến bean đó được initialize rất sớm trong quá trình context refresh.
+Do đó, bean sẽ không đủ điều kiện cho post-processing, chẳng hạn configuration properties binding, và state của nó có thể chưa hoàn chỉnh.
 
 
 
 [[features.developing-auto-configuration.testing]]
-== Test Auto-configuration
+== Test auto-configuration
 
-Một auto-configuration có thể bị ảnh hưởng bởi nhiều yếu tố: user configuration (`@Bean` definition và customization javadoc:org.springframework.core.env.Environment[]), quá trình evaluate condition (sự tồn tại của library cụ thể), và các yếu tố khác.
-Cụ thể, mỗi test nên tạo một javadoc:org.springframework.context.ApplicationContext[] được định nghĩa rõ ràng, đại diện cho một tổ hợp customization đó.
-javadoc:org.springframework.boot.test.context.runner.ApplicationContextRunner[] cung cấp cách rất tốt để thực hiện điều đó.
+Một auto-configuration có thể bị ảnh hưởng bởi nhiều yếu tố: user configuration (`@Bean` definition và việc customize javadoc:org.springframework.core.env.Environment[]), condition evaluation (sự hiện diện của một library cụ thể), và các yếu tố khác.
+Cụ thể, mỗi test nên tạo một javadoc:org.springframework.context.ApplicationContext[] được định nghĩa rõ ràng, đại diện cho một tổ hợp các customization đó.
+javadoc:org.springframework.boot.test.context.runner.ApplicationContextRunner[] là một cách tốt để thực hiện điều đó.
 
 WARNING: javadoc:org.springframework.boot.test.context.runner.ApplicationContextRunner[] không hoạt động khi chạy test trong native image.
 
-javadoc:org.springframework.boot.test.context.runner.ApplicationContextRunner[] thường được định nghĩa dưới dạng field của test class để tập hợp base/common configuration.
+javadoc:org.springframework.boot.test.context.runner.ApplicationContextRunner[] thường được định nghĩa dưới dạng field của test class để tập hợp base configuration dùng chung.
 Ví dụ sau đảm bảo `MyServiceAutoConfiguration` luôn được invoke:
 
 include-code::MyServiceAutoConfigurationTests[tag=runner]
 
-TIP: Nếu cần định nghĩa nhiều auto-configuration, không cần sắp thứ tự khai báo vì chúng được invoke theo đúng thứ tự như khi chạy ứng dụng.
+TIP: Nếu cần định nghĩa nhiều auto-configuration, không cần sắp thứ tự khai báo vì chúng được invoke theo đúng thứ tự như khi chạy application.
 
-Mỗi test có thể dùng runner để đại diện cho use case cụ thể.
+Mỗi test có thể dùng runner để biểu diễn một use case cụ thể.
 Ví dụ dưới đây invoke user configuration (`UserConfiguration`) và kiểm tra auto-configuration back off đúng cách.
-Việc invoke `run` cung cấp callback context có thể dùng với AssertJ.
+Việc invoke `run` cung cấp một callback context có thể dùng với AssertJ.
 
 include-code::MyServiceAutoConfigurationTests[tag=test-user-config]
 
-Bạn cũng có thể dễ dàng customize javadoc:org.springframework.core.env.Environment[], như ví dụ sau:
+Bạn cũng có thể dễ dàng customize javadoc:org.springframework.core.env.Environment[], như trong ví dụ sau:
 
 include-code::MyServiceAutoConfigurationTests[tag=test-env]
 
-Runner cũng có thể dùng để hiển thị javadoc:org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport[].
+Runner cũng có thể được dùng để hiển thị javadoc:org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport[].
 Report có thể được in ở level `INFO` hoặc `DEBUG`.
-Ví dụ sau cho thấy cách dùng javadoc:org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener[] để in report trong auto-configuration test.
+Ví dụ sau cho thấy cách dùng javadoc:org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener[] để in report trong các auto-configuration test.
 
 include-code::MyConditionEvaluationReportingTests[]
 
 
 
 [[features.developing-auto-configuration.testing.simulating-a-web-context]]
-=== Mô phỏng Web Context
+=== Mô phỏng web context
 
-Nếu cần test auto-configuration chỉ hoạt động trong servlet hoặc reactive web application context, hãy dùng tương ứng javadoc:org.springframework.boot.test.context.runner.WebApplicationContextRunner[] hoặc javadoc:org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner[].
+Nếu cần test một auto-configuration chỉ hoạt động trong servlet hoặc reactive web application context, hãy lần lượt dùng javadoc:org.springframework.boot.test.context.runner.WebApplicationContextRunner[] hoặc javadoc:org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner[].
 
 
 
 [[features.developing-auto-configuration.testing.overriding-classpath]]
-=== Override Classpath
+=== Override classpath
 
-Bạn cũng có thể test điều gì xảy ra khi một class và/hoặc package cụ thể không có ở runtime.
+Bạn cũng có thể test điều gì xảy ra khi một class và/hoặc package cụ thể không có trên runtime classpath.
 Spring Boot cung cấp javadoc:org.springframework.boot.test.context.FilteredClassLoader[] để runner có thể dễ dàng sử dụng.
 Trong ví dụ sau, chúng ta assert rằng nếu `MyService` không tồn tại thì auto-configuration được disable đúng cách:
 
@@ -231,89 +231,89 @@ include-code::../MyServiceAutoConfigurationTests[tag=test-classloader]
 
 
 [[features.developing-auto-configuration.custom-starter]]
-== Tạo Starter riêng
+== Tạo starter riêng
 
-Một Spring Boot starter điển hình chứa code để auto-configure và customize infrastructure của một công nghệ cụ thể, giả sử gọi là "acme".
-Để dễ extensible, một số configuration key trong namespace riêng có thể được expose ra environment.
+Một Spring Boot starter điển hình chứa code để auto-configure và customize infrastructure của một công nghệ cụ thể, tạm gọi là "acme".
+Để dễ mở rộng, có thể expose một số configuration key trong một namespace riêng ra environment.
 Cuối cùng, một dependency "starter" duy nhất được cung cấp để giúp user bắt đầu dễ dàng nhất có thể.
 
-Cụ thể, custom starter có thể gồm:
+Cụ thể, một custom starter có thể gồm:
 
-* Module `acme-spring-boot` chứa code auto-configuration cho "acme" cũng như mọi API để dùng feature.
-* Module `acme-spring-boot-starter` cung cấp dependency tới các starter khác mà "acme" yêu cầu, `acme-spring-boot`, và có thể thêm dependency khác thường hữu ích.
-Nói ngắn gọn, việc thêm starter nên cung cấp mọi thứ cần thiết để bắt đầu dùng library.
+* Module `acme-spring-boot` chứa code auto-configuration cho "acme" cũng như mọi API để dùng feature đó.
+* Module `acme-spring-boot-starter` cung cấp dependency đến các starter khác mà "acme" yêu cầu, `acme-spring-boot`, và có thể thêm các dependency thường hữu ích.
+Nói ngắn gọn, việc thêm starter nên cung cấp mọi thứ cần thiết để bắt đầu dùng library đó.
 
 Việc tách thành hai module hoàn toàn không bắt buộc.
-Nếu "acme" có nhiều biến thể, option hoặc optional feature, thì tách auto-configuration sẽ tốt hơn vì bạn có thể biểu đạt rõ rằng một số feature là optional.
-Ngoài ra, bạn có thể tạo starter đưa ra lựa chọn mặc định về optional dependency đó.
-Đồng thời, người khác có thể chỉ dựa vào `acme-spring-boot` và tự tạo starter riêng với lựa chọn khác.
+Nếu "acme" có nhiều flavor, option hoặc optional feature, thì tách auto-configuration sẽ tốt hơn vì bạn có thể thể hiện rõ rằng một số feature là optional.
+Ngoài ra, bạn có thể tạo một starter đưa ra một opinion về các optional dependency đó.
+Đồng thời, người khác có thể chỉ dựa vào `acme-spring-boot` và tự tạo starter riêng với các opinion khác.
 
 Nếu auto-configuration tương đối đơn giản và không có optional feature, merge hai module vào starter chắc chắn là một lựa chọn.
 
-Nếu "acme" có một tập dependency cơ bản bắt buộc để hoạt động nhưng bạn muốn biểu đạt một opinionated view rõ hơn, thì có starter riêng là lựa chọn tốt.
+Nếu "acme" có một tập dependency cơ bản bắt buộc để hoạt động nhưng bạn muốn đưa ra một view opinionated hơn, thì có starter riêng là một lựa chọn tốt.
 
-Khi test các feature của "acme", bạn có thể cần auto-configuration dành riêng cho test.
-Ví dụ, bạn có thể cung cấp cách thay external dependency bằng lựa chọn in-memory.
+Khi test các feature của "acme", bạn có thể cần các auto-configuration dành riêng cho test.
+Ví dụ, bạn có thể cung cấp cách thay thế external dependency bằng các lựa chọn in-memory.
 Có thể tạo một test-scoped starter riêng cho mục đích này theo cùng các nguyên tắc.
 
 
 [[features.developing-auto-configuration.custom-starter.naming]]
-=== Naming
+=== Đặt tên
 
-Bạn nên đảm bảo starter có namespace phù hợp.
+Bạn nên đảm bảo starter có một namespace phù hợp.
 Không bắt đầu module name bằng `spring-boot`, kể cả khi dùng Maven `groupId` khác.
-Trong tương lai chúng tôi có thể cung cấp official support cho công nghệ bạn đang auto-configure.
+Trong tương lai, chúng tôi có thể cung cấp official support cho công nghệ bạn đang auto-configure.
 
 Theo nguyên tắc chung, bạn nên đặt tên combined module theo starter.
-Ví dụ, giả sử tạo starter cho "acme", đặt auto-configure module là `acme-spring-boot` và starter là `acme-spring-boot-starter`.
+Ví dụ, giả sử bạn tạo starter cho "acme", đặt auto-configure module là `acme-spring-boot` và starter là `acme-spring-boot-starter`.
 Nếu chỉ có một module kết hợp cả hai, đặt tên là `acme-spring-boot-starter`.
 
 Nếu "acme" cũng có test-scoped starter, đặt tên là `acme-spring-boot-starter-test`.
 
 
 [[features.developing-auto-configuration.custom-starter.configuration-keys]]
-=== Configuration key
+=== Configuration keys
 
-Nếu starter cung cấp configuration key, hãy dùng namespace duy nhất cho chúng.
-Đặc biệt, không đưa key vào các namespace Spring Boot sử dụng, như `server`, `management`, `spring`, v.v.
-Nếu dùng cùng namespace, trong tương lai chúng tôi có thể thay đổi namespace theo cách làm hỏng module của bạn.
+Nếu starter cung cấp configuration key, hãy dùng một namespace duy nhất cho chúng.
+Đặc biệt, không đưa key vào các namespace mà Spring Boot sử dụng, như `server`, `management`, `spring`, v.v.
+Nếu dùng cùng namespace, trong tương lai chúng tôi có thể thay đổi các namespace này theo cách làm hỏng module của bạn.
 Theo nguyên tắc chung, prefix mọi key bằng namespace mà bạn sở hữu, ví dụ `acme`.
 
-Hãy đảm bảo configuration key được document bằng cách thêm field Javadoc cho từng property, như ví dụ sau:
+Hãy đảm bảo configuration key được document bằng cách thêm field Javadoc cho từng property, như trong ví dụ sau:
 
 include-code::AcmeProperties[]
 
-NOTE: Bạn chỉ nên dùng plain text trong field Javadoc của javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], vì chúng không được xử lý trước khi thêm vào JSON.
+NOTE: Bạn chỉ nên dùng plain text trong field Javadoc của javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], vì chúng không được process trước khi thêm vào JSON.
 
-Nếu dùng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] với record class thì description của record component nên được cung cấp qua class-level Javadoc tag `@param`, vì record class không có explicit instance field để đặt field-level Javadoc thông thường.
+Nếu dùng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] với record class, description của record component nên được cung cấp qua class-level Javadoc tag `@param` (record class không có instance field tường minh để đặt field-level Javadoc thông thường).
 
 Dưới đây là một số rule chúng tôi dùng nội bộ để đảm bảo description nhất quán:
 
 * Không bắt đầu description bằng "The" hoặc "A".
 * Với type `boolean`, bắt đầu description bằng "Whether" hoặc "Enable".
 * Với collection-based type, bắt đầu description bằng "Comma-separated list".
-* Dùng javadoc:java.time.Duration[] thay vì `long` và mô tả default unit nếu khác milliseconds, ví dụ "If a duration suffix is not specified, seconds will be used".
+* Dùng javadoc:java.time.Duration[] thay vì `long` và mô tả default unit nếu khác milliseconds, chẳng hạn "If a duration suffix is not specified, seconds will be used".
 * Không đưa default value vào description trừ khi nó phải được xác định ở runtime.
 
-Hãy đảm bảo xref:specification:configuration-metadata/annotation-processor.adoc[kích hoạt generate metadata] để IDE assistance cũng có sẵn cho key của bạn.
+Hãy đảm bảo xref:specification:configuration-metadata/annotation-processor.adoc[kích hoạt việc generate metadata] để IDE assistance cũng có sẵn cho key của bạn.
 Bạn có thể muốn review metadata được generate (`META-INF/spring-configuration-metadata.json`) để đảm bảo key được document đúng.
-Dùng starter của bạn trong IDE tương thích cũng là cách tốt để validate chất lượng metadata.
+Dùng starter của bạn trong một IDE tương thích cũng là cách tốt để validate chất lượng metadata.
 
 
 
 [[features.developing-auto-configuration.custom-starter.autoconfigure-module]]
 === Module "`autoconfigure`"
 
-Module `autoconfigure` chứa mọi thứ cần thiết để bắt đầu với library.
-Nó cũng có thể chứa definition của configuration key, như javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], và callback interface dùng để customize thêm cách component được initialize.
+Module `autoconfigure` chứa mọi thứ cần thiết để bắt đầu dùng library.
+Nó cũng có thể chứa các definition của configuration key, như javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], và callback interface dùng để customize thêm cách component được initialize.
 
-TIP: Bạn nên đánh dấu dependency tới library là optional để có thể include module `autoconfigure` vào project dễ dàng hơn.
-Nếu làm vậy, library sẽ không được cung cấp và mặc định Spring Boot sẽ back off.
+TIP: Bạn nên đánh dấu các dependency đến library là optional để có thể include module `autoconfigure` vào project dễ dàng hơn.
+Nếu làm vậy, library sẽ không được cung cấp và theo mặc định Spring Boot sẽ back off.
 
-Spring Boot dùng annotation processor để thu thập condition trên auto-configuration vào metadata file (`META-INF/spring-autoconfigure-metadata.properties`).
+Spring Boot dùng annotation processor để thu thập các condition trên auto-configuration vào một metadata file (`META-INF/spring-autoconfigure-metadata.properties`).
 Nếu file đó tồn tại, nó được dùng để lọc sớm các auto-configuration không match, giúp cải thiện startup time.
 
-Khi build bằng Maven, cấu hình compiler plugin (3.12.0 trở lên) để thêm `spring-boot-autoconfigure-processor` vào annotation processor path:
+Khi build bằng Maven, hãy cấu hình compiler plugin (3.12.0 trở lên) để thêm `spring-boot-autoconfigure-processor` vào annotation processor path:
 
 [source,xml]
 ----
@@ -337,7 +337,7 @@ Khi build bằng Maven, cấu hình compiler plugin (3.12.0 trở lên) để th
 </project>
 ----
 
-Với Gradle, dependency nên được khai báo trong configuration `annotationProcessor`, như ví dụ sau:
+Với Gradle, dependency nên được khai báo trong configuration `annotationProcessor`, như trong ví dụ sau:
 
 [source,gradle]
 ----
@@ -349,16 +349,16 @@ dependencies {
 
 
 [[features.developing-auto-configuration.custom-starter.starter-module]]
-=== Starter Module
+=== Starter module
 
 Starter thực chất là một jar rỗng.
-Mục đích duy nhất là cung cấp các dependency cần thiết để làm việc với library.
+Mục đích duy nhất của nó là cung cấp các dependency cần thiết để làm việc với library.
 Bạn có thể xem nó như một opinionated view về những gì cần thiết để bắt đầu.
 
-Không đưa ra assumption về project nơi starter được thêm vào.
-Nếu library bạn đang auto-configure thường cần starter khác, hãy đề cập cả chúng.
-Việc cung cấp một tập _default_ dependency phù hợp có thể khó nếu số optional dependency lớn, vì bạn nên tránh include dependency không cần thiết cho cách dùng điển hình của library.
+Đừng đưa ra assumption về project nơi starter được thêm vào.
+Nếu library bạn đang auto-configure thường cần các starter khác, hãy đề cập cả chúng.
+Việc cung cấp một tập _default_ dependency phù hợp có thể khó nếu số optional dependency lớn, vì bạn nên tránh include các dependency không cần thiết cho cách dùng điển hình của library.
 Nói cách khác, bạn không nên include optional dependency.
 
-NOTE: Dù theo cách nào, starter phải tham chiếu trực tiếp hoặc gián tiếp tới core Spring Boot starter (`spring-boot-starter`), không cần thêm nếu starter phụ thuộc vào starter khác.
-Nếu một project được tạo chỉ với custom starter của bạn, core feature của Spring Boot vẫn được cung cấp nhờ sự hiện diện của core starter.
+NOTE: Dù theo cách nào, starter của bạn phải tham chiếu trực tiếp hoặc gián tiếp đến core Spring Boot starter (`spring-boot-starter`), không cần thêm dependency này nếu starter của bạn phụ thuộc vào một starter khác.
+Nếu một project được tạo chỉ với custom starter của bạn, các core feature của Spring Boot vẫn được cung cấp nhờ sự hiện diện của core starter.

@@ -1,16 +1,16 @@
 [[managing-dependencies]]
 = Managing Dependencies
 
-Để manage dependency trong Spring Boot application, có thể apply {url-dependency-management-plugin-site}[`io.spring.dependency-management`] plugin hoặc dùng native bom support của Gradle.
-Benefit chính của cách đầu là hỗ trợ property-based customization của managed version, còn cách sau thường cho build nhanh hơn.
+Để manage dependencies trong Spring Boot application, có thể apply {url-dependency-management-plugin-site}[`io.spring.dependency-management`] plugin hoặc dùng native BOM support của Gradle.
+Lợi ích chính của cách đầu là hỗ trợ property-based customization của các managed versions, còn cách sau thường cho build nhanh hơn.
 
 [[managing-dependencies.dependency-management-plugin]]
 == Managing Dependencies bằng Dependency Management Plugin
 
-Khi apply {url-dependency-management-plugin-site}[`io.spring.dependency-management`] plugin, Spring Boot plugin tự động xref:reacting.adoc#reacting-to-other-plugins.dependency-management[import bom `spring-boot-dependencies`] từ version Spring Boot đang dùng.
-Điều này cung cấp dependency management experience tương tự Maven.
-Ví dụ cho phép omit version number khi declare dependency được manage trong bom.
-Để dùng, declare dependency như bình thường nhưng omit version:
+Khi apply {url-dependency-management-plugin-site}[`io.spring.dependency-management`] plugin, Spring Boot plugin tự động xref:reacting.adoc#reacting-to-other-plugins.dependency-management[import BOM `spring-boot-dependencies`] từ version Spring Boot đang dùng.
+Điều này cung cấp trải nghiệm dependency management tương tự trải nghiệm của Maven users.
+Ví dụ, nó cho phép omit version numbers khi declare các dependency được manage trong BOM.
+Để dùng functionality này, declare dependency như bình thường nhưng omit version:
 
 [tabs]
 ======
@@ -31,8 +31,8 @@ include::example$managing-dependencies/dependencies.gradle.kts[tags=dependencies
 [[managing-dependencies.dependency-management-plugin.customizing]]
 === Customize Managed Versions
 
-Bom `spring-boot-dependencies` tự động import khi dependency management plugin apply dùng property để control version dependency nó manage.
-Xem xref:appendix:dependency-versions/properties.adoc[Dependency Versions Properties] trong Spring Boot reference để biết complete list.
+BOM `spring-boot-dependencies` tự động được import khi dependency management plugin được apply và dùng properties để control các version của dependencies mà nó manage.
+Xem xref:appendix:dependency-versions/properties.adoc[Dependency Versions Properties] trong Spring Boot reference để biết complete list của các properties này.
 
 Để customize managed version, set property tương ứng.
 Ví dụ customize SLF4J version được control bởi `slf4j.version`:
@@ -53,14 +53,14 @@ include::example$managing-dependencies/custom-version.gradle.kts[tags=custom-ver
 ----
 ======
 
-WARNING: Mỗi Spring Boot release được design và test với specific set third-party dependency.
+WARNING: Mỗi Spring Boot release được design và test với một set third-party dependencies cụ thể.
 Override version có thể gây compatibility issue và cần cẩn thận.
 
 [[managing-dependencies.dependency-management-plugin.using-in-isolation]]
-=== Dùng Spring Boot Dependency Management riêng lẻ
+=== Dùng Dependency Management của Spring Boot ở chế độ isolation
 
 Dependency management của Spring Boot có thể dùng trong project mà không apply Spring Boot plugin vào project đó.
-Class `SpringBootPlugin` cung cấp constant `BOM_COORDINATES` dùng import bom mà không cần biết group ID, artifact ID hoặc version.
+Class `SpringBootPlugin` cung cấp constant `BOM_COORDINATES` dùng import BOM mà không cần biết group ID, artifact ID hoặc version.
 
 Đầu tiên configure project depend vào Spring Boot plugin nhưng không apply:
 
@@ -136,10 +136,10 @@ include::example$managing-dependencies/depend-on-plugin-release.gradle.kts[]
 ======
 endif::[]
 
-Dependency của Spring Boot plugin lên dependency management plugin nghĩa là có thể dùng dependency management plugin mà không cần declare dependency vào nó.
-Điều này cũng nghĩa là tự động dùng cùng version dependency management plugin Spring Boot dùng.
+Dependency của Spring Boot plugin vào dependency management plugin nghĩa là có thể dùng dependency management plugin mà không cần declare dependency vào nó.
+Điều này cũng nghĩa là bạn sẽ tự động dùng cùng version của dependency management plugin như version Spring Boot sử dụng.
 
-Apply dependency management plugin rồi configure import Spring Boot bom:
+Apply dependency management plugin rồi configure để import Spring Boot BOM:
 
 [tabs]
 ======
@@ -157,10 +157,10 @@ include::example$managing-dependencies/configure-bom.gradle.kts[tags=configure-b
 ----
 ======
 
-Kotlin code trên hơi awkward vì dùng imperative way apply dependency management plugin.
+Kotlin code trên hơi awkward vì dùng imperative way để apply dependency management plugin.
 
 Có thể giảm awkward bằng cách apply plugin từ root parent project hoặc dùng block `plugins` như với Spring Boot plugin.
-Downside là bắt buộc specify version của dependency management plugin:
+Nhược điểm là bắt buộc specify version của dependency management plugin:
 
 [source,kotlin,indent=0,subs="verbatim,attributes"]
 ----
@@ -173,13 +173,13 @@ include::example$managing-dependencies/configure-bom-with-plugins.gradle.kts[tag
 Để biết thêm capability của dependency management plugin, xem {url-dependency-management-plugin-docs}[documentation].
 
 [[managing-dependencies.gradle-bom-support]]
-== Managing Dependencies bằng Gradle Bom Support
+== Managing Dependencies bằng Gradle's BOM Support
 
-Gradle cho phép dùng bom manage project version bằng cách declare nó như dependency `platform` hoặc `enforcedPlatform`.
-Dependency `platform` xem version trong bom như recommendation; version/constraint khác trong dependency graph có thể khiến dùng version khác với bom.
-Dependency `enforcedPlatform` xem version trong bom như requirement và override mọi version khác trong dependency graph.
+Gradle cho phép dùng BOM để manage project versions bằng cách declare nó như dependency `platform` hoặc `enforcedPlatform`.
+Dependency `platform` xem các version trong BOM như recommendations; các version/constraint khác trong dependency graph có thể khiến dùng version khác với BOM.
+Dependency `enforcedPlatform` xem các version trong BOM như requirements và override mọi version khác trong dependency graph.
 
-Class `SpringBootPlugin` cung cấp constant `BOM_COORDINATES` dùng declare dependency lên Spring Boot bom mà không cần biết group ID, artifact ID hoặc version:
+Class `SpringBootPlugin` cung cấp constant `BOM_COORDINATES` dùng declare dependency lên Spring Boot BOM mà không cần biết group ID, artifact ID hoặc version, như trong ví dụ sau:
 
 [tabs]
 ======
@@ -197,13 +197,13 @@ include::example$managing-dependencies/configure-platform.gradle.kts[tags=config
 ----
 ======
 
-Platform hoặc enforced platform chỉ constrain version của configuration nơi nó declare hoặc configuration extend từ đó.
+Platform hoặc enforced platform chỉ constrain các version của configuration nơi nó được declare hoặc configuration extend từ configuration đó.
 Do vậy có thể cần declare cùng dependency trong nhiều configuration.
 
 [[managing-dependencies.gradle-bom-support.customizing]]
 === Customize Managed Versions
 
-Khi dùng Gradle bom support, không thể dùng property từ `spring-boot-dependencies` để control version dependency nó manage.
+Khi dùng Gradle BOM support, không thể dùng các properties từ `spring-boot-dependencies` để control các version của dependencies mà nó manage.
 Thay vào đó phải dùng mechanism Gradle cung cấp.
 Một mechanism là resolution strategy.
 Module SLF4J đều ở group `org.slf4j` nên version có thể control bằng cách configure mọi dependency trong group đó dùng particular version:
@@ -224,5 +224,5 @@ include::example$managing-dependencies/custom-version-with-platform.gradle.kts[t
 ----
 ======
 
-WARNING: Mỗi Spring Boot release được design và test với specific set third-party dependency.
+WARNING: Mỗi Spring Boot release được design và test với một set third-party dependencies cụ thể.
 Override version có thể gây compatibility issue và cần cẩn thận.

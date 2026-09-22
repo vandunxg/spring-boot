@@ -1,12 +1,14 @@
 [[integrating-with-actuator]]
 = Integrating with Actuator
 
+
+
 [[integrating-with-actuator.build-info]]
 == Generating Build Information
 
-Endpoint `info` của Spring Boot Actuator tự động publish build information khi có file `META-INF/build-info.properties`.
+`info` endpoint của Spring Boot Actuator tự động publish thông tin về build khi có file `META-INF/build-info.properties`.
 Task {apiref-gradle-plugin-boot-build-info}[`BuildInfo`] được cung cấp để generate file này.
-Cách dễ nhất dùng task là qua plugin DSL:
+Cách dễ nhất để dùng task là qua plugin DSL:
 
 [tabs]
 ======
@@ -24,11 +26,11 @@ include::example$integrating-with-actuator/build-info-basic.gradle.kts[tags=buil
 ----
 ======
 
-Điều này configure task BuildInfo tên `bootBuildInfo`.
+Điều này sẽ configure một task {apiref-gradle-plugin-boot-build-info}[`BuildInfo`] có tên `bootBuildInfo`.
 Destination directory là `build/bootBuildInfo` và filename `META-INF/build-info.properties`.
-Nếu main source set tồn tại, resource của nó configure dùng output của task `bootBuildInfo` làm src dir.
+Nếu main source set tồn tại, resources của nó được configure để dùng output của task `bootBuildInfo` làm src dir.
 
-Mặc định generated build information derive từ project:
+Mặc định, generated build information được derive từ project:
 
 |===
 | Property | Default value
@@ -50,7 +52,7 @@ Mặc định generated build information derive từ project:
 
 |===
 
-Property có thể customize bằng DSL:
+Các property có thể customize bằng DSL:
 
 [tabs]
 ======
@@ -68,8 +70,8 @@ include::example$integrating-with-actuator/build-info-custom-values.gradle.kts[t
 ----
 ======
 
-Để exclude default property khỏi generated build information, add name vào excludes.
-Ví dụ exclude property `time`:
+Để exclude các default property khỏi generated build information, add name của chúng vào excludes.
+Ví dụ, có thể exclude property `time`:
 
 [tabs]
 ======
@@ -87,13 +89,13 @@ include::example$integrating-with-actuator/build-info-exclude-time.gradle.kts[ta
 ----
 ======
 
-Default value cho `build.time` là instant project được build.
+Default value cho `build.time` là instant tại thời điểm project được build.
 Side effect là task không bao giờ up-to-date.
-Kết quả là build lâu hơn vì nhiều task, gồm project test, phải execute.
+Kết quả là build sẽ lâu hơn vì phải execute nhiều task hơn, gồm cả tests của project.
 Side effect khác là task output luôn change nên build không thực sự repeatable.
 Nếu coi trọng build performance hoặc repeatability hơn accuracy của `build.time`, exclude property `time` như ví dụ trên.
 
-Additional property cũng có thể add vào build information:
+Các additional properties cũng có thể add vào build information:
 
 [tabs]
 ======
@@ -111,4 +113,4 @@ include::example$integrating-with-actuator/build-info-additional.gradle.kts[tags
 ----
 ======
 
-Value additional property có thể compute lazily bằng `Provider`.
+Value của additional property có thể compute lazily bằng `Provider`.

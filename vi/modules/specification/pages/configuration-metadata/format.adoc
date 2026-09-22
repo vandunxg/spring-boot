@@ -1,8 +1,8 @@
 [[appendix.configuration-metadata.format]]
-= Metadata Format
+= Định dạng Metadata
 
-File configuration metadata nằm trong jar tại `META-INF/spring-configuration-metadata.json`.
-Chúng dùng format JSON với các item được phân loại vào "`groups`" hoặc "`properties`", các value hint bổ sung được phân loại vào "`hints`", và các item bị bỏ qua nằm trong "`ignored`", như ví dụ sau:
+Các file configuration metadata nằm trong các jar tại `META-INF/spring-configuration-metadata.json`.
+Chúng sử dụng format JSON với các item được phân loại vào "`groups`" hoặc "`properties`", các value hint bổ sung được phân loại vào "`hints`", và các item bị bỏ qua nằm trong "`ignored`", như ví dụ sau:
 
 [source,json]
 ----
@@ -75,7 +75,7 @@ Chúng dùng format JSON với các item được phân loại vào "`groups`" h
 ----
 
 Mỗi "`property`" là một configuration item mà người dùng chỉ định kèm một value.
-Ví dụ, `server.port` và `server.address` có thể được chỉ định trong `application.properties`/`application.yaml` như sau:
+Ví dụ, người dùng có thể chỉ định `server.port` và `server.address` trong `application.properties`/`application.yaml` như sau:
 
 [configprops,yaml]
 ----
@@ -84,118 +84,122 @@ server:
   address: 127.0.0.1
 ----
 
-Các "`groups`" là item ở mức cao hơn, bản thân chúng không chỉ định value mà cung cấp nhóm ngữ cảnh cho property.
-Ví dụ, property `server.port` và `server.address` thuộc group `server`.
+Các "`groups`" là những item ở mức cao hơn, bản thân chúng không chỉ định value mà cung cấp grouping theo ngữ cảnh cho các property.
+Ví dụ, các property `server.port` và `server.address` thuộc group `server`.
 
 NOTE: Không bắt buộc mọi "`property`" đều phải có "`group`".
 Một số property có thể tồn tại độc lập.
 
 Các "`hints`" là thông tin bổ sung dùng để hỗ trợ người dùng cấu hình một property.
-Ví dụ, khi developer cấu hình property configprop:spring.jpa.hibernate.ddl-auto[], tool có thể dùng hint để gợi ý auto-completion cho các value `none`, `validate`, `update`, `create` và `create-drop`.
+Ví dụ, khi developer cấu hình property configprop:spring.jpa.hibernate.ddl-auto[], một tool có thể dùng các hint để cung cấp hỗ trợ auto-completion cho các value `none`, `validate`, `update`, `create` và `create-drop`.
 
-Cuối cùng, "`ignored`" dành cho các item bị cố ý bỏ qua.
-Nội dung của phần này thường đến từ xref:specification:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[additional metadata].
+Cuối cùng, "`ignored`" dành cho các item đã được cố ý bỏ qua.
+Nội dung của section này thường đến từ xref:specification:configuration-metadata/annotation-processor.adoc#appendix.configuration-metadata.annotation-processor.adding-additional-metadata[additional metadata].
+
+
 
 [[appendix.configuration-metadata.format.group]]
-== Group Attribute
+== Các Attribute của Group
 
-JSON object nằm trong array `groups` có thể chứa các attribute trong bảng sau:
+JSON object nằm trong array `groups` có thể chứa các attribute được trình bày trong bảng sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `name`
 | String
 | Tên đầy đủ của group.
-  Attribute này bắt buộc.
+  Attribute này là bắt buộc.
 
 | `type`
 | String
-| Class name của kiểu dữ liệu của group.
-  Ví dụ, nếu group dựa trên một class được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute sẽ chứa fully qualified name của class đó.
-  Nếu group dựa trên một method javadoc:org.springframework.context.annotation.Bean[format=annotation], nó sẽ là return type của method đó.
+| Class name của data type của group.
+  Ví dụ, nếu group dựa trên một class được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute này sẽ chứa fully qualified name của class đó.
+  Nếu group dựa trên một method javadoc:org.springframework.context.annotation.Bean[format=annotation], attribute này sẽ là return type của method đó.
   Nếu không biết type, có thể bỏ qua attribute này.
 
 | `description`
 | String
-| Mô tả ngắn về group để hiển thị cho người dùng.
+| Mô tả ngắn về group có thể hiển thị cho người dùng.
   Nếu không có mô tả, có thể bỏ qua.
   Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
   Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
 
 | `sourceType`
 | String
-| Class name của nguồn đóng góp group này.
+| Class name của source đã đóng góp group này.
   Ví dụ, nếu group dựa trên một method javadoc:org.springframework.context.annotation.Bean[format=annotation] được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute này sẽ chứa fully qualified name của class javadoc:org.springframework.context.annotation.Configuration[format=annotation] chứa method đó.
   Nếu không biết source type, có thể bỏ qua attribute này.
 
 | `sourceMethod`
 | String
-| Tên đầy đủ của method (gồm cả dấu ngoặc và kiểu argument) đã đóng góp group này (ví dụ, tên của một method javadoc:org.springframework.context.annotation.Bean[format=annotation] được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation]).
+| Tên đầy đủ của method (gồm cả dấu ngoặc và các kiểu argument) đã đóng góp group này (ví dụ, tên của một method javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] được annotate bằng javadoc:org.springframework.context.annotation.Bean[format=annotation] method).
   Nếu không biết source method, có thể bỏ qua.
 |===
 
+
+
 [[appendix.configuration-metadata.format.property]]
-== Property Attribute
+== Các Attribute của Property
 
 JSON object nằm trong array `properties` có thể chứa các attribute được mô tả trong bảng sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `name`
 | String
 | Tên đầy đủ của property.
   Tên ở dạng chữ thường, phân tách bằng dấu chấm (ví dụ, `server.address`).
-  Attribute này bắt buộc.
+  Attribute này là bắt buộc.
 
 | `type`
 | String
-| Signature đầy đủ của kiểu dữ liệu của property (ví dụ, javadoc:java.lang.String[]) và cũng có thể là generic type đầy đủ (chẳng hạn `java.util.Map<java.lang.String,com.example.MyEnum>`).
-  Bạn có thể dùng attribute này để hướng dẫn người dùng về kiểu value có thể nhập.
-  Để nhất quán, kiểu của primitive được chỉ định bằng wrapper tương ứng (ví dụ, `boolean` thành javadoc:java.lang.Boolean[]).
-  Lưu ý class này có thể là complex type được convert từ javadoc:java.lang.String[] khi value được bind.
+| Full signature của data type của property (ví dụ, javadoc:java.lang.String[]) và cũng có thể là full generic type (chẳng hạn `java.util.Map<java.lang.String,com.example.MyEnum>`).
+  Bạn có thể dùng attribute này để hướng dẫn người dùng về các type của value mà họ có thể nhập.
+  Để nhất quán, type của một primitive được chỉ định bằng wrapper tương ứng (ví dụ, `boolean` trở thành javadoc:java.lang.Boolean[]).
+  Lưu ý rằng class này có thể là một complex type được convert từ javadoc:java.lang.String[] khi các value được bind.
   Nếu không biết type, có thể bỏ qua.
 
 | `description`
 | String
-| Mô tả ngắn về property để hiển thị cho người dùng.
+| Mô tả ngắn về property có thể hiển thị cho người dùng.
   Nếu không có mô tả, có thể bỏ qua.
   Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
   Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
 
 | `sourceType`
 | String
-| Class name của nguồn đóng góp property này.
+| Class name của source đã đóng góp property này.
   Ví dụ, nếu property đến từ một class được annotate bằng javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], attribute này sẽ chứa fully qualified name của class đó.
   Nếu không biết source type, có thể bỏ qua.
 
 | `defaultValue`
 | Object
-| Default value, được dùng nếu property không được chỉ định.
-  Nếu kiểu của property là array, nó có thể là array của các value.
+| Default value, được sử dụng nếu property không được chỉ định.
+  Nếu type của property là array, default value có thể là một array các value.
   Nếu không biết default value, có thể bỏ qua.
 
 | `deprecation`
 | Deprecation
 | Chỉ định property có deprecated hay không.
-  Nếu field không deprecated hoặc không biết thông tin đó, có thể bỏ qua.
+  Nếu field không deprecated hoặc không biết thông tin đó, attribute này có thể được bỏ qua.
   Bảng tiếp theo cung cấp thêm chi tiết về attribute `deprecation`.
 |===
 
-JSON object nằm trong attribute `deprecation` của mỗi phần tử `properties` có thể chứa các attribute sau:
+JSON object nằm trong attribute `deprecation` của mỗi element `properties` có thể chứa các attribute sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `level`
 | String
 | Mức deprecation, có thể là `warning` (mặc định) hoặc `error`.
-  Khi property có deprecation level `warning`, nó vẫn nên được bind trong environment.
-  Tuy nhiên, khi có deprecation level `error`, property không còn được quản lý và không được bind.
+  Khi property có deprecation level `warning`, property vẫn nên được bind trong environment.
+  Tuy nhiên, khi có deprecation level `error`, property không còn được managed và không được bind.
 
 | `reason`
 | String
@@ -211,122 +215,127 @@ JSON object nằm trong attribute `deprecation` của mỗi phần tử `propert
 
 | `since`
 | String
-| Version mà property bắt đầu bị deprecated.
+| Version mà property trở thành deprecated.
   Có thể bỏ qua.
 |===
 
-NOTE: Trước Spring Boot 1.3, có thể dùng một attribute boolean `deprecated` duy nhất thay cho element `deprecation`.
-Cách này vẫn được hỗ trợ ở dạng deprecated và không nên dùng nữa.
+NOTE: Trước Spring Boot 1.3, có thể sử dụng một attribute boolean `deprecated` duy nhất thay cho element `deprecation`.
+Cách này vẫn được hỗ trợ nhưng đã deprecated và không nên được sử dụng nữa.
 Nếu không có reason và replacement, nên set một object `deprecation` rỗng.
 
-Deprecation cũng có thể được chỉ định khai báo trong code bằng cách thêm annotation javadoc:org.springframework.boot.context.properties.DeprecatedConfigurationProperty[format=annotation] vào getter expose property deprecated.
+Deprecation cũng có thể được chỉ định một cách khai báo trong code bằng cách thêm annotation javadoc:org.springframework.boot.context.properties.DeprecatedConfigurationProperty[format=annotation] vào getter expose property deprecated.
 Ví dụ, giả sử property `my.app.target` gây nhầm lẫn và được đổi tên thành `my.app.name`.
 Ví dụ sau minh họa cách xử lý tình huống đó:
 
 include-code::MyProperties[]
 
 NOTE: Không có cách nào để set `level`.
-`warning` luôn được mặc định, vì code vẫn đang xử lý property.
+`warning` luôn được giả định, vì code vẫn đang xử lý property.
 
-Đoạn code trên đảm bảo property deprecated vẫn hoạt động (delegate sang property `name` ở phía sau).
-Khi method `getTarget` và `setTarget` có thể được bỏ khỏi public API, hint deprecation tự động trong metadata cũng biến mất theo.
-Nếu muốn giữ hint, thêm metadata thủ công với deprecation level `error` đảm bảo người dùng vẫn được thông báo về property đó.
-Cách này đặc biệt hữu ích khi có cung cấp `replacement`.
+Đoạn code trên đảm bảo property deprecated vẫn hoạt động (delegate đến property `name` ở phía sau).
+Khi có thể xóa các method `getTarget` và `setTarget` khỏi public API, deprecation hint tự động trong metadata cũng biến mất.
+Nếu muốn giữ một hint, việc thêm metadata thủ công với deprecation level `error` sẽ đảm bảo người dùng vẫn được thông báo về property đó.
+Cách này đặc biệt hữu ích khi có cung cấp một `replacement`.
+
+
 
 [[appendix.configuration-metadata.format.hints]]
-== Hint Attribute
+== Các Attribute của Hint
 
-JSON object nằm trong array `hints` có thể chứa các attribute trong bảng sau:
+JSON object nằm trong array `hints` có thể chứa các attribute được trình bày trong bảng sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `name`
 | String
-| Tên đầy đủ của property mà hint này đề cập tới.
+| Tên đầy đủ của property mà hint này tham chiếu tới.
   Tên ở dạng chữ thường, phân tách bằng dấu chấm (chẳng hạn `spring.mvc.servlet.path`).
-  Nếu property đề cập tới một map (chẳng hạn `system.contexts`), hint áp dụng cho _key_ của map (`system.contexts.keys`) hoặc _value_ (`system.contexts.values`) của map.
-  Attribute này bắt buộc.
+  Nếu property tham chiếu tới một map (chẳng hạn `system.contexts`), hint áp dụng cho _key_ của map (`system.contexts.keys`) hoặc _value_ (`system.contexts.values`) của map.
+  Attribute này là bắt buộc.
 
 | `values`
 | ValueHint[]
-| Danh sách value hợp lệ được định nghĩa bởi object `ValueHint` (mô tả trong bảng tiếp theo).
-  Mỗi entry định nghĩa value và có thể có mô tả.
+| Danh sách các value hợp lệ được định nghĩa bởi object `ValueHint` (mô tả trong bảng tiếp theo).
+  Mỗi entry định nghĩa value và có thể có description.
 
 | `providers`
 | ValueProvider[]
-| Danh sách provider được định nghĩa bởi object `ValueProvider` (mô tả ở phần sau của tài liệu này).
-  Mỗi entry định nghĩa tên provider và các parameter của nó, nếu có.
+| Danh sách các provider được định nghĩa bởi object `ValueProvider` (mô tả ở phần sau của tài liệu này).
+  Mỗi entry định nghĩa tên của provider và các parameter của provider đó, nếu có.
 |===
 
-JSON object nằm trong attribute `values` của mỗi phần tử `hint` có thể chứa các attribute được mô tả trong bảng sau:
+JSON object nằm trong attribute `values` của mỗi element `hint` có thể chứa các attribute được mô tả trong bảng sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `value`
 | Object
-| Một value hợp lệ cho element mà hint đề cập tới.
-  Nếu kiểu của property là array, nó cũng có thể là array của các value.
-  Attribute này bắt buộc.
+| Một value hợp lệ cho element mà hint tham chiếu tới.
+  Nếu type của property là array, value này cũng có thể là một array các value.
+  Attribute này là bắt buộc.
 
 | `description`
 | String
-| Mô tả ngắn về value để hiển thị cho người dùng.
+| Mô tả ngắn về value có thể hiển thị cho người dùng.
   Nếu không có mô tả, có thể bỏ qua.
   Khuyến nghị mô tả là đoạn văn ngắn, với dòng đầu tiên tóm tắt súc tích.
   Dòng cuối trong mô tả nên kết thúc bằng dấu chấm (`.`).
 |===
 
-JSON object nằm trong attribute `providers` của mỗi phần tử `hint` có thể chứa các attribute được mô tả trong bảng sau:
+JSON object nằm trong attribute `providers` của mỗi element `hint` có thể chứa các attribute được mô tả trong bảng sau:
 
 [cols="1,1,4"]
 |===
-|Tên | Kiểu |Mục đích
+| Name | Type | Purpose
 
 | `name`
 | String
-| Tên của provider dùng để cung cấp hỗ trợ nội dung bổ sung cho element mà hint đề cập tới.
+| Tên của provider dùng để cung cấp hỗ trợ nội dung bổ sung cho element mà hint tham chiếu tới.
 
 | `parameters`
 | JSON object
 | Mọi parameter bổ sung mà provider hỗ trợ (xem tài liệu của provider để biết thêm chi tiết).
 |===
 
-[[appendix.configuration-metadata.format.ignored]]
-== Ignored Attribute
 
-Object `ignored` có thể chứa các attribute trong bảng sau:
+
+[[appendix.configuration-metadata.format.ignored]]
+== Các Attribute của Ignored
+
+Object `ignored` có thể chứa các attribute được trình bày trong bảng sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `properties`
 | ItemIgnore[]
-| Danh sách property bị bỏ qua được định nghĩa bởi object ItemIgnore (mô tả trong bảng tiếp theo). Mỗi entry định nghĩa tên của property bị bỏ qua.
+| Danh sách các property bị bỏ qua được định nghĩa bởi object ItemIgnore (mô tả trong bảng tiếp theo). Mỗi entry định nghĩa tên của property bị bỏ qua.
 
 |===
 
-JSON object nằm trong attribute `properties` của mỗi phần tử `ignored` có thể chứa các attribute được mô tả trong bảng sau:
+JSON object nằm trong attribute `properties` của mỗi element `ignored` có thể chứa các attribute được mô tả trong bảng sau:
 
 [cols="1,1,4"]
 |===
-| Tên | Kiểu | Mục đích
+| Name | Type | Purpose
 
 | `name`
 | String
 | Tên đầy đủ của property cần bỏ qua.
 Tên ở dạng chữ thường, phân tách bằng dấu chấm (chẳng hạn `spring.mvc.servlet.path`).
-Attribute này bắt buộc.
+Attribute này là bắt buộc.
 
 |===
 
-[[appendix.configuration-metadata.format.repeated-items]]
-== Metadata Item lặp lại
 
-Object có cùng tên "`property`" và "`group`" có thể xuất hiện nhiều lần trong một file metadata.
-Ví dụ, bạn có thể bind hai class riêng biệt vào cùng một prefix, mỗi class có thể có tên property trùng nhau.
-Dù việc cùng một tên xuất hiện nhiều lần trong metadata không phổ biến, bên tiêu thụ metadata nên cẩn thận đảm bảo có hỗ trợ trường hợp này.
+[[appendix.configuration-metadata.format.repeated-items]]
+== Các Metadata Item lặp lại
+
+Các object có cùng tên "`property`" và "`group`" có thể xuất hiện nhiều lần trong một file metadata.
+Ví dụ, bạn có thể bind hai class riêng biệt vào cùng một prefix, trong đó mỗi class có thể có các tên property trùng nhau.
+Mặc dù việc các tên giống nhau xuất hiện nhiều lần trong metadata không phổ biến, các consumer của metadata nên đảm bảo rằng họ hỗ trợ trường hợp này.

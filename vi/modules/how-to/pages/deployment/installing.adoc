@@ -1,16 +1,18 @@
 [[howto.deployment.installing]]
-= Installing Spring Boot Applications
+= Cài đặt các Spring Boot application
 
-Ngoài chạy Spring Boot application trực tiếp bằng `java -jar`, cũng có thể chạy chúng như service.
+Ngoài việc chạy trực tiếp các Spring Boot application bằng `java -jar`, cũng có thể chạy chúng dưới dạng service.
+
+
 
 [[howto.deployment.installing.system-d]]
-== Install như một systemd Service
+== Cài đặt dưới dạng systemd service
 
-`systemd` là successor của System V init system và hiện được nhiều modern Linux distribution sử dụng.
-Spring Boot application có thể launch bằng script `service` của `systemd`.
+`systemd` là bản kế thừa của System V init system và hiện được nhiều distribution Linux hiện đại sử dụng.
+Spring Boot application có thể được launch bằng các script '`service`' của `systemd`.
 
-Giả sử Spring Boot application được package thành uber jar trong `/var/myapp`, để install như systemd service, tạo script `myapp.service` và đặt trong directory `/etc/systemd/system`.
-Ví dụ:
+Giả sử bạn có một Spring Boot application được package thành uber jar trong `/var/myapp`, để cài đặt application dưới dạng `systemd` service, hãy tạo một script có tên `myapp.service` và đặt nó trong directory `/etc/systemd/system`.
+Script sau đây là một ví dụ:
 
 [source]
 ----
@@ -31,25 +33,27 @@ SuccessExitStatus=143
 WantedBy=multi-user.target
 ----
 
-IMPORTANT: Nhớ thay đổi các field `Description`, `User`, `Group`, `ExecStart` và `WorkingDirectory` cho application.
+IMPORTANT: Nhớ thay đổi các field `Description`, `User`, `Group`, `ExecStart` và `WorkingDirectory` cho application của bạn.
 
-NOTE: Field `ExecStart` không khai báo script action command, nghĩa là command `run` được dùng mặc định.
+NOTE: Field `ExecStart` không khai báo script action command, nghĩa là command `run` được dùng theo mặc định.
 
-User chạy application, PID file và console log file được chính `systemd` manage, vì vậy phải configure bằng field phù hợp trong script `service`.
-Xem https://www.freedesktop.org/software/systemd/man/systemd.service.html[service unit configuration man page] để biết thêm.
+User chạy application, PID file và console log file được chính `systemd` manage, vì vậy phải được configure bằng các field phù hợp trong script '`service`'.
+Tham khảo https://www.freedesktop.org/software/systemd/man/systemd.service.html[man page về configuration của service unit] để biết thêm chi tiết.
 
-Để application tự động start khi system boot:
+Để application tự động start khi system boot, hãy dùng command sau:
 
 [source,shell]
 ----
 $ systemctl enable myapp.service
 ----
 
-Chạy `man systemctl` để biết thêm.
+Chạy `man systemctl` để biết thêm chi tiết.
+
+
 
 [[howto.deployment.installing.windows-services]]
-== Microsoft Windows Services
+== Windows service trên Microsoft Windows
 
-Spring Boot application có thể start như Windows service bằng https://github.com/kohsuke/winsw[`winsw`].
+Spring Boot application có thể được start dưới dạng Windows service bằng https://github.com/kohsuke/winsw[`winsw`].
 
-Một https://github.com/snicoll/spring-boot-daemon[sample được maintain riêng] mô tả từng bước cách tạo Windows service cho Spring Boot application.
+Một (https://github.com/snicoll/spring-boot-daemon[sample được maintain riêng]) mô tả từng bước cách bạn có thể tạo Windows service cho Spring Boot application.

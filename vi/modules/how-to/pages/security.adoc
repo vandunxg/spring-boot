@@ -1,30 +1,36 @@
 [[howto.security]]
 = Security
 
-Phần này giải đáp các câu hỏi về security khi làm việc với Spring Boot, gồm cả các câu hỏi phát sinh khi dùng Spring Security với Spring Boot.
+Phần này giải đáp các câu hỏi về security khi làm việc với Spring Boot, bao gồm cả các câu hỏi phát sinh khi sử dụng Spring Security với Spring Boot.
 
-Để biết thêm về Spring Security, xem {url-spring-security-site}[Spring Security project page].
+Để biết thêm về Spring Security, xem {url-spring-security-site}[trang dự án Spring Security].
+
+
 
 [[howto.security.switch-off-spring-boot-configuration]]
 == Tắt Spring Boot Security Configuration
 
-Nếu define javadoc:org.springframework.context.annotation.Configuration[format=annotation] với bean javadoc:org.springframework.security.web.SecurityFilterChain[] trong application, hành động này sẽ tắt default webapp security setting của Spring Boot.
+Nếu bạn define một javadoc:org.springframework.context.annotation.Configuration[format=annotation] với một bean javadoc:org.springframework.security.web.SecurityFilterChain[] trong application, thao tác này sẽ tắt các webapp security setting mặc định trong Spring Boot.
+
+
 
 [[howto.security.change-user-details-service-and-add-user-accounts]]
-== Thay đổi UserDetailsService và thêm User Account
+== Thay đổi UserDetailsService và thêm user account
 
-Nếu cung cấp bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.springframework.security.authentication.AuthenticationManager[], javadoc:org.springframework.security.authentication.AuthenticationProvider[] hoặc javadoc:org.springframework.security.core.userdetails.UserDetailsService[], default javadoc:org.springframework.context.annotation.Bean[format=annotation] cho javadoc:org.springframework.security.provisioning.InMemoryUserDetailsManager[] sẽ không được tạo.
-Điều này nghĩa là toàn bộ feature set của Spring Security available, như {url-spring-security-docs}/servlet/authentication/index.html[các authentication option khác nhau].
+Nếu bạn cung cấp một bean javadoc:org.springframework.context.annotation.Bean[format=annotation] có type là javadoc:org.springframework.security.authentication.AuthenticationManager[], javadoc:org.springframework.security.authentication.AuthenticationProvider[] hoặc javadoc:org.springframework.security.core.userdetails.UserDetailsService[], bean javadoc:org.springframework.context.annotation.Bean[format=annotation] mặc định cho javadoc:org.springframework.security.provisioning.InMemoryUserDetailsManager[] sẽ không được tạo.
+Điều này có nghĩa là bạn có đầy đủ feature set của Spring Security, chẳng hạn {url-spring-security-docs}/servlet/authentication/index.html[các authentication option khác nhau].
 
-Cách dễ nhất để thêm user account là cung cấp bean javadoc:org.springframework.security.core.userdetails.UserDetailsService[] riêng.
+Cách dễ nhất để thêm user account là cung cấp bean javadoc:org.springframework.security.core.userdetails.UserDetailsService[] của riêng bạn.
+
+
 
 [[howto.security.enable-https]]
-== Enable HTTPS khi chạy sau Proxy Server
+== Bật HTTPS khi chạy phía sau proxy server
 
-Đảm bảo mọi main endpoint chỉ available qua HTTPS là nhiệm vụ quan trọng với mọi application.
-Nếu dùng Tomcat làm servlet container, Spring Boot tự động thêm javadoc:org.apache.catalina.valves.RemoteIpValve[] của Tomcat nếu detect một số environment setting, cho phép dựa vào javadoc:jakarta.servlet.http.HttpServletRequest[] để report request có secure hay không, ngay cả phía sau proxy server xử lý actual SSL termination.
-Standard behavior được xác định bởi sự có mặt hoặc vắng mặt của một số request header (`x-forwarded-for` và `x-forwarded-proto`), với name theo convention nên hoạt động với phần lớn front-end proxy.
-Có thể bật valve bằng cách thêm các entry vào `application.properties`:
+Đảm bảo mọi main endpoint chỉ có thể truy cập qua HTTPS là một task quan trọng đối với mọi application.
+Nếu dùng Tomcat làm servlet container, Spring Boot sẽ tự động thêm javadoc:org.apache.catalina.valves.RemoteIpValve[] của Tomcat khi detect một số environment settings, cho phép dựa vào javadoc:jakarta.servlet.http.HttpServletRequest[] để report request có secure hay không, ngay cả ở phía downstream của một proxy server xử lý SSL termination thực tế.
+Hành vi mặc định được xác định bởi việc có hoặc không có một số request headers nhất định (`x-forwarded-for` và `x-forwarded-proto`); tên của chúng mang tính convention nên hoạt động với phần lớn front-end proxies.
+Có thể bật valve bằng cách thêm một số entry vào `application.properties`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -36,8 +42,8 @@ server:
 ----
 
 (Sự có mặt của một trong hai property trên sẽ bật valve.
-Ngoài ra có thể thêm javadoc:org.apache.catalina.valves.RemoteIpValve[] bằng cách customize javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] thông qua bean javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].)
+Ngoài ra, có thể thêm javadoc:org.apache.catalina.valves.RemoteIpValve[] bằng cách customize javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] thông qua một bean javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].)
 
-Để configure Spring Security yêu cầu secure channel cho tất cả hoặc một số request, cân nhắc thêm bean javadoc:org.springframework.security.web.SecurityFilterChain[] riêng với configuration javadoc:org.springframework.security.config.annotation.web.builders.HttpSecurity[] sau:
+Để configure Spring Security yêu cầu secure channel cho tất cả (hoặc một số) request, cân nhắc thêm bean javadoc:org.springframework.security.web.SecurityFilterChain[] của riêng bạn có thêm configuration javadoc:org.springframework.security.config.annotation.web.builders.HttpSecurity[] sau:
 
 include-code::MySecurityConfig[]

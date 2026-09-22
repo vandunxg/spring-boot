@@ -1,17 +1,19 @@
 [[howto.nosql]]
 = NoSQL
 
-Spring Boot cung cấp một số starter hỗ trợ NoSQL technology.
-Phần này trả lời các câu hỏi phát sinh khi dùng NoSQL với Spring Boot.
+Spring Boot cung cấp một số starter hỗ trợ các công nghệ NoSQL.
+Phần này giải đáp các câu hỏi phát sinh khi sử dụng NoSQL với Spring Boot.
+
+
 
 [[howto.nosql.jedis-instead-of-lettuce]]
-== Dùng Jedis thay cho Lettuce
+== Sử dụng Jedis thay cho Lettuce
 
-Mặc định Spring Boot starter (`spring-boot-starter-data-redis`) dùng https://github.com/redis/lettuce/[Lettuce].
-Bạn cần exclude dependency đó và include https://github.com/redis/jedis/[Jedis] thay thế.
-Spring Boot manage cả hai dependency này, cho phép chuyển sang Jedis mà không cần specify version.
+Mặc định, Spring Boot starter (`spring-boot-starter-data-redis`) sử dụng https://github.com/redis/lettuce/[Lettuce].
+Bạn cần exclude dependency đó và include dependency https://github.com/redis/jedis/[Jedis] thay thế.
+Spring Boot quản lý cả hai dependency này, cho phép bạn chuyển sang Jedis mà không cần chỉ định version.
 
-Ví dụ Maven:
+Ví dụ sau cho thấy cách thực hiện trong Maven:
 
 [source,xml]
 ----
@@ -31,7 +33,7 @@ Ví dụ Maven:
 </dependency>
 ----
 
-Ví dụ Gradle:
+Ví dụ sau cho thấy cách thực hiện trong Gradle:
 
 [source,gradle]
 ----

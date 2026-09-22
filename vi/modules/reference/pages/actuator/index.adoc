@@ -1,6 +1,6 @@
 [[actuator]]
-= Production-ready Features
+= Các tính năng sẵn sàng cho production
 
-Spring Boot có nhiều feature bổ sung giúp monitor và manage application khi đưa lên production.
-Có thể manage và monitor application bằng HTTP endpoint hoặc JMX.
-Auditing, health và metrics gathering cũng có thể tự động áp dụng cho application.
+Spring Boot bao gồm nhiều tính năng bổ sung giúp bạn monitor và manage application khi deploy lên production.
+Bạn có thể manage và monitor application bằng các HTTP endpoint hoặc JMX.
+Auditing, health và việc thu thập metrics cũng có thể được tự động áp dụng cho application.

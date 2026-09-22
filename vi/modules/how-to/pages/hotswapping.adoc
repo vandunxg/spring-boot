@@ -2,60 +2,60 @@
 = Hot Swapping
 
 Spring Boot hỗ trợ hot swapping.
-Phần này trả lời các câu hỏi về cách nó hoạt động.
+Phần này giải đáp các câu hỏi về cách thức hoạt động của tính năng này.
 
 [[howto.hotswapping.reload-static-content]]
 == Reload Static Content
 
-Có nhiều option cho hot reloading.
-Cách được khuyến nghị là dùng xref:reference:using/devtools.adoc[`spring-boot-devtools`], vì nó cung cấp additional development-time feature như fast application restart và sensible development-time configuration, ví dụ template caching.
-Devtools hoạt động bằng cách monitor classpath để phát hiện change.
-Điều này nghĩa là static resource change phải được "build" để change có hiệu lực.
-Mặc định điều này tự động xảy ra trong Eclipse khi save change.
-Trong IntelliJ IDEA, command Make Project trigger build cần thiết.
-Do xref:reference:using/devtools.adoc#using.devtools.restart.excluding-resources[default restart exclusions], change ở static resource không trigger restart application.
-Ngoài ra, chạy trong IDE, đặc biệt bật debugging, là cách tốt để development; các IDE hiện đại đều cho phép reload static resource và thường cũng hot-swap change của Java class.
+Có một số lựa chọn để hot reload.
+Cách tiếp cận được khuyến nghị là sử dụng xref:reference:using/devtools.adoc[`spring-boot-devtools`], vì nó cung cấp các tính năng bổ sung trong development time, chẳng hạn hỗ trợ restart application nhanh cũng như configuration hợp lý cho development time (ví dụ như template caching).
+Devtools hoạt động bằng cách monitor classpath để phát hiện các thay đổi.
+Điều này có nghĩa là các thay đổi của static resource phải được "build" thì mới có hiệu lực.
+Mặc định, việc này tự động xảy ra trong Eclipse khi bạn lưu các thay đổi.
+Trong IntelliJ IDEA, command Make Project sẽ trigger build cần thiết.
+Do xref:reference:using/devtools.adoc#using.devtools.restart.excluding-resources[default restart exclusions], các thay đổi ở static resource không trigger restart application.
+Ngoài ra, chạy application trong IDE (đặc biệt khi bật debugging) cũng là cách tốt để phát triển application (mọi IDE hiện đại đều cho phép reload static resource và thường cũng cho phép hot-swap các thay đổi trong Java class).
 
-Cuối cùng, xref:build-tool-plugin:index.adoc[Maven và Gradle plugin] có thể được configure (xem property `addResources`) để hỗ trợ chạy từ command line với reload static file trực tiếp từ source.
-Có thể dùng cùng external css/js compiler process nếu viết code đó bằng high-level tool.
+Cuối cùng, xref:build-tool-plugin:index.adoc[Maven và Gradle plugin] có thể được cấu hình (xem property `addResources`) để hỗ trợ chạy từ command line và reload trực tiếp static file từ source.
+Bạn có thể dùng cách này cùng với một external css/js compiler process nếu viết phần code đó bằng high-level tool.
 
 [[howto.hotswapping.reload-templates]]
-== Reload Template mà không Restart Container
+== Reload Templates mà không cần Restart Container
 
-Phần lớn templating technology được Spring Boot hỗ trợ có configuration option để disable caching.
-Nếu dùng module `spring-boot-devtools`, các property này được xref:reference:using/devtools.adoc#using.devtools.property-defaults[auto-configure] cho bạn ở development time.
+Phần lớn templating technology được Spring Boot hỗ trợ đều có configuration option để disable caching (được mô tả ở phần sau của tài liệu này).
+Nếu sử dụng module `spring-boot-devtools`, các property này sẽ được xref:reference:using/devtools.adoc#using.devtools.property-defaults[tự động cấu hình] cho bạn trong development time.
 
 [[howto.hotswapping.reload-templates.thymeleaf]]
 === Thymeleaf Templates
 
-Nếu dùng Thymeleaf, set `spring.thymeleaf.cache` thành `false`.
-Xem {code-spring-boot-thymeleaf-src}/autoconfigure/ThymeleafAutoConfiguration.java[`ThymeleafAutoConfiguration`] để biết các Thymeleaf customization option khác.
+Nếu sử dụng Thymeleaf, set `spring.thymeleaf.cache` thành `false`.
+Xem {code-spring-boot-thymeleaf-src}/autoconfigure/ThymeleafAutoConfiguration.java[`ThymeleafAutoConfiguration`] để biết các customization option khác của Thymeleaf.
 
 [[howto.hotswapping.reload-templates.freemarker]]
 === FreeMarker Templates
 
-Nếu dùng FreeMarker, set `spring.freemarker.cache` thành `false`.
-Xem {code-spring-boot-freemarker-src}/autoconfigure/FreeMarkerAutoConfiguration.java[`FreeMarkerAutoConfiguration`] để biết các FreeMarker customization option khác.
+Nếu sử dụng FreeMarker, set `spring.freemarker.cache` thành `false`.
+Xem {code-spring-boot-freemarker-src}/autoconfigure/FreeMarkerAutoConfiguration.java[`FreeMarkerAutoConfiguration`] để biết các customization option khác của FreeMarker.
 
-NOTE: Template caching cho FreeMarker không được hỗ trợ với WebFlux.
+NOTE: Template caching của FreeMarker không được hỗ trợ với WebFlux.
 
 [[howto.hotswapping.reload-templates.groovy]]
 === Groovy Templates
 
-Nếu dùng Groovy template, set `spring.groovy.template.cache` thành `false`.
-Xem {code-spring-boot-groovy-templates-src}/autoconfigure/GroovyTemplateAutoConfiguration.java[`GroovyTemplateAutoConfiguration`] để biết các Groovy customization option khác.
+Nếu sử dụng Groovy templates, set `spring.groovy.template.cache` thành `false`.
+Xem {code-spring-boot-groovy-templates-src}/autoconfigure/GroovyTemplateAutoConfiguration.java[`GroovyTemplateAutoConfiguration`] để biết các customization option khác của Groovy.
 
 [[howto.hotswapping.fast-application-restarts]]
 == Fast Application Restarts
 
-Module `spring-boot-devtools` có support cho automatic application restart.
-Dù không nhanh bằng technology như https://www.jrebel.com/products/jrebel[JRebel], nó thường nhanh hơn đáng kể so với "`cold start`".
-Nên thử cách này trước khi xem các reload option phức tạp hơn được thảo luận sau.
+Module `spring-boot-devtools` hỗ trợ automatic application restart.
+Dù không nhanh bằng các technology như https://www.jrebel.com/products/jrebel[JRebel], tính năng này thường nhanh hơn đáng kể so với một "`cold start`".
+Bạn nên thử cách này trước khi tìm hiểu các reload option phức tạp hơn được thảo luận ở phần sau của tài liệu này.
 
-Chi tiết xem xref:reference:using/devtools.adoc[].
+Để biết thêm chi tiết, xem phần xref:reference:using/devtools.adoc[].
 
 [[howto.hotswapping.reload-java-classes-without-restarting]]
-== Reload Java Class mà không Restart Container
+== Reload Java Classes mà không cần Restart Container
 
-Nhiều IDE hiện đại như Eclipse, IntelliJ IDEA và các IDE khác hỗ trợ hot swapping bytecode.
-Do đó nếu change không ảnh hưởng class hoặc method signature, class thường có thể reload cleanly mà không có side effect.
+Nhiều IDE hiện đại (Eclipse, IntelliJ IDEA và các IDE khác) hỗ trợ hot swapping bytecode.
+Do đó, nếu bạn thực hiện một thay đổi không ảnh hưởng đến class hoặc method signature, thay đổi đó sẽ được reload trơn tru, không gây side effect.

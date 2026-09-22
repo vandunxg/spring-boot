@@ -7,7 +7,7 @@ Bạn có thể sử dụng nhiều nguồn cấu hình bên ngoài, gồm file 
 Giá trị property có thể được inject trực tiếp vào bean bằng annotation javadoc:org.springframework.beans.factory.annotation.Value[format=annotation], truy cập qua abstraction javadoc:org.springframework.core.env.Environment[] của Spring hoặc xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties[bind vào object có cấu trúc] thông qua javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
 
 Spring Boot sử dụng thứ tự javadoc:org.springframework.core.env.PropertySource[] cụ thể, được thiết kế để cho phép ghi đè giá trị hợp lý.
-Property source xuất hiện sau có thể ghi đè giá trị được định nghĩa trong source trước.
+Property source được xét sau có thể ghi đè các giá trị được định nghĩa trong source trước.
 
 [[features.external-config.order]]
 Các source được xét theo thứ tự sau:
@@ -85,7 +85,7 @@ Ví dụ, có thể cung cấp property `SPRING_APPLICATION_JSON` trên dòng l�
 $ SPRING_APPLICATION_JSON='{"my":{"name":"test"}}' java -jar myapp.jar
 ----
 
-Trong ví dụ trên, Spring javadoc:org.springframework.core.env.Environment[] có `my.name=test`.
+Trong ví dụ trên, javadoc:org.springframework.core.env.Environment[] của Spring sẽ có property `my.name=test`.
 
 Cũng có thể cung cấp cùng JSON đó dưới dạng system property:
 
@@ -122,7 +122,7 @@ Spring Boot tự động tìm và load các file `application.properties` và `a
 .. Các thư mục con trực tiếp của thư mục `config/`
 
 Danh sách được sắp theo độ ưu tiên (giá trị từ các mục phía dưới ghi đè các mục trước).
-Document từ các file đã load được thêm vào Spring javadoc:org.springframework.core.env.Environment[] dưới dạng instance javadoc:org.springframework.core.env.PropertySource[].
+Document từ các file đã load được thêm dưới dạng các instance javadoc:org.springframework.core.env.PropertySource[] vào javadoc:org.springframework.core.env.Environment[] của Spring.
 
 Nếu không muốn dùng `application` làm tên file cấu hình, bạn có thể đổi sang tên khác bằng environment property configprop:spring.config.name[].
 Ví dụ, để tìm các file `myproject.properties` và `myproject.yaml`, chạy ứng dụng như sau:
@@ -149,7 +149,7 @@ TIP: Dùng tiền tố `optional:` nếu xref:features/external-config.adoc#feat
 WARNING: `spring.config.name`, `spring.config.location` và `spring.config.additional-location` được sử dụng rất sớm để xác định file nào cần load.
 Chúng phải được định nghĩa dưới dạng environment property (thường là biến môi trường hệ điều hành, system property hoặc đối số dòng lệnh).
 
-Nếu `spring.config.location` chứa thư mục thay vì file, các giá trị phải kết thúc bằng `/`.
+Nếu `spring.config.location` chứa thư mục thay vì file, các location phải kết thúc bằng `/`.
 Tại runtime, tên được tạo từ `spring.config.name` sẽ được nối vào các thư mục trước khi load.
 File được chỉ định trong `spring.config.location` được import trực tiếp.
 
@@ -207,9 +207,9 @@ Ví dụ, giá trị `spring.config.import` là `optional:file:./myconfig.proper
 
 Nếu vị trí file cấu hình có ký tự `{asterisk}` ở thành phần đường dẫn cuối cùng, nó được coi là vị trí wildcard.
 Wildcard được mở rộng khi load cấu hình để kiểm tra cả các thư mục con trực tiếp.
-Vị trí wildcard đặc biệt hữu ích trong môi trường như Kubernetes khi có nhiều nguồn configuration property.
+Vị trí wildcard đặc biệt hữu ích trong môi trường như Kubernetes khi có nhiều nguồn configuration properties.
 
-Ví dụ, nếu có cấu hình Redis và cấu hình MySQL, bạn có thể muốn giữ hai phần riêng biệt nhưng vẫn yêu cầu cả hai đều nằm trong file `application.properties`.
+Ví dụ, nếu có configuration cho Redis và MySQL, bạn có thể muốn giữ hai phần riêng biệt nhưng vẫn yêu cầu cả hai đều có mặt trong file `application.properties`.
 Khi đó có thể có hai file `application.properties` riêng được mount tại các vị trí như `/config/redis/application.properties` và `/config/mysql/application.properties`.
 Trong trường hợp này, vị trí wildcard `config/*/` sẽ khiến cả hai file được xử lý.
 
@@ -436,7 +436,7 @@ spring:
 === Sử dụng biến môi trường
 
 Khi chạy ứng dụng trên cloud platform (như Kubernetes), bạn thường cần đọc giá trị cấu hình do platform cung cấp.
-Bạn có thể dùng biến môi trường hoặc xref:reference:features/external-config.adoc#features.external-config.files.configtree[configuration tree] cho mục đích này.
+Bạn có thể dùng biến môi trường hoặc xref:reference:features/external-config.adoc#features.external-config.files.configtree[configuration trees] cho mục đích này.
 
 Bạn thậm chí có thể lưu toàn bộ cấu hình dạng properties hoặc yaml trong biến môi trường nhiều dòng và load bằng tiền tố `env:`.
 Giả sử có biến môi trường `MY_CONFIGURATION` với nội dung:
@@ -462,7 +462,7 @@ Phần mở rộng mặc định là `.properties`.
 
 
 [[features.external-config.files.configtree]]
-=== Sử dụng Configuration Tree
+=== Sử dụng Configuration Trees
 
 Lưu giá trị cấu hình trong biến môi trường có nhược điểm, đặc biệt nếu giá trị cần được giữ bí mật.
 
@@ -507,7 +507,7 @@ Trong ví dụ trên, để truy cập property dưới tên `username` và `pas
 NOTE: Tên file có dấu chấm cũng được ánh xạ đúng.
 Ví dụ, file tên `myapp.username` trong `/etc/config` sẽ tạo property `myapp.username` trong javadoc:org.springframework.core.env.Environment[].
 
-TIP: Giá trị configuration tree có thể được bind vào cả kiểu string javadoc:java.lang.String[] và `byte[]`, tùy nội dung mong đợi.
+TIP: Giá trị configuration tree có thể được bind vào cả kiểu `String` javadoc:java.lang.String[] và `byte[]`, tùy nội dung mong đợi.
 
 Nếu có nhiều config tree cần import từ cùng thư mục cha, bạn có thể dùng dạng viết tắt wildcard.
 Mọi vị trí `configtree:` kết thúc bằng `/*/` sẽ import tất cả thư mục con trực tiếp thành config tree.
@@ -783,7 +783,7 @@ Nếu cung cấp `max`, `value` là giá trị nhỏ nhất và `max` là giá t
 
 
 [[features.external-config.system-environment]]
-== Cấu hình System Environment Property
+== Cấu hình System Environment Properties
 
 Spring Boot hỗ trợ đặt tiền tố cho environment property.
 Điều này hữu ích khi nhiều ứng dụng Spring Boot với yêu cầu cấu hình khác nhau dùng chung system environment.
@@ -797,17 +797,17 @@ Ví dụ trên vẫn dùng `remote.timeout` khi đọc property từ source khá
 
 
 [[features.external-config.typesafe-configuration-properties]]
-== Type-safe Configuration Property
+== Type-safe Configuration Properties
 
 Dùng annotation `@Value("$\{property}")` để inject configuration property đôi khi khá bất tiện, đặc biệt khi làm việc với nhiều property hoặc dữ liệu phân cấp.
-Spring Boot cung cấp cách làm khác với property, cho phép bean có kiểu rõ ràng quản lý và validate cấu hình ứng dụng.
+Spring Boot cung cấp cách làm khác với properties, cho phép các strongly typed bean quản lý và validate configuration của ứng dụng.
 
 TIP: Xem thêm xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.vs-value-annotation[sự khác biệt giữa javadoc:org.springframework.beans.factory.annotation.Value[format=annotation] và type-safe configuration property].
 
 
 
 [[features.external-config.typesafe-configuration-properties.java-bean-binding]]
-=== Binding JavaBean Property
+=== Binding JavaBean Properties
 
 Bạn có thể bind một bean khai báo JavaBean property tiêu chuẩn như ví dụ sau:
 
@@ -850,7 +850,7 @@ Ví dụ ở phần trước có thể được viết lại theo kiểu immutab
 
 include-code::MyProperties[]
 
-Với cấu hình này, một constructor có tham số duy nhất ngầm chỉ định sử dụng constructor binding.
+Với cấu hình này, việc chỉ có một constructor có tham số ngầm chỉ định rằng phải dùng constructor binding.
 Điều này nghĩa là binder sẽ tìm constructor có các tham số bạn muốn bind.
 Nếu class có nhiều constructor, annotation javadoc:org.springframework.boot.context.properties.bind.ConstructorBinding[format=annotation] có thể chỉ định constructor dùng cho constructor binding.
 
@@ -949,7 +949,7 @@ TIP: Khi dùng Kotlin, bạn cần khai báo các tham số `username` và `pass
 
 
 [[features.external-config.typesafe-configuration-properties.default-values]]
-=== Giá trị mặc định
+=== Các giá trị mặc định
 
 Giá trị mặc định được định nghĩa trong configuration property không được phản ánh vào javadoc:org.springframework.core.env.Environment[].
 Trong các ví dụ trên, property `enabled` của `MyProperties` được bind với `my.service` mặc định là `false`.
@@ -1021,7 +1021,7 @@ Xem xref:specification:configuration-metadata/index.adoc[phụ lục] để bi�
 
 
 [[features.external-config.typesafe-configuration-properties.third-party-configuration]]
-=== Cấu hình thành phần bên thứ ba
+=== Cấu hình bên thứ ba
 
 Ngoài việc gắn javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] lên class, bạn cũng có thể dùng trên public method javadoc:org.springframework.context.annotation.Bean[format=annotation].
 Điều này đặc biệt hữu ích khi muốn bind property vào component bên thứ ba nằm ngoài quyền kiểm soát của bạn.
@@ -1037,7 +1037,7 @@ Mọi JavaBean property có tiền tố `another` được ánh xạ vào bean `
 [[features.external-config.typesafe-configuration-properties.relaxed-binding]]
 === Relaxed Binding
 
-Spring Boot dùng các quy tắc linh hoạt để bind property của javadoc:org.springframework.core.env.Environment[] vào bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], nên tên property trong javadoc:org.springframework.core.env.Environment[] không cần khớp chính xác với tên property của bean.
+Spring Boot dùng các quy tắc relaxed để bind property của javadoc:org.springframework.core.env.Environment[] vào bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation], nên tên property trong javadoc:org.springframework.core.env.Environment[] không cần khớp chính xác với tên property của bean.
 Các ví dụ thường gặp gồm environment property phân tách bằng dấu gạch ngang (`context-path` bind vào `contextPath`) và environment property viết hoa (`PORT` bind vào `port`).
 
 Ví dụ, xét class javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] sau:
@@ -1093,7 +1093,7 @@ TIP: Khi có thể, chúng tôi khuyến nghị lưu property theo kebab case ch
 
 
 [[features.external-config.typesafe-configuration-properties.relaxed-binding.maps]]
-==== Binding Map
+==== Binding Maps
 
 Khi bind vào property javadoc:java.util.Map[], bạn có thể cần dùng ký hiệu ngoặc vuông đặc biệt để giữ nguyên giá trị `key`.
 Nếu key không được bao bởi `[]`, mọi ký tự không phải chữ, số, `-` hoặc `.` đều bị loại bỏ.
@@ -1151,7 +1151,7 @@ Hỗ trợ binding từ biến môi trường được áp dụng cho property s
 [[features.external-config.typesafe-configuration-properties.relaxed-binding.maps-from-environment-variables]]
 ==== Binding Map từ biến môi trường
 
-Khi Spring Boot bind biến môi trường vào class property, nó chuyển tên biến môi trường thành chữ thường trước khi bind.
+Khi Spring Boot bind biến môi trường vào class chứa property, nó chuyển tên biến môi trường thành chữ thường trước khi bind.
 Chi tiết này thường không quan trọng, ngoại trừ khi bind vào property javadoc:java.util.Map[].
 
 Key trong javadoc:java.util.Map[] luôn là chữ thường, như ví dụ sau:
@@ -1205,7 +1205,7 @@ Nếu profile `dev` không hoạt động, `MyProperties.list` có một entry `
 Nếu bật profile `dev`, `list` _vẫn_ chỉ có một entry (name là `my another name`, description là `null`).
 Cấu hình này _không_ thêm instance `MyPojo` thứ hai vào list và không gộp các phần tử.
 
-Khi một javadoc:java.util.List[] được chỉ định trong nhiều profile, chỉ list có mức ưu tiên cao nhất được dùng.
+Khi một javadoc:java.util.List[] được chỉ định trong nhiều profile, chỉ list có mức ưu tiên cao nhất, và chỉ list đó, được dùng.
 Xét ví dụ sau:
 
 [configprops%novalidate,yaml]
@@ -1268,12 +1268,12 @@ NOTE: Các quy tắc gộp trên áp dụng cho property từ mọi property sou
 [[features.external-config.typesafe-configuration-properties.conversion]]
 === Chuyển đổi property
 
-Spring Boot cố gắng chuyển application property bên ngoài sang kiểu phù hợp khi bind vào bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
+Spring Boot cố gắng chuyển external application properties sang kiểu phù hợp khi bind vào bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
 Nếu cần chuyển đổi kiểu tùy chỉnh, bạn có thể cung cấp bean javadoc:org.springframework.core.convert.ConversionService[] tên `conversionService`, property editor tùy chỉnh (qua bean javadoc:org.springframework.beans.factory.config.CustomEditorConfigurer[]) hoặc converter tùy chỉnh (với bean definition được gắn javadoc:org.springframework.boot.context.properties.ConfigurationPropertiesBinding[format=annotation]).
 
 [NOTE]
 ====
-Bean dùng để chuyển đổi property được yêu cầu rất sớm trong lifecycle ứng dụng, nên hãy hạn chế dependency mà javadoc:org.springframework.core.convert.ConversionService[] sử dụng.
+Các bean dùng để chuyển đổi property được yêu cầu rất sớm trong lifecycle ứng dụng, nên hãy hạn chế các dependency mà javadoc:org.springframework.core.convert.ConversionService[] sử dụng.
 Thông thường, dependency bạn cần có thể chưa được khởi tạo đầy đủ tại thời điểm tạo bean này.
 ====
 
@@ -1402,7 +1402,7 @@ Bạn có thể dùng trực tiếp các constraint annotation JSR-303 `jakarta.
 
 include-code::MyProperties[]
 
-TIP: Bạn cũng có thể kích hoạt validation bằng cách gắn javadoc:org.springframework.validation.annotation.Validated[format=annotation] lên method javadoc:org.springframework.context.annotation.Bean[format=annotation] tạo configuration properties.
+TIP: Bạn cũng có thể kích hoạt validation bằng cách gắn javadoc:org.springframework.context.annotation.Bean[format=annotation] tạo configuration properties với javadoc:org.springframework.validation.annotation.Validated[format=annotation].
 
 Để validation lan xuống property lồng nhau, field tương ứng phải được gắn javadoc:jakarta.validation.Valid[format=annotation].
 Ví dụ sau mở rộng từ ví dụ `MyProperties` trước đó:
@@ -1456,6 +1456,6 @@ Nếu dùng `@Value("${demo.itemPrice}")`, nó nhận dạng `demo.itemPrice` t�
 Nếu định nghĩa một tập configuration key cho component riêng, chúng tôi khuyến nghị nhóm chúng vào POJO được gắn javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
 Cách này cung cấp object có cấu trúc và type-safe để inject vào bean của bạn.
 
-Expression `SpEL` từ xref:features/external-config.adoc#features.external-config.files[file application property] không được xử lý khi phân tích file và đưa giá trị vào environment.
+Các expression `SpEL` trong xref:features/external-config.adoc#features.external-config.files[các file application properties] không được xử lý khi parse các file này và populate environment.
 Tuy nhiên, bạn có thể viết expression `SpEL` trong javadoc:org.springframework.beans.factory.annotation.Value[format=annotation].
 Nếu giá trị property từ file application property là expression `SpEL`, nó được đánh giá khi sử dụng thông qua javadoc:org.springframework.beans.factory.annotation.Value[format=annotation].

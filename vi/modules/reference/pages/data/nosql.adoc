@@ -1,7 +1,7 @@
 [[data.nosql]]
 = Làm việc với công nghệ NoSQL
 
-Spring Data cung cấp các project bổ sung giúp truy cập nhiều công nghệ NoSQL, gồm:
+Spring Data cung cấp các project bổ sung giúp bạn truy cập nhiều công nghệ NoSQL, gồm:
 
 * {url-spring-data-cassandra-site}[Cassandra]
 * {url-spring-data-couchbase-site}[Couchbase]
@@ -12,31 +12,31 @@ Spring Data cung cấp các project bổ sung giúp truy cập nhiều công ngh
 * {url-spring-data-redis-site}[Redis]
 
 Trong số này, Spring Boot cung cấp auto-configuration cho Cassandra, Couchbase, Elasticsearch, LDAP, MongoDB, Neo4J và Redis.
-Bạn có thể dùng các project khác nhưng phải tự cấu hình.
-Xem reference documentation phù hợp tại {url-spring-data-site}.
+Bạn có thể dùng các project khác, nhưng phải tự cấu hình chúng.
+Xem reference documentation tương ứng tại {url-spring-data-site}.
 
 [[data.nosql.redis]]
 == Redis
 
 https://redis.io/[Redis] là cache, message broker và key-value store giàu tính năng.
-Spring Boot cung cấp basic auto-configuration cho client https://github.com/redis/lettuce/[Lettuce] và https://github.com/redis/jedis/[Jedis], cùng abstraction phía trên do https://github.com/spring-projects/spring-data-redis[Spring Data Redis] cung cấp.
+Spring Boot cung cấp basic auto-configuration cho các client https://github.com/redis/lettuce/[Lettuce] và https://github.com/redis/jedis/[Jedis], cùng các abstraction phía trên do https://github.com/spring-projects/spring-data-redis[Spring Data Redis] cung cấp.
 
-Starter `spring-boot-starter-data-redis` gom dependency thuận tiện.
+Có starter `spring-boot-starter-data-redis` để tập hợp các dependency theo cách thuận tiện.
 Mặc định nó dùng https://github.com/redis/lettuce/[Lettuce].
-Starter này hỗ trợ cả traditional và reactive application.
+Starter này hỗ trợ cả traditional application và reactive application.
 
-TIP: Chúng tôi cũng cung cấp `spring-boot-starter-data-redis-reactive` để nhất quán với các store khác có reactive support.
+TIP: Chúng tôi cũng cung cấp starter `spring-boot-starter-data-redis-reactive` để nhất quán với các store khác có reactive support.
 
 [[data.nosql.redis.connecting]]
 === Kết nối Redis
 
-Bạn có thể inject auto-configured javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[], javadoc:org.springframework.data.redis.core.StringRedisTemplate[] hoặc javadoc:org.springframework.data.redis.core.RedisTemplate[] như Spring Bean khác.
-Listing sau minh họa ví dụ về một bean như vậy:
+Bạn có thể inject một instance auto-configured của javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[], javadoc:org.springframework.data.redis.core.StringRedisTemplate[] hoặc javadoc:org.springframework.data.redis.core.RedisTemplate[] như với bất kỳ Spring Bean nào khác.
+Listing sau minh họa một bean như vậy:
 
 include-code::MyBean[]
 
-Mặc định instance cố kết nối Redis server tại `localhost:6379`.
-Có thể chỉ định connection detail bằng `spring.data.redis.*`:
+Mặc định instance sẽ cố kết nối tới Redis server tại `localhost:6379`.
+Bạn có thể chỉ định connection detail tùy chỉnh bằng các property `spring.data.redis.*`, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -50,9 +50,9 @@ spring:
       password: "secret"
 ----
 
-Bạn cũng có thể chỉ định URL Redis server trực tiếp.
-Khi đặt URL, host, port, username và password property bị bỏ qua.
-Ví dụ sau minh họa điều này:
+Bạn cũng có thể chỉ định trực tiếp URL của Redis server.
+Khi đặt URL, các property host, port, username và password sẽ bị bỏ qua.
+Ví dụ sau minh họa cách này:
 
 [configprops,yaml]
 ----
@@ -63,19 +63,19 @@ spring:
       database: 0
 ----
 
-TIP: Có thể register nhiều bean javadoc:org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer[] để customization nâng cao.
-javadoc:io.lettuce.core.resource.ClientResources[] cũng có thể customize bằng javadoc:org.springframework.boot.data.redis.autoconfigure.ClientResourcesBuilderCustomizer[].
-Nếu dùng Jedis, có javadoc:org.springframework.boot.data.redis.autoconfigure.JedisClientConfigurationBuilderCustomizer[].
+TIP: Bạn cũng có thể register tùy ý số lượng bean triển khai javadoc:org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer[] để thực hiện các customization nâng cao.
+javadoc:io.lettuce.core.resource.ClientResources[] cũng có thể được customize bằng javadoc:org.springframework.boot.data.redis.autoconfigure.ClientResourcesBuilderCustomizer[].
+Nếu dùng Jedis, javadoc:org.springframework.boot.data.redis.autoconfigure.JedisClientConfigurationBuilderCustomizer[] cũng có sẵn.
 
-Ngoài ra có thể register bean javadoc:org.springframework.data.redis.connection.RedisStandaloneConfiguration[], javadoc:org.springframework.data.redis.connection.RedisSentinelConfiguration[], javadoc:org.springframework.data.redis.connection.RedisClusterConfiguration[] hoặc javadoc:org.springframework.data.redis.connection.RedisStaticMasterReplicaConfiguration[] để kiểm soát hoàn toàn configuration.
+Ngoài ra, bạn có thể register một bean kiểu javadoc:org.springframework.data.redis.connection.RedisStandaloneConfiguration[], javadoc:org.springframework.data.redis.connection.RedisSentinelConfiguration[], javadoc:org.springframework.data.redis.connection.RedisClusterConfiguration[] hoặc javadoc:org.springframework.data.redis.connection.RedisStaticMasterReplicaConfiguration[] để kiểm soát hoàn toàn configuration.
 
-NOTE: master/replica không được Jedis hỗ trợ.
+NOTE: Jedis không hỗ trợ master/replica.
 
-Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] riêng của bất kỳ auto-configured type nào, nó thay default, ngoại trừ javadoc:org.springframework.data.redis.core.RedisTemplate[] nơi exclusion dựa trên bean name `redisTemplate` chứ không phải type.
+Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] riêng cho bất kỳ type nào được auto-configure, bean đó sẽ thay thế bean mặc định. Ngoại lệ là javadoc:org.springframework.data.redis.core.RedisTemplate[], trong trường hợp này exclusion dựa trên bean name `redisTemplate`, không phải type.
 
-Mặc định pooled connection factory được auto-configure nếu `commons-pool2` có trên classpath.
+Mặc định, pooled connection factory được auto-configure nếu `commons-pool2` có trên classpath.
 
-Auto-configured javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[] có thể dùng SSL:
+Auto-configured javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[] có thể được cấu hình để dùng SSL khi giao tiếp với server bằng cách đặt các property như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -86,7 +86,7 @@ spring:
         enabled: true
 ----
 
-Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng:
+Custom SSL trust material có thể được cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng cho javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[] như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -100,49 +100,49 @@ spring:
 [[data.nosql.redis.receiving]]
 === Nhận Message
 
-Khi Redis infrastructure tồn tại, bean có thể được annotate bằng javadoc:org.springframework.data.redis.annotation.RedisListener[format=annotation] để tạo listener endpoint.
-Nếu chưa định nghĩa javadoc:org.springframework.data.redis.listener.RedisMessageListenerContainer[], default container được cấu hình tự động.
+Khi Redis infrastructure hiện diện, bất kỳ bean nào cũng có thể được annotate bằng javadoc:org.springframework.data.redis.annotation.RedisListener[format=annotation] để tạo một listener endpoint.
+Nếu chưa có javadoc:org.springframework.data.redis.listener.RedisMessageListenerContainer[] nào được định nghĩa, một container mặc định sẽ được cấu hình tự động.
 
 Component sau tạo listener endpoint trên channel `someChannel`:
 
 include-code::MyBean[]
 
-TIP: Xem API documentation của javadoc:org.springframework.data.redis.annotation.EnableRedisListeners[format=annotation].
+TIP: Xem API documentation của javadoc:org.springframework.data.redis.annotation.EnableRedisListeners[format=annotation] để biết thêm chi tiết.
 
-Nếu cần thêm javadoc:org.springframework.data.redis.listener.RedisMessageListenerContainer[] hoặc muốn override default, Spring Boot cung cấp javadoc:org.springframework.boot.data.redis.autoconfigure.RedisMessageListenerContainerConfigurer[] để initialize container với cùng setting như auto-configured container.
+Nếu cần tạo thêm các instance javadoc:org.springframework.data.redis.listener.RedisMessageListenerContainer[] hoặc muốn override instance mặc định, Spring Boot cung cấp javadoc:org.springframework.boot.data.redis.autoconfigure.RedisMessageListenerContainerConfigurer[] để bạn initialize một javadoc:org.springframework.data.redis.listener.RedisMessageListenerContainer[] với cùng setting như container được auto-configure.
 
-Ví dụ expose thêm container dùng javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[] cụ thể:
+Ví dụ, listing sau expose một container khác sử dụng javadoc:org.springframework.data.redis.connection.RedisConnectionFactory[] cụ thể:
 
 include-code::custom/MyRedisConfiguration[]
 
-Sau đó dùng container trong method annotate javadoc:org.springframework.data.redis.annotation.RedisListener[format=annotation]:
+Sau đó, bạn có thể dùng container trong method được annotate bằng javadoc:org.springframework.data.redis.annotation.RedisListener[format=annotation] như sau:
 
 include-code::custom/MyBean[]
 
 [[data.nosql.mongodb]]
 == MongoDB
 
-https://www.mongodb.com/[MongoDB] là open-source NoSQL document database dùng schema giống JSON thay vì relational data dạng table.
-Spring Boot cung cấp các tiện ích khi làm việc với MongoDB, gồm starter `spring-boot-starter-data-mongodb` và `spring-boot-starter-data-mongodb-reactive`.
+https://www.mongodb.com/[MongoDB] là open-source NoSQL document database sử dụng schema giống JSON thay vì relational data dựa trên table truyền thống.
+Spring Boot cung cấp một số tiện ích khi làm việc với MongoDB, gồm các starter `spring-boot-starter-data-mongodb` và `spring-boot-starter-data-mongodb-reactive`.
 
 [[data.nosql.mongodb.connecting]]
-=== Kết nối MongoDB Database
+=== Kết nối tới MongoDB Database
 
-Để access MongoDB database, có thể inject auto-configured javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[].
-Mặc định instance cố kết nối MongoDB server tại `mongodb://localhost/test`.
+Để access MongoDB database, bạn có thể inject javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] được auto-configure.
+Mặc định instance sẽ cố kết nối tới MongoDB server tại `mongodb://localhost/test`.
 Ví dụ sau minh họa cách kết nối tới MongoDB database:
 
 include-code::MyBean[]
 
-Nếu tự định nghĩa javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[], nó được dùng để auto-configure javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] phù hợp.
+Nếu bạn tự định nghĩa javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[], nó sẽ được dùng để auto-configure javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] phù hợp.
 
 Auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] được tạo bằng bean javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
-Nếu tự định nghĩa javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[], bean đó được dùng nguyên trạng và property `spring.data.mongodb` bị bỏ qua.
-Nếu không, javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[] được auto-configure và áp dụng property `spring.data.mongodb`.
-Trong cả hai trường hợp có thể khai báo một hoặc nhiều bean javadoc:org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer[] để fine-tune configuration javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
-Mỗi bean được gọi lần lượt với javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings$Builder[] dùng để build javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
+Nếu bạn tự định nghĩa javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[], bean đó sẽ được dùng nguyên trạng và các property `spring.data.mongodb` sẽ bị bỏ qua.
+Nếu không, javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[] sẽ được auto-configure và các property `spring.data.mongodb` sẽ được áp dụng cho nó.
+Trong cả hai trường hợp, bạn có thể khai báo một hoặc nhiều bean javadoc:org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer[] để fine-tune configuration của javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
+Mỗi bean sẽ được gọi theo thứ tự với javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings$Builder[] được dùng để build javadoc:{url-mongodb-driver-core-javadoc}/com.mongodb.MongoClientSettings[].
 
-Có thể đặt configprop:spring.mongodb.uri[] để đổi URL và cấu hình replica set:
+Có thể đặt configprop:spring.mongodb.uri[] để đổi URL và cấu hình thêm các setting như _replica set_, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -167,7 +167,7 @@ spring:
     password: "secret"
 ----
 
-Auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] có thể được cấu hình để dùng SSL khi giao tiếp với server bằng cách set các property như ví dụ sau:
+Auto-configured javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] có thể được cấu hình để dùng SSL khi giao tiếp với server bằng cách đặt các property như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -178,7 +178,7 @@ spring:
       enabled: true
 ----
 
-Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng cho javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] như ví dụ sau:
+Custom SSL trust material có thể được cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng cho javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -191,62 +191,62 @@ spring:
 
 [TIP]
 ====
-Nếu configprop:spring.mongodb.port[] không được chỉ định, default `27017` được dùng.
-Có thể bỏ dòng port trong ví dụ trước.
+Nếu configprop:spring.mongodb.port[] không được chỉ định, giá trị mặc định `27017` sẽ được dùng.
+Bạn có thể xóa dòng này khỏi ví dụ trước.
 
 Cũng có thể chỉ định port trong host address bằng syntax `host:port`.
-Format này nên dùng khi cần đổi port của entry `additional-hosts`.
+Nên dùng format này nếu cần đổi port của một entry `additional-hosts`.
 ====
 
-TIP: Nếu không dùng Spring Data MongoDB, có thể inject bean javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] trực tiếp thay cho javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[].
-Nếu muốn kiểm soát hoàn toàn connection, có thể tự khai báo javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] hoặc javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] bean.
+TIP: Nếu không dùng Spring Data MongoDB, bạn có thể inject bean javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[] thay vì dùng javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[].
+Nếu muốn kiểm soát hoàn toàn việc thiết lập MongoDB connection, bạn cũng có thể tự khai báo bean javadoc:org.springframework.data.mongodb.MongoDatabaseFactory[] hoặc javadoc:{url-mongodb-driver-sync-javadoc}/com.mongodb.client.MongoClient[].
 
 NOTE: Nếu dùng reactive driver, Netty là bắt buộc cho SSL.
-Auto-configuration tự cấu hình factory nếu Netty có sẵn và factory chưa được customize.
+Auto-configuration sẽ tự cấu hình factory nếu Netty có sẵn và factory cần dùng chưa được customize.
 
 [[data.nosql.mongodb.template]]
 === MongoTemplate
 
-{url-spring-data-mongodb-site}[Spring Data MongoDB] cung cấp javadoc:org.springframework.data.mongodb.core.MongoTemplate[] có design tương tự javadoc:org.springframework.jdbc.core.JdbcTemplate[].
-Spring Boot auto-configure bean để inject:
+{url-spring-data-mongodb-site}[Spring Data MongoDB] cung cấp class javadoc:org.springframework.data.mongodb.core.MongoTemplate[] có design rất tương tự javadoc:org.springframework.jdbc.core.JdbcTemplate[].
+Cũng như với javadoc:org.springframework.jdbc.core.JdbcTemplate[], Spring Boot auto-configure một bean để bạn inject template như sau:
 
 include-code::MyBean[]
 
-Xem API documentation của javadoc:org.springframework.data.mongodb.core.MongoOperations[].
+Xem API documentation của javadoc:org.springframework.data.mongodb.core.MongoOperations[] để biết đầy đủ chi tiết.
 
 [[data.nosql.mongodb.repositories]]
-=== Spring Data MongoDB Repository
+=== Spring Data MongoDB Repositories
 
-Spring Data hỗ trợ repository cho MongoDB.
-Giống JPA repository, query được tự động construct dựa trên method name.
+Spring Data bao gồm repository support cho MongoDB.
+Giống các JPA repository đã thảo luận trước đó, nguyên tắc cơ bản là query được tự động construct dựa trên method name.
 
-Spring Data JPA và Spring Data MongoDB dùng cùng common infrastructure.
-Ví dụ JPA trước đó vẫn hoạt động nếu `City` là MongoDB data class thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation]:
+Thực tế, Spring Data JPA và Spring Data MongoDB dùng chung một common infrastructure.
+Bạn có thể lấy ví dụ JPA trước đó và giả sử `City` hiện là MongoDB data class thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation]; ví dụ này vẫn hoạt động theo cách tương tự:
 
 include-code::CityRepository[]
 
-Repository và document được tìm qua scanning.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
-Customize location bằng javadoc:org.springframework.data.mongodb.repository.config.EnableMongoRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
+Repository và document được tìm thấy thông qua scanning.
+Mặc định, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Bạn có thể customize location dùng để tìm repository và document bằng javadoc:org.springframework.data.mongodb.repository.config.EnableMongoRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], tương ứng.
 
 TIP: Xem {url-spring-data-mongodb-docs}[reference documentation] để biết đầy đủ Spring Data MongoDB.
 
 [[data.nosql.neo4j]]
 == Neo4j
 
-https://neo4j.com/[Neo4j] là open-source NoSQL graph database dùng data model gồm node được nối bằng first-class relationship, phù hợp với connected big data hơn cách tiếp cận RDBMS truyền thống.
-Spring Boot cung cấp nhiều tiện ích, gồm starter `spring-boot-starter-data-neo4j`.
+https://neo4j.com/[Neo4j] là open-source NoSQL graph database sử dụng data model phong phú gồm các node được nối bằng first-class relationship, phù hợp với connected big data hơn các cách tiếp cận RDBMS truyền thống.
+Spring Boot cung cấp một số tiện ích khi làm việc với Neo4j, gồm starter `spring-boot-starter-data-neo4j`.
 
 [[data.nosql.neo4j.connecting]]
-=== Kết nối Neo4j Database
+=== Kết nối tới Neo4j Database
 
-Có thể inject auto-configured javadoc:org.neo4j.driver.Driver[].
-Mặc định instance cố kết nối Neo4j server tại `localhost:7687` bằng Bolt protocol.
-Ví dụ sau minh họa cách inject javadoc:org.neo4j.driver.Driver[] của Neo4j, qua đó truy cập được javadoc:org.neo4j.driver.Session[] cùng nhiều thứ khác:
+Để access Neo4j server, bạn có thể inject javadoc:org.neo4j.driver.Driver[] được auto-configure.
+Mặc định instance sẽ cố kết nối tới Neo4j server tại `localhost:7687` bằng Bolt protocol.
+Ví dụ sau minh họa cách inject javadoc:org.neo4j.driver.Driver[] của Neo4j, qua đó bạn có thể access javadoc:org.neo4j.driver.Session[] cùng nhiều thứ khác:
 
 include-code::MyBean[]
 
-Có thể cấu hình nhiều khía cạnh của driver bằng property `spring.neo4j.*`.
+Bạn có thể cấu hình nhiều khía cạnh của driver bằng các property `spring.neo4j.*`.
 Ví dụ sau minh họa cách cấu hình uri và credential cần dùng:
 
 [configprops,yaml]
@@ -260,32 +260,32 @@ spring:
 ----
 
 Auto-configured javadoc:org.neo4j.driver.Driver[] được tạo bằng `org.neo4j.driver.Config$ConfigBuilder`.
-Để fine-tune configuration của nó, khai báo một hoặc nhiều bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[].
-Mỗi bean được gọi lần lượt với `org.neo4j.driver.Config$ConfigBuilder` dùng để build javadoc:org.neo4j.driver.Driver[].
+Để fine-tune configuration của driver, khai báo một hoặc nhiều bean javadoc:org.springframework.boot.neo4j.autoconfigure.ConfigBuilderCustomizer[].
+Mỗi bean sẽ được gọi theo thứ tự với `org.neo4j.driver.Config$ConfigBuilder` được dùng để build javadoc:org.neo4j.driver.Driver[].
 
 [[data.nosql.neo4j.repositories]]
-=== Spring Data Neo4j Repository
+=== Spring Data Neo4j Repositories
 
-Spring Data hỗ trợ repository cho Neo4j.
-Xem {url-spring-data-neo4j-docs}[reference documentation].
+Spring Data bao gồm repository support cho Neo4j.
+Để biết đầy đủ chi tiết về Spring Data Neo4j, xem {url-spring-data-neo4j-docs}[reference documentation].
 
-Spring Data Neo4j dùng common infrastructure giống Spring Data JPA và các Spring Data module khác.
-Có thể định nghĩa `City` là javadoc:org.springframework.data.neo4j.core.schema.Node[format=annotation] thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation] và repository abstraction hoạt động tương tự:
+Spring Data Neo4j dùng chung common infrastructure với Spring Data JPA, cũng như nhiều Spring Data module khác.
+Bạn có thể lấy ví dụ JPA trước đó, định nghĩa `City` là javadoc:org.springframework.data.neo4j.core.schema.Node[format=annotation] của Spring Data Neo4j thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation], và repository abstraction sẽ hoạt động theo cách tương tự như trong ví dụ sau:
 
 include-code::CityRepository[]
 
-Starter `spring-boot-starter-data-neo4j` bật repository support và transaction management.
-Spring Boot hỗ trợ classic và reactive Neo4j repository qua javadoc:org.springframework.data.neo4j.core.Neo4jTemplate[] hoặc javadoc:org.springframework.data.neo4j.core.ReactiveNeo4jTemplate[].
+Starter `spring-boot-starter-data-neo4j` bật repository support cũng như transaction management.
+Spring Boot hỗ trợ cả classic và reactive Neo4j repository, sử dụng bean javadoc:org.springframework.data.neo4j.core.Neo4jTemplate[] hoặc javadoc:org.springframework.data.neo4j.core.ReactiveNeo4jTemplate[].
 Khi Project Reactor có trên classpath, reactive style cũng được auto-configure.
 
-Repository và entity được tìm qua scanning.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
-Customize bằng javadoc:org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
+Repository và entity được tìm thấy thông qua scanning.
+Mặc định, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Bạn có thể customize location dùng để tìm repository và entity bằng javadoc:org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], tương ứng.
 
 [NOTE]
 ====
 Trong application dùng reactive style, javadoc:org.springframework.transaction.ReactiveTransactionManager[] không được auto-configure.
-Để bật transaction management, định nghĩa bean sau:
+Để bật transaction management, bean sau phải được định nghĩa trong configuration của bạn:
 
 include-code::MyNeo4jConfiguration[]
 ====
@@ -293,10 +293,10 @@ include-code::MyNeo4jConfiguration[]
 [[data.nosql.elasticsearch]]
 == Elasticsearch
 
-https://www.elastic.co/products/elasticsearch[Elasticsearch] là open-source distributed RESTful search và analytics engine.
-Spring Boot cung cấp basic auto-configuration cho Elasticsearch client.
+https://www.elastic.co/products/elasticsearch[Elasticsearch] là open source, distributed, RESTful search và analytics engine.
+Spring Boot cung cấp basic auto-configuration cho các Elasticsearch client.
 
-Spring Boot hỗ trợ:
+Spring Boot hỗ trợ một số client:
 
 * Official low-level REST client
 * Official Java API client
@@ -305,13 +305,13 @@ Spring Boot hỗ trợ:
 Spring Boot cung cấp starter `spring-boot-starter-data-elasticsearch`.
 
 [[data.nosql.elasticsearch.connecting-using-rest]]
-=== Kết nối Elasticsearch bằng REST Client
+=== Kết nối Elasticsearch bằng REST client
 
-Elasticsearch có hai REST client để query cluster: https://www.elastic.co/docs/reference/elasticsearch/clients/java/transport/rest5-client/[low-level client] và https://www.elastic.co/docs/reference/elasticsearch/clients/java[Java API client].
-Java API client từ module `co.elastic.clients:elasticsearch-java`, low-level client từ `co.elastic.clients:elasticsearch-rest5-client`.
-Spring Boot cũng hỗ trợ reactive client từ `org.springframework.data:spring-data-elasticsearch`.
-Mặc định client target `http://localhost:9200`.
-Dùng `spring.elasticsearch.*` để tune:
+Elasticsearch cung cấp hai REST client khác nhau mà bạn có thể dùng để query một cluster: https://www.elastic.co/docs/reference/elasticsearch/clients/java/transport/rest5-client/[low-level client] và https://www.elastic.co/docs/reference/elasticsearch/clients/java[Java API client].
+Java API client được cung cấp bởi module `co.elastic.clients:elasticsearch-java`, còn low-level client được cung cấp bởi module `co.elastic.clients:elasticsearch-rest5-client`.
+Ngoài ra, Spring Boot cung cấp support cho reactive client từ module `org.springframework.data:spring-data-elasticsearch`.
+Mặc định, các client sẽ target `http://localhost:9200`.
+Bạn có thể dùng các property `spring.elasticsearch.*` để tinh chỉnh thêm cách cấu hình client, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -326,12 +326,12 @@ spring:
 [[data.nosql.elasticsearch.connecting-using-rest.restclient]]
 ==== Kết nối Elasticsearch bằng Rest5Client
 
-Nếu `co.elastic.clients:elasticsearch-rest5-client` có trên classpath, Spring Boot auto-configure và register bean javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[].
-Để fine-tune có thể register nhiều bean javadoc:org.springframework.boot.elasticsearch.autoconfigure.Rest5ClientBuilderCustomizer[].
+Nếu `co.elastic.clients:elasticsearch-rest5-client` có trên classpath, Spring Boot sẽ auto-configure và register một bean javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[].
+Ngoài các property đã mô tả trước đó, để fine-tune javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[], bạn có thể register tùy ý số lượng bean triển khai javadoc:org.springframework.boot.elasticsearch.autoconfigure.Rest5ClientBuilderCustomizer[] cho các customization nâng cao.
 Để kiểm soát hoàn toàn client configuration, định nghĩa bean javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5ClientBuilder[].
 
-javadoc:co.elastic.clients.transport.rest5_client.low_level.sniffer.Sniffer[] cũng có thể được auto-configure để tự động discover node từ Elasticsearch cluster và set lên javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[].
-Có thể tune:
+javadoc:co.elastic.clients.transport.rest5_client.low_level.sniffer.Sniffer[] cũng có thể được auto-configure để tự động discover các node từ một Elasticsearch cluster đang chạy và set chúng lên bean javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[].
+Bạn có thể tinh chỉnh thêm cách cấu hình javadoc:co.elastic.clients.transport.rest5_client.low_level.sniffer.Sniffer[] như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -347,55 +347,55 @@ spring:
 [[data.nosql.elasticsearch.connecting-using-rest.javaapiclient]]
 ==== Kết nối Elasticsearch bằng ElasticsearchClient
 
-Nếu dùng `spring-boot-starter-elasticsearch` hoặc thêm `co.elastic.clients:elasticsearch-java`, Spring Boot auto-configure bean javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[].
+Nếu dùng `spring-boot-starter-elasticsearch` hoặc đã thêm `co.elastic.clients:elasticsearch-java` vào classpath, Spring Boot sẽ auto-configure và register một bean javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[].
 
-javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[] dùng transport phụ thuộc vào javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[] đã mô tả ở trên.
-Do đó, các property mô tả trước đó có thể dùng để cấu hình javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[].
-Có thể định nghĩa javadoc:co.elastic.clients.transport.rest5_client.Rest5ClientOptions[] để kiểm soát thêm behavior transport.
+javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[] sử dụng một transport phụ thuộc vào javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[] đã mô tả ở trên.
+Do đó, các property đã mô tả trước đó có thể được dùng để cấu hình javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[].
+Ngoài ra, bạn có thể định nghĩa một bean javadoc:co.elastic.clients.transport.rest5_client.Rest5ClientOptions[] để kiểm soát thêm behavior của transport.
 
 [[data.nosql.elasticsearch.connecting-using-rest.reactiveclient]]
 ==== Kết nối Elasticsearch bằng ReactiveElasticsearchClient
 
-{url-spring-data-elasticsearch-site}[Spring Data Elasticsearch] cung cấp javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[] để query Elasticsearch theo reactive style.
-Nếu có Spring Data Elasticsearch và Reactor trên classpath, Spring Boot auto-configure bean này.
+{url-spring-data-elasticsearch-site}[Spring Data Elasticsearch] cung cấp javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[] để query các Elasticsearch instance theo reactive fashion.
+Nếu Spring Data Elasticsearch và Reactor có trên classpath, Spring Boot sẽ auto-configure và register một javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[].
 
-javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[] dùng transport phụ thuộc vào javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[] đã mô tả ở trên.
-Do đó, các property mô tả trước đó có thể dùng để cấu hình javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[].
-Có thể định nghĩa javadoc:co.elastic.clients.transport.rest5_client.Rest5ClientOptions[] để kiểm soát transport.
+javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[] sử dụng một transport phụ thuộc vào javadoc:co.elastic.clients.transport.rest5_client.low_level.Rest5Client[] đã mô tả ở trên.
+Do đó, các property đã mô tả trước đó có thể được dùng để cấu hình javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient[].
+Ngoài ra, bạn có thể định nghĩa một bean javadoc:co.elastic.clients.transport.rest5_client.Rest5ClientOptions[] để kiểm soát thêm behavior của transport.
 
 [[data.nosql.elasticsearch.connecting-using-spring-data]]
 === Kết nối Elasticsearch bằng Spring Data
 
-Để kết nối Elasticsearch cần bean javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[] do Spring Boot auto-configure hoặc application cung cấp.
-Khi có configuration này, javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] có thể được inject như bất kỳ Spring bean nào khác, như ví dụ sau:
+Để kết nối Elasticsearch, phải có bean javadoc:co.elastic.clients.elasticsearch.ElasticsearchClient[] được Spring Boot auto-configure hoặc được application cung cấp thủ công (xem các section trước).
+Với configuration này, bạn có thể inject javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] như bất kỳ Spring bean nào khác, như trong ví dụ sau:
 
 include-code::MyBean[]
 
-Khi có `spring-data-elasticsearch` và Reactor, Spring Boot cũng có thể auto-configure xref:data/nosql.adoc#data.nosql.elasticsearch.connecting-using-rest.reactiveclient[`ReactiveElasticsearchClient`] và javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] thành bean.
-Chúng là bản reactive tương đương của các REST client còn lại.
+Khi có `spring-data-elasticsearch` và Reactor, Spring Boot cũng có thể auto-configure xref:data/nosql.adoc#data.nosql.elasticsearch.connecting-using-rest.reactiveclient[`ReactiveElasticsearchClient`] và javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] thành các bean.
+Chúng là reactive equivalent của các REST client còn lại.
 
 [[data.nosql.elasticsearch.repositories]]
-=== Spring Data Elasticsearch Repository
+=== Spring Data Elasticsearch Repositories
 
-Spring Data hỗ trợ repository cho Elasticsearch.
-Query được construct tự động dựa trên method name.
+Spring Data bao gồm repository support cho Elasticsearch.
+Giống các JPA repository đã thảo luận trước đó, nguyên tắc cơ bản là query được tự động construct dựa trên method name.
 
-Spring Data JPA và Spring Data Elasticsearch dùng cùng common infrastructure.
-Nếu `City` là Elasticsearch javadoc:org.springframework.data.elasticsearch.annotations.Document[format=annotation] thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation], repository hoạt động tương tự.
+Thực tế, Spring Data JPA và Spring Data Elasticsearch dùng chung một common infrastructure.
+Bạn có thể lấy ví dụ JPA trước đó và giả sử `City` hiện là một Elasticsearch javadoc:org.springframework.data.elasticsearch.annotations.Document[format=annotation] class thay vì JPA javadoc:jakarta.persistence.Entity[format=annotation]; nó sẽ hoạt động theo cách tương tự.
 
-Repository và document được tìm qua scanning.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
-Customize bằng javadoc:org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
+Repository và document được tìm thấy thông qua scanning.
+Mặc định, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Bạn có thể customize location dùng để tìm repository và document bằng javadoc:org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], tương ứng.
 
-TIP: Xem {url-spring-data-elasticsearch-docs}[reference documentation].
+TIP: Để biết đầy đủ chi tiết về Spring Data Elasticsearch, xem {url-spring-data-elasticsearch-docs}[reference documentation].
 
-Spring Boot hỗ trợ classic và reactive Elasticsearch repository qua javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] bean.
+Spring Boot hỗ trợ cả classic và reactive Elasticsearch repository, sử dụng bean javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[].
 Nhiều khả năng các bean đó được Spring Boot auto-configure khi có đủ dependency cần thiết.
 
-Nếu muốn custom template backing repository, thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.core.ElasticsearchOperations[] tên `"elasticsearchTemplate"`.
-Reactive tương tự với bean name `"reactiveElasticsearchTemplate"`.
+Nếu muốn dùng template riêng của mình để backing cho Elasticsearch repository, bạn có thể thêm javadoc:org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate[] hoặc javadoc:org.springframework.data.elasticsearch.core.ElasticsearchOperations[] của riêng mình cùng với javadoc:org.springframework.context.annotation.Bean[format=annotation], miễn là bean đó có tên `"elasticsearchTemplate"`.
+Điều tương tự cũng áp dụng cho javadoc:org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchTemplate[] và javadoc:org.springframework.data.elasticsearch.core.ReactiveElasticsearchOperations[], với bean name `"reactiveElasticsearchTemplate"`.
 
-Có thể disable repository support:
+Bạn có thể chọn disable repository support bằng property sau:
 
 [configprops,yaml]
 ----
@@ -409,16 +409,16 @@ Có thể disable repository support:
 [[data.nosql.cassandra]]
 == Cassandra
 
-https://cassandra.apache.org/[Cassandra] là open-source distributed database management system cho lượng data lớn trên nhiều commodity server.
-Spring Boot cung cấp auto-configuration cho Cassandra và abstraction từ {url-spring-data-cassandra-site}[Spring Data Cassandra].
-Starter `spring-boot-starter-data-cassandra` gom dependency.
+https://cassandra.apache.org/[Cassandra] là open source, distributed database management system được thiết kế để xử lý lượng data lớn trên nhiều commodity server.
+Spring Boot cung cấp auto-configuration cho Cassandra và các abstraction phía trên nó do {url-spring-data-cassandra-site}[Spring Data Cassandra] cung cấp.
+Có starter `spring-boot-starter-data-cassandra` để tập hợp các dependency theo cách thuận tiện.
 
 [[data.nosql.cassandra.connecting]]
 === Kết nối Cassandra
 
-Có thể inject auto-configured javadoc:org.springframework.data.cassandra.core.cql.CqlTemplate[], javadoc:org.springframework.data.cassandra.core.CassandraTemplate[] hoặc Cassandra `CqlSession`.
-Property `spring.cassandra.*` dùng customize connection.
-Thông thường cung cấp `keyspace-name`, `contact-points` và local datacenter:
+Bạn có thể inject javadoc:org.springframework.data.cassandra.core.cql.CqlTemplate[], javadoc:org.springframework.data.cassandra.core.CassandraTemplate[] được auto-configure hoặc một Cassandra `CqlSession` instance, như với bất kỳ Spring Bean nào khác.
+Các property `spring.cassandra.*` có thể được dùng để customize connection.
+Thông thường, bạn cung cấp `keyspace-name`, `contact-points` cũng như tên local datacenter, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -429,7 +429,7 @@ spring:
     local-datacenter: "datacenter1"
 ----
 
-Nếu port giống nhau cho mọi contact point, chỉ cần hostname:
+Nếu port giống nhau cho mọi contact point, bạn có thể dùng shortcut và chỉ chỉ định hostname, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -440,10 +440,10 @@ spring:
     local-datacenter: "datacenter1"
 ----
 
-TIP: Hai ví dụ tương đương vì default port là `9042`.
+TIP: Hai ví dụ trên tương đương vì port mặc định là `9042`.
 Nếu cần đổi port, dùng `spring.cassandra.port`.
 
-Có thể bật SSL:
+Auto-configured `CqlSession` có thể được cấu hình để dùng SSL khi giao tiếp với server bằng cách đặt các property như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -456,7 +456,7 @@ spring:
       enabled: true
 ----
 
-Custom SSL trust material có thể cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng:
+Custom SSL trust material có thể được cấu hình trong xref:features/ssl.adoc[SSL bundle] và áp dụng cho `CqlSession` như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -471,48 +471,48 @@ spring:
 
 [NOTE]
 ====
-Cassandra driver có configuration infrastructure riêng load `application.conf` ở root classpath.
+Cassandra driver có configuration infrastructure riêng, infrastructure này load `application.conf` ở root của classpath.
 
-Spring Boot mặc định không tìm file này nhưng có thể load bằng `spring.cassandra.config`.
-Nếu property tồn tại cả trong `+spring.cassandra.*+` và config file, `+spring.cassandra.*+` có precedence.
+Spring Boot mặc định không tìm file này nhưng có thể load file bằng `spring.cassandra.config`.
+Nếu một property xuất hiện cả trong `+spring.cassandra.*+` và configuration file, giá trị trong `+spring.cassandra.*+` sẽ được ưu tiên.
 
-Customization nâng cao có thể register bean javadoc:org.springframework.boot.cassandra.autoconfigure.DriverConfigLoaderBuilderCustomizer[].
-`CqlSession` có thể customize bằng javadoc:org.springframework.boot.cassandra.autoconfigure.CqlSessionBuilderCustomizer[].
+Để thực hiện các driver customization nâng cao, bạn có thể register tùy ý số lượng bean triển khai javadoc:org.springframework.boot.cassandra.autoconfigure.DriverConfigLoaderBuilderCustomizer[].
+`CqlSession` có thể được customize bằng bean kiểu javadoc:org.springframework.boot.cassandra.autoconfigure.CqlSessionBuilderCustomizer[].
 ====
 
-NOTE: Nếu dùng `CqlSessionBuilder` để tạo nhiều `CqlSession` bean, nhớ builder mutable nên inject fresh copy cho từng session.
+NOTE: Nếu dùng `CqlSessionBuilder` để tạo nhiều `CqlSession` bean, hãy nhớ rằng builder là mutable, vì vậy cần inject một fresh copy cho mỗi session.
 
-Ví dụ inject Cassandra bean:
+Listing sau minh họa cách inject một Cassandra bean:
 
 include-code::MyBean[]
 
-Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.cassandra.core.CassandraTemplate[] riêng, nó thay default.
+Nếu thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] riêng có type javadoc:org.springframework.data.cassandra.core.CassandraTemplate[], bean đó sẽ thay thế bean mặc định.
 
 [[data.nosql.cassandra.repositories]]
-=== Spring Data Cassandra Repository
+=== Spring Data Cassandra Repositories
 
-Spring Data có basic repository support cho Cassandra.
-Hiện tại giới hạn hơn JPA repository và cần finder method annotate javadoc:org.springframework.data.cassandra.repository.Query[format=annotation].
+Spring Data bao gồm basic repository support cho Cassandra.
+Hiện tại, support này hạn chế hơn JPA repository đã thảo luận trước đó và cần các finder method được annotate bằng javadoc:org.springframework.data.cassandra.repository.Query[format=annotation].
 
-Repository và entity được tìm qua scanning.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
-Customize bằng javadoc:org.springframework.data.cassandra.repository.config.EnableCassandraRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
+Repository và entity được tìm thấy thông qua scanning.
+Mặc định, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Bạn có thể customize location dùng để tìm repository và entity bằng javadoc:org.springframework.data.cassandra.repository.config.EnableCassandraRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], tương ứng.
 
 TIP: Xem {url-spring-data-cassandra-docs}[reference documentation].
 
 [[data.nosql.couchbase]]
 == Couchbase
 
-https://www.couchbase.com/[Couchbase] là open-source distributed multi-model NoSQL document database tối ưu cho interactive application.
-Spring Boot cung cấp auto-configuration cho Couchbase và abstraction từ Spring Data Couchbase.
-Có starter `spring-boot-starter-data-couchbase` và `spring-boot-starter-data-couchbase-reactive`.
+https://www.couchbase.com/[Couchbase] là open-source, distributed, multi-model NoSQL document-oriented database được tối ưu cho interactive application.
+Spring Boot cung cấp auto-configuration cho Couchbase và các abstraction phía trên nó do https://github.com/spring-projects/spring-data-couchbase[Spring Data Couchbase] cung cấp.
+Có các starter `spring-boot-starter-data-couchbase` và `spring-boot-starter-data-couchbase-reactive` để tập hợp các dependency theo cách thuận tiện.
 
 [[data.nosql.couchbase.connecting]]
 === Kết nối Couchbase
 
-Có thể lấy javadoc:com.couchbase.client.java.Cluster[] bằng cách thêm Couchbase SDK và configuration.
-Property `spring.couchbase.*` dùng customize connection.
-Thông thường bạn cung cấp https://docs.couchbase.com/dotnet-sdk/current/howtos/managing-connections.html[connection string] và credential để authentication. Basic authentication với username và password có thể cấu hình như ví dụ sau:
+Bạn có thể lấy javadoc:com.couchbase.client.java.Cluster[] bằng cách thêm Couchbase SDK và một số configuration.
+Các property `spring.couchbase.*` có thể được dùng để customize connection.
+Thông thường, bạn cung cấp https://docs.couchbase.com/dotnet-sdk/current/howtos/managing-connections.html[connection string] và credential để authentication. Basic authentication với username và password có thể được cấu hình như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -523,8 +523,8 @@ spring:
     password: "secret"
 ----
 
-https://docs.couchbase.com/server/current/manage/manage-security/configure-client-certificates.html[Client certificate] có thể dùng để authentication thay cho username và password.
-Location và password của Java KeyStore chứa client certificate có thể cấu hình như ví dụ sau:
+https://docs.couchbase.com/server/current/manage/manage-security/configure-client-certificates.html[Client certificates] có thể được dùng để authentication thay cho username và password.
+Location và password của Java KeyStore chứa client certificates có thể được cấu hình như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -540,7 +540,7 @@ spring:
         password: "secret"
 ----
 
-Certificate mã hóa PEM và private key có thể cấu hình như ví dụ sau:
+PEM-encoded certificates và private key có thể được cấu hình như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -556,8 +556,8 @@ spring:
         private-key: "classpath:client.key"
 ----
 
-Có thể customize javadoc:com.couchbase.client.java.env.ClusterEnvironment[] setting.
-Ví dụ, configuration sau đổi timeout để mở javadoc:com.couchbase.client.java.Bucket[] mới và bật hỗ trợ SSL bằng reference tới xref:features/ssl.adoc[SSL bundle] đã cấu hình:
+Cũng có thể customize một số setting của javadoc:com.couchbase.client.java.env.ClusterEnvironment[].
+Ví dụ, configuration sau thay đổi timeout để mở một javadoc:com.couchbase.client.java.Bucket[] mới và bật SSL support bằng reference tới một xref:features/ssl.adoc[SSL bundle] đã cấu hình:
 
 [configprops,yaml]
 ----
@@ -570,22 +570,22 @@ spring:
         bundle: "example"
 ----
 
-TIP: Xem property `spring.couchbase.env.*`.
-Để kiểm soát nhiều hơn, dùng bean javadoc:org.springframework.boot.couchbase.autoconfigure.ClusterEnvironmentBuilderCustomizer[].
+TIP: Kiểm tra các property `spring.couchbase.env.*` để biết thêm chi tiết.
+Để kiểm soát nhiều hơn, có thể dùng một hoặc nhiều bean javadoc:org.springframework.boot.couchbase.autoconfigure.ClusterEnvironmentBuilderCustomizer[].
 
 [[data.nosql.couchbase.repositories]]
-=== Spring Data Couchbase Repository
+=== Spring Data Couchbase Repositories
 
-Spring Data hỗ trợ repository cho Couchbase.
+Spring Data bao gồm repository support cho Couchbase.
 
-Repository và document được tìm qua scanning.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
-Customize bằng javadoc:org.springframework.data.couchbase.repository.config.EnableCouchbaseRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
+Repository và document được tìm thấy thông qua scanning.
+Mặc định, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Bạn có thể customize location dùng để tìm repository và document bằng javadoc:org.springframework.data.couchbase.repository.config.EnableCouchbaseRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], tương ứng.
 
-Xem {url-spring-data-couchbase-docs}[reference documentation].
+Để biết đầy đủ chi tiết về Spring Data Couchbase, xem {url-spring-data-couchbase-docs}[reference documentation].
 
-Có thể inject auto-configured javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] nếu có javadoc:org.springframework.data.couchbase.CouchbaseClientFactory[].
-Điều này xảy ra khi có javadoc:com.couchbase.client.java.Cluster[] và đã chỉ định bucket name:
+Bạn có thể inject một instance auto-configured của javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] nếu có bean javadoc:org.springframework.data.couchbase.CouchbaseClientFactory[].
+Điều này xảy ra khi có javadoc:com.couchbase.client.java.Cluster[] như mô tả ở trên và đã chỉ định một bucket name:
 
 [configprops,yaml]
 ----
@@ -595,34 +595,34 @@ spring:
       bucket-name: "my-bucket"
 ----
 
-Ví dụ inject javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[]:
+Các ví dụ sau minh họa cách inject một bean javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[]:
 
 include-code::MyBean[]
 
-Có thể định nghĩa các bean sau để override auto-configuration:
+Có một số bean mà bạn có thể định nghĩa trong configuration của mình để override các bean do auto-configuration cung cấp:
 
-* javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.couchbase.core.mapping.CouchbaseMappingContext[] tên `couchbaseMappingContext`.
-* javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.convert.CustomConversions[] tên `couchbaseCustomConversions`.
-* javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] tên `couchbaseTemplate`.
+* javadoc:org.springframework.data.couchbase.core.mapping.CouchbaseMappingContext[] javadoc:org.springframework.context.annotation.Bean[format=annotation] có name `couchbaseMappingContext`.
+* javadoc:org.springframework.data.convert.CustomConversions[] javadoc:org.springframework.context.annotation.Bean[format=annotation] có name `couchbaseCustomConversions`.
+* javadoc:org.springframework.data.couchbase.core.CouchbaseTemplate[] javadoc:org.springframework.context.annotation.Bean[format=annotation] có name `couchbaseTemplate`.
 
-Để tránh hard-code tên, có thể dùng javadoc:org.springframework.data.couchbase.config.BeanNames[].
-Ví dụ customize converter:
+Để tránh hard-code các name đó trong config của mình, bạn có thể dùng javadoc:org.springframework.data.couchbase.config.BeanNames[] do Spring Data Couchbase cung cấp.
+Ví dụ, bạn có thể customize các converter cần dùng như sau:
 
 include-code::MyCouchbaseConfiguration[]
 
 [[data.nosql.ldap]]
 == LDAP
 
-https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol[LDAP] là open vendor-neutral industry standard application protocol để truy cập và duy trì distributed directory information service qua IP network.
-Spring Boot cung cấp auto-configuration cho compliant LDAP server và embedded in-memory LDAP server từ https://ldap.com/unboundid-ldap-sdk-for-java/[UnboundID].
+https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol[LDAP] (Lightweight Directory Access Protocol) là open, vendor-neutral, industry-standard application protocol để truy cập và duy trì distributed directory information service qua IP network.
+Spring Boot cung cấp auto-configuration cho mọi compliant LDAP server, cũng như support cho embedded in-memory LDAP server từ https://ldap.com/unboundid-ldap-sdk-for-java/[UnboundID].
 
-LDAP abstraction được cung cấp bởi Spring Data LDAP.
-Starter `spring-boot-starter-data-ldap` gom dependency.
+LDAP abstraction được cung cấp bởi https://github.com/spring-projects/spring-data-ldap[Spring Data LDAP].
+Có starter `spring-boot-starter-data-ldap` để tập hợp các dependency theo cách thuận tiện.
 
 [[data.nosql.ldap.connecting]]
-=== Kết nối LDAP Server
+=== Kết nối tới LDAP Server
 
-Để kết nối LDAP server, khai báo dependency `spring-boot-starter-data-ldap` hoặc `spring-ldap-core` rồi khai báo URL server:
+Để kết nối tới LDAP server, hãy khai báo dependency trên starter `spring-boot-starter-data-ldap` hoặc `spring-ldap-core`, sau đó khai báo URL của server trong `application.properties` của application, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -633,12 +633,12 @@ spring:
     password: "secret"
 ----
 
-Có thể customize connection setting bằng `spring.ldap.base` và `spring.ldap.base-environment`.
+Nếu cần customize connection setting, bạn có thể dùng các property `spring.ldap.base` và `spring.ldap.base-environment`.
 
-javadoc:org.springframework.ldap.core.support.LdapContextSource[] được auto-configure từ các setting này.
+javadoc:org.springframework.ldap.core.support.LdapContextSource[] được auto-configure dựa trên các setting này.
 Nếu bean javadoc:org.springframework.ldap.core.support.DirContextAuthenticationStrategy[] có sẵn, nó được liên kết với javadoc:org.springframework.ldap.core.support.LdapContextSource[].
 Nếu cần customize, ví dụ dùng javadoc:org.springframework.ldap.pool2.factory.PooledContextSource[], vẫn có thể inject auto-configured javadoc:org.springframework.ldap.core.support.LdapContextSource[].
-Đánh dấu custom javadoc:org.springframework.ldap.core.ContextSource[] là javadoc:org.springframework.context.annotation.Primary[format=annotation] để auto-configured javadoc:org.springframework.ldap.core.LdapTemplate[] dùng nó.
+Hãy đánh dấu custom javadoc:org.springframework.ldap.core.ContextSource[] là javadoc:org.springframework.context.annotation.Primary[format=annotation] để auto-configured javadoc:org.springframework.ldap.core.LdapTemplate[] sử dụng nó.
 
 [[data.nosql.ldap.ssl]]
 === SSL
@@ -654,44 +654,44 @@ spring:
       bundle: "example"
 ----
 
-Đặt configprop:spring.ldap.ssl.bundle[] cũng đổi default URL thành `ldaps://localhost:636`, nên configprop:spring.ldap.urls[] chỉ cần set khi kết nối tới host hoặc port khác.
+Việc đặt configprop:spring.ldap.ssl.bundle[] cũng chuyển URL mặc định thành `ldaps://localhost:636`, vì vậy configprop:spring.ldap.urls[] chỉ cần được set khi kết nối tới host hoặc port khác.
 
-NOTE: SSL chỉ hỗ trợ khi kết nối qua `ldaps://`. Bật SSL khi URL dùng `ldap://` sẽ fail startup.
+NOTE: SSL chỉ được hỗ trợ khi kết nối qua `ldaps://`. Bật SSL trong khi bất kỳ URL nào đã cấu hình sử dụng scheme `ldap://` sẽ dẫn tới startup failure.
 
-Các property này không cấu hình StartTLS — cơ chế nâng cấp một connection `ldap://` thường thay vì dùng LDAPS, và vì vậy không thể kết hợp với SSL bundle.
-Để dùng StartTLS, định nghĩa bean javadoc:org.springframework.ldap.core.support.DirContextAuthenticationStrategy[] như javadoc:org.springframework.ldap.core.support.DefaultTlsDirContextAuthenticationStrategy[] và set SSL socket factory.
+Các property này không cấu hình StartTLS. StartTLS nâng cấp một connection `ldap://` thường thay vì dùng LDAPS, do đó không thể kết hợp với SSL bundle.
+Để dùng StartTLS, hãy định nghĩa bean javadoc:org.springframework.ldap.core.support.DirContextAuthenticationStrategy[] như javadoc:org.springframework.ldap.core.support.DefaultTlsDirContextAuthenticationStrategy[] và đặt SSL socket factory cần dùng trên bean đó.
 
-Nếu cần hỗ trợ SSL mà không customize trust và key material, đặt property configprop:spring.ldap.ssl.enabled[] thành `true` thay vì cung cấp bundle.
-Cách này dùng trust và key material mặc định của platform.
+Nếu cần SSL support mà không customize trust và key material, hãy đặt property configprop:spring.ldap.ssl.enabled[] thành `true` thay vì cung cấp bundle.
+Cách này sử dụng trust và key material mặc định của platform.
 
 WARNING: Các property này chỉ áp dụng cho auto-configured javadoc:org.springframework.ldap.core.support.LdapContextSource[].
-Nếu tự định nghĩa context source, phải tự cấu hình SSL.
-Nếu tự định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[], kể cả bean do `@ServiceConnection` đóng góp, auto-configured context source sẽ dùng SSL bundle mà bean đó cung cấp.
-Một connection `ldaps://` chưa được cấp key hay trust material nào sẽ âm thầm dùng mặc định của platform thay vì fail.
+Nếu bạn tự định nghĩa context source, phải tự cấu hình SSL cho nó.
+Nếu bạn tự định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[], kể cả bean do một `@ServiceConnection` đóng góp, auto-configured context source sẽ dùng SSL bundle mà bean đó cung cấp.
+Một connection `ldaps://` chưa được cung cấp key hoặc trust material sẽ âm thầm dùng giá trị mặc định của platform thay vì fail.
 
 TIP: Các property này cấu hình LDAP client và bị bỏ qua khi dùng embedded LDAP server.
-Để bật SSL cho xref:data/nosql.adoc#data.nosql.ldap.embedded.ssl[embedded LDAP server], dùng property riêng configprop:spring.ldap.embedded.ssl.bundle[], property này cung cấp certificate và private key của server cũng như trust material của client.
+Để bật SSL cho xref:data/nosql.adoc#data.nosql.ldap.embedded.ssl[embedded LDAP server], hãy dùng property riêng configprop:spring.ldap.embedded.ssl.bundle[]. Property này cung cấp certificate và private key của server cũng như trust material của client.
 
 [[data.nosql.ldap.repositories]]
-=== Spring Data LDAP Repository
+=== Spring Data LDAP Repositories
 
-Spring Data hỗ trợ repository cho LDAP.
+Spring Data bao gồm repository support cho LDAP.
 
-Repository và document được tìm qua scanning.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
-Customize bằng javadoc:org.springframework.data.ldap.repository.config.EnableLdapRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation].
+Repository và document được tìm thấy thông qua scanning.
+Mặc định, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Bạn có thể customize location dùng để tìm repository và document bằng javadoc:org.springframework.data.ldap.repository.config.EnableLdapRepositories[format=annotation] và javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], tương ứng.
 
 TIP: Xem {url-spring-data-ldap-docs}[reference documentation].
 
-Có thể inject auto-configured javadoc:org.springframework.ldap.core.LdapTemplate[]:
+Bạn cũng có thể inject một instance auto-configured của javadoc:org.springframework.ldap.core.LdapTemplate[] như với bất kỳ Spring Bean nào khác, như trong ví dụ sau:
 
 include-code::MyBean[]
 
 [[data.nosql.ldap.embedded]]
 === Embedded In-memory LDAP Server
 
-Để test, Spring Boot hỗ trợ auto-configuration in-memory LDAP server từ UnboundID.
-Thêm dependency `com.unboundid:unboundid-ldapsdk` và khai báo configprop:spring.ldap.embedded.base-dn[]:
+Để phục vụ mục đích testing, Spring Boot hỗ trợ auto-configuration cho in-memory LDAP server từ https://ldap.com/unboundid-ldap-sdk-for-java/[UnboundID].
+Để cấu hình server, thêm dependency `com.unboundid:unboundid-ldapsdk` và khai báo property configprop:spring.ldap.embedded.base-dn[] như sau:
 
 [configprops,yaml]
 ----
@@ -703,9 +703,9 @@ spring:
 
 [NOTE]
 ====
-Có thể định nghĩa nhiều base-dn value; vì distinguished name thường chứa comma nên phải dùng notation đúng.
+Bạn có thể định nghĩa nhiều giá trị base-dn. Tuy nhiên, vì distinguished name thường chứa dấu phẩy nên phải định nghĩa chúng bằng notation đúng.
 
-Trong YAML dùng list notation. Trong properties file, include index trong property name:
+Trong YAML, bạn có thể dùng list notation. Trong properties file, phải include index như một phần của property name:
 
 [configprops,yaml]
 ----
@@ -715,33 +715,33 @@ spring.ldap.embedded.base-dn:
 ----
 ====
 
-Mặc định server start trên random port và trigger regular LDAP support.
+Mặc định, server start trên một random port và trigger regular LDAP support.
 
-Nếu có `schema.ldif` trên classpath, nó được dùng initialize server.
-Có thể dùng configprop:spring.ldap.embedded.ldif[] để load script từ resource khác.
+Nếu có file `schema.ldif` trên classpath, file đó sẽ được dùng để initialize server.
+Nếu muốn load initialization script từ một resource khác, bạn cũng có thể dùng property configprop:spring.ldap.embedded.ldif[].
 
-Mặc định standard schema validate `LDIF` file.
-Có thể disable validation bằng configprop:spring.ldap.embedded.validation.enabled[].
-Nếu có custom attribute, dùng configprop:spring.ldap.embedded.validation.schema[].
+Mặc định, một standard schema được dùng để validate các file `LDIF`.
+Bạn có thể tắt hoàn toàn validation bằng cách đặt property configprop:spring.ldap.embedded.validation.enabled[].
+Nếu có custom attribute, bạn có thể dùng configprop:spring.ldap.embedded.validation.schema[] để định nghĩa custom attribute type hoặc object class.
 
-Property `spring.ldap.embedded` cấu hình server, các property `spring.ldap` còn lại cấu hình client như mô tả trong xref:data/nosql.adoc#data.nosql.ldap[LDAP].
-Mọi thứ mô tả chính connection đều lấy từ server, vì chỉ server mới xác định được một connection tới nó trông như thế nào:
+Các property `spring.ldap.embedded` cấu hình server, trong khi các property `spring.ldap` còn lại cấu hình client kết nối tới server, như mô tả trong xref:data/nosql.adoc#data.nosql.ldap[LDAP].
+Mọi thứ mô tả chính connection đều được lấy từ server, vì chỉ server mới xác định được connection tới nó sẽ trông như thế nào:
 
-* Client kết nối tới port và scheme server đang listen nên configprop:spring.ldap.urls[] bị bỏ qua.
-* Client dùng credential từ configprop:spring.ldap.embedded.credential.username[] và configprop:spring.ldap.embedded.credential.password[].
-* Client dùng SSL bundle từ configprop:spring.ldap.embedded.ssl.bundle[] nên `spring.ldap.ssl.*` bị bỏ qua.
+* Client kết nối tới port và scheme mà server đang listen, vì vậy configprop:spring.ldap.urls[] bị bỏ qua.
+* Client dùng credential từ configprop:spring.ldap.embedded.credential.username[] và configprop:spring.ldap.embedded.credential.password[], vì vậy configprop:spring.ldap.username[] và configprop:spring.ldap.password[] bị bỏ qua.
+* Client dùng SSL bundle từ configprop:spring.ldap.embedded.ssl.bundle[], vì vậy `spring.ldap.ssl.*` bị bỏ qua.
 
-Do đó production `spring.ldap` configuration không cần unset khi test với embedded server.
-Các property còn lại như configprop:spring.ldap.base[], configprop:spring.ldap.referral[] và `spring.ldap.base-environment.*` vẫn được áp dụng.
+Do đó, `spring.ldap` configuration dành cho production server không cần phải unset để chạy test với embedded server.
+Các property còn lại, như configprop:spring.ldap.base[], configprop:spring.ldap.referral[] và `spring.ldap.base-environment.*`, vẫn được áp dụng như thường lệ.
 
-TIP: Để cấu hình client khác đi, định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[] của riêng bạn.
-Auto-configured client khi đó dùng bean đó và bỏ qua URL, credential cũng như SSL bundle của embedded server.
+TIP: Để cấu hình client theo cách khác, hãy định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[] của riêng bạn.
+Khi đó, auto-configured client sẽ dùng bean này và bỏ qua URL, credential cũng như SSL bundle của embedded server.
 
 [[data.nosql.ldap.embedded.ssl]]
 ==== SSL
 
 In-memory LDAP server hỗ trợ SSL (LDAPS).
-Để bật SSL, cấu hình xref:features/ssl.adoc[SSL bundle] qua configprop:spring.ldap.embedded.ssl.bundle[]:
+Để bật SSL, hãy cấu hình xref:features/ssl.adoc[SSL bundle] cần dùng bằng cách đặt property configprop:spring.ldap.embedded.ssl.bundle[] như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -752,11 +752,11 @@ spring:
         bundle: "example"
 ----
 
-Bundle phải cung cấp server certificate và private key.
+Bundle phải cung cấp certificate và private key của server.
 
-NOTE: LDAPS yêu cầu SSL bundle. Đặt configprop:spring.ldap.embedded.ssl.enabled[] mà không có configprop:spring.ldap.embedded.ssl.bundle[] sẽ fail startup.
+NOTE: LDAPS yêu cầu SSL bundle. Đặt configprop:spring.ldap.embedded.ssl.enabled[] mà không có configprop:spring.ldap.embedded.ssl.bundle[] sẽ dẫn tới startup failure.
 
-Auto-configured client kết nối server qua `ldaps://` bằng cùng bundle, vì vậy trust material phải trust server certificate.
+Auto-configured client kết nối tới server qua `ldaps://` bằng cùng bundle, vì vậy trust material của bundle phải trust certificate của server.
 
 NOTE: Server quyết định có dùng TLS hay không và bundle nào bảo vệ connection.
-Để client có SSL configuration riêng, định nghĩa javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[] bean.
+Để client có SSL configuration riêng, hãy định nghĩa bean javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[].

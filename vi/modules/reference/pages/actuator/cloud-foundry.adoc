@@ -1,19 +1,21 @@
 [[actuator.cloud-foundry]]
-= Cloud Foundry Support
+= Hỗ trợ Cloud Foundry
 
-Module `spring-boot-cloudfoundry` của Spring Boot (thuộc `spring-boot-starter-cloudfoundry`) cung cấp support bổ sung được activate khi deploy lên compatible Cloud Foundry instance.
-Path `/cloudfoundryapplication` cung cấp secured route thay thế tới mọi bean javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation].
+Module `spring-boot-cloudfoundry` của Spring Boot (thuộc `spring-boot-starter-cloudfoundry`) cung cấp support bổ sung, được activate khi deploy lên một Cloud Foundry instance tương thích.
+Path `/cloudfoundryapplication` cung cấp một secured route thay thế tới tất cả các bean javadoc:org.springframework.boot.actuate.endpoint.annotation.Endpoint[format=annotation].
 
-Extended support cho phép Cloud Foundry management UI được bổ sung Spring Boot actuator information.
-Ví dụ application status page có thể hiển thị full health information thay vì chỉ "`running`" hoặc "`stopped`".
+Extended support này cho phép các Cloud Foundry management UI (chẳng hạn web application dùng để xem các application đã deploy) được bổ sung Spring Boot Actuator information.
+Ví dụ, application status page có thể hiển thị đầy đủ health information thay vì chỉ hiển thị status điển hình là "`running`" hoặc "`stopped`".
 
-NOTE: Path `/cloudfoundryapplication` không accessible trực tiếp với regular user.
-Để dùng endpoint phải truyền valid UAA token.
+NOTE: Path `/cloudfoundryapplication` không thể được regular user truy cập trực tiếp.
+Để sử dụng endpoint, bạn phải truyền kèm request một UAA token hợp lệ.
+
+
 
 [[actuator.cloud-foundry.disable]]
-== Disable Extended Cloud Foundry Actuator Support
+== Tắt hỗ trợ Actuator mở rộng cho Cloud Foundry
 
-Để disable hoàn toàn endpoint `/cloudfoundryapplication`:
+Nếu muốn disable hoàn toàn các endpoint `/cloudfoundryapplication`, bạn có thể thêm setting sau vào file `application.properties`:
 
 [configprops,yaml]
 ----
@@ -22,11 +24,13 @@ management:
     enabled: false
 ----
 
-[[actuator.cloud-foundry.ssl]]
-== Cloud Foundry Self-signed Certificates
 
-Mặc định security verification cho `/cloudfoundryapplication` endpoint thực hiện SSL call tới nhiều Cloud Foundry service.
-Nếu UAA hoặc Cloud Controller dùng self-signed certificate:
+
+[[actuator.cloud-foundry.ssl]]
+== Self-signed Certificate trong Cloud Foundry
+
+Mặc định, security verification cho các endpoint `/cloudfoundryapplication` thực hiện SSL call tới nhiều Cloud Foundry service.
+Nếu các service UAA hoặc Cloud Controller của bạn sử dụng self-signed certificate, bạn cần set property sau:
 
 [configprops,yaml]
 ----
@@ -35,18 +39,20 @@ management:
     skip-ssl-validation: true
 ----
 
+
+
 [[actuator.cloud-foundry.custom-context-path]]
-== Custom Context Path
+== Context Path tùy chỉnh
 
-Nếu server context-path khác `/`, Cloud Foundry endpoint không có ở root.
-Ví dụ `server.servlet.context-path=/app` thì endpoint ở `/app/cloudfoundryapplication/*`.
+Nếu context-path của server được configure thành giá trị khác `/`, các Cloud Foundry endpoint sẽ không available tại root của application.
+Ví dụ, nếu `server.servlet.context-path=/app`, các Cloud Foundry endpoint sẽ available tại `/app/cloudfoundryapplication/*`.
 
-Nếu muốn Cloud Foundry endpoint luôn có ở `/cloudfoundryapplication/*` bất kể context-path của server, bạn cần cấu hình tường minh trong application.
-Configuration khác nhau tùy web server đang dùng.
+Nếu muốn các Cloud Foundry endpoint luôn available tại `/cloudfoundryapplication/*`, bất kể context-path của server, bạn cần explicitly configure điều này trong application.
+Configuration khác nhau tùy web server được sử dụng.
 Với Tomcat, bạn có thể thêm configuration sau:
 
 include-code::MyCloudFoundryConfiguration[]
 
-Với WebFlux application:
+Nếu đang sử dụng application dựa trên WebFlux, bạn có thể dùng configuration sau:
 
 include-code::MyReactiveCloudFoundryConfiguration[]

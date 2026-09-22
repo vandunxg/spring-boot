@@ -36,7 +36,7 @@ Các thông tin sau được xuất ra:
 * Tên ứng dụng: Đặt trong ngoặc vuông (mặc định chỉ được ghi khi configprop:spring.application.name[] được thiết lập).
 * Nhóm ứng dụng: Đặt trong ngoặc vuông (mặc định chỉ được ghi khi configprop:spring.application.group[] được thiết lập).
 * Tên thread: Đặt trong ngoặc vuông (có thể bị cắt ngắn khi xuất ra console).
-* Correlation ID: Có khi bật tracing (không hiển thị trong ví dụ trên).
+* Correlation ID: Nếu tracing được bật (không hiển thị trong ví dụ trên).
 * Tên logger: Thường là tên class nguồn (hay được viết tắt).
 * Nội dung log.
 
@@ -341,7 +341,7 @@ Spring Boot tích hợp sẵn các nhóm logging sau để dùng ngay:
 Shutdown hook này được đăng ký tự động, trừ khi ứng dụng được deploy dưới dạng file war.
 Nếu ứng dụng có cấu trúc phân cấp context phức tạp, shutdown hook có thể không đáp ứng nhu cầu của bạn.
 Trong trường hợp đó, hãy tắt shutdown hook và xem các tùy chọn do hệ thống logging bên dưới cung cấp trực tiếp.
-Ví dụ, Logback cung cấp https://logback.qos.ch/manual/loggingSeparation.html[context selector], cho phép tạo mỗi Logger trong context riêng.
+Ví dụ, Logback cung cấp https://logback.qos.ch/manual/loggingSeparation.html[context selectors], cho phép tạo từng Logger trong context riêng.
 Bạn có thể dùng property configprop:logging.register-shutdown-hook[] để tắt shutdown hook.
 Đặt giá trị thành `false` sẽ vô hiệu hóa việc đăng ký.
 Bạn có thể đặt property trong file `application.properties` hoặc `application.yaml`:
@@ -387,7 +387,7 @@ Nếu dùng các vị trí cấu hình tiêu chuẩn, Spring không thể kiểm
 WARNING: Java Util Logging có các vấn đề classloading đã biết, gây lỗi khi chạy từ 'executable jar'.
 Chúng tôi khuyên bạn tránh dùng nó khi chạy từ 'executable jar' nếu có thể.
 
-Để hỗ trợ tùy chỉnh, một số property khác được chuyển từ Spring javadoc:org.springframework.core.env.Environment[] sang system property.
+Để hỗ trợ tùy chỉnh, một số property khác được chuyển từ Spring javadoc:org.springframework.core.env.Environment[] sang các system property.
 Nhờ đó, cấu hình hệ thống logging có thể sử dụng các property này. Ví dụ, đặt `logging.file.name` trong `application.properties` hoặc đặt biến môi trường `LOGGING_FILE_NAME` sẽ thiết lập system property `LOG_FILE`.
 Các property được chuyển được mô tả trong bảng sau:
 
@@ -667,7 +667,7 @@ Một dòng log có dạng như sau:
 Định dạng này cũng thêm mọi cặp key-value trong MDC vào JSON object.
 Bạn cũng có thể dùng https://www.slf4j.org/manual.html#fluent[SLF4J fluent logging API] để thêm các cặp key-value vào JSON object được ghi log bằng method https://www.slf4j.org/apidocs/org/slf4j/spi/LoggingEventBuilder.html#addKeyValue(java.lang.String,java.lang.Object)[addKeyValue].
 
-Nếu thêm https://www.slf4j.org/api/org/slf4j/Marker.html[marker], chúng sẽ xuất hiện trong mảng chuỗi `tags` của JSON.
+Nếu thêm https://www.slf4j.org/api/org/slf4j/Marker.html[các marker], chúng sẽ xuất hiện trong mảng chuỗi `tags` của JSON.
 
 
 
@@ -691,7 +691,7 @@ Các property sau cho phép thay đổi cách ghi JSON của structured logging:
 | Đổi tên một thành phần cụ thể trong JSON.
 
 | configprop:logging.structured.json.add[]
-| Thêm thành phần vào JSON.
+| Thêm các thành phần bổ sung vào JSON.
 |===
 
 Ví dụ, cấu hình sau loại bỏ `log.level`, đổi tên `process.id` thành `procid` và thêm trường cố định `corpname`:
@@ -717,7 +717,7 @@ Bạn cũng có thể khai báo các implementation bằng cách liệt kê chú
 [[features.logging.structured.customizing-stack-traces]]
 === Tùy chỉnh stack trace của structured logging
 
-Stack trace đầy đủ được đưa vào đầu ra JSON mỗi khi một thông điệp được ghi log kèm exception.
+Stack trace đầy đủ được đưa vào đầu ra JSON mỗi khi một message được ghi log kèm exception.
 Lượng thông tin này có thể tốn chi phí xử lý trong hệ thống thu thập log, nên bạn có thể muốn điều chỉnh cách in stack trace.
 
 Để làm việc này, bạn có thể dùng một hoặc nhiều property sau:
@@ -732,7 +732,7 @@ Lượng thông tin này có thể tốn chi phí xử lý trong hệ thống th
 | Độ dài tối đa được in.
 
 | configprop:logging.structured.json.stacktrace.max-throwable-depth[]
-| Số frame tối đa được in cho mỗi stack trace (bao gồm cả frame chung và frame của suppressed exception).
+| Số frame tối đa được in cho mỗi stack trace (bao gồm cả common frame và suppressed frame).
 
 | configprop:logging.structured.json.stacktrace.include-common-frames[]
 | Có đưa các frame chung vào hay loại bỏ chúng.
@@ -776,7 +776,7 @@ include-code::MyCustomFormat[]
 
 Như trong ví dụ, bạn có thể trả về bất kỳ định dạng nào, không bắt buộc là JSON.
 
-Để bật định dạng riêng, đặt property configprop:logging.structured.format.console[] hoặc configprop:logging.structured.format.file[] thành tên class đầy đủ của implementation.
+Để bật định dạng riêng, đặt property configprop:logging.structured.format.console[] hoặc configprop:logging.structured.format.file[] thành tên fully qualified của class implementation.
 
 Implementation có thể dùng một số tham số constructor được inject tự động.
 Xem JavaDoc của javadoc:org.springframework.boot.logging.structured.StructuredLogFormatter[] để biết thêm chi tiết.
@@ -902,7 +902,7 @@ Ví dụ sau minh họa ba profile:
 [[features.logging.log4j2-extensions.environment-properties-lookup]]
 === Tra cứu property từ Environment
 
-Để tham chiếu các property trong Spring javadoc:org.springframework.core.env.Environment[] từ cấu hình Log4j2, bạn có thể dùng https://logging.apache.org/log4j/2.x/manual/lookups.html[lookup] có tiền tố `spring:`.
+Để tham chiếu các property trong Spring javadoc:org.springframework.core.env.Environment[] từ cấu hình Log4j2, bạn có thể dùng các https://logging.apache.org/log4j/2.x/manual/lookups.html[lookup] có tiền tố `spring:`.
 Điều này hữu ích khi bạn muốn truy cập các giá trị trong `application.properties` từ cấu hình Log4j2.
 
 Ví dụ sau đặt các property Log4j2 tên `applicationName` và `applicationGroup`, đọc `spring.application.name` và `spring.application.group` từ Spring javadoc:org.springframework.core.env.Environment[]:
@@ -928,7 +928,7 @@ Ví dụ, system property `log4j2.skipJansi` có thể cấu hình việc javado
 Tất cả system property được nạp sau khi Log4j2 khởi tạo đều có thể lấy từ Spring javadoc:org.springframework.core.env.Environment[].
 Ví dụ, bạn có thể thêm `log4j2.skipJansi=false` vào `application.properties` để javadoc:org.apache.logging.log4j.core.appender.ConsoleAppender[] dùng Jansi trên Windows.
 
-NOTE: Spring javadoc:org.springframework.core.env.Environment[] chỉ được xét khi system property và biến môi trường của hệ điều hành không chứa giá trị đang được nạp.
+NOTE: Spring javadoc:org.springframework.core.env.Environment[] chỉ được xét khi các system property và biến môi trường của hệ điều hành không chứa giá trị đang được nạp.
 
 WARNING: Các system property được nạp trong giai đoạn khởi tạo sớm của Log4j2 không thể tham chiếu Spring javadoc:org.springframework.core.env.Environment[].
-Ví dụ, property mà Log4j2 dùng để cho phép chọn implementation Log4j2 mặc định được sử dụng trước khi Spring Environment khả dụng.
+Ví dụ, property mà Log4j2 dùng để cho phép chọn implementation Log4j2 mặc định được xử lý trước khi Spring Environment khả dụng.

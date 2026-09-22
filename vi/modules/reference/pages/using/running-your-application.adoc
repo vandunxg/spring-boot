@@ -3,13 +3,13 @@
 
 Một trong những ưu điểm lớn nhất của việc đóng gói ứng dụng thành jar và dùng embedded HTTP server là bạn có thể chạy ứng dụng như mọi ứng dụng khác.
 Điều này cũng áp dụng cho việc debug ứng dụng Spring Boot.
-Bạn không cần IDE plugin hoặc extension đặc biệt nào.
+Bạn không cần plugin hoặc extension đặc biệt nào của IDE.
 
 NOTE: Các lựa chọn dưới đây phù hợp nhất để chạy ứng dụng cục bộ trong quá trình phát triển.
 Để deploy lên production, xem xref:reference:using/packaging-for-production.adoc[].
 
 NOTE: Phần này chỉ đề cập cách đóng gói bằng jar.
-Nếu chọn đóng gói ứng dụng thành file war, hãy xem tài liệu của server và IDE.
+Nếu chọn đóng gói ứng dụng thành war file, hãy xem tài liệu của server và IDE.
 
 
 
@@ -27,14 +27,14 @@ Maven có plugin cho https://maven.apache.org/plugins/maven-eclipse-plugin/[Ecli
 Gradle cung cấp plugin cho {url-gradle-docs}/userguide.html[nhiều IDE].
 
 TIP: Nếu vô tình chạy ứng dụng web hai lần, bạn sẽ gặp lỗi "`Port already in use`".
-Người dùng Spring Tools có thể dùng nút `Relaunch` thay cho `Run` để bảo đảm instance hiện có được đóng.
+Người dùng Spring Tools có thể dùng nút `Relaunch` thay cho `Run` để bảo đảm instance hiện có được đóng lại.
 
 
 
 [[using.running-your-application.as-a-packaged-application]]
 == Chạy ứng dụng đã đóng gói
 
-Nếu dùng Maven hoặc Gradle plugin của Spring Boot để tạo executable jar, bạn có thể chạy ứng dụng bằng `java -jar`, như ví dụ sau:
+Nếu dùng các plugin Maven hoặc Gradle của Spring Boot để tạo executable jar, bạn có thể chạy ứng dụng bằng `java -jar`, như ví dụ sau:
 
 [source,shell]
 ----
@@ -77,7 +77,7 @@ $ export MAVEN_OPTS=-Xmx1024m
 == Sử dụng Gradle plugin
 
 Gradle plugin của Spring Boot cũng có task `bootRun`, dùng để chạy ứng dụng ở dạng exploded.
-Task `bootRun` được thêm khi bạn áp dụng các plugin `org.springframework.boot` và `java`, như ví dụ sau:
+Mỗi khi bạn áp dụng các plugin `org.springframework.boot` và `java`, task `bootRun` được thêm, như ví dụ sau:
 
 [source,shell]
 ----

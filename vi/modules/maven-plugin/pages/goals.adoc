@@ -1,5 +1,5 @@
 [[goals]]
-= Goals
+= Các goal
 
 Spring Boot Plugin có các goal sau:
 

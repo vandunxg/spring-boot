@@ -1,21 +1,21 @@
 [[packaging.aot]]
-= Ahead-of-Time Processing với JVM
+= Xử lý Ahead-of-Time với JVM
 
-Chạy application bằng AOT-generated initialization code có lợi cho startup time.
-Trước tiên cần đảm bảo jar được build có AOT-generated code.
+Việc chạy application bằng initialization code được AOT generate giúp cải thiện startup time.
+Trước tiên, cần đảm bảo JAR đang được build có chứa code được AOT generate.
 
-NOTE: Có thể kết hợp AOT cache và Spring AOT để cải thiện startup time hơn nữa.
+NOTE: Có thể kết hợp AOT cache và Spring AOT để tiếp tục cải thiện startup time.
 
-Với Maven, build bằng `-Pnative` để activate profile `native`:
+Với Maven, cần build bằng `-Pnative` để activate profile `native`:
 
 [source,shell]
 ----
 $ mvn -Pnative package
 ----
 
-Với Gradle, đảm bảo build có plugin `org.springframework.boot.aot`.
+Với Gradle, cần đảm bảo build có plugin `org.springframework.boot.aot`.
 
-Khi JAR đã build, chạy với system property `spring.aot.enabled=true`:
+Khi JAR đã được build, chạy với system property `spring.aot.enabled` được set thành `true`. Ví dụ:
 
 [source,shell]
 ----
@@ -24,11 +24,12 @@ $ java -Dspring.aot.enabled=true -jar myapplication.jar
 ........ Starting AOT-processed MyApplication ...
 ----
 
-Ahead-of-time processing có các hạn chế:
+Lưu ý rằng việc sử dụng ahead-of-time processing có một số bất lợi.
+Điều này kéo theo các hạn chế sau:
 
-* Classpath cố định và được định nghĩa hoàn toàn tại build time.
-* Bean trong application không thể thay đổi runtime, nghĩa là:
-- Annotation Spring javadoc:org.springframework.context.annotation.Profile[format=annotation] và profile-specific configuration xref:how-to:aot.adoc#howto.aot.conditions[có hạn chế].
-- Property thay đổi việc bean có được tạo hay không không được hỗ trợ (ví dụ javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnProperty[format=annotation] và property `.enabled`).
+* Classpath được cố định và xác định đầy đủ tại build time
+* Các bean được định nghĩa trong application không thể thay đổi tại runtime, nghĩa là:
+- Annotation Spring javadoc:org.springframework.context.annotation.Profile[format=annotation] và configuration theo profile xref:how-to:aot.adoc#howto.aot.conditions[có những hạn chế].
+- Không hỗ trợ các property thay đổi tùy theo việc một bean có được tạo hay không (ví dụ javadoc:org.springframework.boot.autoconfigure.condition.ConditionalOnProperty[format=annotation] và các property `.enabled`).
 
-Để tìm hiểu thêm, xem xref:packaging/native-image/introducing-graalvm-native-images.adoc#packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing[].
+Để tìm hiểu thêm về ahead-of-time processing, xem section xref:packaging/native-image/introducing-graalvm-native-images.adoc#packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing[].

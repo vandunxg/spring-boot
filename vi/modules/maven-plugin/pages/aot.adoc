@@ -1,60 +1,66 @@
 [[aot]]
-= Ahead-of-Time Processing
+= Xử lý Ahead-of-Time
 
-Spring AOT là process analyze application tại build-time và generate optimized version.
-Đây là bước bắt buộc để chạy Spring `ApplicationContext` trong native image.
+Spring AOT là một process phân tích application tại build-time và tạo ra một version đã được optimize.
+Đây là bước bắt buộc để chạy Spring `ApplicationContext` trong một native image.
 
-NOTE: Để xem overview support GraalVM Native Images trong Spring Boot, xem xref:reference:packaging/native-image/index.adoc[reference documentation].
+NOTE: Để xem tổng quan về support cho GraalVM Native Images trong Spring Boot, xem xref:reference:packaging/native-image/index.adoc[tài liệu tham khảo].
 
-Spring Boot Maven plugin cung cấp goal dùng thực hiện AOT processing trên cả application code và test code.
+Spring Boot Maven plugin cung cấp các goal có thể dùng để thực hiện AOT processing trên cả application code và test code.
+
+
+
 
 [[aot.processing-applications]]
-== Processing Applications
+== Xử lý Application
 
-Để configure application dùng feature này, thêm execution cho goal `process-aot`:
+Để configure application sử dụng feature này, thêm một execution cho goal `process-aot`, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$aot/pom.xml[tags=aot]
 ----
 
-Vì `BeanFactory` được prepare đầy đủ tại build-time, condition cũng được evaluate.
-Điều này khác quan trọng so với regular Spring Boot application làm tại runtime.
-Ví dụ nếu muốn opt-in hoặc opt-out một số feature, cần configure environment dùng tại build time.
-Goal `process-aot` share một số property với xref:run.adoc[run goal] vì lý do này.
+Vì `BeanFactory` được chuẩn bị đầy đủ tại build-time, các condition cũng được evaluate.
+Điều này khác biệt đáng kể so với cách một regular Spring Boot application hoạt động tại runtime.
+Ví dụ, nếu muốn opt-in hoặc opt-out một số feature, bạn cần configure environment được sử dụng tại build-time để thực hiện việc đó.
+Vì lý do này, goal `process-aot` dùng chung một số property với xref:run.adoc[run goal].
+
+
+
 
 [[aot.processing-applications.using-the-native-profile]]
-=== Dùng Native Profile
+=== Sử dụng Native Profile
 
-Nếu dùng `spring-boot-starter-parent` làm `parent` của project, profile `native` có thể streamline các step cần để build native image.
+Nếu sử dụng `spring-boot-starter-parent` làm `parent` của project, bạn có thể sử dụng profile `native` để rút gọn các step cần thiết nhằm build một native image.
 
-Profile `native` configure:
+Profile `native` cấu hình các nội dung sau:
 
-* Execution `process-aot` khi Spring Boot Maven Plugin apply trên project.
-* Suitable setting để xref:build-image.adoc[build-image] generate native image.
-* Sensible default cho {url-native-build-tools-docs-maven-plugin}[Native Build Tools Maven Plugin], đặc biệt:
-** Đảm bảo plugin dùng raw classpath, không phải main jar file vì nó không hiểu repackaged jar format.
-** Validate suitable GraalVM version available.
+* Thực thi `process-aot` khi Spring Boot Maven Plugin được áp dụng trên một project.
+* Các setting phù hợp để xref:build-image.adoc[build-image] tạo ra một native image.
+* Các default hợp lý cho {url-native-build-tools-docs-maven-plugin}[Native Build Tools Maven Plugin], cụ thể:
+** Đảm bảo plugin sử dụng raw classpath, thay vì main jar file, vì plugin không hiểu repackaged jar format của chúng ta.
+** Xác thực rằng có sẵn một phiên bản GraalVM phù hợp.
 ** Download third-party reachability metadata.
 
 [WARNING]
 ====
-Dùng raw classpath nghĩa là native image không biết generated `MANIFEST.MF`.
-Nếu cần read content manifest trong native image, ví dụ lấy implementation version của application, configure option `classesDirectory` để dùng regular jar.
+Việc sử dụng raw classpath có nghĩa là native image không biết về `MANIFEST.MF` được generate.
+Nếu cần đọc content của manifest trong native image, chẳng hạn để lấy implementation version của application, hãy configure option `classesDirectory` để sử dụng regular jar.
 ====
 
-Để hưởng lợi profile `native`, module đại diện application nên define hai plugin:
+Để sử dụng profile `native`, một module đại diện cho một application nên define hai plugin, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$aot-native/pom.xml[tags=aot-native]
 ----
 
-Single project có thể trigger generate native image trên command line bằng xref:how-to:native-image/developing-your-first-application.adoc#howto.native-image.developing-your-first-application.buildpacks.maven[Cloud Native Buildpacks] hoặc xref:how-to:native-image/developing-your-first-application.adoc#howto.native-image.developing-your-first-application.native-build-tools.maven[Native Image Build Tools].
+Một project đơn có thể trigger việc tạo native image trên command line bằng xref:how-to:native-image/developing-your-first-application.adoc#howto.native-image.developing-your-first-application.buildpacks.maven[Cloud Native Buildpacks] hoặc xref:how-to:native-image/developing-your-first-application.adoc#howto.native-image.developing-your-first-application.native-build-tools.maven[Native Image Build Tools].
 
-Để dùng profile `native` với multi-module project, có thể tạo customization của profile để invoke technique ưa thích.
+Để sử dụng profile `native` với một multi-module project, bạn có thể tạo một customization của profile để sử dụng phương pháp ưa thích.
 
-Để bind Cloud Native Buildpacks trong phase `package`, thêm vào root POM:
+Để bind Cloud Native Buildpacks trong phase `package`, thêm nội dung sau vào root POM của multi-module project:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
@@ -68,51 +74,54 @@ Ví dụ sau làm tương tự cho Native Build Tools:
 include::example$aot-native-profile-nbt/pom.xml[tags=profile]
 ----
 
-Sau đó build multi-module project và generate native image trong relevant sub-module:
+Sau khi thực hiện các bước trên, bạn có thể build multi-module project và tạo native image trong các sub-module liên quan, như trong ví dụ sau:
 
 [source,shell]
 ----
 $ mvn package -Pnative
 ----
 
-NOTE: "Relevant" sub-module là module đại diện Spring Boot application.
-Module đó phải define Native Build Tools và Spring Boot plugin như mô tả trên.
+NOTE: Một sub-module "liên quan" là một module đại diện cho một Spring Boot application.
+Module đó phải define Native Build Tools và Spring Boot plugins như mô tả ở trên.
 
 include::partial$goals/process-aot.adoc[leveloffset=+1]
 
+
+
+
 [[aot.processing-tests]]
-== Processing Tests
+== Xử lý Test
 
-AOT engine có thể apply cho JUnit 5 test dùng Spring Test Context Framework.
-Các test được AOT engine process rồi execute trong native image.
+AOT engine có thể được áp dụng cho các JUnit 5 test sử dụng Spring Test Context Framework.
+Các test đó được AOT engine process rồi execute trong một native image.
 
-NOTE: Test không process khi regular test skip bằng property `maven.test.skip`.
+NOTE: Test không được process khi regular test bị skip bằng property `maven.test.skip`.
 
-Giống <<aot.processing-applications.using-the-native-profile,production code>>, `spring-boot-starter-parent` define profile `nativeTest` dùng streamline step cần execute test trong native image.
+Giống như <<aot.processing-applications.using-the-native-profile,code production>>, `spring-boot-starter-parent` define một profile `nativeTest` có thể dùng để rút gọn các step cần thiết nhằm execute test trong một native image.
 
-Profile `nativeTest` configure:
+Profile `nativeTest` cấu hình các nội dung sau:
 
-* Execution `process-test-aot` khi Spring Boot Maven Plugin apply trên project.
-* Execution `test` khi {url-native-build-tools-docs-maven-plugin}[Native Build Tools Maven Plugin] apply.
-Execution define sensible default, đặc biệt:
-** Đảm bảo plugin dùng raw classpath, không phải main jar file vì không hiểu repackaged jar format.
-** Validate suitable GraalVM version available.
+* Thực thi `process-test-aot` khi Spring Boot Maven Plugin được áp dụng trên một project.
+* Thực thi `test` khi {url-native-build-tools-docs-maven-plugin}[Native Build Tools Maven Plugin] được áp dụng trên một project.
+Execution này define các default hợp lý, cụ thể:
+** Đảm bảo plugin sử dụng raw classpath, thay vì main jar file, vì plugin không hiểu repackaged jar format của chúng ta.
+** Xác thực rằng có sẵn một phiên bản GraalVM phù hợp.
 ** Download third-party reachability metadata.
 
-Để dùng profile `nativeTest`, module đại diện application nên define hai plugin:
+Để sử dụng profile `nativeTest`, một module đại diện cho một application nên define hai plugin, như trong ví dụ sau:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$aot-native/pom.xml[tags=aot-native]
 ----
 
-Sau khi setup cho mỗi module cần feature này, build multi-module project và execute test trong native image ở relevant sub-module:
+Sau khi setup cho mỗi module cần feature này, bạn có thể build multi-module project và execute test trong một native image ở các sub-module liên quan, như trong ví dụ sau:
 
 [source,shell]
 ----
 $ mvn test -PnativeTest
 ----
 
-NOTE: Giống application AOT processing, `BeanFactory` được prepare đầy đủ tại build-time.
+NOTE: Cũng như application AOT processing, `BeanFactory` được chuẩn bị đầy đủ tại build-time.
 
 include::partial$goals/process-test-aot.adoc[leveloffset=+1]

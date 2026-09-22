@@ -1,7 +1,7 @@
 [[security]]
-= Security
+= Bảo mật
 
-Spring Boot cung cấp hỗ trợ hữu ích cho các general-purpose security feature như OAuth2 và SAML 2.0.
+Spring Boot cung cấp hỗ trợ hữu ích cho các security feature dùng chung như OAuth2 và SAML 2.0.
 Phần này trình bày các security concern dùng chung đó.
 
-Nếu cần bảo mật web application, xem xref:web/spring-security.adoc#web.security[phần web security] thay vì phần này.
+Nếu bạn đang tìm cách bảo mật web application, hãy xem xref:web/spring-security.adoc#web.security[phần web security] thay vì phần này.

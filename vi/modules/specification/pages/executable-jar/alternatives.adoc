@@ -1,5 +1,5 @@
 [[appendix.executable-jar.alternatives]]
-= Giải pháp Single Jar thay thế
+= Các giải pháp Single Jar thay thế
 
 Nếu các hạn chế ở trên khiến bạn không dùng được Spring Boot Loader, hãy cân nhắc các lựa chọn thay thế sau:
 

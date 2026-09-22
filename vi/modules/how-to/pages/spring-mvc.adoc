@@ -1,26 +1,30 @@
 [[howto.spring-mvc]]
 = Spring MVC
 
-Spring Boot có một số starter include Spring MVC.
-Lưu ý một số starter depend vào Spring MVC thay vì include trực tiếp.
+Spring Boot có một số starter bao gồm Spring MVC.
+Lưu ý rằng một số starter có dependency vào Spring MVC thay vì include trực tiếp Spring MVC.
 Phần này trả lời các câu hỏi phổ biến về Spring MVC và Spring Boot.
+
+
 
 [[howto.spring-mvc.write-json-rest-service]]
 == Viết JSON REST Service
 
-Mọi Spring javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] trong Spring Boot application mặc định nên render JSON response miễn là Jackson 3 có trên classpath:
+Bất kỳ Spring javadoc:org.springframework.web.bind.annotation.RestController[format=annotation] nào trong một Spring Boot application cũng mặc định render JSON response miễn là Jackson 3 có trên classpath, như trong ví dụ sau:
 
 include-code::MyController[]
 
-Miễn `MyThing` có thể serialize bởi Jackson 3, điều đúng với normal POJO hoặc Groovy object, thì `http://localhost:8080/thing` mặc định serve JSON representation.
-Lưu ý trong browser đôi khi có thể thấy XML response vì browser thường gửi accept header ưu tiên XML.
+Miễn là `MyThing` có thể được Jackson 3 serialize (đúng với một POJO hoặc Groovy object thông thường), `http://localhost:8080/thing` sẽ mặc định cung cấp JSON representation của nó.
+Lưu ý rằng trong browser, đôi khi bạn có thể thấy XML response vì browser thường gửi các accept header ưu tiên XML.
+
+
 
 [[howto.spring-mvc.write-xml-rest-service]]
 == Viết XML REST Service
 
-Nếu Jackson XML extension (`jackson-dataformat-xml`) có trên classpath, có thể dùng nó render XML response.
-Ví dụ trước dùng cho JSON cũng hoạt động.
-Để dùng Jackson XML renderer, thêm dependency:
+Nếu Jackson XML extension (`jackson-dataformat-xml`) có trên classpath, bạn có thể dùng extension này để render XML response.
+Ví dụ trước đó mà chúng ta dùng cho JSON cũng sẽ hoạt động.
+Để dùng Jackson XML renderer, hãy thêm dependency sau vào project:
 
 [source,xml]
 ----
@@ -30,11 +34,11 @@ Ví dụ trước dùng cho JSON cũng hoạt động.
 </dependency>
 ----
 
-Nếu Jackson XML extension không available và JAXB available, XML có thể render với requirement bổ sung là `MyThing` annotate javadoc:jakarta.xml.bind.annotation.XmlRootElement[format=annotation]:
+Nếu Jackson XML extension không available nhưng JAXB available, XML có thể được render với requirement bổ sung là `MyThing` phải được annotate bằng javadoc:jakarta.xml.bind.annotation.XmlRootElement[format=annotation], như trong ví dụ sau:
 
 include-code::MyThing[]
 
-Cần đảm bảo JAXB library thuộc project, ví dụ thêm:
+Bạn cần đảm bảo JAXB library là một phần của project, chẳng hạn bằng cách thêm:
 
 [source,xml]
 ----
@@ -44,14 +48,16 @@ Cần đảm bảo JAXB library thuộc project, ví dụ thêm:
 </dependency>
 ----
 
-NOTE: Để server render XML thay JSON, có thể cần gửi header `Accept: text/xml` hoặc dùng browser.
+NOTE: Để server render XML thay vì JSON, bạn có thể phải gửi header `Accept: text/xml` (hoặc dùng browser).
+
+
 
 [[howto.spring-mvc.customize-jackson-jsonmapper]]
-== Customize Jackson JsonMapper
+== Tùy chỉnh Jackson JsonMapper
 
-Có thể configure javadoc:tools.jackson.databind.json.JsonMapper[] bằng environment.
-Jackson cung cấp extensive suite on/off feature dùng configure nhiều aspect của processing.
-Các feature được mô tả trong nhiều enum của Jackson map sang property trong environment:
+Bạn có thể configure javadoc:tools.jackson.databind.json.JsonMapper[] bằng environment.
+Jackson cung cấp một bộ on/off feature phong phú để configure nhiều khía cạnh trong quá trình processing.
+Các feature này được mô tả trong một số enum (trong Jackson), ánh xạ tới các property trong environment:
 
 |===
 | Enum | Property | Values
@@ -93,68 +99,74 @@ Các feature được mô tả trong nhiều enum của Jackson map sang propert
 | `true`, `false`
 |===
 
-Ví dụ để enable pretty print, set `spring.jackson.serialization.indent_output=true`.
-Nhờ xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.relaxed-binding[relaxed binding], case của `indent_output` không cần match enum constant tương ứng `INDENT_OUTPUT`.
+Ví dụ, để enable pretty print, hãy set `spring.jackson.serialization.indent_output=true`.
+Lưu ý rằng nhờ xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.relaxed-binding[relaxed binding], case của `indent_output` không cần khớp với case của enum constant tương ứng là `INDENT_OUTPUT`.
 
-Environment-based configuration này được apply vào auto-configured bean javadoc:tools.jackson.databind.json.JsonMapper$Builder[] và mọi mapper tạo bằng builder, gồm auto-configured bean javadoc:tools.jackson.databind.json.JsonMapper[].
+Configuration dựa trên environment này được apply vào auto-configured javadoc:tools.jackson.databind.json.JsonMapper$Builder[] bean và áp dụng cho mọi mapper được tạo bằng builder, bao gồm cả auto-configured javadoc:tools.jackson.databind.json.JsonMapper[] bean.
 
-Để giúp migration application trước đây dùng Jackson 2, auto-configured `JsonMapper` có thể configure dùng default gần nhất với default Spring Boot từng dùng cho Jackson 2.
-Để enable, set configprop:spring.jackson.use-jackson2-defaults[] thành `true`.
+Để hỗ trợ migration cho một application trước đây dùng Jackson 2, auto-configured `JsonMapper` có thể được configure để dùng các default gần nhất có thể với những default Spring Boot từng dùng cho Jackson 2.
+Để enable các default này, hãy set configprop:spring.jackson.use-jackson2-defaults[] thành `true`.
 
-javadoc:tools.jackson.databind.json.JsonMapper$Builder[] trong context có thể customize bằng một hoặc nhiều bean javadoc:org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer[].
-Customizer bean có thể order; customizer của Boot có order 0, cho phép apply customization trước hoặc sau Boot.
-Ngoài ra `JsonFactory` mà builder dùng và mapper nó tạo có thể customize bằng một hoặc nhiều bean javadoc:org.springframework.boot.jackson.autoconfigure.JsonFactoryBuilderCustomizer[].
-Các property `spring.jackson.factory` cũng có thể dùng configure factory.
+javadoc:tools.jackson.databind.json.JsonMapper$Builder[] của context có thể được customize bằng một hoặc nhiều javadoc:org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer[] bean.
+Các customizer bean có thể được order (customizer của Boot có order bằng 0), cho phép áp dụng customization bổ sung cả trước và sau customization của Boot.
+Ngoài ra, `JsonFactory` được builder sử dụng và mapper mà nó tạo ra có thể được customize bằng một hoặc nhiều javadoc:org.springframework.boot.jackson.autoconfigure.JsonFactoryBuilderCustomizer[] bean.
+Bạn cũng có thể dùng nhiều property `spring.jackson.factory` để configure factory.
 
-Mọi bean type javadoc:tools.jackson.databind.JacksonModule[] tự động register với auto-configured javadoc:tools.jackson.databind.json.JsonMapper$Builder[] và apply vào mọi instance javadoc:tools.jackson.databind.json.JsonMapper[] nó tạo.
-Điều này cung cấp application-wide mechanism để contribute custom module khi thêm feature mới.
+Mọi bean có type javadoc:tools.jackson.databind.JacksonModule[] đều được tự động register với auto-configured javadoc:tools.jackson.databind.json.JsonMapper$Builder[] và được áp dụng cho mọi javadoc:tools.jackson.databind.json.JsonMapper[] instance mà builder tạo ra.
+Điều này cung cấp một cơ chế application-wide để contribute custom module khi bạn thêm feature mới vào application.
 
-Mọi module tham gia Java `ServiceLoader` mechanism mặc định được find và add vào auto-configured JsonMapper.Builder.
-Để disable behavior, set configprop:spring.jackson.find-and-add-modules[] thành `false`.
+Theo mặc định, mọi module tham gia cơ chế Java `ServiceLoader` đều được tìm thấy và thêm vào auto-configured javadoc:tools.jackson.databind.json.JsonMapper$Builder[].
+Để disable behavior này, hãy set configprop:spring.jackson.find-and-add-modules[] thành `false`.
 
-Nếu muốn replace hoàn toàn default javadoc:tools.jackson.databind.json.JsonMapper[], define Bean type đó hoặc, nếu thích builder-based approach, define Bean javadoc:tools.jackson.databind.json.JsonMapper$Builder[].
-Khi define javadoc:tools.jackson.databind.json.JsonMapper[] bean, khuyến nghị mark javadoc:org.springframework.context.annotation.Primary[format=annotation] vì auto-configured javadoc:tools.jackson.databind.json.JsonMapper[] mà nó replace cũng là Primary.
-Lưu ý trong cả hai case, làm vậy disable toàn bộ auto-configuration của JsonMapper.
+Nếu muốn replace hoàn toàn javadoc:tools.jackson.databind.json.JsonMapper[] mặc định, hãy define một javadoc:org.springframework.context.annotation.Bean[format=annotation] có type đó hoặc, nếu thích builder-based approach, hãy define một javadoc:tools.jackson.databind.json.JsonMapper$Builder[] javadoc:org.springframework.context.annotation.Bean[format=annotation].
+Khi define javadoc:tools.jackson.databind.json.JsonMapper[] bean, nên đánh dấu bean đó bằng javadoc:org.springframework.context.annotation.Primary[format=annotation], vì auto-configured javadoc:tools.jackson.databind.json.JsonMapper[] mà bean này replace cũng là javadoc:org.springframework.context.annotation.Primary[format=annotation].
+Lưu ý rằng trong cả hai trường hợp, việc này sẽ disable toàn bộ auto-configuration của javadoc:tools.jackson.databind.json.JsonMapper[].
 
-Nếu cung cấp Bean type javadoc:org.springframework.http.converter.json.JacksonJsonHttpMessageConverter[], chúng replace default value trong MVC configuration.
-Cũng có thể declare bean javadoc:org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer[] để thêm converter hoặc override specific default converter, như mô tả trong xref:reference:web/servlet.adoc#web.servlet.spring-mvc.message-converters[].
+Nếu bạn cung cấp bất kỳ javadoc:org.springframework.context.annotation.Bean[format=annotation] nào có type javadoc:org.springframework.http.converter.json.JacksonJsonHttpMessageConverter[], chúng sẽ replace giá trị mặc định trong MVC configuration.
+Bạn cũng có thể declare các javadoc:org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer[] bean để thêm converter hoặc override một default converter cụ thể, như được mô tả trong xref:reference:web/servlet.adoc#web.servlet.spring-mvc.message-converters[].
 
-Xem xref:spring-mvc.adoc#howto.spring-mvc.customize-responsebody-rendering[] và source {code-spring-boot-webmvc-src}/autoconfigure/WebMvcAutoConfiguration.java[`WebMvcAutoConfiguration`] để biết thêm.
+Xem section xref:spring-mvc.adoc#howto.spring-mvc.customize-responsebody-rendering[] và source code {code-spring-boot-webmvc-src}/autoconfigure/WebMvcAutoConfiguration.java[`WebMvcAutoConfiguration`] để biết thêm chi tiết.
+
+
 
 [[howto.spring-mvc.customize-responsebody-rendering]]
-== Customize @ResponseBody Rendering
+== Tùy chỉnh @ResponseBody Rendering
 
-Spring dùng javadoc:org.springframework.http.converter.HttpMessageConverters[] để render javadoc:org.springframework.web.bind.annotation.ResponseBody[format=annotation] hoặc response từ javadoc:org.springframework.web.bind.annotation.RestController[format=annotation].
-Có thể contribute additional converter bằng cách thêm bean type phù hợp vào Spring Boot context.
-Nếu bean thêm vào là type vốn mặc định cũng được include, như javadoc:org.springframework.http.converter.json.JacksonJsonHttpMessageConverter[] cho JSON conversion, nó replace default value.
-Để kiểm soát nhiều hơn, declare bean javadoc:org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer[] để chọn converter add trước default hoặc override specific default converter.
-Converter client dùng được configure riêng bằng bean javadoc:org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer[].
+Spring dùng javadoc:org.springframework.http.converter.HttpMessageConverters[] để render javadoc:org.springframework.web.bind.annotation.ResponseBody[format=annotation] (hoặc các response từ javadoc:org.springframework.web.bind.annotation.RestController[format=annotation]).
+Bạn có thể contribute thêm converter bằng cách thêm bean có type phù hợp vào Spring Boot context.
+Nếu bean bạn thêm có type vốn đã được include theo mặc định (chẳng hạn javadoc:org.springframework.http.converter.json.JacksonJsonHttpMessageConverter[] cho JSON conversion), bean đó sẽ replace giá trị mặc định.
+Để kiểm soát nhiều hơn, hãy declare các javadoc:org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer[] bean, cho phép bạn chọn thêm converter trước các converter mặc định hoặc override một default converter cụ thể.
+Các converter được client sử dụng được configure riêng bằng các javadoc:org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer[] bean.
 
-Như normal MVC usage, bean javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] cũng có thể contribute converter bằng cách override method `configureMessageConverters`.
-Tuy nhiên khác normal MVC, bạn chỉ cần cung cấp additional converter cần thiết vì Spring Boot dùng cùng mechanism để contribute default.
-Cuối cùng nếu opt out default Spring Boot MVC configuration bằng configuration javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation] riêng, có thể kiểm soát hoàn toàn và làm mọi thứ thủ công bằng `getMessageConverters` từ javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport[].
+Như trong normal MVC usage, bất kỳ javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurer[] bean nào bạn cung cấp cũng có thể contribute converter bằng cách override method `configureMessageConverters`.
+Tuy nhiên, khác với normal MVC, bạn chỉ cần cung cấp các converter bổ sung cần thiết (vì Spring Boot dùng cùng mechanism để contribute các converter mặc định của mình).
+Cuối cùng, nếu opt out khỏi default Spring Boot MVC configuration bằng cách cung cấp configuration riêng với javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation], bạn có thể hoàn toàn tự kiểm soát và thực hiện mọi việc thủ công bằng `getMessageConverters` từ javadoc:org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport[].
 
-Xem source {code-spring-boot-webmvc-src}/autoconfigure/WebMvcAutoConfiguration.java[`WebMvcAutoConfiguration`].
+Xem source code {code-spring-boot-webmvc-src}/autoconfigure/WebMvcAutoConfiguration.java[`WebMvcAutoConfiguration`] để biết thêm chi tiết.
+
+
 
 [[howto.spring-mvc.multipart-file-uploads]]
 == Xử lý Multipart File Uploads
 
-Spring Boot sử dụng servlet 5 API javadoc:jakarta.servlet.http.Part[] để support upload file.
-Mặc định Spring Boot configure Spring MVC với maximum 1MB mỗi file và maximum 10MB file data trong một request.
-Có thể override các value này, location lưu intermediate data, ví dụ `/tmp`, và threshold sau đó data được flush xuống disk bằng property expose trong class javadoc:org.springframework.boot.servlet.autoconfigure.MultipartProperties[].
-Ví dụ nếu muốn file unlimited, set configprop:spring.servlet.multipart.max-file-size[] thành `-1`.
+Spring Boot sử dụng servlet 5 javadoc:jakarta.servlet.http.Part[] API để hỗ trợ upload file.
+Theo mặc định, Spring Boot configure Spring MVC với maximum size là 1MB cho mỗi file và maximum 10MB file data trong một request.
+Bạn có thể override các giá trị này, location nơi intermediate data được lưu (chẳng hạn directory `/tmp`), và threshold mà sau đó data được flush xuống disk bằng các property được expose trong class javadoc:org.springframework.boot.servlet.autoconfigure.MultipartProperties[].
+Ví dụ, nếu muốn chỉ định rằng file không bị giới hạn, hãy set property configprop:spring.servlet.multipart.max-file-size[] thành `-1`.
 
-Multipart support hữu ích khi muốn nhận multipart encoded file data như parameter annotate javadoc:org.springframework.web.bind.annotation.RequestParam[format=annotation] type javadoc:org.springframework.web.multipart.MultipartFile[] trong Spring MVC controller handler method.
+Multipart support hữu ích khi bạn muốn nhận multipart encoded file data dưới dạng parameter được annotate bằng javadoc:org.springframework.web.bind.annotation.RequestParam[format=annotation], có type javadoc:org.springframework.web.multipart.MultipartFile[], trong controller handler method của Spring MVC.
 
-Xem source {code-spring-boot-servlet-src}/autoconfigure/MultipartAutoConfiguration.java[`MultipartAutoConfiguration`].
+Xem source {code-spring-boot-servlet-src}/autoconfigure/MultipartAutoConfiguration.java[`MultipartAutoConfiguration`] để biết thêm chi tiết.
 
-NOTE: Khuyến nghị dùng built-in support của container cho multipart upload thay vì thêm dependency như Apache Commons File Upload.
+NOTE: Bạn nên dùng built-in support của container cho multipart upload thay vì thêm dependency như Apache Commons File Upload.
+
+
 
 [[howto.spring-mvc.switch-off-dispatcherservlet]]
-== Switch Off Spring MVC DispatcherServlet
+== Tắt Spring MVC DispatcherServlet
 
-Mặc định mọi content serve từ root application (`/`).
-Nếu muốn map sang path khác, configure:
+Theo mặc định, mọi content được serve từ root của application (`/`).
+Nếu muốn map tới một path khác, bạn có thể configure như sau:
 
 [configprops,yaml]
 ----
@@ -164,83 +176,89 @@ spring:
       path: "/mypath"
 ----
 
-Nếu có additional servlet, declare javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:jakarta.servlet.Servlet[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] cho từng servlet và Spring Boot transparently register vào container.
+Nếu có additional servlet, bạn có thể declare một javadoc:org.springframework.context.annotation.Bean[format=annotation] có type javadoc:jakarta.servlet.Servlet[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] cho mỗi servlet, và Spring Boot sẽ transparently register chúng với container.
 Cũng có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistration[format=annotation] làm annotation-based alternative cho javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[].
-Vì servlet register theo cách này, chúng có thể map vào sub-context của javadoc:org.springframework.web.servlet.DispatcherServlet[] mà không invoke nó.
+Vì các servlet được register theo cách đó, chúng có thể được map vào một sub-context của javadoc:org.springframework.web.servlet.DispatcherServlet[] mà không invoke nó.
 
-Tự configure javadoc:org.springframework.boot.webmvc.autoconfigure.DispatcherServletPath[] là unusual nhưng nếu thực sự cần, cũng phải cung cấp javadoc:org.springframework.context.annotation.Bean[format=annotation] type javadoc:org.springframework.boot.webmvc.autoconfigure.DispatcherServletPath[] để cung cấp path của custom javadoc:org.springframework.web.servlet.DispatcherServlet[].
+Việc tự configure javadoc:org.springframework.boot.webmvc.autoconfigure.DispatcherServletPath[] là unusual, nhưng nếu thực sự cần làm vậy, bạn cũng phải cung cấp một javadoc:org.springframework.context.annotation.Bean[format=annotation] có type javadoc:org.springframework.boot.webmvc.autoconfigure.DispatcherServletPath[] để cung cấp path của custom javadoc:org.springframework.web.servlet.DispatcherServlet[].
+
+
 
 [[howto.spring-mvc.switch-off-default-configuration]]
-== Switch Off Default MVC Configuration
+== Tắt Default MVC Configuration
 
-Cách dễ nhất để kiểm soát hoàn toàn MVC configuration là cung cấp javadoc:org.springframework.context.annotation.Configuration[format=annotation] riêng với annotation javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
-Làm vậy để toàn bộ MVC configuration trong tay bạn.
+Cách dễ nhất để hoàn toàn kiểm soát MVC configuration là cung cấp javadoc:org.springframework.context.annotation.Configuration[format=annotation] của riêng bạn với annotation javadoc:org.springframework.web.servlet.config.annotation.EnableWebMvc[format=annotation].
+Việc này để toàn bộ MVC configuration do bạn kiểm soát.
+
+
 
 [[howto.spring-mvc.customize-view-resolvers]]
-== Customize ViewResolvers
+== Tùy chỉnh ViewResolvers
 
-javadoc:org.springframework.web.servlet.ViewResolver[] là core component của Spring MVC, translate view name trong javadoc:org.springframework.stereotype.Controller[format=annotation] thành implementation javadoc:org.springframework.web.servlet.View[].
-View resolver chủ yếu dùng trong UI application thay vì REST-style service; javadoc:org.springframework.web.servlet.View[] không dùng để render javadoc:org.springframework.web.bind.annotation.ResponseBody[format=annotation].
-Có nhiều implementation javadoc:org.springframework.web.servlet.ViewResolver[] và Spring tự nó không opinionated về loại nên dùng.
-Spring Boot cài một hoặc hai resolver tùy classpath và application context.
-javadoc:org.springframework.web.servlet.DispatcherServlet[] dùng mọi resolver tìm thấy trong application context, thử lần lượt cho tới khi có result.
-Nếu thêm resolver riêng, cần lưu ý order và position resolver được add.
+javadoc:org.springframework.web.servlet.ViewResolver[] là một core component của Spring MVC, chuyển đổi view name trong javadoc:org.springframework.stereotype.Controller[format=annotation] thành các implementation thực tế của javadoc:org.springframework.web.servlet.View[].
+Lưu ý rằng view resolver chủ yếu được dùng trong UI application, thay vì REST-style service (javadoc:org.springframework.web.servlet.View[] không được dùng để render javadoc:org.springframework.web.bind.annotation.ResponseBody[format=annotation]).
+Có nhiều implementation của javadoc:org.springframework.web.servlet.ViewResolver[] để lựa chọn, và bản thân Spring không opinionated về việc bạn nên dùng implementation nào.
+Mặt khác, Spring Boot cài đặt một hoặc hai resolver cho bạn, tùy thuộc vào những gì nó tìm thấy trên classpath và trong application context.
+javadoc:org.springframework.web.servlet.DispatcherServlet[] sử dụng tất cả resolver mà nó tìm thấy trong application context, thử từng resolver theo thứ tự cho tới khi có result.
+Nếu thêm resolver của riêng mình, bạn phải lưu ý order và vị trí mà resolver được thêm vào.
 
-javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration[] thêm các bean javadoc:org.springframework.web.servlet.ViewResolver[] sau:
+javadoc:org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration[] thêm các javadoc:org.springframework.web.servlet.ViewResolver[] bean sau vào context của bạn:
 
-* javadoc:org.springframework.web.servlet.view.InternalResourceViewResolver[] tên `defaultViewResolver`.
-  Resolver này locate physical resource có thể render bằng `DefaultServlet`, gồm static resource và JSP page nếu dùng.
-  Nó apply prefix và suffix vào view name rồi tìm physical resource theo path trong servlet context.
-  Default prefix/suffix đều rỗng nhưng có thể external configure bằng `spring.mvc.view.prefix` và `spring.mvc.view.suffix`.
-  Có thể override bằng bean cùng type.
-* javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[] tên `beanNameViewResolver`.
-  Đây là member hữu ích của view resolver chain và pick up bean có cùng name với View đang resolve.
-  Thường không cần override hoặc replace.
-* javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[] tên `viewResolver` chỉ được add nếu thực sự có bean type View.
-  Đây là composite resolver delegate tới các resolver khác và cố match HTTP header `Accept` do client gửi.
-  Có https://spring.io/blog/2013/06/03/content-negotiation-using-views[blog về javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[]] và source code để tìm hiểu thêm.
-  Có thể switch off auto-configured ContentNegotiatingViewResolver bằng bean tên `viewResolver`.
-* Nếu dùng Thymeleaf, có javadoc:org.thymeleaf.spring6.view.ThymeleafViewResolver[] tên `thymeleafViewResolver`.
-  Nó tìm resource bằng prefix/suffix quanh view name.
-  Prefix là `spring.thymeleaf.prefix`, suffix là `spring.thymeleaf.suffix`.
-  Default lần lượt `classpath:/templates/` và `.html`.
-  Override bằng bean cùng name.
-* Nếu dùng FreeMarker, có javadoc:org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver[] tên `freeMarkerViewResolver`.
-  Nó tìm resource trong loader path externalized thành `spring.freemarker.templateLoaderPath`, default `classpath:/templates/`, bằng prefix/suffix quanh view name.
-  Prefix externalize bằng `spring.freemarker.prefix`, suffix bằng `spring.freemarker.suffix`.
-  Default prefix rỗng và suffix `.ftlh`.
-  Override bằng bean cùng name.
-  FreeMarker variable có thể customize bằng bean type javadoc:org.springframework.boot.freemarker.autoconfigure.FreeMarkerVariablesCustomizer[].
-* Nếu dùng Groovy template, thực tế là nếu `groovy-templates` trên classpath, có javadoc:org.springframework.web.servlet.view.groovy.GroovyMarkupViewResolver[] tên `groovyMarkupViewResolver`.
-  Nó tìm resource trong loader path bằng prefix/suffix externalized thành `spring.groovy.template.prefix` và `spring.groovy.template.suffix`.
-  Default prefix/suffix là `classpath:/templates/` và `.tpl`.
-  Override bằng bean cùng name.
-* Nếu dùng Mustache, có javadoc:org.springframework.boot.mustache.servlet.view.MustacheViewResolver[] tên `mustacheViewResolver`.
-  Prefix là `spring.mustache.prefix` và suffix là `spring.mustache.suffix`.
-  Default là `classpath:/templates/` và `.mustache`.
-  Override bằng bean cùng name.
+* Một javadoc:org.springframework.web.servlet.view.InternalResourceViewResolver[] có tên '`defaultViewResolver`'.
+  Resolver này tìm các physical resource có thể được render bằng `DefaultServlet` (bao gồm static resource và JSP page, nếu bạn sử dụng chúng).
+  Resolver áp dụng prefix và suffix cho view name, sau đó tìm một physical resource có path đó trong servlet context (cả hai giá trị mặc định đều rỗng nhưng có thể cấu hình từ bên ngoài thông qua `spring.mvc.view.prefix` và `spring.mvc.view.suffix`).
+  Bạn có thể override resolver này bằng cách cung cấp một bean cùng type.
+* Một javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[] có tên '`beanNameViewResolver`'.
+  Đây là một thành phần hữu ích trong view resolver chain và tìm mọi bean có cùng name với javadoc:org.springframework.web.servlet.View[] đang được resolve.
+  Bạn không cần phải override hoặc replace resolver này.
+* Một javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[] có tên '`viewResolver`' chỉ được thêm nếu *thực sự có* các bean type javadoc:org.springframework.web.servlet.View[].
+  Đây là một composite resolver, delegate tới tất cả resolver khác và cố gắng tìm một match với HTTP header '`Accept`' do client gửi.
+  Có một https://spring.io/blog/2013/06/03/content-negotiation-using-views[blog về javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[]] hữu ích mà bạn có thể đọc để tìm hiểu thêm; bạn cũng có thể xem source code để biết chi tiết.
+  Bạn có thể switch off javadoc:org.springframework.web.servlet.view.ContentNegotiatingViewResolver[] được auto-configure bằng cách define một bean có tên '`viewResolver`'.
+* Nếu dùng Thymeleaf, bạn cũng có một javadoc:org.thymeleaf.spring6.view.ThymeleafViewResolver[] có tên '`thymeleafViewResolver`'.
+  Resolver này tìm resource bằng cách bao quanh view name bằng prefix và suffix.
+  Prefix là `spring.thymeleaf.prefix`, còn suffix là `spring.thymeleaf.suffix`.
+  Giá trị mặc định của prefix và suffix lần lượt là '`classpath:/templates/`' và '`.html`'.
+  Bạn có thể override javadoc:org.thymeleaf.spring6.view.ThymeleafViewResolver[] bằng cách cung cấp một bean có cùng name.
+* Nếu dùng FreeMarker, bạn cũng có một javadoc:org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver[] có tên '`freeMarkerViewResolver`'.
+  Resolver này tìm resource trong một loader path (được externalize thành `spring.freemarker.templateLoaderPath` và có giá trị mặc định là '`classpath:/templates/`') bằng cách bao quanh view name bằng prefix và suffix.
+  Prefix được externalize thành `spring.freemarker.prefix`, còn suffix được externalize thành `spring.freemarker.suffix`.
+  Giá trị mặc định của prefix là rỗng và suffix là '`.ftlh`'.
+  Bạn có thể override javadoc:org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver[] bằng cách cung cấp một bean có cùng name.
+  FreeMarker variables có thể được customize bằng cách define một bean có type javadoc:org.springframework.boot.freemarker.autoconfigure.FreeMarkerVariablesCustomizer[].
+* Nếu dùng Groovy templates (thực tế là nếu `groovy-templates` có trên classpath), bạn cũng có một javadoc:org.springframework.web.servlet.view.groovy.GroovyMarkupViewResolver[] có tên '`groovyMarkupViewResolver`'.
+  Resolver này tìm resource trong một loader path bằng cách bao quanh view name bằng prefix và suffix (được externalize thành `spring.groovy.template.prefix` và `spring.groovy.template.suffix`).
+  Giá trị mặc định của prefix và suffix lần lượt là '`classpath:/templates/`' và '`.tpl`'.
+  Bạn có thể override javadoc:org.springframework.web.servlet.view.groovy.GroovyMarkupViewResolver[] bằng cách cung cấp một bean có cùng name.
+* Nếu dùng Mustache, bạn cũng có một javadoc:org.springframework.boot.mustache.servlet.view.MustacheViewResolver[] có tên '`mustacheViewResolver`'.
+  Resolver này tìm resource bằng cách bao quanh view name bằng prefix và suffix.
+  Prefix là `spring.mustache.prefix`, còn suffix là `spring.mustache.suffix`.
+  Giá trị mặc định của prefix và suffix lần lượt là '`classpath:/templates/`' và '`.mustache`'.
+  Bạn có thể override javadoc:org.springframework.boot.mustache.servlet.view.MustacheViewResolver[] bằng cách cung cấp một bean có cùng name.
 
-Chi tiết xem:
+Để biết thêm chi tiết, xem các section sau:
 
 * {code-spring-boot-webmvc-src}/autoconfigure/WebMvcAutoConfiguration.java[`WebMvcAutoConfiguration`]
 * {code-spring-boot-thymeleaf-src}/autoconfigure/ThymeleafAutoConfiguration.java[`ThymeleafAutoConfiguration`]
 * {code-spring-boot-freemarker-src}/autoconfigure/FreeMarkerAutoConfiguration.java[`FreeMarkerAutoConfiguration`]
 * {code-spring-boot-groovy-templates-src}/autoconfigure/GroovyTemplateAutoConfiguration.java[`GroovyTemplateAutoConfiguration`]
 
-[[howto.spring-mvc.customize-whitelabel-error-page]]
-== Customize 'whitelabel' Error Page
 
-Spring Boot install "whitelabel" error page mà browser client thấy khi gặp server error; machine client consume JSON và media type khác nên thấy sensible response với đúng error code.
+
+[[howto.spring-mvc.customize-whitelabel-error-page]]
+== Tùy chỉnh '`whitelabel`' Error Page
+
+Spring Boot cài đặt một '`whitelabel`' error page mà bạn thấy trong browser client nếu gặp server error (machine client consume JSON và các media type khác nên nhận được response hợp lý với error code chính xác).
 
 NOTE: Set configprop:spring.web.error.whitelabel.enabled[] thành `false` để tắt default error page.
-Điều này restore default của servlet container đang dùng.
-Lưu ý Spring Boot vẫn cố resolve error view, nên thường nên thêm error page riêng thay vì disable hoàn toàn.
+Việc này khôi phục default của servlet container mà bạn đang sử dụng.
+Lưu ý rằng Spring Boot vẫn cố gắng resolve error view, vì vậy bạn có lẽ nên thêm error page riêng thay vì disable hoàn toàn.
 
-Override error page phụ thuộc templating technology.
-Ví dụ nếu dùng Thymeleaf, thêm template `error.html`.
-Nếu dùng FreeMarker, thêm template `error.ftlh`.
-Nhìn chung cần javadoc:org.springframework.web.servlet.View[] resolve với name `error` hoặc javadoc:org.springframework.stereotype.Controller[format=annotation] handle path `/error`.
-Trừ khi replace một số default configuration, javadoc:org.springframework.context.ApplicationContext[] sẽ có javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[], nên javadoc:org.springframework.context.annotation.Bean[format=annotation] tên `error` là một cách thực hiện.
-Xem {code-spring-boot-webmvc-src}/autoconfigure/error/ErrorMvcAutoConfiguration.java[`ErrorMvcAutoConfiguration`] để biết thêm option.
+Việc override error page bằng page riêng phụ thuộc vào templating technology bạn sử dụng.
+Ví dụ, nếu dùng Thymeleaf, bạn có thể thêm template `error.html`.
+Nếu dùng FreeMarker, bạn có thể thêm template `error.ftlh`.
+Nhìn chung, bạn cần một javadoc:org.springframework.web.servlet.View[] resolve với name là `error` hoặc một javadoc:org.springframework.stereotype.Controller[format=annotation] handle path `/error`.
+Trừ khi bạn đã replace một phần default configuration, bạn sẽ tìm thấy một javadoc:org.springframework.web.servlet.view.BeanNameViewResolver[] trong javadoc:org.springframework.context.ApplicationContext[], vì vậy một javadoc:org.springframework.context.annotation.Bean[format=annotation] có tên `error` là một cách để thực hiện việc đó.
+Xem {code-spring-boot-webmvc-src}/autoconfigure/error/ErrorMvcAutoConfiguration.java[`ErrorMvcAutoConfiguration`] để biết thêm các option.
 
-Xem thêm xref:reference:web/servlet.adoc#web.servlet.spring-mvc.error-handling[] để biết cách register handler trong servlet container.
+Xem thêm section về xref:reference:web/servlet.adoc#web.servlet.spring-mvc.error-handling[] để biết chi tiết cách register handler trong servlet container.

@@ -1,12 +1,14 @@
 [[howto.docker-compose]]
 = Docker Compose
 
-Phần này gồm các chủ đề liên quan đến Docker Compose support trong Spring Boot.
+Phần này gồm các chủ đề liên quan đến hỗ trợ Docker Compose trong Spring Boot.
+
+
 
 [[howto.docker-compose.jdbc-url]]
-== Customize JDBC URL
+== Tùy chỉnh JDBC URL
 
-Khi dùng javadoc:org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails[] với Docker Compose, parameter của JDBC URL có thể customize bằng label `org.springframework.boot.jdbc.parameters` trên service.
+Khi dùng javadoc:org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails[] với Docker Compose, các parameter của JDBC URL có thể được tùy chỉnh bằng cách áp dụng label `org.springframework.boot.jdbc.parameters` cho service.
 Ví dụ:
 
 [source,yaml]
@@ -24,12 +26,14 @@ services:
       org.springframework.boot.jdbc.parameters: 'ssl=true&sslmode=require'
 ----
 
-Với Docker Compose file này, JDBC URL được dùng là `jdbc:postgresql://127.0.0.1:5432/mydb?ssl=true&sslmode=require`.
+Với file Docker Compose này, JDBC URL được sử dụng là `jdbc:postgresql://127.0.0.1:5432/mydb?ssl=true&sslmode=require`.
+
+
 
 [[howto.docker-compose.sharing-services]]
-== Share Service giữa nhiều Application
+== Chia sẻ service giữa nhiều application
 
-Nếu muốn share service giữa nhiều application, tạo file `compose.yaml` trong một application rồi dùng configuration property configprop:spring.docker.compose.file[] ở application khác để reference file `compose.yaml`.
-Cũng nên set configprop:spring.docker.compose.lifecycle-management[] thành `start-only` vì default là `start-and-stop`; stop một application khi đó sẽ shutdown shared service cho application khác vẫn đang chạy.
-Set `start-only` sẽ không stop shared service khi application stop, nhưng lưu ý nếu shutdown mọi application thì service vẫn tiếp tục chạy.
-Có thể stop service thủ công bằng command `docker compose stop` trong directory chứa file `compose.yaml`.
+Nếu muốn chia sẻ service giữa nhiều application, hãy tạo file `compose.yaml` trong một application rồi dùng configuration property configprop:spring.docker.compose.file[] trong các application khác để tham chiếu đến file `compose.yaml`.
+Bạn cũng nên set configprop:spring.docker.compose.lifecycle-management[] thành `start-only`, vì giá trị mặc định là `start-and-stop`; việc dừng một application sẽ dừng các service dùng chung của những application khác vẫn đang chạy.
+Set thành `start-only` sẽ không dừng các service dùng chung khi application dừng, nhưng cần lưu ý rằng nếu dừng tất cả application thì các service vẫn tiếp tục chạy.
+Có thể dừng các service thủ công bằng cách chạy command `docker compose stop` trong directory chứa file `compose.yaml`.

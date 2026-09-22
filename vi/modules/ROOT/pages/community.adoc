@@ -7,11 +7,11 @@ Nếu bạn gặp khó khăn với Spring Boot, chúng tôi muốn hỗ trợ.
 Chúng cung cấp giải pháp cho những câu hỏi phổ biến nhất.
 * Tìm hiểu kiến thức cơ bản về Spring.
 Spring Boot được xây dựng dựa trên nhiều dự án Spring khác.
-Hãy xem website https://spring.io[spring.io] để tìm nhiều tài liệu tham khảo.
+Hãy xem website https://spring.io[spring.io] để tham khảo kho tài liệu phong phú.
 Nếu mới bắt đầu với Spring, hãy thử một trong các https://spring.io/guides[bài hướng dẫn].
 * Đặt câu hỏi.
 Chúng tôi theo dõi https://stackoverflow.com[stackoverflow.com] để tìm các câu hỏi được gắn tag https://stackoverflow.com/tags/spring-boot[`spring-boot`].
-* Báo cáo bug của Spring Boot tại https://github.com/spring-projects/spring-boot/issues.
+* Báo cáo bug trong Spring Boot tại https://github.com/spring-projects/spring-boot/issues.
 
-NOTE: Toàn bộ Spring Boot là open source, bao gồm cả tài liệu.
-Nếu phát hiện vấn đề trong tài liệu hoặc muốn cải thiện chúng, hãy {url-github}[tham gia đóng góp].
+NOTE: Toàn bộ Spring Boot đều là open source, bao gồm cả tài liệu.
+Nếu phát hiện vấn đề trong tài liệu hoặc muốn cải thiện tài liệu, hãy {url-github}[tham gia đóng góp].

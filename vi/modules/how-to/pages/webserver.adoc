@@ -1,22 +1,22 @@
 [[howto.webserver]]
 = Embedded Web Servers
 
-Mỗi Spring Boot web application bao gồm embedded web server.
-Feature này dẫn tới nhiều câu hỏi how-to, gồm cách thay embedded server và cách configure embedded server.
+Mỗi Spring Boot web application đều bao gồm một embedded web server.
+Feature này dẫn đến một số câu hỏi how-to, chẳng hạn như cách thay đổi embedded server và cách configure embedded server.
 Phần này trả lời các câu hỏi đó.
 
 [[howto.webserver.use-another]]
 == Dùng Web Server khác
 
-Nhiều Spring Boot starter include default embedded container.
+Nhiều Spring Boot starter bao gồm embedded container mặc định.
 
-* Với servlet stack application, `spring-boot-starter-web` include Tomcat thông qua `spring-boot-starter-tomcat`, nhưng có thể dùng `spring-boot-starter-jetty` thay thế.
-* Với reactive stack application, `spring-boot-starter-webflux` include Reactor Netty thông qua `spring-boot-starter-reactor-netty`, nhưng có thể dùng `spring-boot-starter-tomcat` hoặc `spring-boot-starter-jetty` thay thế.
+* Với servlet stack application, `spring-boot-starter-web` bao gồm Tomcat thông qua `spring-boot-starter-tomcat`, nhưng bạn có thể dùng `spring-boot-starter-jetty` thay thế.
+* Với reactive stack application, `spring-boot-starter-webflux` bao gồm Reactor Netty thông qua `spring-boot-starter-reactor-netty`, nhưng bạn có thể dùng `spring-boot-starter-tomcat` hoặc `spring-boot-starter-jetty` thay thế.
 
-Khi switch sang HTTP server khác, cần swap default dependency với dependency cần dùng.
-Để hỗ trợ, Spring Boot cung cấp starter riêng cho từng HTTP server được hỗ trợ.
+Khi chuyển sang HTTP server khác, bạn cần swap các dependency mặc định bằng những dependency cần dùng.
+Để hỗ trợ việc này, Spring Boot cung cấp một starter riêng cho mỗi HTTP server được hỗ trợ.
 
-Ví dụ exclude Tomcat và include Jetty cho Spring MVC:
+Ví dụ sau cho thấy cách exclude Tomcat và include Jetty cho Spring MVC:
 
 [tabs]
 ======
@@ -60,7 +60,7 @@ dependencies {
 +
 ======
 
-Nếu tạo war file, có thể dùng approach tương tự nhưng phải indicate provided dependency:
+Nếu tạo war file, bạn có thể dùng approach tương tự, nhưng phải chỉ định các provided dependency:
 
 [tabs]
 ======
@@ -109,8 +109,8 @@ dependencies {
 [[howto.webserver.disable]]
 == Disable Web Server
 
-Nếu classpath chứa các thành phần cần để start web server, Spring Boot tự động start nó.
-Để disable behavior này, configure javadoc:org.springframework.boot.WebApplicationType[] trong `application.properties`:
+Nếu classpath chứa các thành phần cần thiết để start web server, Spring Boot sẽ tự động start server đó.
+Để disable behavior này, hãy configure javadoc:org.springframework.boot.WebApplicationType[] trong `application.properties`, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -122,51 +122,51 @@ spring:
 [[howto.webserver.change-port]]
 == Thay đổi HTTP Port
 
-Trong standalone application, main HTTP port mặc định là `8080` nhưng có thể set bằng configprop:server.port[], ví dụ trong `application.properties` hoặc System property.
-Nhờ relaxed binding của value javadoc:org.springframework.core.env.Environment[], cũng có thể dùng configprop:server.port[format=envvar], ví dụ OS environment variable.
+Trong standalone application, main HTTP port mặc định là `8080` nhưng có thể được set bằng configprop:server.port[], chẳng hạn trong `application.properties` hoặc dưới dạng System property.
+Nhờ relaxed binding của các value javadoc:org.springframework.core.env.Environment[], bạn cũng có thể dùng configprop:server.port[format=envvar], chẳng hạn dưới dạng OS environment variable.
 
-Để tắt hoàn toàn HTTP endpoint nhưng vẫn tạo javadoc:org.springframework.web.context.WebApplicationContext[], dùng `server.port=-1`; cách này đôi khi hữu ích cho testing.
+Để tắt hoàn toàn các HTTP endpoint nhưng vẫn tạo javadoc:org.springframework.web.context.WebApplicationContext[], hãy dùng `server.port=-1`; cách này đôi khi hữu ích khi testing.
 
-Chi tiết xem xref:reference:web/servlet.adoc#web.servlet.embedded-container.customizing[Customizing Embedded Servlet Containers] trong phần "Spring Boot Features", hoặc class javadoc:org.springframework.boot.web.server.autoconfigure.ServerProperties[].
+Để biết thêm chi tiết, xem xref:reference:web/servlet.adoc#web.servlet.embedded-container.customizing[Tùy chỉnh Embedded Servlet Containers] trong phần '`Spring Boot Features`', hoặc class javadoc:org.springframework.boot.web.server.autoconfigure.ServerProperties[].
 
 [[howto.webserver.use-random-port]]
 == Dùng Random Unassigned HTTP Port
 
-Để scan free port bằng OS native nhằm tránh clash, dùng `server.port=0`.
+Để scan một free port bằng OS native nhằm tránh xung đột, hãy dùng `server.port=0`.
 
 [[howto.webserver.discover-port]]
 == Discover HTTP Port tại Runtime
 
-Có thể access port server đang chạy từ log output hoặc từ javadoc:org.springframework.boot.web.server.context.WebServerApplicationContext[] thông qua javadoc:org.springframework.boot.web.server.WebServer[].
-Cách tốt nhất để lấy port và đảm bảo server đã initialize là thêm bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type `ApplicationListener<WebServerInitializedEvent>` rồi lấy container từ event khi event publish.
+Có thể access port mà server đang chạy từ log output hoặc từ javadoc:org.springframework.boot.web.server.context.WebServerApplicationContext[] thông qua javadoc:org.springframework.boot.web.server.WebServer[].
+Cách tốt nhất để lấy port và đảm bảo server đã được initialize là thêm một bean javadoc:org.springframework.context.annotation.Bean[format=annotation] có type `ApplicationListener<WebServerInitializedEvent>`, rồi lấy container từ event khi event được publish.
 
-Test dùng `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)` cũng có thể inject actual port vào field bằng annotation javadoc:org.springframework.boot.test.web.server.LocalServerPort[format=annotation]:
+Test dùng `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)` cũng có thể inject actual port vào một field bằng annotation javadoc:org.springframework.boot.test.web.server.LocalServerPort[format=annotation], như trong ví dụ sau:
 
 include-code::MyWebIntegrationTests[]
 
 [NOTE]
 ====
-javadoc:org.springframework.boot.test.web.server.LocalServerPort[format=annotation] là meta-annotation cho `@Value("${local.server.port}")`.
+javadoc:org.springframework.boot.test.web.server.LocalServerPort[format=annotation] là một meta-annotation cho `@Value("${local.server.port}")`.
 Không cố inject port trong regular application.
-Như vừa thấy, value chỉ được set sau khi container initialize.
-Khác test, application code callback được process sớm, trước khi value thực sự available.
+Như vừa thấy, value chỉ được set sau khi container được initialize.
+Khác với test, application code callback được process sớm, trước khi value thực sự available.
 ====
 
 [[howto.webserver.build-uri-test-web-server]]
-== Build URI đối với Test Web Server
+== Build URI cho Test Web Server
 
-Test start javadoc:org.springframework.boot.web.server.WebServer[] như `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)` có thể lấy information về running server bằng javadoc:org.springframework.boot.test.http.server.LocalTestWebServer[]:
+Test start javadoc:org.springframework.boot.web.server.WebServer[], chẳng hạn `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)`, có thể lấy information về running server bằng javadoc:org.springframework.boot.test.http.server.LocalTestWebServer[], như trong ví dụ sau:
 
 include-code::MyWebIntegrationTests[]
 
-javadoc:org.springframework.boot.test.http.server.LocalTestWebServer[] cung cấp access tới javadoc:org.springframework.web.util.UriBuilderFactory[] phù hợp.
-Nó cũng có thể customize để build instance trên sub-path của application.
+javadoc:org.springframework.boot.test.http.server.LocalTestWebServer[] cung cấp access tới một javadoc:org.springframework.web.util.UriBuilderFactory[] phù hợp.
+Bạn cũng có thể customize nó để build một instance trên sub-path của application.
 
 [[howto.webserver.enable-response-compression]]
 == Enable HTTP Response Compression
 
-HTTP response compression được hỗ trợ bởi Jetty, Tomcat và Reactor Netty.
-Có thể enable trong `application.properties`:
+HTTP response compression được Jetty, Tomcat và Reactor Netty hỗ trợ.
+Có thể enable feature này trong `application.properties` như sau:
 
 [configprops,yaml]
 ----
@@ -175,10 +175,10 @@ server:
     enabled: true
 ----
 
-Mặc định response phải dài ít nhất 2048 byte mới được compress.
-Configure bằng configprop:server.compression.min-response-size[].
+Mặc định, response phải có độ dài tối thiểu 2048 byte thì mới được compress.
+Có thể configure behavior này bằng property configprop:server.compression.min-response-size[].
 
-Mặc định response chỉ compress nếu content type thuộc một trong các type:
+Mặc định, response chỉ được compress nếu content type là một trong các type sau:
 
 * `text/html`
 * `text/xml`
@@ -189,16 +189,16 @@ Mặc định response chỉ compress nếu content type thuộc một trong cá
 * `application/json`
 * `application/xml`
 
-Để configure mime type được compress và replace default, set configprop:server.compression.mime-types[].
-Để giữ default và thêm mime type, set configprop:server.compression.additional-mime-types[].
+Để configure các mime type được compress và thay thế các giá trị mặc định, hãy set property configprop:server.compression.mime-types[].
+Để giữ các giá trị mặc định và configure thêm mime type, hãy set property configprop:server.compression.additional-mime-types[].
 
 [[howto.webserver.configure-ssl]]
 == Configure SSL
 
-SSL có thể configure declaratively bằng các property `+server.ssl.*+`, thường trong `application.properties` hoặc `application.yaml`.
-Xem javadoc:org.springframework.boot.web.server.Ssl[] để biết detail mọi property được hỗ trợ.
+SSL có thể được configure declaratively bằng các property `+server.ssl.*+`, thường trong `application.properties` hoặc `application.yaml`.
+Xem javadoc:org.springframework.boot.web.server.Ssl[] để biết chi tiết về tất cả property được hỗ trợ.
 
-Ví dụ set SSL property bằng Java KeyStore file:
+Ví dụ sau cho thấy cách set SSL property bằng Java KeyStore file:
 
 [configprops,yaml]
 ----
@@ -210,26 +210,26 @@ server:
     key-password: "another-secret"
 ----
 
-Dùng configuration như ví dụ trên nghĩa là application không còn support plain HTTP connector tại port 8080.
-Spring Boot không support configure cả HTTP connector và HTTPS connector qua `application.properties`.
-Nếu muốn có cả hai, cần configure một connector programmatically.
-Khuyến nghị dùng `application.properties` configure HTTPS vì HTTP connector dễ configure programmatically hơn.
+Dùng configuration như ví dụ trên có nghĩa là application không còn support plain HTTP connector tại port 8080.
+Spring Boot không support việc configure cả HTTP connector và HTTPS connector qua `application.properties`.
+Nếu muốn có cả hai, bạn cần configure một trong hai connector programmatically.
+Khuyến nghị dùng `application.properties` để configure HTTPS, vì HTTP connector dễ configure programmatically hơn.
 
 [[howto.webserver.configure-ssl.pem-files]]
 === Dùng PEM-encoded files
 
-Có thể dùng PEM-encoded file thay Java KeyStore file.
-Nên dùng PKCS#8 key file khi có thể.
+Có thể dùng PEM-encoded file thay cho Java KeyStore file.
+Nên dùng PKCS#8 key file bất cứ khi nào có thể.
 PEM-encoded PKCS#8 key file bắt đầu bằng header `-----BEGIN PRIVATE KEY-----` hoặc `-----BEGIN ENCRYPTED PRIVATE KEY-----`.
 
-Nếu file ở format khác, ví dụ PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`) hoặc SEC 1 (`-----BEGIN EC PRIVATE KEY-----`), có thể convert sang PKCS#8 bằng OpenSSL:
+Nếu file ở format khác, chẳng hạn PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`) hoặc SEC 1 (`-----BEGIN EC PRIVATE KEY-----`), bạn có thể convert file sang PKCS#8 bằng OpenSSL:
 
 [source,shell,subs="verbatim,attributes"]
 ----
 openssl pkcs8 -topk8 -nocrypt -in <input file> -out <output file>
 ----
 
-Ví dụ set SSL property bằng PEM-encoded certificate và private key file:
+Ví dụ sau cho thấy cách set SSL property bằng PEM-encoded certificate và private key file:
 
 [configprops,yaml]
 ----
@@ -244,7 +244,7 @@ server:
 [[howto.webserver.configure-ssl.bundles]]
 === Dùng SSL Bundles
 
-Ngoài ra SSL trust material có thể configure trong xref:reference:features/ssl.adoc[SSL bundle] và apply vào web server:
+Ngoài ra, SSL trust material có thể được configure trong xref:reference:features/ssl.adoc[SSL bundle] và apply vào web server như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -256,19 +256,19 @@ server:
 
 [NOTE]
 ====
-Property `server.ssl.bundle` không thể combine với discrete Java KeyStore hoặc PEM property option dưới `server.ssl`.
+Property `server.ssl.bundle` không thể combine với các discrete Java KeyStore hoặc PEM property option dưới `server.ssl`.
 
 Các property configprop:server.ssl.ciphers[], configprop:server.ssl.enabled-protocols[], configprop:server.ssl.protocol[] cũng bị ignore khi dùng bundle.
-Các property này nên được define bằng `spring.ssl.bundle.<type>.<name>.options`.
+Thay vào đó, các property này nên được define bằng `spring.ssl.bundle.<type>.<name>.options`.
 ====
 
 [[howto.webserver.configure-ssl.sni]]
 === Configure Server Name Indication
 
-Tomcat và Netty có thể configure để dùng unique SSL trust material cho từng host name nhằm hỗ trợ Server Name Indication (SNI).
-SNI configuration không được support với Jetty, nhưng Jetty có thể https://eclipse.dev/jetty/documentation/jetty-12/operations-guide/index.html#og-protocols-ssl-sni[tự động setup SNI] nếu cung cấp nhiều certificate.
+Tomcat và Netty có thể được configure để dùng unique SSL trust material cho từng host name nhằm hỗ trợ Server Name Indication (SNI).
+SNI configuration không được support với Jetty, nhưng Jetty có thể https://eclipse.dev/jetty/documentation/jetty-12/operations-guide/index.html#og-protocols-ssl-sni[tự động setup SNI] nếu được cung cấp nhiều certificate.
 
-Giả sử đã configure xref:reference:features/ssl.adoc[SSL bundle] tên `web`, `web-alt1` và `web-alt2`, configuration sau assign từng bundle cho host name mà embedded web server phục vụ:
+Giả sử các xref:reference:features/ssl.adoc[SSL bundle] có tên `web`, `web-alt1` và `web-alt2` đã được configure, configuration sau có thể được dùng để assign mỗi bundle cho một host name được embedded web server phục vụ:
 
 [configprops,yaml]
 ----
@@ -283,71 +283,71 @@ server:
         bundle: "web-alt2"
 ----
 
-Bundle specify bằng `server.ssl.bundle` được dùng cho default host và cho mọi client không support SNI.
+Bundle được specify bằng `server.ssl.bundle` sẽ được dùng cho default host và mọi client không support SNI.
 Default bundle này phải được configure nếu có bất kỳ `server.ssl.server-name-bundles` nào.
 
 [[howto.webserver.configure-http2]]
 == Configure HTTP/2
 
-Có thể enable HTTP/2 support trong Spring Boot application bằng configprop:server.http2.enabled[].
+Bạn có thể enable HTTP/2 support trong Spring Boot application bằng configuration property configprop:server.http2.enabled[].
 Cả `h2` (HTTP/2 over TLS) và `h2c` (HTTP/2 over TCP) được hỗ trợ.
 Để dùng `h2`, SSL cũng phải enable.
 Khi SSL không enable, `h2c` được dùng.
-Ví dụ có thể dùng `h2c` khi application xref:webserver.adoc#howto.webserver.use-behind-a-proxy-server[chạy sau proxy server] thực hiện TLS termination.
+Chẳng hạn, bạn có thể dùng `h2c` khi application xref:webserver.adoc#howto.webserver.use-behind-a-proxy-server[chạy sau proxy server] thực hiện TLS termination.
 
 [[howto.webserver.configure-http2.tomcat]]
 === HTTP/2 với Tomcat
 
-Spring Boot mặc định ship Tomcat 11.0.x hỗ trợ `h2c` và `h2` out of the box.
-Ngoài ra có thể dùng `libtcnative` cho `h2` nếu library và dependency được install trên host OS.
+Spring Boot mặc định ship Tomcat 11.0.x, vốn hỗ trợ `h2c` và `h2` out of the box.
+Ngoài ra, có thể dùng `libtcnative` để support `h2` nếu library và các dependency của nó được install trên host OS.
 
-Library directory phải available trên JVM library path nếu chưa có.
-Có thể dùng JVM argument như `-Djava.library.path=/usr/local/opt/tomcat-native/lib`.
-Xem thêm {url-tomcat-docs}/apr.html[official Tomcat documentation].
+Library directory phải được cung cấp trong JVM library path nếu chưa có sẵn.
+Bạn có thể thực hiện việc này bằng JVM argument như `-Djava.library.path=/usr/local/opt/tomcat-native/lib`.
+Xem thêm {url-tomcat-docs}/apr.html[tài liệu Tomcat chính thức].
 
 [[howto.webserver.configure-http2.jetty]]
 === HTTP/2 với Jetty
 
-Để support HTTP/2, Jetty cần dependency `org.eclipse.jetty.http2:jetty-http2-server`.
+Để support HTTP/2, Jetty cần dependency bổ sung `org.eclipse.jetty.http2:jetty-http2-server`.
 Dùng `h2c` không cần dependency khác.
-Để dùng `h2`, cũng cần chọn một trong các dependency sau tùy deployment:
+Để dùng `h2`, bạn cũng cần chọn một trong các dependency sau, tùy deployment:
 
-* `org.eclipse.jetty:jetty-alpn-java-server` để dùng JDK built-in support.
-* `org.eclipse.jetty:jetty-alpn-conscrypt-server` và https://www.conscrypt.org/[Conscrypt library].
+* `org.eclipse.jetty:jetty-alpn-java-server` để dùng JDK built-in support
+* `org.eclipse.jetty:jetty-alpn-conscrypt-server` và https://www.conscrypt.org/[thư viện Conscrypt]
 
 [[howto.webserver.configure-http2.netty]]
 === HTTP/2 với Reactor Netty
 
 `spring-boot-webflux-starter` mặc định dùng Reactor Netty làm server.
 Reactor Netty hỗ trợ `h2c` và `h2` out of the box.
-Để có optimal runtime performance, server cũng hỗ trợ `h2` với native library.
-Để enable, application cần additional dependency.
+Để có optimal runtime performance, server cũng hỗ trợ `h2` bằng native library.
+Để enable feature này, application cần một additional dependency.
 
-Spring Boot manage version cho "uber jar" `io.netty:netty-tcnative-boringssl-static` chứa native library cho mọi platform.
-Developer có thể chỉ import required dependency bằng classifier; xem https://netty.io/wiki/forked-tomcat-native.html[Netty official documentation].
+Spring Boot manage version cho "uber jar" `io.netty:netty-tcnative-boringssl-static`, chứa native library cho mọi platform.
+Developer có thể chỉ import các required dependency bằng classifier (xem https://netty.io/wiki/forked-tomcat-native.html[tài liệu Netty chính thức]).
 
 [[howto.webserver.configure]]
 == Configure Web Server
 
-Nhìn chung trước tiên nên cân nhắc dùng các configuration key available và customize web server bằng entry mới trong `application.properties` hoặc `application.yaml`.
-Xem xref:properties-and-configuration.adoc#howto.properties-and-configuration.discover-build-in-options-for-external-properties[].
-Namespace `server.{asterisk}` khá hữu ích, gồm namespace như `server.tomcat.{asterisk}`, `server.jetty.{asterisk}` và các namespace khác cho server-specific feature.
-Xem list xref:appendix:application-properties/index.adoc[].
+Nhìn chung, trước tiên bạn nên cân nhắc dùng một trong nhiều configuration key có sẵn và customize web server bằng cách thêm các entry vào file `application.properties` hoặc `application.yaml`.
+Xem xref:properties-and-configuration.adoc#howto.properties-and-configuration.discover-build-in-options-for-external-properties[]).
+Namespace `server.{asterisk}` khá hữu ích ở đây; namespace này bao gồm `server.tomcat.{asterisk}`, `server.jetty.{asterisk}` và các namespace khác cho server-specific features.
+Xem danh sách xref:appendix:application-properties/index.adoc[].
 
-Các phần trước đã cover nhiều common use case như compression, SSL hoặc HTTP/2.
-Nếu không có configuration key cho use case, hãy xem javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].
-Có thể declare component này để access server factory tương ứng lựa chọn: chọn variant cho server đã chọn (Tomcat, Jetty, Reactor Netty) và web stack đã chọn (servlet hoặc reactive).
+Các phần trước đã đề cập nhiều common use case như compression, SSL hoặc HTTP/2.
+Tuy nhiên, nếu không có configuration key cho use case của bạn, hãy xem javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].
+Bạn có thể declare component này để access server factory tương ứng với lựa chọn của mình: chọn variant cho server đã chọn (Tomcat, Jetty, Reactor Netty) và web stack đã chọn (servlet hoặc reactive).
 
-Ví dụ dưới cho Tomcat với `spring-boot-starter-web`, servlet stack:
+Ví dụ dưới đây dành cho Tomcat với `spring-boot-starter-web` (servlet stack):
 
 include-code::MyTomcatWebServerCustomizer[]
 
 NOTE: Spring Boot dùng infrastructure này nội bộ để auto-configure server.
-Auto-configured javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[] bean có order `0` và được process trước user-defined customizer trừ khi explicit order nói khác.
+Các auto-configured javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[] bean có order `0` và sẽ được process trước mọi user-defined customizer, trừ khi có explicit order quy định khác.
 
-Sau khi access javadoc:org.springframework.boot.web.server.WebServerFactory[] bằng customizer, có thể dùng nó configure specific part như connector, server resource hoặc chính server bằng server-specific API.
+Sau khi access javadoc:org.springframework.boot.web.server.WebServerFactory[] bằng customizer, bạn có thể dùng nó để configure các phần cụ thể như connector, server resource hoặc chính server, tất cả bằng server-specific API.
 
-Ngoài ra Spring Boot cung cấp:
+Ngoài ra, Spring Boot cung cấp:
 
 [[howto-configure-webserver-customizers]]
 [cols="1,2,2", options="header"]
@@ -367,13 +367,13 @@ Ngoài ra Spring Boot cung cấp:
 | javadoc:org.springframework.boot.reactor.netty.NettyReactiveWebServerFactory[]
 |===
 
-Là last resort, cũng có thể declare bean javadoc:org.springframework.boot.web.server.WebServerFactory[] riêng, override bean Spring Boot cung cấp.
-Khi làm vậy auto-configured customizer vẫn được apply trên custom factory, nên dùng option cẩn thận.
+Nếu không còn cách nào khác, bạn cũng có thể declare bean javadoc:org.springframework.boot.web.server.WebServerFactory[] riêng để override bean do Spring Boot cung cấp.
+Khi làm vậy, các auto-configured customizer vẫn được apply trên custom factory, nên hãy dùng option này cẩn thận.
 
 [[howto.webserver.add-servlet-filter-listener]]
 == Thêm Servlet, Filter hoặc Listener vào Application
 
-Trong servlet stack application, tức dùng `spring-boot-starter-web`, có hai cách thêm javadoc:jakarta.servlet.Servlet[], javadoc:jakarta.servlet.Filter[], javadoc:jakarta.servlet.ServletContextListener[] và listener khác Servlet API hỗ trợ:
+Trong servlet stack application, tức application dùng `spring-boot-starter-web`, có hai cách thêm javadoc:jakarta.servlet.Servlet[], javadoc:jakarta.servlet.Filter[], javadoc:jakarta.servlet.ServletContextListener[] và các listener khác được Servlet API hỗ trợ:
 
 * xref:webserver.adoc#howto.webserver.add-servlet-filter-listener.spring-bean[]
 * xref:webserver.adoc#howto.webserver.add-servlet-filter-listener.using-scanning[]
@@ -381,43 +381,43 @@ Trong servlet stack application, tức dùng `spring-boot-starter-web`, có hai 
 [[howto.webserver.add-servlet-filter-listener.spring-bean]]
 === Thêm Servlet, Filter hoặc Listener bằng Spring Bean
 
-Để thêm javadoc:jakarta.servlet.Servlet[], javadoc:jakarta.servlet.Filter[] hoặc servlet `*Listener` bằng Spring bean, phải cung cấp definition javadoc:org.springframework.context.annotation.Bean[format=annotation].
-Cách này hữu ích khi muốn inject configuration hoặc dependency.
-Tuy nhiên phải rất cẩn thận để không gây eager initialization quá nhiều bean khác vì chúng phải install vào container rất sớm trong application lifecycle.
-Ví dụ không nên để chúng depend vào javadoc:javax.sql.DataSource[] hoặc JPA configuration.
-Có thể workaround bằng cách initialize bean lazily khi lần đầu được dùng thay vì lúc initialization.
+Để thêm javadoc:jakarta.servlet.Servlet[], javadoc:jakarta.servlet.Filter[] hoặc servlet `*Listener` bằng Spring bean, bạn phải cung cấp một definition javadoc:org.springframework.context.annotation.Bean[format=annotation] cho nó.
+Cách này có thể rất hữu ích khi bạn muốn inject configuration hoặc dependency.
+Tuy nhiên, bạn phải rất cẩn thận để chúng không gây eager initialization cho quá nhiều bean khác, vì chúng phải được install vào container từ rất sớm trong application lifecycle.
+(Ví dụ, không nên để chúng phụ thuộc vào javadoc:javax.sql.DataSource[] hoặc JPA configuration.)
+Bạn có thể workaround các hạn chế này bằng cách initialize bean lazily khi lần đầu được dùng, thay vì khi initialization.
 
-Với filter và servlet, cũng có thể thêm mapping và init parameter bằng javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] thay vì hoặc bổ sung underlying component.
-Cũng có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistration[format=annotation] và javadoc:org.springframework.boot.web.servlet.FilterRegistration[format=annotation] làm annotation-based alternative cho javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] và javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[].
+Với filter và servlet, bạn cũng có thể thêm mapping và init parameter bằng javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[] hoặc javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] thay vì hoặc bổ sung cho underlying component.
+Bạn cũng có thể dùng javadoc:org.springframework.boot.web.servlet.ServletRegistration[format=annotation] và javadoc:org.springframework.boot.web.servlet.FilterRegistration[format=annotation] làm annotation-based alternative cho javadoc:org.springframework.boot.web.servlet.ServletRegistrationBean[] và javadoc:org.springframework.boot.web.servlet.FilterRegistrationBean[].
 
 [NOTE]
 ====
-Nếu không specify `dispatcherType` trên filter registration, `REQUEST` được dùng.
+Nếu không specify `dispatcherType` trên filter registration, `REQUEST` sẽ được dùng.
 Điều này align với default dispatcher type của servlet specification.
 ====
 
-Giống Spring bean khác, có thể define order của servlet filter bean; xem xref:reference:web/servlet.adoc#web.servlet.embedded-container.servlets-filters-listeners.beans[].
+Giống như mọi Spring bean khác, bạn có thể define order của servlet filter bean; hãy xem xref:reference:web/servlet.adoc#web.servlet.embedded-container.servlets-filters-listeners.beans[] để biết thêm chi tiết.
 
 [[howto.webserver.add-servlet-filter-listener.spring-bean.disable]]
 ==== Disable Registration của Servlet hoặc Filter
 
-Như xref:webserver.adoc#howto.webserver.add-servlet-filter-listener.spring-bean[đã mô tả], mọi bean javadoc:jakarta.servlet.Servlet[] hoặc javadoc:jakarta.servlet.Filter[] được register tự động với servlet container.
-Để disable registration của javadoc:jakarta.servlet.Filter[] hoặc javadoc:jakarta.servlet.Servlet[] cụ thể, tạo registration bean cho nó và mark disabled:
+Như đã xref:webserver.adoc#howto.webserver.add-servlet-filter-listener.spring-bean[mô tả ở trên], mọi bean javadoc:jakarta.servlet.Servlet[] hoặc javadoc:jakarta.servlet.Filter[] đều được register tự động với servlet container.
+Để disable registration của một bean javadoc:jakarta.servlet.Filter[] hoặc javadoc:jakarta.servlet.Servlet[] cụ thể, hãy tạo một registration bean cho nó và mark bean đó là disabled, như trong ví dụ sau:
 
 include-code::MyFilterConfiguration[]
 
 [[howto.webserver.add-servlet-filter-listener.using-scanning]]
 === Thêm Servlet, Filter và Listener bằng Classpath Scanning
 
-Class annotate javadoc:jakarta.servlet.annotation.WebServlet[format=annotation], javadoc:jakarta.servlet.annotation.WebFilter[format=annotation], javadoc:jakarta.servlet.annotation.WebListener[format=annotation] có thể auto-register với embedded servlet container bằng cách annotate class javadoc:org.springframework.context.annotation.Configuration[format=annotation] bằng javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] và specify package chứa component cần register.
-Mặc định javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] scan từ package của annotated class.
+Các class được annotate bằng javadoc:jakarta.servlet.annotation.WebServlet[format=annotation], javadoc:jakarta.servlet.annotation.WebFilter[format=annotation] và javadoc:jakarta.servlet.annotation.WebListener[format=annotation] có thể được auto-register với embedded servlet container bằng cách annotate class javadoc:org.springframework.context.annotation.Configuration[format=annotation] bằng javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] và specify package chứa các component bạn muốn register.
+Mặc định, javadoc:org.springframework.boot.web.server.servlet.context.ServletComponentScan[format=annotation] scan từ package của annotated class.
 
 [[howto.webserver.configure-access-logs]]
 == Configure Access Logging
 
-Access log có thể configure cho Tomcat và Jetty qua namespace tương ứng.
+Access log có thể được configure cho Tomcat và Jetty thông qua namespace tương ứng.
 
-Ví dụ setting sau log access trên Tomcat với {url-tomcat-docs}/config/valve.html#Access_Logging[custom pattern]:
+Các setting sau sẽ log access trên Tomcat bằng {url-tomcat-docs}/config/valve.html#Access_Logging[custom pattern].
 
 [configprops,yaml]
 ----
@@ -429,11 +429,11 @@ server:
       pattern: "%t %a %r %s (%D microseconds)"
 ----
 
-NOTE: Default location của log là directory `logs` relative với Tomcat base directory.
-Mặc định `logs` là temporary directory, nên có thể muốn fix Tomcat base directory hoặc dùng absolute path cho log.
+NOTE: Vị trí mặc định của log là directory `logs` relative với Tomcat base directory.
+Mặc định, directory `logs` là một temporary directory, nên bạn có thể muốn cố định Tomcat base directory hoặc dùng absolute path cho log.
 Trong ví dụ trên, log available tại `my-tomcat/logs` relative với application working directory.
 
-Access logging cho Jetty configure như sau:
+Cuối cùng, access logging cho Jetty cũng có thể được configure như sau:
 
 [configprops,yaml]
 ----
@@ -444,25 +444,25 @@ server:
       filename: "/var/log/jetty-access.log"
 ----
 
-Mặc định log redirect tới javadoc:java.lang.System#err[].
-Chi tiết xem Jetty documentation.
+Mặc định, log được redirect tới javadoc:java.lang.System#err[].
+Để biết thêm chi tiết, xem Jetty documentation.
 
 [[howto.webserver.use-behind-a-proxy-server]]
 == Chạy sau Front-end Proxy Server
 
-Nếu application chạy sau proxy, load balancer hoặc trên cloud, request information như host, port, scheme có thể thay đổi trên đường đi.
-Application có thể chạy trên `10.10.10.10:8080` nhưng HTTP client chỉ nên thấy `example.org`.
+Nếu application chạy sau proxy, load balancer hoặc trên cloud, request information (chẳng hạn host, port, scheme...) có thể thay đổi trên đường đi.
+Application có thể chạy trên `10.10.10.10:8080`, nhưng HTTP client chỉ nên thấy `example.org`.
 
-Có hai tập HTTP header intermediary có thể dùng để cung cấp information về original request:
+Có hai tập HTTP header mà intermediary có thể dùng để cung cấp information về original request:
 
-1. Well-known header `"X-Forwarded-*"` như `"X-Forwarded-Host"`, `"X-Forwarded-Port"`, `"X-Forwarded-Proto"`, `"X-Forwarded-For"`.
-2. Header `"Forwarded"` được define bởi https://tools.ietf.org/html/rfc7239[RFC7239 "Forwarded Headers"].
+1. Các well-known header `"X-Forwarded-*"`, chẳng hạn `"X-Forwarded-Host"`, `"X-Forwarded-Port"`, `"X-Forwarded-Proto"`, `"X-Forwarded-For"`
+2. Header `"Forwarded"`, được define bởi https://tools.ietf.org/html/rfc7239[RFC7239 "Forwarded Headers"]
 
-Bước đầu developer cần kiểm tra tập header nào được proxy, load balancer hoặc cloud platform hỗ trợ.
-Dù RFC7239 là standard, adoption khá thấp và well-known header `"X-Forwarded-*"` có lẽ là loại cần dùng.
-Sau đó có thể configure application đọc header và tự động dùng information khi tạo link và gửi cho client trong HTTP 302 response, JSON document hoặc HTML page.
+Trước tiên, developer cần kiểm tra tập header nào được proxy, load balancer hoặc cloud platform hỗ trợ.
+Dù RFC7239 là standard, adoption của nó khá thấp và well-known header `"X-Forwarded-*"` có lẽ là loại bạn cần dùng.
+Sau đó, bạn có thể configure application để đọc các header này và tự động dùng information đó khi tạo link rồi gửi chúng cho client trong HTTP 302 response, JSON document hoặc HTML page.
 
-Nếu web server support tập HTTP header cần dùng, set `server.forward-headers-strategy` thành `NATIVE` là lựa chọn tốt:
+Nếu web server bạn chọn support tập HTTP header cần dùng, set `server.forward-headers-strategy` thành `NATIVE` là một lựa chọn tốt:
 
 |===
 | Server | Support | Xem thêm
@@ -480,16 +480,16 @@ Nếu web server support tập HTTP header cần dùng, set `server.forward-head
 | xref:how-to:webserver.adoc#howto.webserver.use-behind-a-proxy-server.reactor-netty[]
 |===
 
-Nếu chưa đủ, Spring Framework cung cấp {url-spring-framework-docs}/web/webmvc/filters.html#filters-forwarded-headers[ForwardedHeaderFilter] cho Spring MVC app và {url-spring-framework-docs}/web/webflux/reactive-spring.html#webflux-forwarded-headers[ForwardedHeaderTransformer] cho WebFlux app.
-Dùng chúng bằng cách set configprop:server.forward-headers-strategy[] thành `FRAMEWORK` và chọn variant phù hợp bằng configprop:spring.mvc.forwarded-headers.header-format[] hoặc configprop:spring.webflux.forwarded-headers.header-format[].
+Nếu cách này chưa đủ, Spring Framework cung cấp {url-spring-framework-docs}/web/webmvc/filters.html#filters-forwarded-headers[ForwardedHeaderFilter] cho Spring MVC app và {url-spring-framework-docs}/web/webflux/reactive-spring.html#webflux-forwarded-headers[ForwardedHeaderTransformer] cho WebFlux app.
+Bạn có thể dùng chúng bằng cách set configprop:server.forward-headers-strategy[] thành `FRAMEWORK` và chọn variant phù hợp bằng configprop:spring.mvc.forwarded-headers.header-format[] hoặc configprop:spring.webflux.forwarded-headers.header-format[].
 
-NOTE: Nếu application chạy javadoc:org.springframework.boot.cloud.CloudPlatform#enum-constant-summary[trên supported Cloud Platform], property configprop:server.forward-headers-strategy[] default là `NATIVE`.
-Trường hợp khác default là `NONE`.
+NOTE: Nếu application chạy javadoc:org.springframework.boot.cloud.CloudPlatform#enum-constant-summary[trên một supported Cloud Platform], property configprop:server.forward-headers-strategy[] mặc định là `NATIVE`.
+Trong mọi trường hợp khác, property này mặc định là `NONE`.
 
 [[howto.webserver.use-behind-a-proxy-server.tomcat]]
 === Customize Proxy Configuration của Tomcat
 
-Nếu dùng Tomcat, có thể configure thêm tên header dùng để carry "`forwarded`" information:
+Nếu dùng Tomcat, bạn cũng có thể configure tên của các header dùng để carry thông tin "`forwarded`", như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -500,9 +500,9 @@ server:
       protocol-header: "x-your-protocol-header"
 ----
 
-Tomcat cũng được configure với regular expression match internal proxy được trust.
+Tomcat cũng được configure bằng một regular expression khớp với các internal proxy được trust.
 Xem xref:appendix:application-properties/index.adoc#application-properties.server.server.tomcat.remoteip.internal-proxies[configprop:server.tomcat.remoteip.internal-proxies[] trong appendix] để biết default value.
-Customize valve configuration bằng entry trong `application.properties`:
+Bạn có thể customize valve configuration bằng cách thêm entry vào `application.properties`, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -512,19 +512,19 @@ server:
       internal-proxies: "192\\.168\\.\\d{1,3}\\.\\d{1,3}"
 ----
 
-NOTE: Có thể trust mọi proxy bằng cách set `internal-proxies` rỗng, nhưng không nên làm vậy trong production.
+NOTE: Bạn có thể trust mọi proxy bằng cách set `internal-proxies` thành giá trị rỗng, nhưng không nên làm vậy trong production.
 
-TIP: Nếu dùng Tomcat, terminate SSL ở proxy, và đã set configprop:server.tomcat.servlet.use-relative-redirects[] thành `false`, thì configprop:server.tomcat.servlet.redirect-context-root[] cũng nên set `false`.
-Điều này cho phép header `X-Forwarded-Proto` được honor trước khi redirect.
-Khi dùng relative redirect, default của Tomcat, context root redirect không mang scheme nên không có gì để header correct.
+TIP: Nếu dùng Tomcat, terminate SSL ở proxy và đã set configprop:server.tomcat.servlet.use-relative-redirects[] thành `false`, thì configprop:server.tomcat.servlet.redirect-context-root[] cũng nên được set thành `false`.
+Điều này cho phép header `X-Forwarded-Proto` được honor trước khi thực hiện redirect.
+Khi dùng relative redirect, vốn là default của Tomcat, context root redirect không mang scheme nên header không có gì để correct.
 
-Có thể kiểm soát hoàn toàn configuration javadoc:org.apache.catalina.valves.RemoteIpValve[] của Tomcat bằng cách tắt automatic one, set `server.forward-headers-strategy=NONE`, rồi thêm valve instance mới qua bean javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].
+Bạn có thể kiểm soát hoàn toàn configuration javadoc:org.apache.catalina.valves.RemoteIpValve[] của Tomcat bằng cách tắt valve tự động, set `server.forward-headers-strategy=NONE`, rồi thêm một valve instance mới thông qua bean javadoc:org.springframework.boot.web.server.WebServerFactoryCustomizer[].
 
 [[howto.webserver.use-behind-a-proxy-server.jetty]]
 === Customize Proxy Configuration của Jetty
 
-Nếu dùng Jetty, có thể configure type của header carry "`forwarded`" information.
-Mặc định dùng format `"X-Forwarded-*"`, nhưng có thể opt in standard RFC variant:
+Nếu dùng Jetty, bạn cũng có thể configure type của các header dùng để carry thông tin "`forwarded`".
+Mặc định, format `"X-Forwarded-*"` được dùng, nhưng bạn có thể opt in standard RFC variant:
 
 [configprops,yaml]
 ----
@@ -534,13 +534,13 @@ server:
       header-format: "standard"
 ----
 
-Với option cụ thể hơn, có thể tắt forwarded configuration bằng `server.forward-headers-strategy=NONE` rồi trực tiếp dùng javadoc:org.eclipse.jetty.server.ForwardedRequestCustomizer[] để thay HTTP configuration.
+Để có các option cụ thể hơn, bạn có thể tắt forwarded configuration bằng `server.forward-headers-strategy=NONE`, rồi trực tiếp dùng javadoc:org.eclipse.jetty.server.ForwardedRequestCustomizer[] để thay đổi HTTP configuration.
 
 [[howto.webserver.use-behind-a-proxy-server.reactor-netty]]
 === Customize Proxy Configuration của Reactor Netty
 
-Nếu dùng Reactor Netty, có thể configure type của header carry "`forwarded`" information.
-Mặc định dùng format `"X-Forwarded-*"`, nhưng có thể opt in standard RFC variant:
+Nếu dùng Reactor Netty, bạn cũng có thể configure type của các header dùng để carry thông tin "`forwarded`".
+Mặc định, format `"X-Forwarded-*"` được dùng, nhưng bạn có thể opt in standard RFC variant:
 
 [configprops,yaml]
 ----
@@ -550,7 +550,7 @@ server:
       header-format: "standard"
 ----
 
-Với option cụ thể hơn, có thể tắt forwarded configuration bằng `server.forward-headers-strategy=NONE` rồi trực tiếp dùng support forwarded header của `reactor.netty.http.server.HttpServer` để thay HTTP configuration.
+Để có các option cụ thể hơn, bạn có thể tắt forwarded configuration bằng `server.forward-headers-strategy=NONE`, rồi trực tiếp dùng support cho forwarded header của `reactor.netty.http.server.HttpServer` để thay đổi HTTP configuration.
 
 [[howto.webserver.enable-multiple-connectors]]
 == Enable Multiple Connectors
@@ -558,23 +558,23 @@ Với option cụ thể hơn, có thể tắt forwarded configuration bằng `se
 [[howto.webserver.enable-multiple-connectors.tomcat]]
 === Multiple Connectors với Tomcat
 
-Có thể thêm javadoc:org.apache.catalina.connector.Connector[] vào javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] để cho phép multiple connector, gồm HTTP và HTTPS connector:
+Có thể thêm một javadoc:org.apache.catalina.connector.Connector[] vào javadoc:org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory[] để cho phép nhiều connector, bao gồm HTTP và HTTPS connector, như trong ví dụ sau:
 
 include-code::MyTomcatConfiguration[]
 
 [[howto.webserver.enable-multiple-connectors.jetty]]
 === Multiple Connectors với Jetty
 
-Có thể register thêm instance Jetty javadoc:org.eclipse.jetty.server.Connector[] bằng cách thêm javadoc:org.springframework.boot.jetty.JettyServerCustomizer[] trên javadoc:org.springframework.boot.jetty.ConfigurableJettyWebServerFactory[]:
+Có thể register các instance Jetty javadoc:org.eclipse.jetty.server.Connector[] bổ sung bằng cách thêm javadoc:org.springframework.boot.jetty.JettyServerCustomizer[] vào javadoc:org.springframework.boot.jetty.ConfigurableJettyWebServerFactory[], như trong ví dụ sau:
 
 include-code::MyJettyConfiguration[]
 
 [[howto.webserver.enable-tomcat-mbean-registry]]
 == Enable MBean Registry của Tomcat
 
-MBean registry của embedded Tomcat mặc định disable.
+MBean registry của embedded Tomcat mặc định bị disable.
 Điều này giảm memory footprint của Tomcat.
-Nếu muốn dùng Tomcat MBean, ví dụ để Micrometer expose metric, phải enable bằng configprop:server.tomcat.mbeanregistry.enabled[]:
+Nếu muốn dùng Tomcat MBeans, chẳng hạn để Micrometer expose metrics, bạn phải enable registry bằng configprop:server.tomcat.mbeanregistry.enabled[], như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -587,9 +587,9 @@ server:
 [[howto.webserver.create-websocket-endpoints-using-serverendpoint]]
 == Tạo WebSocket Endpoint bằng @ServerEndpoint
 
-Nếu muốn dùng javadoc:jakarta.websocket.server.ServerEndpoint[format=annotation] trong Spring Boot application dùng embedded container, phải declare một bean javadoc:org.springframework.web.socket.server.standard.ServerEndpointExporter[] javadoc:org.springframework.context.annotation.Bean[format=annotation]:
+Nếu muốn dùng javadoc:jakarta.websocket.server.ServerEndpoint[format=annotation] trong Spring Boot application dùng embedded container, bạn phải declare một bean javadoc:org.springframework.web.socket.server.standard.ServerEndpointExporter[] javadoc:org.springframework.context.annotation.Bean[format=annotation], như trong ví dụ sau:
 
 include-code::MyWebSocketConfiguration[]
 
-Bean trên register mọi bean annotate javadoc:jakarta.websocket.server.ServerEndpoint[format=annotation] với underlying WebSocket container.
-Khi deploy lên standalone servlet container, role này do servlet container initializer thực hiện và không cần bean javadoc:org.springframework.web.socket.server.standard.ServerEndpointExporter[].
+Bean trong ví dụ trên register mọi bean được annotate bằng javadoc:jakarta.websocket.server.ServerEndpoint[format=annotation] với underlying WebSocket container.
+Khi deploy lên standalone servlet container, role này do servlet container initializer thực hiện, và không cần bean javadoc:org.springframework.web.socket.server.standard.ServerEndpointExporter[].

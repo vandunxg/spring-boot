@@ -1,15 +1,15 @@
 [appendix]
 [[appendix.application-properties]]
-= Application Property thông dụng
+= Các application property thông dụng
 
 Nhiều property có thể được chỉ định trong file `application.properties`, trong file `application.yaml`, hoặc dưới dạng command line switch.
-Appendix này cung cấp danh sách các Spring Boot property thông dụng cùng tham chiếu tới các class bên dưới sử dụng chúng.
+Phụ lục này cung cấp danh sách các Spring Boot property thông dụng cùng tham chiếu tới các class tương ứng sử dụng chúng.
 
 TIP: Spring Boot cung cấp nhiều cơ chế conversion với khả năng format value nâng cao.
-Hãy xem xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion[phần conversion của property].
+Hãy xem xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.conversion[phần conversion cho property].
 
-NOTE: Property có thể đến từ các jar file bổ sung trên classpath, nên bạn không nên coi đây là danh sách đầy đủ.
-Ngoài ra, bạn có thể tự định nghĩa property của riêng mình.
+NOTE: Các property có thể được cung cấp bởi các jar file bổ sung trên classpath, vì vậy không nên coi đây là danh sách đầy đủ.
+Ngoài ra, bạn có thể tự định nghĩa các property.
 
 include::partial$configuration-properties/actuator.adoc[]
 

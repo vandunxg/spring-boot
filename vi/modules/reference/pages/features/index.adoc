@@ -2,6 +2,6 @@
 = Tính năng cốt lõi
 
 Phần này đi sâu vào chi tiết của Spring Boot.
-Tại đây, bạn có thể tìm hiểu các tính năng chính muốn sử dụng và tùy chỉnh.
-Nếu chưa đọc, bạn nên xem các phần xref:tutorial:index.adoc[] và xref:using/index.adoc[] để nắm chắc kiến thức cơ bản.
+Tại đây, bạn có thể tìm hiểu về các tính năng chính mà bạn có thể muốn sử dụng và tùy chỉnh.
+Nếu chưa đọc, bạn có thể xem các phần xref:tutorial:index.adoc[] và xref:using/index.adoc[] để có nền tảng vững chắc về những điều cơ bản.
 

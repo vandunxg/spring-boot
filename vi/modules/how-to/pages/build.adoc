@@ -1,17 +1,19 @@
 [[howto.build]]
 = Build
 
-Spring Boot bao gồm build plugin cho Maven và Gradle.
-Phần này trả lời các câu hỏi phổ biến về các plugin này.
+Spring Boot bao gồm các build plugin cho Maven và Gradle.
+Phần này giải đáp các câu hỏi phổ biến về các plugin này.
+
+
 
 [[howto.build.generate-info]]
-== Generate Build Information
+== Tạo Build Information
 
 Cả Maven plugin và Gradle plugin đều cho phép generate build information chứa coordinates, name và version của project.
-Plugin cũng có thể configure để thêm additional property.
-Khi file như vậy tồn tại, Spring Boot auto-configure bean javadoc:org.springframework.boot.info.BuildProperties[].
+Các plugin cũng có thể được configure để thêm các property bổ sung thông qua configuration.
+Khi file như vậy tồn tại, Spring Boot sẽ auto-configure bean javadoc:org.springframework.boot.info.BuildProperties[].
 
-Để generate build information bằng Maven, thêm execution cho goal `build-info`:
+Để generate build information bằng Maven, thêm một execution cho goal `build-info`, như trong ví dụ sau:
 
 [source,xml,subs="verbatim,attributes"]
 ----
@@ -33,9 +35,9 @@ Khi file như vậy tồn tại, Spring Boot auto-configure bean javadoc:org.spr
 </build>
 ----
 
-TIP: Xem xref:maven-plugin:build-info.adoc[Spring Boot Maven Plugin documentation].
+TIP: Xem xref:maven-plugin:build-info.adoc[tài liệu Spring Boot Maven Plugin] để biết thêm chi tiết.
 
-Ví dụ tương đương với Gradle:
+Ví dụ sau thực hiện tương tự với Gradle:
 
 [source,gradle]
 ----
@@ -44,15 +46,17 @@ springBoot {
 }
 ----
 
-TIP: Xem xref:gradle-plugin:integrating-with-actuator.adoc[Spring Boot Gradle Plugin documentation].
+TIP: Xem xref:gradle-plugin:integrating-with-actuator.adoc[tài liệu Spring Boot Gradle Plugin] để biết thêm chi tiết.
+
+
 
 [[howto.build.generate-git-info]]
-== Generate Git Information
+== Tạo Git Information
 
 Cả Maven và Gradle đều cho phép generate file `git.properties` chứa information về state của `git` source code repository tại thời điểm project được build.
 
-Với Maven, POM `spring-boot-starter-parent` include pre-configured plugin để generate `git.properties`.
-Để dùng, thêm declaration sau cho {url-git-commit-id-maven-plugin}[`Git Commit Id Plugin`]:
+Với Maven, POM `spring-boot-starter-parent` bao gồm một plugin đã được configure sẵn để generate file `git.properties`.
+Để sử dụng plugin này, thêm declaration sau cho {url-git-commit-id-maven-plugin}[`Git Commit Id Plugin`] vào POM:
 
 [source,xml]
 ----
@@ -66,7 +70,7 @@ Với Maven, POM `spring-boot-starter-parent` include pre-configured plugin đ�
 </build>
 ----
 
-Gradle user có thể đạt kết quả tương tự bằng plugin https://plugins.gradle.org/plugin/com.gorylenko.gradle-git-properties[`gradle-git-properties`]:
+Với Gradle, có thể đạt kết quả tương tự bằng plugin https://plugins.gradle.org/plugin/com.gorylenko.gradle-git-properties[`gradle-git-properties`], như trong ví dụ sau:
 
 [source,gradle]
 ----
@@ -75,19 +79,21 @@ plugins {
 }
 ----
 
-Cả Maven và Gradle plugin đều cho phép configure property được include trong `git.properties`.
+Cả Maven plugin và Gradle plugin đều cho phép configure các property được include trong `git.properties`.
 
-TIP: Commit time trong `git.properties` được kỳ vọng match format `yyyy-MM-dd'T'HH:mm:ssZ`.
-Đây là default format của cả hai plugin.
-Dùng format này cho phép time được parse thành javadoc:java.util.Date[] và format của nó khi serialize sang JSON được control bởi Jackson date serialization configuration setting.
+TIP: Commit time trong `git.properties` được kỳ vọng khớp với format sau: `yyyy-MM-dd'T'HH:mm:ssZ`.
+Đây là default format của cả hai plugin nêu trên.
+Dùng format này cho phép parse time thành javadoc:java.util.Date[]; format của time khi serialize sang JSON sẽ được control bởi Jackson date serialization configuration setting.
+
+
 
 [[howto.build.generate-cyclonedx-sbom]]
-== Generate CycloneDX SBOM
+== Tạo CycloneDX SBOM
 
-Cả Maven và Gradle đều cho phép generate CycloneDX SBOM tại project build time.
+Cả Maven và Gradle đều cho phép generate CycloneDX SBOM tại thời điểm build project.
 
-Với Maven, POM `spring-boot-starter-parent` include pre-configured plugin generate SBOM.
-Để dùng, thêm declaration sau cho {url-cyclonedx-docs-maven-plugin}[`cyclonedx-maven-plugin`]:
+Với Maven, POM `spring-boot-starter-parent` bao gồm một plugin đã được configure sẵn để generate SBOM.
+Để sử dụng plugin này, thêm declaration sau cho {url-cyclonedx-docs-maven-plugin}[`cyclonedx-maven-plugin`] vào POM:
 
 [source,xml]
 ----
@@ -101,7 +107,7 @@ Với Maven, POM `spring-boot-starter-parent` include pre-configured plugin gene
 </build>
 ----
 
-Gradle user có thể dùng {url-cyclonedx-docs-gradle-plugin}[`cyclonedx-gradle-plugin`]:
+Với Gradle, có thể dùng plugin {url-cyclonedx-docs-gradle-plugin}[`cyclonedx-gradle-plugin`], như trong ví dụ sau:
 
 [source,gradle]
 ----
@@ -110,26 +116,30 @@ plugins {
 }
 ----
 
-TIP: Để print SBOM package trong uber jar hoặc war, chạy `java -Djarmode=tools -jar my-app.jar sbom`.
+TIP: Để print SBOM được package trong uber jar hoặc war, chạy `java -Djarmode=tools -jar my-app.jar sbom`.
+
+
 
 [[howto.build.customize-dependency-versions]]
-== Customize Dependency Versions
+== Tùy chỉnh Version của Dependency
 
-POM `spring-boot-dependencies` manage version của common dependency.
-Spring Boot plugin cho Maven và Gradle cho phép customize managed dependency version bằng build property.
+POM `spring-boot-dependencies` quản lý version của các dependency phổ biến.
+Spring Boot plugin cho Maven và Gradle cho phép tùy chỉnh các version dependency được quản lý này bằng build property.
 
-WARNING: Mỗi Spring Boot release được design và test với specific set third-party dependency này.
-Override version có thể gây compatibility issue.
+WARNING: Mỗi Spring Boot release được thiết kế và test với một bộ third-party dependency cụ thể này.
+Việc override version có thể gây ra compatibility issue.
 
-Để override dependency version với Maven, xem xref:maven-plugin:using.adoc[] trong Maven plugin documentation.
+Để override dependency version với Maven, xem xref:maven-plugin:using.adoc[] trong tài liệu Maven plugin.
 
-Để override dependency version với Gradle, xem xref:gradle-plugin:managing-dependencies.adoc#managing-dependencies.dependency-management-plugin.customizing[] trong Gradle plugin documentation.
+Để override dependency version với Gradle, xem xref:gradle-plugin:managing-dependencies.adoc#managing-dependencies.dependency-management-plugin.customizing[] trong tài liệu Gradle plugin.
+
+
 
 [[howto.build.create-an-executable-jar-with-maven]]
 == Tạo Executable JAR bằng Maven
 
-`spring-boot-maven-plugin` có thể dùng để tạo executable "`fat`" JAR.
-Nếu dùng POM `spring-boot-starter-parent`, declare plugin và jar sẽ được repackage:
+`spring-boot-maven-plugin` có thể được dùng để tạo executable "`fat`" JAR.
+Nếu dùng POM `spring-boot-starter-parent`, có thể declare plugin và các JAR sẽ được repackage như sau:
 
 [source,xml]
 ----
@@ -144,7 +154,7 @@ Nếu dùng POM `spring-boot-starter-parent`, declare plugin và jar sẽ đư�
 ----
 
 Nếu không dùng parent POM, vẫn có thể dùng plugin.
-Tuy nhiên phải thêm section `<executions>`:
+Tuy nhiên, phải thêm section `<executions>` như sau:
 
 [source,xml,subs="verbatim,attributes"]
 ----
@@ -166,23 +176,25 @@ Tuy nhiên phải thêm section `<executions>`:
 </build>
 ----
 
-Xem xref:maven-plugin:packaging.adoc#packaging.repackage-goal[plugin documentation] để biết full usage detail.
+Xem xref:maven-plugin:packaging.adoc#packaging.repackage-goal[tài liệu plugin] để biết đầy đủ chi tiết cách sử dụng.
+
+
 
 [[howto.build.use-a-spring-boot-application-as-dependency]]
 == Dùng Spring Boot Application làm Dependency
 
-Giống war file, Spring Boot application không được thiết kế để dùng làm dependency.
-Nếu application chứa class muốn share với project khác, cách khuyến nghị là move code đó sang module riêng.
-Module riêng sau đó có thể được application và project khác depend vào.
+Giống như một war file, Spring Boot application không được thiết kế để dùng làm dependency.
+Nếu application chứa các class muốn share với project khác, cách khuyến nghị là move code đó sang một module riêng.
+Module riêng sau đó có thể được application và các project khác depend vào.
 
-Nếu không thể rearrange code như khuyến nghị, Maven và Gradle plugin của Spring Boot phải configure để produce artifact riêng phù hợp dùng làm dependency.
-Executable archive không thể dùng làm dependency vì xref:specification:executable-jar/nested-jars.adoc#appendix.executable-jar.nested-jars.jar-structure[executable jar format] package application class trong `BOOT-INF/classes`.
-Điều này khiến class không được tìm thấy khi executable jar dùng làm dependency.
+Nếu không thể rearrange code như khuyến nghị ở trên, Maven và Gradle plugin của Spring Boot phải được configure để tạo ra một artifact riêng phù hợp dùng làm dependency.
+Executable archive không thể dùng làm dependency vì xref:specification:executable-jar/nested-jars.adoc#appendix.executable-jar.nested-jars.jar-structure[executable jar format] package các class của application trong `BOOT-INF/classes`.
+Điều này khiến các class đó không thể được tìm thấy khi executable jar được dùng làm dependency.
 
-Để produce hai artifact, một dùng làm dependency và một executable, phải specify classifier.
-Classifier được apply vào name của executable archive, để default archive dùng làm dependency.
+Để tạo ra hai artifact, một dùng làm dependency và một executable, phải specify một classifier.
+Classifier này được apply vào name của executable archive, để default archive có thể được dùng làm dependency.
 
-Để configure classifier `exec` trong Maven:
+Để configure classifier `exec` trong Maven, dùng configuration sau:
 
 [source,xml]
 ----
@@ -199,19 +211,21 @@ Classifier được apply vào name của executable archive, để default arch
 </build>
 ----
 
+
+
 [[howto.build.extract-specific-libraries-when-an-executable-jar-runs]]
-== Extract Specific Library khi Executable Jar chạy
+== Extract Các Library Cụ thể khi Executable Jar chạy
 
-Phần lớn nested library trong executable jar không cần unpack để chạy.
-Tuy nhiên một số library có thể gặp problem.
-Ví dụ JRuby có nested jar support riêng, giả định `jruby-complete.jar` luôn trực tiếp available như file riêng.
+Phần lớn nested library trong executable jar không cần được unpack để chạy.
+Tuy nhiên, một số library có thể gặp vấn đề.
+Ví dụ, JRuby có nested jar support riêng, trong đó giả định `jruby-complete.jar` luôn trực tiếp available dưới dạng một file riêng.
 
-Để xử lý problematic library, có thể flag specific nested jar để tự động unpack khi executable jar chạy lần đầu.
-Nested jar này được write dưới temporary directory identify bởi system property `java.io.tmpdir`.
+Để xử lý các library có vấn đề, có thể flag các nested jar cụ thể để tự động được unpack khi executable jar chạy lần đầu.
+Các nested jar này được write bên dưới temporary directory được xác định bởi system property `java.io.tmpdir`.
 
-WARNING: Cần đảm bảo operating system không delete jar đã unpack trong temporary directory khi application vẫn đang chạy.
+WARNING: Cần đảm bảo operating system được configure để không delete các jar đã unpack trong temporary directory khi application vẫn đang chạy.
 
-Ví dụ để flag JRuby unpack bằng Maven Plugin:
+Ví dụ, để flag JRuby cần được unpack bằng Maven Plugin, thêm configuration sau:
 
 [source,xml]
 ----
@@ -233,13 +247,15 @@ Ví dụ để flag JRuby unpack bằng Maven Plugin:
 </build>
 ----
 
+
+
 [[howto.build.create-a-nonexecutable-jar]]
 == Tạo Non-executable JAR với Exclusion
 
-Thường khi có executable và non-executable jar như hai build product riêng, executable version có additional configuration file không cần trong library jar.
-Ví dụ `application.yaml` có thể exclude khỏi non-executable JAR.
+Thông thường, khi có executable và non-executable jar dưới dạng hai build product riêng, executable version có các configuration file bổ sung không cần trong library jar.
+Ví dụ, file configuration `application.yaml` có thể được exclude khỏi non-executable JAR.
 
-Trong Maven, executable jar phải là main artifact và có thể thêm classified jar cho library:
+Trong Maven, executable jar phải là main artifact và có thể thêm một classified jar cho library, như sau:
 
 [source,xml]
 ----
@@ -271,29 +287,33 @@ Trong Maven, executable jar phải là main artifact và có thể thêm classif
 </build>
 ----
 
+
+
 [[howto.build.remote-debug-maven]]
-== Remote Debug Spring Boot Application start bằng Maven
+== Remote Debug Spring Boot Application được Start bằng Maven
 
-Để attach remote debugger vào Spring Boot application start bằng Maven, dùng property `jvmArguments` của xref:maven-plugin:index.adoc[maven plugin].
+Để attach một remote debugger vào Spring Boot application được start bằng Maven, có thể dùng property `jvmArguments` của xref:maven-plugin:index.adoc[Maven plugin].
 
-Xem xref:maven-plugin:run.adoc#run.examples.debug[vÍ dụ này] để biết thêm.
+Xem xref:maven-plugin:run.adoc#run.examples.debug[ví dụ này] để biết thêm chi tiết.
+
+
 
 [[howto.build.build-an-executable-archive-with-ant-without-using-spring-boot-antlib]]
 == Build Executable Archive bằng Ant mà không dùng spring-boot-antlib
 
-Để build bằng Ant, cần lấy dependency, compile, sau đó tạo jar hoặc war archive.
-Để làm executable, có thể dùng module `spring-boot-antlib` hoặc làm theo hướng dẫn:
+Để build bằng Ant, cần lấy các dependency, compile, sau đó tạo jar hoặc war archive.
+Để làm archive executable, có thể dùng module `spring-boot-antlib` hoặc làm theo các hướng dẫn sau:
 
-. Nếu build jar, package application class và resource vào nested directory `BOOT-INF/classes`.
-  Nếu build war, package application class vào nested directory `WEB-INF/classes` như bình thường.
-. Thêm runtime dependency vào nested directory `BOOT-INF/lib` cho jar hoặc `WEB-INF/lib` cho war.
-  Nhớ *không* compress entry trong archive.
-. Thêm `provided` dependency (embedded container) vào nested directory `BOOT-INF/lib` cho jar hoặc `WEB-INF/lib-provided` cho war.
-  Nhớ *không* compress entry trong archive.
-. Thêm class `spring-boot-loader` ở root archive để `Main-Class` available.
-. Dùng launcher phù hợp, như javadoc:org.springframework.boot.loader.launch.JarLauncher[] cho jar, làm attribute `Main-Class` trong manifest và specify property khác cần thiết như manifest entry, chủ yếu bằng property `Start-Class`.
+. Nếu đang build jar, package các class và resource của application vào nested directory `BOOT-INF/classes`.
+  Nếu đang build war, package class của application vào nested directory `WEB-INF/classes` như bình thường.
+. Thêm các runtime dependency vào nested directory `BOOT-INF/lib` đối với jar hoặc `WEB-INF/lib` đối với war.
+  Nhớ *không* compress các entry trong archive.
+. Thêm các `provided` dependency (embedded container) vào nested directory `BOOT-INF/lib` đối với jar hoặc `WEB-INF/lib-provided` đối với war.
+  Nhớ *không* compress các entry trong archive.
+. Thêm các class của `spring-boot-loader` vào root của archive (để `Main-Class` available).
+. Dùng launcher phù hợp, chẳng hạn javadoc:org.springframework.boot.loader.launch.JarLauncher[] đối với jar file, làm attribute `Main-Class` trong manifest, đồng thời specify các property khác mà launcher cần dưới dạng manifest entry, chủ yếu bằng cách set property `Start-Class`.
 
-Ví dụ build executable archive bằng Ant:
+Ví dụ sau minh họa cách build executable archive bằng Ant:
 
 [source,xml]
 ----

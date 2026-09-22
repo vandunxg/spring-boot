@@ -1,25 +1,25 @@
 [[messaging.jms]]
 = JMS
 
-Interface javadoc:jakarta.jms.ConnectionFactory[] cung cấp cách chuẩn để tạo javadoc:jakarta.jms.Connection[] nhằm tương tác với JMS broker.
-Mặc dù Spring cần javadoc:jakarta.jms.ConnectionFactory[] để làm việc với JMS, nhìn chung bạn không cần dùng trực tiếp mà có thể dựa vào các messaging abstraction cấp cao hơn.
-(Xem {url-spring-framework-docs}/integration/jms.html[phần liên quan] trong Spring Framework reference documentation.)
-Spring Boot cũng auto-configure infrastructure cần thiết để gửi và nhận message.
+Interface javadoc:jakarta.jms.ConnectionFactory[] cung cấp method chuẩn để tạo javadoc:jakarta.jms.Connection[] nhằm tương tác với JMS broker.
+Mặc dù Spring cần javadoc:jakarta.jms.ConnectionFactory[] để làm việc với JMS, nhìn chung bạn không cần tự mình sử dụng trực tiếp interface này mà có thể dựa vào các messaging abstraction cấp cao hơn.
+(Xem {url-spring-framework-docs}/integration/jms.html[phần liên quan] trong tài liệu reference của Spring Framework để biết chi tiết.)
+Spring Boot cũng auto-configure infrastructure cần thiết để send và receive message.
 
 [[messaging.jms.activemq]]
 == Hỗ trợ ActiveMQ "Classic"
 
 Khi https://activemq.apache.org/components/classic[ActiveMQ "Classic"] có trên classpath, Spring Boot có thể cấu hình javadoc:jakarta.jms.ConnectionFactory[].
-Nếu broker có mặt, embedded broker tự động được start và cấu hình, miễn là không có broker URL được chỉ định và embedded broker không bị disable.
+Nếu broker có mặt, embedded broker sẽ tự động được start và configure, với điều kiện không có broker URL nào được chỉ định thông qua configuration và embedded broker không bị disable trong configuration.
 
-NOTE: Nếu dùng `spring-boot-starter-activemq`, các dependency cần để kết nối ActiveMQ "Classic" cùng Spring infrastructure tích hợp JMS được cung cấp.
-Thêm `org.apache.activemq:activemq-broker` cho phép dùng embedded broker.
+NOTE: Nếu dùng `spring-boot-starter-activemq`, các dependency cần thiết để kết nối tới một instance ActiveMQ "Classic" được cung cấp, cũng như Spring infrastructure để tích hợp với JMS.
+Thêm `org.apache.activemq:activemq-broker` vào application cho phép dùng embedded broker.
 
-ActiveMQ "Classic" configuration được điều khiển bởi external property trong `+spring.activemq.*+`.
+Configuration của ActiveMQ "Classic" được điều khiển bởi các external configuration properties trong `+spring.activemq.*+`.
 
 Nếu `activemq-broker` có trên classpath, ActiveMQ "Classic" được auto-configure dùng https://activemq.apache.org/vm-transport-reference.html[VM transport], khởi động broker embedded trong cùng JVM.
 
-Có thể disable embedded broker:
+Có thể disable embedded broker bằng cách cấu hình configprop:spring.activemq.embedded.enabled[] property, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -29,7 +29,7 @@ spring:
       enabled: false
 ----
 
-Embedded broker cũng bị disable nếu cấu hình broker URL:
+Embedded broker cũng sẽ bị disable nếu bạn cấu hình broker URL, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -40,9 +40,9 @@ spring:
     password: "secret"
 ----
 
-Nếu muốn kiểm soát hoàn toàn embedded broker, xem https://activemq.apache.org/how-do-i-embed-a-broker-inside-a-connection.html[ActiveMQ "Classic" documentation].
+Nếu muốn kiểm soát hoàn toàn embedded broker, xem https://activemq.apache.org/how-do-i-embed-a-broker-inside-a-connection.html[tài liệu ActiveMQ "Classic"] để biết thêm thông tin.
 
-Mặc định javadoc:org.springframework.jms.connection.CachingConnectionFactory[] wrap native javadoc:jakarta.jms.ConnectionFactory[] với setting hợp lý, có thể điều khiển qua `+spring.jms.*+`:
+Mặc định, javadoc:org.springframework.jms.connection.CachingConnectionFactory[] wrap native javadoc:jakarta.jms.ConnectionFactory[] với các setting hợp lý mà bạn có thể control bằng external configuration property trong `+spring.jms.*+`:
 
 [configprops,yaml]
 ----
@@ -52,7 +52,7 @@ spring:
       session-cache-size: 5
 ----
 
-Nếu muốn native pooling, thêm dependency `org.messaginghub:pooled-jms` và cấu hình javadoc:org.messaginghub.pooled.jms.JmsPoolConnectionFactory[]:
+Nếu muốn dùng native pooling, bạn có thể thêm dependency `org.messaginghub:pooled-jms` và cấu hình javadoc:org.messaginghub.pooled.jms.JmsPoolConnectionFactory[] tương ứng, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -63,24 +63,24 @@ spring:
       max-connections: 50
 ----
 
-TIP: Xem javadoc:org.springframework.boot.activemq.autoconfigure.ActiveMQProperties[] để biết thêm option.
-Bạn cũng có thể register nhiều bean implement javadoc:org.springframework.boot.activemq.autoconfigure.ActiveMQConnectionFactoryCustomizer[] cho customization nâng cao.
+TIP: Xem javadoc:org.springframework.boot.activemq.autoconfigure.ActiveMQProperties[] để biết thêm các option được hỗ trợ.
+Bạn cũng có thể register số lượng tùy ý bean implement javadoc:org.springframework.boot.activemq.autoconfigure.ActiveMQConnectionFactoryCustomizer[] để thực hiện các customization nâng cao.
 
-Mặc định ActiveMQ "Classic" tạo destination nếu chưa tồn tại, vì vậy destination được resolve theo name đã cung cấp.
+Mặc định, ActiveMQ "Classic" tạo destination nếu destination đó chưa tồn tại, vì vậy các destination được resolve dựa trên name đã cung cấp.
 
 [[messaging.jms.artemis]]
 == Hỗ trợ ActiveMQ Artemis
 
 Spring Boot có thể auto-configure javadoc:jakarta.jms.ConnectionFactory[] khi phát hiện https://activemq.apache.org/components/artemis/[ActiveMQ Artemis] trên classpath.
-Nếu broker có mặt, embedded broker tự động start và configure, trừ khi property mode được đặt rõ.
-Các mode được hỗ trợ là `embedded` và `native`.
-`embedded` yêu cầu embedded broker có trên classpath; `native` kết nối broker qua transport protocol `netty`.
-Với `native`, Spring Boot cấu hình javadoc:jakarta.jms.ConnectionFactory[] kết nối broker trên local machine bằng default setting.
+Nếu broker có mặt, embedded broker sẽ tự động được start và configure, trừ khi mode property đã được set rõ ràng.
+Các mode được hỗ trợ là `embedded` (để nêu rõ rằng cần có embedded broker và sẽ phát sinh error nếu broker không available trên classpath) và `native` (để connect tới broker bằng `netty` transport protocol).
+Khi mode `native` được configure, Spring Boot sẽ cấu hình javadoc:jakarta.jms.ConnectionFactory[] kết nối tới broker đang chạy trên local machine bằng các setting mặc định.
 
-NOTE: Nếu dùng `spring-boot-starter-artemis`, các dependency cần để kết nối existing ActiveMQ Artemis cùng Spring infrastructure tích hợp JMS được cung cấp.
-Thêm `org.apache.activemq:artemis-jakarta-server` để dùng embedded mode.
+NOTE: Nếu dùng `spring-boot-starter-artemis`, các dependency cần thiết để kết nối tới một instance ActiveMQ Artemis hiện có được cung cấp, cũng như Spring infrastructure để tích hợp với JMS.
+Thêm `org.apache.activemq:artemis-jakarta-server` vào application để dùng embedded mode.
 
-ActiveMQ Artemis configuration được điều khiển bởi `+spring.artemis.*+`:
+Configuration của ActiveMQ Artemis được điều khiển bởi các external configuration properties trong `+spring.artemis.*+`.
+Ví dụ, bạn có thể khai báo section sau trong `application.properties`:
 
 [configprops,yaml]
 ----
@@ -92,10 +92,10 @@ spring:
     password: "secret"
 ----
 
-Khi embed broker, có thể chọn bật persistence và liệt kê destination cần có.
-Có thể dùng comma-separated list với default option, hoặc định nghĩa bean javadoc:org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration[] hay javadoc:org.apache.activemq.artemis.jms.server.config.TopicConfiguration[] cho advanced queue/topic configuration.
+Khi embed broker, bạn có thể chọn bật persistence và liệt kê các destination cần được cung cấp.
+Có thể chỉ định các destination này dưới dạng comma-separated list để tạo chúng với các option mặc định, hoặc định nghĩa bean(s) có type javadoc:org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration[] hoặc javadoc:org.apache.activemq.artemis.jms.server.config.TopicConfiguration[] để có advanced queue và topic configuration tương ứng.
 
-Mặc định javadoc:org.springframework.jms.connection.CachingConnectionFactory[] wrap native javadoc:jakarta.jms.ConnectionFactory[] với setting qua `+spring.jms.*+`:
+Mặc định, javadoc:org.springframework.jms.connection.CachingConnectionFactory[] wrap native javadoc:jakarta.jms.ConnectionFactory[] với các setting hợp lý mà bạn có thể control bằng external configuration property trong `+spring.jms.*+`:
 
 [configprops,yaml]
 ----
@@ -105,7 +105,7 @@ spring:
       session-cache-size: 5
 ----
 
-Nếu muốn native pooling, thêm `org.messaginghub:pooled-jms` và cấu hình:
+Nếu muốn dùng native pooling, bạn có thể thêm dependency `org.messaginghub:pooled-jms` và cấu hình javadoc:org.messaginghub.pooled.jms.JmsPoolConnectionFactory[] tương ứng, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -116,16 +116,16 @@ spring:
       max-connections: 50
 ----
 
-Xem javadoc:org.springframework.boot.artemis.autoconfigure.ArtemisProperties[] để biết thêm option.
+Xem javadoc:org.springframework.boot.artemis.autoconfigure.ArtemisProperties[] để biết thêm các option được hỗ trợ.
 
-Không có JNDI lookup; destination được resolve theo name, dùng attribute `name` trong ActiveMQ Artemis configuration hoặc name từ configuration.
+Không có JNDI lookup, và các destination được resolve dựa trên name của chúng, sử dụng một trong hai nguồn: attribute `name` trong ActiveMQ Artemis configuration hoặc các name được cung cấp thông qua configuration.
 
 [[messaging.jms.jndi]]
 == Sử dụng JNDI ConnectionFactory
 
-Nếu application chạy trong application server, Spring Boot thử locate JMS javadoc:jakarta.jms.ConnectionFactory[] bằng JNDI.
-Mặc định kiểm tra `java:/JmsXA` và `java:/XAConnectionFactory`.
-Có thể dùng configprop:spring.jms.jndi-name[] để chỉ định location khác:
+Nếu application chạy trong application server, Spring Boot sẽ thử locate JMS javadoc:jakarta.jms.ConnectionFactory[] bằng JNDI.
+Mặc định, các location `java:/JmsXA` và `java:/XAConnectionFactory` sẽ được kiểm tra.
+Có thể dùng configprop:spring.jms.jndi-name[] property nếu cần chỉ định location khác, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -137,11 +137,11 @@ spring:
 [[messaging.jms.sending]]
 == Gửi Message
 
-javadoc:org.springframework.jms.core.JmsClient[] của Spring được auto-configure và có thể autowire trực tiếp:
+javadoc:org.springframework.jms.core.JmsClient[] của Spring được auto-configure và bạn có thể autowire trực tiếp vào các bean của mình, như ví dụ sau:
 
 include-code::MyBean[]
 
-NOTE: javadoc:org.springframework.jms.core.JmsMessagingTemplate[] có thể inject tương tự, và cả hai dùng javadoc:org.springframework.jms.core.JmsTemplate[] truyền thống cũng có thể inject.
+NOTE: javadoc:org.springframework.jms.core.JmsMessagingTemplate[] cũng có thể được inject theo cách tương tự, và cả hai đều sử dụng javadoc:org.springframework.jms.core.JmsTemplate[] truyền thống, vốn cũng có thể được inject.
 Nếu bean javadoc:org.springframework.jms.support.destination.DestinationResolver[] hoặc javadoc:org.springframework.jms.support.converter.MessageConverter[] được định nghĩa, nó tự động liên kết với auto-configured javadoc:org.springframework.jms.core.JmsTemplate[].
 
 [[messaging.jms.receiving]]
@@ -152,37 +152,37 @@ Nếu chưa định nghĩa javadoc:org.springframework.jms.config.JmsListenerCon
 Nếu có bean javadoc:org.springframework.jms.support.destination.DestinationResolver[], javadoc:org.springframework.jms.support.converter.MessageConverter[] hoặc javadoc:jakarta.jms.ExceptionListener[], chúng tự động liên kết với default factory.
 
 Trong hầu hết scenario, message listener container nên được cấu hình với native javadoc:jakarta.jms.ConnectionFactory[].
-Như vậy mỗi listener container có connection riêng và chịu trách nhiệm hoàn toàn về local recovery.
+Theo cách này, mỗi listener container có connection riêng và tự chịu hoàn toàn trách nhiệm về local recovery.
 Auto-configuration dùng javadoc:org.springframework.boot.jms.ConnectionFactoryUnwrapper[] để unwrap native connection factory từ auto-configured factory.
 
 NOTE: Auto-configuration chỉ unwrap `CachedConnectionFactory`.
 
 Mặc định default factory là transactional.
-Nếu infrastructure có javadoc:org.springframework.transaction.jta.JtaTransactionManager[], nó được liên kết với listener container.
+Nếu application chạy trên infrastructure có javadoc:org.springframework.transaction.jta.JtaTransactionManager[], transaction manager này mặc định được liên kết với listener container.
 Nếu không, flag `sessionTransacted` được bật.
-Trong trường hợp đó, có thể liên kết local data store transaction với xử lý incoming message bằng javadoc:org.springframework.transaction.annotation.Transactional[format=annotation] trên listener method.
-Message chỉ được acknowledged sau khi local transaction hoàn tất.
-Điều này cũng gồm response message gửi trên cùng JMS session.
+Trong trường hợp không có JtaTransactionManager, bạn có thể liên kết local data store transaction với việc xử lý incoming message bằng cách thêm javadoc:org.springframework.transaction.annotation.Transactional[format=annotation] vào listener method (hoặc một delegate của method đó).
+Điều này đảm bảo incoming message được acknowledged sau khi local transaction hoàn tất.
+Điều này cũng bao gồm việc gửi response message trên cùng JMS session.
 
 Component sau tạo listener endpoint trên destination `someQueue`:
 
 include-code::MyBean[]
 
-TIP: Xem API documentation của javadoc:org.springframework.jms.annotation.EnableJms[format=annotation].
+TIP: Xem API documentation của javadoc:org.springframework.jms.annotation.EnableJms[format=annotation] để biết thêm chi tiết.
 
-Nếu cần thêm javadoc:org.springframework.jms.config.JmsListenerContainerFactory[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer[] để initialize javadoc:org.springframework.jms.config.DefaultJmsListenerContainerFactory[] với cùng setting auto-configuration.
+Nếu cần tạo thêm các instance javadoc:org.springframework.jms.config.JmsListenerContainerFactory[] hoặc muốn override factory mặc định, Spring Boot cung cấp javadoc:org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer[] để bạn initialize javadoc:org.springframework.jms.config.DefaultJmsListenerContainerFactory[] với cùng các setting như factory được auto-configure.
 
-Ví dụ expose factory khác dùng javadoc:org.springframework.jms.support.converter.MessageConverter[] cụ thể:
+Ví dụ sau expose một factory khác sử dụng javadoc:org.springframework.jms.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyJmsConfiguration[]
 
-NOTE: Customization trên dùng javadoc:org.springframework.boot.jms.ConnectionFactoryUnwrapper[] để liên kết native connection factory giống auto-configured factory.
+NOTE: Trong ví dụ trên, customization sử dụng javadoc:org.springframework.boot.jms.ConnectionFactoryUnwrapper[] để liên kết native connection factory với message listener container theo cùng cách mà auto-configured factory thực hiện.
 
-Sau đó dùng factory trong method annotate javadoc:org.springframework.jms.annotation.JmsListener[format=annotation]:
+Sau đó, bạn có thể dùng factory trong bất kỳ method nào được annotate bằng javadoc:org.springframework.jms.annotation.JmsListener[format=annotation], như sau:
 
 include-code::custom/MyBean[]
 
-Tương tự `DefaultJmsListenerContainerFactoryConfigurer`, Spring Boot cung cấp javadoc:org.springframework.boot.jms.autoconfigure.SimpleJmsListenerContainerFactoryConfigurer[] để initialize javadoc:org.springframework.jms.config.SimpleJmsListenerContainerFactory[] và áp dụng setting liên quan.
+Tương tự `DefaultJmsListenerContainerFactoryConfigurer`, Spring Boot cũng cung cấp javadoc:org.springframework.boot.jms.autoconfigure.SimpleJmsListenerContainerFactoryConfigurer[] để bạn initialize javadoc:org.springframework.jms.config.SimpleJmsListenerContainerFactory[] và áp dụng các setting liên quan do auto-configuration cung cấp.
 
-TIP: Khác javadoc:org.springframework.jms.listener.DefaultMessageListenerContainer[] dùng pull-based mechanism (polling), javadoc:org.springframework.jms.listener.SimpleMessageListenerContainer[] dùng push-based mechanism gần với standalone JMS specification.
-Xem javadocs tương ứng và {url-spring-framework-docs}/integration/jms/using.html#jms-mdp[Spring Framework reference documentation].
+TIP: Khác với javadoc:org.springframework.jms.listener.DefaultMessageListenerContainer[], vốn dùng pull-based mechanism (polling) để process message, javadoc:org.springframework.jms.listener.SimpleMessageListenerContainer[] dùng push-based mechanism rất gần với tinh thần của standalone JMS specification.
+Để tìm hiểu thêm về sự khác biệt giữa hai listener container, hãy tham khảo javadocs tương ứng và {url-spring-framework-docs}/integration/jms/using.html#jms-mdp[tài liệu reference của Spring Framework].

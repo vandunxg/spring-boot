@@ -1,13 +1,13 @@
 [[using.using-the-springbootapplication-annotation]]
 = Sử dụng annotation @SpringBootApplication
 
-Nhiều developer Spring Boot muốn ứng dụng sử dụng auto-configuration, component scan và cho phép định nghĩa thêm cấu hình trên "class ứng dụng".
-Một annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] duy nhất có thể bật cả ba tính năng đó, cụ thể:
+Nhiều developer Spring Boot muốn app của họ sử dụng auto-configuration, component scan và có thể định nghĩa thêm configuration trên "application class".
+Một annotation duy nhất javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] có thể bật cả ba tính năng đó, cụ thể:
 
 * javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation]: bật xref:using/auto-configuration.adoc[cơ chế auto-configuration của Spring Boot]
 * javadoc:org.springframework.context.annotation.ComponentScan[format=annotation]: bật scan javadoc:org.springframework.stereotype.Component[format=annotation] trong package chứa ứng dụng (xem xref:using/structuring-your-code.adoc[các best practice])
-* javadoc:org.springframework.boot.SpringBootConfiguration[format=annotation]: cho phép đăng ký thêm bean trong context hoặc import thêm class cấu hình.
-Đây là phương án thay thế javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn của Spring, giúp xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[phát hiện cấu hình] trong integration test.
+* javadoc:org.springframework.boot.SpringBootConfiguration[format=annotation]: cho phép đăng ký thêm bean trong context hoặc import thêm configuration class.
+Đây là phương án thay thế cho javadoc:org.springframework.context.annotation.Configuration[format=annotation] tiêu chuẩn của Spring, giúp xref:testing/spring-boot-applications.adoc#testing.spring-boot-applications.detecting-configuration[phát hiện configuration] trong các integration test.
 
 include-code::springapplication/MyApplication[]
 
@@ -15,7 +15,7 @@ NOTE: javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[forma
 
 [NOTE]
 ====
-Không tính năng nào trong số này là bắt buộc; bạn có thể thay annotation duy nhất này bằng bất kỳ tính năng nào mà nó bật.
+Không tính năng nào trong số này là bắt buộc, và bạn có thể chọn thay annotation duy nhất này bằng bất kỳ tính năng nào mà nó bật.
 Ví dụ, bạn có thể không muốn sử dụng component scan hoặc configuration properties scan trong ứng dụng:
 
 include-code::individualannotations/MyApplication[]

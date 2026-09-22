@@ -1,20 +1,20 @@
 [[running-your-application]]
-= Running your Application with Gradle
+= Chạy Application với Gradle
 
-Để chạy application mà không build archive trước, dùng task `bootRun`:
+Để chạy application mà không build archive trước, hãy dùng task `bootRun`:
 
 [source,shell]
 ----
 $ ./gradlew bootRun
 ----
 
-Task `bootRun` là instance của {apiref-gradle-plugin-boot-run}[`BootRun`], subclass của `JavaExec`.
-Do đó mọi {url-gradle-dsl}/org.gradle.api.tasks.JavaExec.html[usual configuration option] để execute Java process trong Gradle đều available.
-Task tự động configure dùng runtime classpath của main source set.
+Task `bootRun` là một instance của {apiref-gradle-plugin-boot-run}[`BootRun`], vốn là subclass của `JavaExec`.
+Do đó, tất cả {url-gradle-dsl}/org.gradle.api.tasks.JavaExec.html[các configuration options thông thường] để execute một Java process trong Gradle đều khả dụng.
+Task này tự động được configure để dùng runtime classpath của main source set.
 
-Mặc định main class tự động configure bằng cách tìm class có method `public static void main(String[])` trong output main source set.
+Mặc định, main class sẽ được tự động configure bằng cách tìm một class có method `public static void main(String[])` trong output của main source set.
 
-Main class cũng có thể explicit configure bằng property `main` của task:
+Main class cũng có thể được configure một cách explicit bằng property `main` của task:
 
 [tabs]
 ======
@@ -32,7 +32,7 @@ include::example$running/boot-run-main.gradle.kts[tags=main]
 ----
 ======
 
-Ngoài ra main class name có thể configure project-wide bằng property `mainClass` của Spring Boot DSL:
+Ngoài ra, tên main class có thể được configure ở cấp project bằng property `mainClass` của Spring Boot DSL:
 
 [tabs]
 ======
@@ -50,8 +50,8 @@ include::example$running/spring-boot-dsl-main-class-name.gradle.kts[tags=main-cl
 ----
 ======
 
-Mặc định `bootRun` configure JVM optimize launch để startup nhanh hơn trong development.
-Disable behavior bằng property `optimizedLaunch`:
+Mặc định, `bootRun` configure JVM để optimize việc launch nhằm startup nhanh hơn trong quá trình development.
+Có thể disable behavior này bằng property `optimizedLaunch`, như trong ví dụ sau:
 
 [tabs]
 ======
@@ -69,7 +69,7 @@ include::example$running/boot-run-disable-optimized-launch.gradle.kts[tags=launc
 ----
 ======
 
-Nếu {url-gradle-docs-application-plugin}[`application` plugin] được apply, property `mainClass` của nó phải configure và có thể dùng cùng mục đích:
+Nếu {url-gradle-docs-application-plugin}[`application` plugin] đã được apply, phải configure property `mainClass` của plugin này; property đó có thể được dùng cho cùng mục đích:
 
 [tabs]
 ======
@@ -87,26 +87,30 @@ include::example$running/application-plugin-main-class-name.gradle.kts[tags=main
 ----
 ======
 
-[[running-your-application.passing-arguments]]
-== Passing Arguments tới Application
 
-Giống mọi task `JavaExec`, argument có thể pass vào `bootRun` từ command line bằng `--args='<arguments>'` khi dùng Gradle 4.9 trở lên.
-Ví dụ chạy application với profile `dev` active:
+
+[[running-your-application.passing-arguments]]
+== Truyền Arguments vào Application
+
+Giống như mọi task `JavaExec`, có thể truyền arguments vào `bootRun` từ command line bằng `--args='<arguments>'` khi dùng Gradle 4.9 trở lên.
+Ví dụ, để chạy application với profile `dev` active, có thể dùng command sau:
 
 [source,shell]
 ----
 $ ./gradlew bootRun --args='--spring.profiles.active=dev'
 ----
 
-Xem {url-gradle-javadoc}/org/gradle/api/tasks/JavaExec.html#setArgsString(java.lang.String)[javadoc của `JavaExec.setArgsString`].
+Xem {url-gradle-javadoc}/org/gradle/api/tasks/JavaExec.html#setArgsString(java.lang.String)[javadoc của `JavaExec.setArgsString`] để biết thêm chi tiết.
+
+
 
 [[running-your-application.passing-system-properties]]
-== Passing System Properties tới Application
+== Truyền System Properties vào Application
 
-Vì `bootRun` là standard `JavaExec` task, system property có thể pass tới JVM application bằng cách specify trong build script.
-Để value system property configurable, set value bằng {url-gradle-dsl}/org.gradle.api.Project.html#N14FE1[project property].
-Để project property optional, reference bằng `findProperty`.
-Cách này cũng cho phép cung cấp default bằng Elvis operator `?:`:
+Vì `bootRun` là một `JavaExec` task chuẩn, có thể truyền system properties vào JVM của application bằng cách chỉ định chúng trong build script.
+Để value của một system property có thể được configure, hãy set value đó bằng {url-gradle-dsl}/org.gradle.api.Project.html#N14FE1[project property].
+Để một project property là optional, hãy reference property đó bằng `findProperty`.
+Cách này cũng cho phép cung cấp default value bằng Elvis operator `?:`, như trong ví dụ sau:
 
 [tabs]
 ======
@@ -124,27 +128,29 @@ include::example$running/boot-run-system-property.gradle.kts[tags=system-propert
 ----
 ======
 
-Ví dụ trên set system property `com.example.property` bằng value của project property `example`.
-Nếu `example` không set, system property value là `default`.
+Ví dụ trên set system property `com.example.property` thành value của project property `example`.
+Nếu project property `example` chưa được set, value của system property sẽ là `default`.
 
-Gradle cho phép set project property theo nhiều cách, gồm command line với flag `-P`:
+Gradle cho phép set project properties theo nhiều cách, trong đó có command line với flag `-P`, như trong ví dụ sau:
 
 [source,bash,indent=0,subs="verbatim,attributes"]
 ----
 $ ./gradlew bootRun -Pexample=custom
 ----
 
-Ví dụ set project property `example` thành `custom`.
-`bootRun` sau đó dùng value này cho system property `com.example.property`.
+Ví dụ trên set value của project property `example` thành `custom`.
+Sau đó, `bootRun` sẽ dùng value này làm value của system property `com.example.property`.
+
+
 
 [[running-your-application.reloading-resources]]
-== Reloading Resources
+== Reload Resources
 
-Nếu devtools được add vào project, nó tự động monitor application classpath để phát hiện change.
-Modified file cần recompile để classpath update và trigger reload với devtools.
-Chi tiết xem xref:reference:using/devtools.adoc#using.devtools.restart[reference documentation].
+Nếu devtools đã được add vào project, devtools sẽ tự động monitor classpath của application để phát hiện các thay đổi.
+Lưu ý rằng các file đã sửa cần được recompile để classpath được update, từ đó trigger reload bằng devtools.
+Để biết thêm chi tiết về cách dùng devtools, hãy xem xref:reference:using/devtools.adoc#using.devtools.restart[section này trong reference documentation].
 
-Ngoài ra có thể configure `bootRun` để static resource của application load từ source location:
+Ngoài ra, bạn có thể configure `bootRun` để static resources của application được load từ source location:
 
 [tabs]
 ======
@@ -162,12 +168,14 @@ include::example$running/boot-run-source-resources.gradle.kts[tags=source-resour
 ----
 ======
 
-Điều này làm resource reloadable trong live application, hữu ích ở development time.
+Điều này khiến các resource có thể reload trong live application, hữu ích trong quá trình development.
+
+
 
 [[running-your-application.using-a-test-main-class]]
-== Dùng Test Main Class
+== Sử dụng Test Main Class
 
-Ngoài `bootRun`, task `bootTestRun` cũng được register.
-Giống `bootRun`, `bootTestRun` là instance `BootRun` nhưng configure dùng main class tìm trong output test source set thay vì main source set.
-Nó cũng dùng runtime classpath của test source set thay vì main source set.
-Vì `bootTestRun` là instance BootRun, mọi configuration option mô tả ở trên cho `bootRun` cũng dùng được với `bootTestRun`.
+Ngoài `bootRun`, một task `bootTestRun` cũng được register.
+Giống `bootRun`, `bootTestRun` là một instance của `BootRun`, nhưng được configure để dùng main class được tìm thấy trong output của test source set thay vì main source set.
+Task này cũng dùng runtime classpath của test source set thay vì runtime classpath của main source set.
+Vì `bootTestRun` là một instance của `BootRun`, mọi configuration option được mô tả ở trên cho `bootRun` cũng có thể được dùng với `bootTestRun`.

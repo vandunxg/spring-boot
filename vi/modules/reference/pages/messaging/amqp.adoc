@@ -1,16 +1,18 @@
 [[messaging.amqp]]
 = AMQP
 
-Advanced Message Queuing Protocol (AMQP) là platform-neutral wire-level protocol cho message-oriented middleware.
-Project Spring AMQP áp dụng core Spring concept vào việc phát triển messaging solution dựa trên AMQP.
+Advanced Message Queuing Protocol (AMQP) là một wire-level protocol, platform-neutral dành cho message-oriented middleware.
+Project Spring AMQP áp dụng các core concept của Spring vào việc phát triển các messaging solution dựa trên AMQP.
 Spring Boot cung cấp auto-configuration cho ba style AMQP khác nhau:
 
 * xref:messaging/amqp.adoc#messaging.amqp.generic[Generic AMQP 1.0] (`spring-boot-starter-amqp`) — hỗ trợ AMQP 1.0 không phụ thuộc broker, dựa trên Qpid ProtonJ2 client library.
   Dùng khi portability giữa các broker tương thích AMQP 1.0 như ActiveMQ, Azure Service Bus hoặc RabbitMQ là quan trọng.
-* xref:messaging/amqp.adoc#messaging.amqp.rabbitmq[RabbitMQ AMQP 1.0] (`spring-boot-starter-amqp-rabbitmq`) — support riêng cho RabbitMQ qua native https://github.com/rabbitmq/rabbitmq-amqp-java-client[RabbitMQ AMQP 1.0 Java client].
-  Dùng khi application chỉ target RabbitMQ và muốn dùng AMQP 1.0.
-* xref:messaging/amqp.adoc#messaging.amqp.rabbitmq09[RabbitMQ AMQP 0.9] (`spring-boot-starter-rabbitmq`) — RabbitMQ qua classic AMQP 0.9.1.
-  Dùng cho integration RabbitMQ lâu đời và nhiều feature nhất, gồm Streams support.
+* xref:messaging/amqp.adoc#messaging.amqp.rabbitmq[RabbitMQ AMQP 1.0] (`spring-boot-starter-amqp-rabbitmq`) — support dành riêng cho RabbitMQ qua native https://github.com/rabbitmq/rabbitmq-amqp-java-client[RabbitMQ AMQP 1.0 Java client].
+  Dùng khi application chỉ target RabbitMQ và muốn sử dụng AMQP 1.0 protocol.
+* xref:messaging/amqp.adoc#messaging.amqp.rabbitmq09[RabbitMQ AMQP 0.9] (`spring-boot-starter-rabbitmq`) — hỗ trợ RabbitMQ qua classic AMQP 0.9.1 protocol.
+  Dùng cho integration RabbitMQ established nhất và nhiều feature nhất, gồm cả Streams support.
+
+
 
 [[messaging.amqp.generic]]
 == Hỗ trợ Generic AMQP 1.0
@@ -18,7 +20,8 @@ Spring Boot cung cấp auto-configuration cho ba style AMQP khác nhau:
 AMQP 1.0 được nhiều broker và messaging service ngoài RabbitMQ hỗ trợ, gồm ActiveMQ, Azure Service Bus và các hệ thống khác.
 Spring AMQP cung cấp {url-spring-amqp-docs}/amqp10-client.html[generic support cho AMQP 1.0] qua `org.springframework.amqp:spring-amqp-client`, dựa trên https://github.com/apache/qpid-protonj2/blob/main/protonj2-client/README.md[Qpid ProtonJ2 Client Library].
 
-AMQP configuration được điều khiển bởi external property trong `+spring.amqp.*+`:
+AMQP configuration được điều khiển bởi external configuration properties trong `+spring.amqp.*+`.
+Ví dụ, bạn có thể khai báo cấu hình sau:
 
 [configprops,yaml]
 ----
@@ -30,19 +33,19 @@ spring:
     password: "secret"
 ----
 
-Để cấu hình javadoc:org.apache.qpid.protonj2.client.ConnectionOptions[connection option] của auto-configured javadoc:org.springframework.amqp.client.AmqpConnectionFactory[], định nghĩa bean javadoc:org.springframework.boot.amqp.autoconfigure.ConnectionOptionsCustomizer[].
+Để cấu hình javadoc:org.apache.qpid.protonj2.client.ConnectionOptions[connection options] của auto-configured javadoc:org.springframework.amqp.client.AmqpConnectionFactory[], định nghĩa một bean javadoc:org.springframework.boot.amqp.autoconfigure.ConnectionOptionsCustomizer[].
 
 [[messaging.amqp.generic.sending]]
 === Gửi Message
 
-javadoc:org.springframework.amqp.client.AmqpClient[] của Spring được auto-configure và có thể autowire:
+javadoc:org.springframework.amqp.client.AmqpClient[] của Spring được auto-configure và bạn có thể autowire trực tiếp vào bean của mình, như trong ví dụ sau:
 
 include-code::MyBean[]
 
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với javadoc:org.springframework.amqp.client.AmqpClient[].
-Nếu không có converter và Jackson có sẵn, dùng javadoc:org.springframework.amqp.support.converter.JacksonJsonMessageConverter[].
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] được định nghĩa, bean đó tự động được associate với javadoc:org.springframework.amqp.client.AmqpClient[] đã được auto-configure.
+Nếu không có converter nào được định nghĩa và Jackson có sẵn, javadoc:org.springframework.amqp.support.converter.JacksonJsonMessageConverter[] sẽ được sử dụng.
 
-Client-specific setting:
+Có thể cấu hình các setting riêng cho client như sau:
 
 [configprops,yaml]
 ----
@@ -53,37 +56,41 @@ spring:
       completion-timeout: "500ms"
 ----
 
-Để cấu hình thêm javadoc:org.springframework.amqp.client.AmqpClient[], định nghĩa bean javadoc:org.springframework.boot.amqp.autoconfigure.AmqpClientCustomizer[].
+Để cấu hình thêm javadoc:org.springframework.amqp.client.AmqpClient[] đã được auto-configure, định nghĩa một bean javadoc:org.springframework.boot.amqp.autoconfigure.AmqpClientCustomizer[].
+
+
 
 [[messaging.amqp.generic.receiving]]
 === Nhận Message
 
-Khi generic AMQP 1.0 infrastructure có mặt, bean có thể annotate javadoc:org.springframework.amqp.client.annotation.AmqpListener[format=annotation] để tạo listener endpoint.
-Nếu chưa định nghĩa javadoc:org.springframework.amqp.client.config.MethodAmqpMessageListenerContainerFactory[], default factory được cấu hình tự động.
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] hoặc javadoc:org.springframework.amqp.client.listener.AmqpListenerErrorHandler[], chúng tự động liên kết với default factory.
+Khi generic AMQP 1.0 infrastructure có mặt, bất kỳ bean nào cũng có thể được annotate bằng javadoc:org.springframework.amqp.client.annotation.AmqpListener[format=annotation] để tạo một listener endpoint.
+Nếu chưa có javadoc:org.springframework.amqp.client.config.MethodAmqpMessageListenerContainerFactory[] nào được định nghĩa, một default factory sẽ được cấu hình tự động.
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] hoặc javadoc:org.springframework.amqp.client.listener.AmqpListenerErrorHandler[] được định nghĩa, bean đó sẽ tự động được associate với default factory.
 
-Ví dụ listener trên address `/queues/someQueue`:
+Component mẫu sau tạo một listener endpoint trên address `/queues/someQueue`:
 
 include-code::MyBean[]
 
-TIP: Xem javadoc:org.springframework.amqp.client.config.EnableAmqp[format=annotation].
+TIP: Xem javadoc:org.springframework.amqp.client.config.EnableAmqp[format=annotation] để biết thêm chi tiết.
 
-Nếu cần thêm javadoc:org.springframework.amqp.client.config.MethodAmqpMessageListenerContainerFactory[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.autoconfigure.AmqpMessageListenerContainerFactoryConfigurer[] để initialize factory mới với cùng setting auto-configuration.
+Nếu cần tạo thêm các instance javadoc:org.springframework.amqp.client.config.MethodAmqpMessageListenerContainerFactory[] hoặc muốn override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.autoconfigure.AmqpMessageListenerContainerFactoryConfigurer[] để bạn có thể initialize một javadoc:org.springframework.amqp.client.config.MethodAmqpMessageListenerContainerFactory[] với cùng các setting như factory được auto-configuration sử dụng.
 
-Ví dụ factory khác dùng javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
+Ví dụ, configuration class sau expose thêm một factory sử dụng một javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyAmqpConfiguration[]
 
-Sau đó dùng factory trong method annotate javadoc:org.springframework.amqp.client.annotation.AmqpListener[format=annotation]:
+Sau đó, bạn có thể sử dụng factory này trong bất kỳ method nào được annotate bằng javadoc:org.springframework.amqp.client.annotation.AmqpListener[format=annotation], như sau:
 
 include-code::custom/MyBean[]
+
 
 [[messaging.amqp.rabbitmq]]
 == Hỗ trợ RabbitMQ AMQP 1.0
 
-Spring AMQP cung cấp {url-spring-amqp-docs}/rabbitmq-amqp-client.html[support riêng RabbitMQ cho AMQP 1.0] qua `org.springframework.amqp:spring-rabbitmq-client`.
+Spring AMQP cung cấp {url-spring-amqp-docs}/rabbitmq-amqp-client.html[support riêng cho RabbitMQ đối với AMQP 1.0] qua `org.springframework.amqp:spring-rabbitmq-client`.
 
-RabbitMQ AMQP 1.0 configuration được điều khiển bởi external property trong `+spring.amqp.rabbitmq.*+`:
+RabbitMQ AMQP 1.0 configuration được điều khiển bởi external configuration properties trong `+spring.amqp.rabbitmq.*+`.
+Ví dụ, bạn có thể khai báo section sau trong `application.properties`:
 
 [configprops,yaml]
 ----
@@ -96,7 +103,7 @@ spring:
       password: "secret"
 ----
 
-Ngoài ra có thể dùng attribute `address`:
+Ngoài ra, bạn có thể cấu hình cùng connection bằng attribute `address`:
 
 [configprops,yaml]
 ----
@@ -106,29 +113,33 @@ spring:
       address: "amqp://admin:secret@localhost"
 ----
 
-NOTE: Khi dùng address, property `host` và `port` bị bỏ qua.
-Nếu address dùng scheme `amqps`, phải cấu hình xref:features/ssl.adoc#features.ssl.bundles[SSL bundle].
+NOTE: Khi chỉ định address theo cách này, các property `host` và `port` sẽ bị bỏ qua.
+Nếu address sử dụng scheme `amqps`, phải cấu hình một xref:features/ssl.adoc#features.ssl.bundles[SSL bundle].
 
-Xem javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.AmqpRabbitProperties[] để biết thêm option.
-Để cấu hình chi tiết lower-level của auto-configured javadoc:com.rabbitmq.client.amqp.Environment[], định nghĩa bean javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.AmqpEnvironmentCustomizer[].
+Xem javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.AmqpRabbitProperties[] để biết thêm các property-based configuration option được hỗ trợ.
+Để cấu hình các lower-level detail của javadoc:com.rabbitmq.client.amqp.Environment[] đã được auto-configure, định nghĩa một bean javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.AmqpEnvironmentCustomizer[].
 
-Nếu context có bean javadoc:com.rabbitmq.client.amqp.CredentialsProvider[], nó tự động được auto-configured Environment dùng.
+Nếu một bean javadoc:com.rabbitmq.client.amqp.CredentialsProvider[] tồn tại trong context, bean đó sẽ tự động được auto-configured javadoc:com.rabbitmq.client.amqp.Environment[] sử dụng.
+
+
 
 [[messaging.amqp.rabbitmq.ssl]]
 === SSL
 
-Để dùng SSL với RabbitMQ AMQP 1.0, đặt configprop:spring.amqp.rabbitmq.ssl.bundle[] để chỉ định xref:features/ssl.adoc#features.ssl.bundles[SSL bundle].
+Để sử dụng SSL với RabbitMQ AMQP 1.0, đặt configprop:spring.amqp.rabbitmq.ssl.bundle[] để cấu hình xref:features/ssl.adoc#features.ssl.bundles[SSL bundle] cần sử dụng.
+
+
 
 [[messaging.amqp.rabbitmq.sending]]
 === Gửi Message
 
-javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[] và javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpAdmin[] được auto-configure và có thể autowire:
+javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[] và javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpAdmin[] của Spring được auto-configure, và bạn có thể autowire trực tiếp chúng vào bean của mình, như trong ví dụ sau:
 
 include-code::MyBean[]
 
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[].
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] được định nghĩa, bean đó tự động được associate với javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[] đã được auto-configure.
 
-Có thể đặt template property:
+Có thể đặt các property cho template như sau:
 
 [configprops,yaml]
 ----
@@ -141,40 +152,45 @@ spring:
         default-receive-queue: "my-queue"
 ----
 
-Để cấu hình thêm javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[], khai báo bean javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpTemplateCustomizer[].
+Để cấu hình thêm javadoc:org.springframework.amqp.rabbitmq.client.RabbitAmqpTemplate[] đã được auto-configure, khai báo một bean javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpTemplateCustomizer[].
+
+
 
 [[messaging.amqp.rabbitmq.receiving]]
 === Nhận Message
 
-Khi RabbitMQ AMQP 1.0 infrastructure có mặt, bean có thể annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation].
-Nếu chưa định nghĩa javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[], default factory được cấu hình tự động.
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], nó tự động liên kết với default factory.
+Khi RabbitMQ AMQP 1.0 infrastructure có mặt, bất kỳ bean nào cũng có thể được annotate bằng javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation] để tạo một listener endpoint.
+Nếu chưa có javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[] nào được định nghĩa, một default factory sẽ được cấu hình tự động.
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] được định nghĩa, bean đó tự động được associate với default factory.
 
-Ví dụ listener trên queue `someQueue`:
+Component mẫu sau tạo một listener endpoint trên queue `someQueue`:
 
 include-code::MyBean[]
 
-TIP: Xem javadoc:org.springframework.amqp.rabbit.annotation.EnableRabbit[format=annotation].
+TIP: Xem javadoc:org.springframework.amqp.rabbit.annotation.EnableRabbit[format=annotation] để biết thêm chi tiết.
 
-Nếu cần thêm javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpListenerContainerFactoryConfigurer[] để initialize factory với cùng setting auto-configuration.
+Nếu cần tạo thêm các instance javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[] hoặc muốn override default, Spring Boot cung cấp javadoc:org.springframework.boot.amqp.rabbitmq.autoconfigure.RabbitAmqpListenerContainerFactoryConfigurer[] để bạn có thể initialize một javadoc:org.springframework.amqp.rabbitmq.client.config.RabbitAmqpListenerContainerFactory[] với cùng các setting như factory được auto-configuration sử dụng.
 
-Ví dụ:
+Ví dụ, configuration class sau expose thêm một factory sử dụng một javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyRabbitAmqpConfiguration[]
 
-Sau đó dùng factory trong method annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation]:
+Sau đó, bạn có thể sử dụng factory này trong bất kỳ method nào được annotate bằng javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation], như sau:
 
 include-code::custom/MyBean[]
 
-Để customize listener container, định nghĩa bean javadoc:org.springframework.amqp.rabbit.config.ContainerCustomizer[] parameterized với javadoc:org.springframework.amqp.rabbitmq.client.listener.RabbitAmqpListenerContainer[].
+Để customize listener container, định nghĩa một bean javadoc:org.springframework.amqp.rabbit.config.ContainerCustomizer[] được parameterize với javadoc:org.springframework.amqp.rabbitmq.client.listener.RabbitAmqpListenerContainer[].
+
+
 
 [[messaging.amqp.rabbitmq09]]
 == Hỗ trợ RabbitMQ AMQP 0.9
 
-https://www.rabbitmq.com/[RabbitMQ] là lightweight, reliable, scalable và portable message broker dựa trên AMQP.
-Spring dùng RabbitMQ để giao tiếp qua AMQP protocol.
+https://www.rabbitmq.com/[RabbitMQ] là một lightweight, reliable, scalable và portable message broker dựa trên AMQP protocol.
+Spring sử dụng RabbitMQ để giao tiếp qua AMQP protocol.
 
-RabbitMQ configuration được điều khiển bởi `+spring.rabbitmq.*+`:
+RabbitMQ configuration được điều khiển bởi external configuration properties trong `+spring.rabbitmq.*+`.
+Ví dụ, bạn có thể khai báo section sau trong `application.properties`:
 
 [configprops,yaml]
 ----
@@ -186,7 +202,7 @@ spring:
     password: "secret"
 ----
 
-Hoặc dùng `addresses`:
+Ngoài ra, bạn có thể cấu hình cùng connection bằng attribute `addresses`:
 
 [configprops,yaml]
 ----
@@ -195,31 +211,33 @@ spring:
     addresses: "amqp://admin:secret@localhost"
 ----
 
-NOTE: Khi dùng addresses, `host` và `port` bị bỏ qua.
-Nếu address dùng `amqps`, SSL support tự động được bật.
+NOTE: Khi chỉ định addresses theo cách này, các property `host` và `port` sẽ bị bỏ qua.
+Nếu address sử dụng protocol `amqps`, SSL support sẽ được enable tự động.
 
-Xem javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitProperties[] để biết thêm option.
-Để cấu hình lower-level detail của RabbitMQ javadoc:com.rabbitmq.client.ConnectionFactory[] dùng bởi Spring AMQP, định nghĩa bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.ConnectionFactoryCustomizer[].
+Xem javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitProperties[] để biết thêm các property-based configuration option được hỗ trợ.
+Để cấu hình các lower-level detail của RabbitMQ javadoc:com.rabbitmq.client.ConnectionFactory[] được Spring AMQP sử dụng, định nghĩa một bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.ConnectionFactoryCustomizer[].
 
-Nếu context có bean javadoc:org.springframework.amqp.rabbit.connection.ConnectionNameStrategy[], nó tự động được dùng để đặt tên connection tạo bởi auto-configured javadoc:org.springframework.amqp.rabbit.connection.CachingConnectionFactory[].
+Nếu một bean javadoc:org.springframework.amqp.rabbit.connection.ConnectionNameStrategy[] tồn tại trong context, bean đó sẽ tự động được dùng để đặt tên cho các connection được tạo bởi javadoc:org.springframework.amqp.rabbit.connection.CachingConnectionFactory[] đã được auto-configure.
 
-Để application-wide additive customization cho javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[], dùng bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateCustomizer[].
+Để thực hiện additive customization ở phạm vi application cho javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[], sử dụng một bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateCustomizer[].
 
-TIP: Xem https://spring.io/blog/2010/06/14/understanding-amqp-the-protocol-used-by-rabbitmq/[Understanding AMQP, the protocol used by RabbitMQ].
+TIP: Xem https://spring.io/blog/2010/06/14/understanding-amqp-the-protocol-used-by-rabbitmq/[Understanding AMQP, the protocol used by RabbitMQ] để biết thêm chi tiết.
+
+
 
 [[messaging.amqp.rabbitmq09.sending]]
 === Gửi Message
 
-javadoc:org.springframework.amqp.core.AmqpTemplate[] và javadoc:org.springframework.amqp.core.AmqpAdmin[] được auto-configure và có thể autowire:
+javadoc:org.springframework.amqp.core.AmqpTemplate[] và javadoc:org.springframework.amqp.core.AmqpAdmin[] của Spring được auto-configure, và bạn có thể autowire trực tiếp chúng vào bean của mình, như trong ví dụ sau:
 
 include-code::MyBean[]
 
-NOTE: javadoc:org.springframework.amqp.rabbit.core.RabbitMessagingTemplate[] có thể inject tương tự.
-Nếu bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] được định nghĩa, nó tự động liên kết với auto-configured javadoc:org.springframework.amqp.core.AmqpTemplate[].
+NOTE: javadoc:org.springframework.amqp.rabbit.core.RabbitMessagingTemplate[] có thể được inject theo cách tương tự.
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[] được định nghĩa, bean đó tự động được associate với javadoc:org.springframework.amqp.core.AmqpTemplate[] đã được auto-configure.
 
-Nếu cần, mọi bean javadoc:org.springframework.amqp.core.Queue[] tự động được dùng để declare queue tương ứng trên RabbitMQ.
+Nếu cần, bất kỳ javadoc:org.springframework.amqp.core.Queue[] nào được định nghĩa làm bean đều tự động được dùng để declare queue tương ứng trên RabbitMQ instance.
 
-Để retry operation, bật retry trên javadoc:org.springframework.amqp.core.AmqpTemplate[]:
+Để retry các operation, bạn có thể enable retry trên javadoc:org.springframework.amqp.core.AmqpTemplate[] (ví dụ khi broker connection bị mất):
 
 [configprops,yaml]
 ----
@@ -231,17 +249,19 @@ spring:
         initial-interval: "2s"
 ----
 
-Retry mặc định bị disable.
-Có thể customize javadoc:org.springframework.core.retry.RetryTemplate[] programmatically bằng bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateRetrySettingsCustomizer[].
+Retry bị disable theo mặc định.
+Bạn cũng có thể customize javadoc:org.springframework.core.retry.RetryTemplate[] programmatically bằng cách khai báo một bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateRetrySettingsCustomizer[].
 
-Nếu cần thêm javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] hoặc override default, Spring Boot cung cấp bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateConfigurer[] để initialize javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] với cùng setting auto-configuration.
+Nếu cần tạo thêm các instance javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] hoặc muốn override default, Spring Boot cung cấp một bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitTemplateConfigurer[] mà bạn có thể dùng để initialize một javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[] với cùng các setting như các factory được auto-configuration sử dụng.
 
-Nếu context có bean javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitTemplateObservationConvention[], nó tự động được configure trên javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[].
+Nếu có một bean thuộc type javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitTemplateObservationConvention[] trong context, bean đó sẽ tự động được cấu hình trên javadoc:org.springframework.amqp.rabbit.core.RabbitTemplate[].
+
+
 
 [[messaging.amqp.rabbitmq09.sending-stream]]
 === Gửi Message tới Stream
 
-Để gửi message tới stream cụ thể, chỉ định tên stream:
+Để gửi một message tới stream cụ thể, chỉ định tên của stream như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -251,47 +271,50 @@ spring:
       name: "my-stream"
 ----
 
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], javadoc:org.springframework.rabbit.stream.support.converter.StreamMessageConverter[], javadoc:org.springframework.rabbit.stream.producer.ProducerCustomizer[] hoặc javadoc:org.springframework.rabbit.stream.micrometer.RabbitStreamTemplateObservationConvention[], chúng tự động liên kết với auto-configured javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[].
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], javadoc:org.springframework.rabbit.stream.support.converter.StreamMessageConverter[], javadoc:org.springframework.rabbit.stream.producer.ProducerCustomizer[] hoặc javadoc:org.springframework.rabbit.stream.micrometer.RabbitStreamTemplateObservationConvention[] được định nghĩa, bean đó tự động được associate với javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[] đã được auto-configure.
 
-Nếu cần thêm javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[] hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamTemplateConfigurer[].
+Nếu cần tạo thêm các instance javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[] hoặc muốn override default, Spring Boot cung cấp một bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitStreamTemplateConfigurer[] mà bạn có thể dùng để initialize một javadoc:org.springframework.rabbit.stream.producer.RabbitStreamTemplate[] với cùng các setting như các factory được auto-configuration sử dụng.
+
+
 
 [[messaging.amqp.rabbitmq09.sending-stream.ssl]]
 ==== SSL
+Để sử dụng SSL với RabbitMQ Streams, đặt configprop:spring.rabbitmq.stream.ssl.enabled[] thành `true` hoặc đặt configprop:spring.rabbitmq.stream.ssl.bundle[] để cấu hình xref:features/ssl.adoc#features.ssl.bundles[SSL bundle] cần sử dụng.
 
-Để dùng SSL với RabbitMQ Streams, đặt configprop:spring.rabbitmq.stream.ssl.enabled[] thành `true` hoặc configprop:spring.rabbitmq.stream.ssl.bundle[] để chỉ định xref:features/ssl.adoc#features.ssl.bundles[SSL bundle].
+
 
 [[messaging.amqp.rabbitmq09.receiving]]
 === Nhận Message
 
-Khi Rabbit infrastructure có mặt, bean có thể annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation].
-Nếu chưa định nghĩa javadoc:org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory[], default javadoc:org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory[] được cấu hình tự động và có thể chuyển sang direct container bằng configprop:spring.rabbitmq.listener.type[].
-Nếu có bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], javadoc:org.springframework.amqp.rabbit.retry.MessageRecoverer[] hoặc javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitListenerObservationConvention[], chúng tự động liên kết với default factory.
+Khi Rabbit infrastructure có mặt, bất kỳ bean nào cũng có thể được annotate bằng javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation] để tạo một listener endpoint.
+Nếu chưa có javadoc:org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory[] nào được định nghĩa, một javadoc:org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory[] mặc định sẽ được cấu hình tự động và bạn có thể chuyển sang direct container bằng property configprop:spring.rabbitmq.listener.type[].
+Nếu một bean javadoc:org.springframework.amqp.support.converter.MessageConverter[], javadoc:org.springframework.amqp.rabbit.retry.MessageRecoverer[] hoặc javadoc:org.springframework.amqp.rabbit.support.micrometer.RabbitListenerObservationConvention[] được định nghĩa, bean đó sẽ tự động được associate với default factory.
 
-Ví dụ listener trên queue `someQueue`:
+Component mẫu sau tạo một listener endpoint trên queue `someQueue`:
 
 include-code::MyBean[]
 
-TIP: Xem javadoc:org.springframework.amqp.rabbit.annotation.EnableRabbit[format=annotation].
+TIP: Xem javadoc:org.springframework.amqp.rabbit.annotation.EnableRabbit[format=annotation] để biết thêm chi tiết.
 
-Nếu cần thêm factory hoặc override default, Spring Boot cung cấp javadoc:org.springframework.boot.rabbitmq.autoconfigure.SimpleRabbitListenerContainerFactoryConfigurer[] và javadoc:org.springframework.boot.rabbitmq.autoconfigure.DirectRabbitListenerContainerFactoryConfigurer[] để initialize corresponding factory với cùng setting auto-configuration.
+Nếu cần tạo thêm các instance javadoc:org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory[] hoặc muốn override default, Spring Boot cung cấp javadoc:org.springframework.boot.rabbitmq.autoconfigure.SimpleRabbitListenerContainerFactoryConfigurer[] và javadoc:org.springframework.boot.rabbitmq.autoconfigure.DirectRabbitListenerContainerFactoryConfigurer[] để bạn có thể initialize javadoc:org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory[] và javadoc:org.springframework.amqp.rabbit.config.DirectRabbitListenerContainerFactory[] với cùng các setting như các factory được auto-configuration sử dụng.
 
-TIP: Không quan trọng chọn container type nào.
-Cả hai bean đều được auto-configuration expose.
+TIP: Bạn chọn container type nào không quan trọng.
+Hai bean đó được expose bởi auto-configuration.
 
-Ví dụ custom factory dùng javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
+Ví dụ, configuration class sau expose thêm một factory sử dụng một javadoc:org.springframework.amqp.support.converter.MessageConverter[] cụ thể:
 
 include-code::custom/MyRabbitConfiguration[]
 
-Sau đó dùng factory trong method annotate javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation]:
+Sau đó, bạn có thể sử dụng factory này trong bất kỳ method nào được annotate bằng javadoc:org.springframework.amqp.rabbit.annotation.RabbitListener[format=annotation], như sau:
 
 include-code::custom/MyBean[]
 
-Có thể enable retry để xử lý khi listener throw exception.
-Mặc định javadoc:org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer[] được dùng, nhưng có thể định nghĩa javadoc:org.springframework.amqp.rabbit.retry.MessageRecoverer[] riêng.
-Khi retry hết, message bị reject và bị drop hoặc route tới dead-letter exchange nếu broker được cấu hình.
-Mặc định retry bị disable.
-Có thể customize javadoc:org.springframework.core.retry.RetryPolicy[] bằng bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitListenerRetrySettingsCustomizer[].
+Bạn có thể enable retry để xử lý các tình huống listener throw exception.
+Mặc định, javadoc:org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer[] được sử dụng, nhưng bạn có thể định nghĩa một javadoc:org.springframework.amqp.rabbit.retry.MessageRecoverer[] của riêng mình.
+Khi retry đã hết, message bị reject và bị drop hoặc được route tới dead-letter exchange nếu broker được cấu hình để làm vậy.
+Retry bị disable theo mặc định.
+Bạn cũng có thể customize javadoc:org.springframework.core.retry.RetryPolicy[] programmatically bằng cách khai báo một bean javadoc:org.springframework.boot.rabbitmq.autoconfigure.RabbitListenerRetrySettingsCustomizer[].
 
-IMPORTANT: Mặc định, nếu retry bị disable và listener throw exception, delivery được retry vô hạn.
-Có thể đổi bằng hai cách: đặt `defaultRequeueRejected=false` để không redelivery, hoặc throw javadoc:org.springframework.amqp.AmqpRejectAndDontRequeueException[] để reject message.
-Cách thứ hai là cơ chế được dùng khi retry được enable và đạt maximum delivery attempt.
+IMPORTANT: Theo mặc định, nếu retry bị disable và listener throw exception, delivery sẽ được retry vô hạn.
+Bạn có thể thay đổi hành vi này theo hai cách: đặt property `defaultRequeueRejected` thành `false` để không thực hiện redelivery nào, hoặc throw một javadoc:org.springframework.amqp.AmqpRejectAndDontRequeueException[] để báo hiệu rằng message phải bị reject.
+Cách thứ hai là cơ chế được sử dụng khi retry được enable và đã đạt đến số delivery attempt tối đa.

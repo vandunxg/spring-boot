@@ -1,4 +1,4 @@
 [[packaging.container-images]]
 = Container Images
 
-Spring Boot application có thể được containerize xref:packaging/container-images/dockerfiles.adoc[bằng Dockerfile], hoặc xref:packaging/container-images/cloud-native-buildpacks.adoc[bằng Cloud Native Buildpacks] để tạo optimized Docker-compatible container image có thể chạy ở bất kỳ đâu.
+Ứng dụng Spring Boot có thể được containerize xref:packaging/container-images/dockerfiles.adoc[bằng Dockerfile], hoặc xref:packaging/container-images/cloud-native-buildpacks.adoc[bằng Cloud Native Buildpacks] để tạo container image tương thích với Docker, đã được tối ưu hóa và có thể chạy ở bất kỳ đâu.

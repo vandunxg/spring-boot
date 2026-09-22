@@ -1,17 +1,17 @@
 [[io.validation]]
 = Validation
 
-Method validation feature được Bean Validation 1.1 hỗ trợ sẽ tự động enable miễn là JSR-303 implementation, chẳng hạn Hibernate Validator thường được cung cấp bởi `spring-boot-starter-validation`, có trên classpath.
-Điều này cho phép bean method được annotate bằng constraint `jakarta.validation` trên parameter và/hoặc return value.
-Target class có các method như vậy cần annotate javadoc:org.springframework.validation.annotation.Validated[format=annotation] ở type level để method được scan tìm inline constraint annotation.
+Tính năng validation cho method được Bean Validation 1.1 hỗ trợ sẽ tự động được enable miễn là một JSR-303 implementation, chẳng hạn Hibernate Validator thường được cung cấp bởi `spring-boot-starter-validation`, có trên classpath.
+Điều này cho phép các bean method được annotate bằng các constraint của `jakarta.validation` trên parameter và/hoặc return value.
+Các target class có những method được annotate như vậy cần được annotate ở type level bằng annotation javadoc:org.springframework.validation.annotation.Validated[format=annotation] để các method của chúng được scan nhằm tìm các inline constraint annotation.
 
-Ví dụ service sau trigger validation cho argument đầu tiên, đảm bảo size từ 8 đến 10:
+Ví dụ, service sau sẽ trigger validation cho argument đầu tiên, đảm bảo size của argument nằm trong khoảng từ 8 đến 10:
 
 include-code::MyBean[]
 
-javadoc:org.springframework.context.MessageSource[] của application được dùng khi resolve `+{parameters}+` trong constraint message.
-Điều này cho phép dùng xref:features/internationalization.adoc[file `messages.properties` của application] cho Bean Validation message.
-Sau khi parameter được resolve, message interpolation hoàn tất bằng default interpolator của Bean Validation.
+javadoc:org.springframework.context.MessageSource[] của application được dùng khi resolve `+{parameters}+` trong các constraint message.
+Điều này cho phép bạn sử dụng xref:features/internationalization.adoc[các file `messages.properties` của application] cho các message của Bean Validation.
+Sau khi các parameter được resolve, message interpolation được hoàn tất bằng default interpolator của Bean Validation.
 
-Để customize javadoc:jakarta.validation.Configuration[] dùng build javadoc:jakarta.validation.ValidatorFactory[], định nghĩa bean javadoc:org.springframework.boot.validation.autoconfigure.ValidationConfigurationCustomizer[].
-Khi có nhiều customizer bean, chúng được gọi theo thứ tự dựa trên javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc implementation javadoc:org.springframework.core.Ordered[].
+Để customize javadoc:jakarta.validation.Configuration[] được dùng để build javadoc:jakarta.validation.ValidatorFactory[], hãy định nghĩa một bean javadoc:org.springframework.boot.validation.autoconfigure.ValidationConfigurationCustomizer[].
+Khi có nhiều customizer bean, chúng được gọi theo thứ tự dựa trên annotation javadoc:org.springframework.core.annotation.Order[format=annotation] hoặc implementation javadoc:org.springframework.core.Ordered[] của chúng.

@@ -2,14 +2,14 @@
 = Spring HATEOAS
 
 Nếu phát triển RESTful API sử dụng hypermedia, Spring Boot cung cấp auto-configuration cho Spring HATEOAS hoạt động tốt với hầu hết application.
-Auto-configuration thay thế nhu cầu dùng javadoc:org.springframework.hateoas.config.EnableHypermediaSupport[format=annotation] và register một số bean giúp xây dựng hypermedia-based application dễ hơn, gồm javadoc:org.springframework.hateoas.client.LinkDiscoverers[] (hỗ trợ phía client) và javadoc:tools.jackson.databind.json.JsonMapper[] được cấu hình để marshal response chính xác sang representation mong muốn.
-javadoc:tools.jackson.databind.json.JsonMapper[] được customize bằng các property `spring.jackson.*` hoặc, nếu tồn tại, các bean javadoc:org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer[].
+Auto-configuration loại bỏ nhu cầu sử dụng javadoc:org.springframework.hateoas.config.EnableHypermediaSupport[format=annotation] và register một số bean giúp xây dựng hypermedia-based application dễ hơn, bao gồm javadoc:org.springframework.hateoas.client.LinkDiscoverers[] (để hỗ trợ phía client) và javadoc:tools.jackson.databind.json.JsonMapper[] được cấu hình để marshal response chính xác thành representation mong muốn.
+javadoc:tools.jackson.databind.json.JsonMapper[] được customize bằng cách thiết lập các property `spring.jackson.*` hoặc, nếu có, các bean javadoc:org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer[].
 
 Bạn có thể kiểm soát configuration của Spring HATEOAS bằng javadoc:org.springframework.hateoas.config.EnableHypermediaSupport[format=annotation].
-Lưu ý việc này disable customization javadoc:tools.jackson.databind.json.JsonMapper[] đã mô tả ở trên.
+Lưu ý rằng việc này sẽ disable customization javadoc:tools.jackson.databind.json.JsonMapper[] được mô tả ở trên.
 
 WARNING: `spring-boot-starter-hateoas` dành riêng cho Spring MVC và không nên kết hợp với Spring WebFlux.
 Để dùng Spring HATEOAS với Spring WebFlux, bạn có thể thêm dependency trực tiếp `org.springframework.hateoas:spring-hateoas` cùng với `spring-boot-starter-webflux`.
 
-Mặc định, request accept `application/json` sẽ nhận response `application/hal+json`.
-Để disable behavior này, đặt configprop:spring.hateoas.use-hal-as-default-json-media-type[] thành `false` và định nghĩa javadoc:org.springframework.hateoas.config.HypermediaMappingInformation[] hoặc javadoc:org.springframework.hateoas.mediatype.hal.HalConfiguration[] để cấu hình Spring HATEOAS phù hợp với nhu cầu của application và client.
+Mặc định, các request chấp nhận `application/json` sẽ nhận response `application/hal+json`.
+Để disable behavior này, đặt configprop:spring.hateoas.use-hal-as-default-json-media-type[] thành `false` và định nghĩa javadoc:org.springframework.hateoas.config.HypermediaMappingInformation[] hoặc javadoc:org.springframework.hateoas.mediatype.hal.HalConfiguration[] để cấu hình Spring HATEOAS đáp ứng nhu cầu của application và client.

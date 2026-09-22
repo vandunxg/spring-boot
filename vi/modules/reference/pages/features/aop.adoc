@@ -1,10 +1,10 @@
 [[features.aop]]
-= Aspect-Oriented Programming
+= Lập trình hướng khía cạnh
 
-Spring Boot cung cấp auto-configuration cho aspect-oriented programming (AOP).
+Spring Boot cung cấp auto-configuration cho lập trình hướng khía cạnh (AOP).
 Bạn có thể tìm hiểu thêm về AOP với Spring trong {url-spring-framework-docs}/core/aop-api.html[tài liệu tham khảo Spring Framework].
 
-Theo mặc định, auto-configuration của Spring Boot cấu hình Spring AOP dùng CGLib proxy.
+Theo mặc định, auto-configuration của Spring Boot cấu hình Spring AOP để sử dụng CGLib proxy.
 Để dùng JDK proxy thay thế, đặt configprop:spring.aop.proxy-target-class[] thành `false`.
 
-Nếu AspectJ có trên classpath, auto-configuration của Spring Boot tự động bật AspectJ auto proxy, nên không cần javadoc:org.springframework.context.annotation.EnableAspectJAutoProxy[format=annotation].
+Nếu AspectJ có trên classpath, auto-configuration của Spring Boot sẽ tự động bật AspectJ auto proxy, nên không cần javadoc:org.springframework.context.annotation.EnableAspectJAutoProxy[format=annotation].

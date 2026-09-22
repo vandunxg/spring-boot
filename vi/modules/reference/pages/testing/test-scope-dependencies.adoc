@@ -1,16 +1,16 @@
 [[testing.test-scope-dependencies]]
-= Test Scope Dependencies
+= Dependencies trong test scope
 
-Starter `spring-boot-starter-test` (trong `scope` `test`) chứa các library được cung cấp sau:
+Starter `spring-boot-starter-test` (với `scope` `test`) cung cấp các library sau:
 
-* https://junit.org[JUnit]: Tiêu chuẩn thực tế cho unit testing Java application.
-* {url-spring-framework-docs}/testing/integration.html[Spring Test] & Spring Boot Test: Utility và integration test support cho Spring Boot application.
-* https://assertj.github.io/doc/[AssertJ]: Fluent assertion library.
-* https://github.com/hamcrest/JavaHamcrest[Hamcrest]: Library các matcher object (còn gọi là constraint hoặc predicate).
-* https://site.mockito.org/[Mockito]: Java mocking framework.
-* https://github.com/skyscreamer/JSONassert[JSONassert]: Assertion library cho JSON.
+* https://junit.org[JUnit]: Tiêu chuẩn de facto cho unit test các ứng dụng Java.
+* {url-spring-framework-docs}/testing/integration.html[Spring Test] & Spring Boot Test: Các utility và hỗ trợ integration test cho các ứng dụng Spring Boot.
+* https://assertj.github.io/doc/[AssertJ]: Một fluent assertion library.
+* https://github.com/hamcrest/JavaHamcrest[Hamcrest]: Một library gồm các matcher object (còn được gọi là constraint hoặc predicate).
+* https://site.mockito.org/[Mockito]: Một mocking framework cho Java.
+* https://github.com/skyscreamer/JSONassert[JSONassert]: Một assertion library cho JSON.
 * https://github.com/jayway/JsonPath[JsonPath]: XPath cho JSON.
-* https://github.com/awaitility/awaitility[Awaitility]: Library để test asynchronous system.
+* https://github.com/awaitility/awaitility[Awaitility]: Một library để test các system async.
 
-Nhìn chung các common library này hữu ích khi viết test.
-Nếu không phù hợp nhu cầu, bạn có thể thêm test dependency riêng.
+Nhìn chung, chúng tôi thấy các library phổ biến này hữu ích khi viết test.
+Nếu các library này không phù hợp với nhu cầu, bạn có thể tự thêm các test dependency khác.

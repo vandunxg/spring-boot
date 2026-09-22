@@ -1,27 +1,27 @@
 [[packaging-executable]]
 = Packaging Executable Archives
 
-Plugin có thể tạo executable archive (jar file và war file) chứa mọi dependency của application và có thể chạy bằng `java -jar`.
+Plugin có thể tạo các executable archive (jar file và war file) chứa mọi dependency của application và có thể chạy bằng `java -jar`.
 
 [[packaging-executable.jars]]
 == Packaging Executable Jars
 
-Executable jar có thể build bằng task `bootJar`.
-Task tự động được tạo khi `java` plugin apply và là instance {apiref-gradle-plugin-boot-jar}[`BootJar`].
-Task `assemble` tự động configure depend vào `bootJar` nên chạy `assemble` hoặc `build` cũng chạy `bootJar`.
+Executable jar có thể được build bằng task `bootJar`.
+Task này tự động được tạo khi `java` plugin được apply và là một instance của {apiref-gradle-plugin-boot-jar}[`BootJar`].
+Task `assemble` tự động được configure để depend on task `bootJar`, nên chạy `assemble` (hoặc `build`) cũng sẽ chạy task `bootJar`.
 
 [[packaging-executable.wars]]
 == Packaging Executable Wars
 
-Executable war có thể build bằng task `bootWar`.
-Task tự động tạo khi `war` plugin apply và là instance {apiref-gradle-plugin-boot-war}[`BootWar`].
-Task `assemble` tự động configure depend vào `bootWar` nên chạy `assemble` hoặc `build` cũng chạy `bootWar`.
+Executable war có thể được build bằng task `bootWar`.
+Task này tự động được tạo khi `war` plugin được apply và là một instance của {apiref-gradle-plugin-boot-war}[`BootWar`].
+Task `assemble` tự động được configure để depend on task `bootWar`, nên chạy `assemble` (hoặc `build`) cũng sẽ chạy task `bootWar`.
 
 [[packaging-executable.wars.deployable]]
 === Packaging Executable và Deployable Wars
 
-War file có thể package để vừa execute bằng `java -jar` vừa deploy lên external container.
-Để làm vậy, embedded servlet container runtime nên add vào configuration `providedRuntime`:
+War file có thể được package để vừa execute bằng `java -jar` vừa deploy lên external container.
+Để làm vậy, embedded servlet container runtime nên được add vào configuration `providedRuntime`, ví dụ:
 
 [tabs]
 ======
@@ -39,17 +39,17 @@ include::example$packaging/war-container-dependency.gradle.kts[tags=dependencies
 ----
 ======
 
-Điều này đảm bảo runtime jar package trong directory `WEB-INF/lib-provided` của war, nơi chúng không conflict với class của external container.
+Điều này đảm bảo các runtime jar được package trong directory `WEB-INF/lib-provided` của war, từ đó chúng sẽ không conflict với các class của external container.
 
-NOTE: `providedRuntime` được ưu tiên hơn configuration `compileOnly` của Gradle vì, trong các limitation khác, dependency `compileOnly` không ở test classpath nên web-based integration test sẽ fail.
+NOTE: `providedRuntime` được ưu tiên hơn configuration `compileOnly` của Gradle vì, ngoài các limitation khác, dependency `compileOnly` không ở trên test classpath nên mọi web-based integration test sẽ fail.
 
 [[packaging-executable.and-plain-archives]]
 == Packaging Executable và Plain Archives
 
-Mặc định khi task `bootJar` hoặc `bootWar` configure, task `jar` hoặc `war` configure dùng `plain` làm convention archive classifier.
-Điều này đảm bảo `bootJar` và `jar` hoặc `bootWar` và `war` có output location khác nhau, cho phép build cả executable archive và plain archive cùng lúc.
+Mặc định, khi task `bootJar` hoặc `bootWar` được configure, task `jar` hoặc `war` được configure để dùng `plain` làm convention cho archive classifier.
+Điều này đảm bảo `bootJar` và `jar`, hoặc `bootWar` và `war`, có output location khác nhau, cho phép build cả executable archive và plain archive cùng lúc.
 
-Nếu muốn executable archive dùng classifier thay vì plain archive, configure classifier:
+Nếu muốn executable archive dùng classifier thay vì plain archive, hãy configure các classifier như trong ví dụ sau cho task `jar` và `bootJar`:
 
 [tabs]
 ======
@@ -67,7 +67,7 @@ include::example$packaging/boot-jar-and-jar-classifiers.gradle.kts[tags=classifi
 ----
 ======
 
-Nếu không muốn build plain archive, disable task:
+Ngoài ra, nếu không muốn build plain archive, có thể disable task đó như trong ví dụ sau cho task `jar`:
 
 [tabs]
 ======
@@ -86,21 +86,21 @@ include::example$packaging/only-boot-jar.gradle.kts[tags=disable-jar]
 ======
 
 WARNING: Không disable task `jar` khi tạo native image.
-Xem https://github.com/spring-projects/spring-boot/issues/33238[#33238].
+Xem https://github.com/spring-projects/spring-boot/issues/33238[#33238] để biết chi tiết.
 
 [[packaging-executable.configuring]]
 == Configuring Executable Archive Packaging
 
-Task {apiref-gradle-plugin-boot-jar}[`BootJar`] và {apiref-gradle-plugin-boot-war}[`BootWar`] lần lượt là subclass của task `Jar` và `War` của Gradle.
+Task {apiref-gradle-plugin-boot-jar}[`BootJar`] và {apiref-gradle-plugin-boot-war}[`BootWar`] lần lượt là các subclass của task `Jar` và `War` của Gradle.
 Do đó mọi standard configuration option available khi package jar/war cũng available khi package executable jar/war.
 Ngoài ra có các configuration option riêng cho executable jar/war.
 
 [[packaging-executable.configuring.main-class]]
-=== Configure Main Class
+=== Configuring Main Class
 
-Mặc định main class của executable archive tự động configure bằng cách tìm class có method `public static void main(String[])` trong output main source set.
+Mặc định, main class của executable archive được configure tự động bằng cách tìm class có method `public static void main(String[])` trong output của main source set.
 
-Main class có thể explicit configure bằng property `mainClass` của task:
+Main class cũng có thể được configure explicit bằng property `mainClass` của task:
 
 [tabs]
 ======
@@ -118,7 +118,7 @@ include::example$packaging/boot-jar-main-class.gradle.kts[tags=main-class]
 ----
 ======
 
-Ngoài ra main class name có thể configure project-wide bằng property `mainClass` của Spring Boot DSL:
+Ngoài ra, tên main class có thể được configure project-wide bằng property `mainClass` của Spring Boot DSL:
 
 [tabs]
 ======
@@ -136,7 +136,7 @@ include::example$packaging/spring-boot-dsl-main-class.gradle.kts[tags=main-class
 ----
 ======
 
-Nếu {url-gradle-docs-application-plugin}[`application` plugin] được apply, property `mainClass` của nó phải configure và có thể dùng cùng mục đích:
+Nếu {url-gradle-docs-application-plugin}[`application` plugin] được apply, property `mainClass` của nó phải được configure và có thể được dùng cho cùng mục đích:
 
 [tabs]
 ======
@@ -154,7 +154,7 @@ include::example$packaging/application-plugin-main-class.gradle.kts[tags=main-cl
 ----
 ======
 
-Cuối cùng attribute `Start-Class` có thể configure trong manifest của task:
+Cuối cùng, attribute `Start-Class` có thể được configure trong manifest của task:
 
 [tabs]
 ======
@@ -172,17 +172,17 @@ include::example$packaging/boot-jar-manifest-main-class.gradle.kts[tags=main-cla
 ----
 ======
 
-NOTE: Nếu main class viết bằng Kotlin, dùng name của generated Java class.
+NOTE: Nếu main class được viết bằng Kotlin, phải dùng tên của generated Java class.
 Mặc định là Kotlin class name thêm suffix `Kt`.
 Ví dụ `ExampleApplication` thành `ExampleApplicationKt`.
-Nếu define name khác bằng `@JvmName` thì dùng name đó.
+Nếu define một name khác bằng `@JvmName` thì phải dùng name đó.
 
 [[packaging-executable.configuring.including-development-only-dependencies]]
-=== Include Development-only Dependencies
+=== Including Development-only Dependencies
 
-Mặc định mọi dependency declare trong configuration `developmentOnly` bị exclude khỏi executable jar/war.
+Mặc định, mọi dependency được declare trong configuration `developmentOnly` đều bị exclude khỏi executable jar/war.
 
-Nếu muốn include dependency trong `developmentOnly` vào archive, configure classpath task include configuration đó:
+Nếu muốn include dependency được declare trong configuration `developmentOnly` vào archive, hãy configure classpath của task để include configuration đó, như trong ví dụ sau cho task `bootWar`:
 
 [tabs]
 ======
@@ -201,13 +201,13 @@ include::example$packaging/boot-war-include-devtools.gradle.kts[tags=include-dev
 ======
 
 [[packaging-executable.configuring.unpacking]]
-=== Configure Libraries cần Unpacking
+=== Configuring Libraries that Require Unpacking
 
-Phần lớn library có thể dùng trực tiếp khi nested trong executable archive, nhưng một số library có problem.
-Ví dụ JRuby có nested jar support riêng và assume `jruby-complete.jar` luôn directly available trên filesystem.
+Phần lớn library có thể được dùng trực tiếp khi nested trong executable archive, nhưng một số library có thể gặp vấn đề.
+Ví dụ, JRuby có nested jar support riêng và giả định rằng `jruby-complete.jar` luôn có sẵn trực tiếp trên filesystem.
 
-Để xử lý problematic library, executable archive có thể configure unpack specific nested jar vào temporary directory khi archive chạy.
-Library cần unpack có thể identify bằng Ant-style pattern match absolute path của source jar file:
+Để xử lý các library gặp vấn đề như vậy, executable archive có thể được configure để unpack các nested jar cụ thể vào temporary directory khi archive chạy.
+Các library cần unpack có thể được identify bằng Ant-style pattern match với absolute path của source jar file:
 
 [tabs]
 ======
@@ -225,13 +225,13 @@ include::example$packaging/boot-jar-requires-unpack.gradle.kts[tags=requires-unp
 ----
 ======
 
-Để control nhiều hơn có thể dùng closure.
-Closure nhận `FileTreeElement` và trả `boolean` cho biết có cần unpack hay không.
+Để có thêm control, cũng có thể dùng closure.
+Closure nhận một `FileTreeElement` và nên trả về một `boolean` cho biết có cần unpack hay không.
 
 [[packaging-executable.configuring.properties-launcher]]
 === Dùng PropertiesLauncher
 
-Để dùng `PropertiesLauncher` launch executable jar/war, configure task manifest set attribute `Main-Class`:
+Để dùng `PropertiesLauncher` để launch executable jar/war, configure manifest của task để set attribute `Main-Class`:
 
 [tabs]
 ======
@@ -252,11 +252,11 @@ include::example$packaging/boot-war-properties-launcher.gradle.kts[tags=properti
 [[packaging-executable.configuring.layered-archives]]
 === Packaging Layered Jar hoặc War
 
-Mặc định task `bootJar` build archive chứa application class và dependency lần lượt trong `BOOT-INF/classes` và `BOOT-INF/lib`.
-Tương tự `bootWar` build archive chứa application class trong `WEB-INF/classes` và dependency trong `WEB-INF/lib` và `WEB-INF/lib-provided`.
-Khi cần build Docker image từ content jar, hữu ích khi tách các directory này thêm để write vào distinct layer.
+Mặc định, task `bootJar` build archive chứa các application class và dependency lần lượt trong `BOOT-INF/classes` và `BOOT-INF/lib`.
+Tương tự, `bootWar` build archive chứa các application class trong `WEB-INF/classes` và dependency trong `WEB-INF/lib` và `WEB-INF/lib-provided`.
+Khi cần build Docker image từ content của jar, việc có thể tách các directory này thêm để write vào các layer riêng biệt sẽ rất hữu ích.
 
-Layered jar dùng cùng layout với regular boot packaged jar nhưng include additional metadata file mô tả từng layer.
+Layered jar dùng cùng layout với regular boot packaged jar nhưng include một additional metadata file mô tả từng layer.
 
 Mặc định các layer sau được define:
 
@@ -265,11 +265,11 @@ Mặc định các layer sau được define:
 * `snapshot-dependencies` cho non-project dependency có version chứa `SNAPSHOT`.
 * `application` cho project dependency, application class và resource.
 
-Order layer quan trọng vì determine khả năng previous layer được cache khi application change.
+Order của layer quan trọng vì nó determine khả năng các layer trước đó được cache khi một phần application thay đổi.
 Default order là `dependencies`, `spring-boot-loader`, `snapshot-dependencies`, `application`.
-Content ít khả năng change nên add trước, sau đó layer dễ change hơn.
+Content ít khả năng change nên được add trước, sau đó là các layer dễ change hơn.
 
-Để disable feature:
+Để disable feature này, có thể thực hiện theo cách sau:
 
 [tabs]
 ======
@@ -288,8 +288,8 @@ include::example$packaging/boot-jar-layered-disabled.gradle.kts[tags=layered]
 ======
 
 Khi layered jar/war được tạo, jar `spring-boot-jarmode-tools` được add làm dependency vào archive.
-Với jar trên classpath, application có thể launch ở special mode để bootstrap code chạy thứ hoàn toàn khác application, ví dụ extract layer.
-Nếu muốn exclude dependency:
+Với jar này trên classpath, có thể launch application ở special mode để bootstrap code chạy thứ hoàn toàn khác application, ví dụ extract các layer.
+Nếu muốn exclude dependency này, có thể thực hiện theo cách sau:
 
 [tabs]
 ======
@@ -310,10 +310,10 @@ include::example$packaging/boot-jar-layered-exclude-tools.gradle.kts[tags=layere
 [[packaging-executable.configuring.layered-archives.configuration]]
 ==== Custom Layers Configuration
 
-Tùy application, có thể muốn tune cách layer tạo và thêm layer mới.
+Tùy application, có thể muốn tune cách các layer được tạo và thêm layer mới.
 
-Có thể làm bằng configuration mô tả cách jar/war tách thành layer và order layer.
-Ví dụ explicit define default ordering:
+Có thể làm điều này bằng configuration mô tả cách jar/war được tách thành các layer và order của các layer đó.
+Ví dụ sau cho thấy cách default ordering được mô tả ở trên có thể được define explicit:
 
 [tabs]
 ======
@@ -331,32 +331,32 @@ include::example$packaging/boot-jar-layered-custom.gradle.kts[tags=layered]
 ----
 ======
 
-DSL `layered` define bằng ba phần:
+DSL `layered` được define bằng ba phần:
 
-* Closure `application` define cách application class/resource layer.
-* Closure `dependencies` define cách dependency layer.
-* Method `layerOrder` define order layer write.
+* Closure `application` define cách application class và resource được layer.
+* Closure `dependencies` define cách dependency được layer.
+* Method `layerOrder` define order các layer được write.
 
-Nested closure `intoLayer` dùng trong section `application` và `dependencies` để claim content cho layer.
-Closure evaluate theo order define từ trên xuống.
-Content chưa được closure trước claim vẫn available cho closure sau.
+Các nested closure `intoLayer` được dùng trong section `application` và `dependencies` để claim content cho một layer.
+Các closure được evaluate theo order chúng được define, từ trên xuống dưới.
+Mọi content chưa được closure trước đó claim vẫn available cho các closure tiếp theo xem xét.
 
-Closure `intoLayer` claim content bằng nested call `include` và `exclude`.
-Closure `application` dùng Ant-style path matching cho include/exclude parameter.
+Closure `intoLayer` claim content bằng các call `include` và `exclude` lồng nhau.
+Closure `application` dùng Ant-style path matching cho các include/exclude parameter.
 Section `dependencies` dùng pattern `group:artifact[:version]`.
-Nó cũng có method `includeProjectDependencies()` và `excludeProjectDependencies()` để include/exclude project dependency.
+Section này cũng có các method `includeProjectDependencies()` và `excludeProjectDependencies()` để include/exclude project dependency.
 
-Nếu không gọi `include`, mọi content chưa được closure trước claim được xét.
+Nếu không gọi `include`, mọi content chưa được closure trước đó claim sẽ được xem xét.
 
-Nếu không gọi `exclude`, không apply exclusion.
+Nếu không gọi `exclude`, không có exclusion nào được apply.
 
-Trong closure `dependencies` của ví dụ trên, `intoLayer` đầu claim mọi project dependency cho layer `application`.
-`intoLayer` tiếp theo claim mọi SNAPSHOT dependency cho layer `snapshot-dependencies`.
-`intoLayer` thứ ba và cuối claim mọi thứ còn lại, tức dependency không phải project dependency hoặc SNAPSHOT, cho layer `dependencies`.
+Trong closure `dependencies` của ví dụ trên, `intoLayer` đầu tiên sẽ claim mọi project dependency cho layer `application`.
+`intoLayer` tiếp theo sẽ claim mọi SNAPSHOT dependency cho layer `snapshot-dependencies`.
+`intoLayer` thứ ba và cuối cùng sẽ claim mọi thứ còn lại, tức dependency không phải project dependency hoặc SNAPSHOT, cho layer `dependencies`.
 
 Closure `application` có rule tương tự.
-Đầu tiên claim content `org/springframework/boot/loader/**` cho layer `spring-boot-loader`.
-Sau đó claim class/resource còn lại cho layer `application`.
+Đầu tiên, closure này claim content `org/springframework/boot/loader/**` cho layer `spring-boot-loader`.
+Sau đó, nó claim các class và resource còn lại cho layer `application`.
 
-NOTE: Order closure `intoLayer` được add thường khác order layer write.
-Vì vậy method `layerOrder` luôn phải được gọi và _phải_ cover mọi layer reference bởi call `intoLayer`.
+NOTE: Order các closure `intoLayer` được add thường khác với order các layer được write.
+Vì vậy, method `layerOrder` luôn phải được gọi và _phải_ cover mọi layer được reference bởi các call `intoLayer`.

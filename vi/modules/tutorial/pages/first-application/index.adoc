@@ -6,7 +6,7 @@ Bạn có thể chọn Maven hoặc Gradle làm build system.
 
 [TIP]
 ====
-Website https://spring.io[spring.io] có nhiều https://spring.io/guides[bài hướng dẫn] "`Bắt đầu`" sử dụng Spring Boot.
+Website https://spring.io[spring.io] có nhiều https://spring.io/guides[guide] "`Getting Started`" sử dụng Spring Boot.
 Nếu cần giải quyết một vấn đề cụ thể, hãy tìm ở đó trước.
 
 Bạn có thể rút ngắn các bước dưới đây bằng cách truy cập https://start.spring.io và chọn starter "Web" trong công cụ tìm dependency.
@@ -22,7 +22,7 @@ Bạn không cần biết Java, nhưng nếu thích học kiến thức nền t�
 [[getting-started.first-application.prerequisites]]
 == Điều kiện tiên quyết
 
-Trước khi bắt đầu, hãy mở terminal và chạy các lệnh sau để bảo đảm đã cài một phiên bản Java phù hợp:
+Trước khi bắt đầu, hãy mở terminal và chạy các lệnh sau để bảo đảm đã cài một phiên bản Java hợp lệ:
 
 [source,shell]
 ----
@@ -32,7 +32,7 @@ OpenJDK Runtime Environment (build 17.0.18+10-LTS)
 OpenJDK 64-Bit Server VM (build 17.0.18+10-LTS, mixed mode, sharing)
 ----
 
-NOTE: Ví dụ này cần được tạo trong thư mục riêng.
+NOTE: Sample này cần được tạo trong thư mục riêng.
 Các hướng dẫn tiếp theo giả định bạn đã tạo một thư mục phù hợp và đang làm việc trong thư mục đó.
 
 
@@ -79,10 +79,10 @@ OS:            Mac OS X 26.3 aarch64
 
 
 [[getting-started.first-application.pom]]
-== Thiết lập project với Maven
+== Thiết lập project bằng Maven
 
-Chúng ta cần bắt đầu bằng việc tạo file Maven `pom.xml`.
-`pom.xml` mô tả cách build project.
+Chúng ta cần bắt đầu bằng việc tạo file `pom.xml` cho Maven.
+`pom.xml` là recipe dùng để build project.
 Mở trình soạn thảo văn bản bạn thích và thêm nội dung sau:
 
 [source,xml,subs="verbatim,attributes"]
@@ -127,7 +127,7 @@ endif::[]
 ----
 
 ifeval::["{build-type}" == "opensource"]
-Cấu hình trên sẽ cho phép bạn build project.
+Nội dung trên sẽ tạo ra một build hoạt động được.
 endif::[]
 
 ifeval::["{build-type}" == "commercial"]
@@ -136,7 +136,7 @@ Việc này thường được thực hiện thông qua một artifact repositor
 Ngoài ra, dù không được khuyến nghị, bạn cũng có thể truy cập trực tiếp Spring Commercial repository.
 Trong cả hai trường hợp, xem https://docs.vmware.com/en/Tanzu-Spring-Runtime/Commercial/Tanzu-Spring-Runtime/spring-enterprise-subscription.html[tài liệu Tanzu Spring Runtime] để biết chi tiết.
 
-Sau khi thêm cấu hình repository cần thiết, cấu hình trên sẽ cho phép bạn build project.
+Sau khi thêm cấu hình repository cần thiết, nội dung trên sẽ tạo ra một build hoạt động được.
 endif::[]
 
 Bạn có thể kiểm tra bằng cách chạy `mvn package` (hiện tại, bạn có thể bỏ qua cảnh báo "`jar will be empty - no content was marked for inclusion!`").
@@ -147,7 +147,7 @@ NOTE: Lúc này, bạn có thể import project vào IDE (hầu hết Java IDE h
 
 
 [[getting-started.first-application.gradle]]
-== Thiết lập project với Gradle
+== Thiết lập project bằng Gradle
 
 Chúng ta cần bắt đầu bằng việc tạo file Gradle `build.gradle`.
 `build.gradle` là build script dùng để build project.
@@ -191,9 +191,9 @@ NOTE: Lúc này, bạn có thể import project vào IDE (hầu hết Java IDE h
 
 
 [[getting-started.first-application.dependencies]]
-== Thêm dependency vào classpath
+== Thêm các dependency vào classpath
 
-Spring Boot cung cấp nhiều starter giúp bạn thêm jar vào classpath.
+Spring Boot cung cấp nhiều starter giúp bạn thêm các jar vào classpath.
 Starter cung cấp các dependency bạn có thể cần khi phát triển một loại ứng dụng cụ thể.
 
 
@@ -203,7 +203,7 @@ Starter cung cấp các dependency bạn có thể cần khi phát triển một
 
 Hầu hết ứng dụng Spring Boot sử dụng `spring-boot-starter-parent` trong phần `parent` của POM.
 `spring-boot-starter-parent` là starter đặc biệt cung cấp các giá trị mặc định hữu ích cho Maven.
-Nó cũng cung cấp phần xref:reference:using/build-systems.adoc#using.build-systems.dependency-management[`dependency-management`] để bạn có thể bỏ thẻ `version` đối với các dependency "`đã được lựa chọn và quản lý`".
+Nó cũng cung cấp phần xref:reference:using/build-systems.adoc#using.build-systems.dependency-management[`dependency-management`] để bạn có thể bỏ thẻ `version` đối với các dependency "`được quản lý sẵn`".
 
 Vì đang phát triển ứng dụng web, chúng ta thêm dependency `spring-boot-starter-webmvc`.
 Trước đó, có thể xem các dependency hiện có bằng lệnh sau:
@@ -325,9 +325,9 @@ Spring Boot vẫn cố gắng auto-configure ứng dụng của bạn.
 Phần cuối cùng của ứng dụng là method `main`.
 Đây là method tiêu chuẩn tuân theo quy ước Java về entry point của ứng dụng.
 Method main ủy quyền cho class javadoc:org.springframework.boot.SpringApplication[] của Spring Boot bằng cách gọi `run`.
-javadoc:org.springframework.boot.SpringApplication[] khởi tạo ứng dụng và khởi động Spring; đến lượt mình, Spring khởi động Tomcat web server đã được auto-configure.
+javadoc:org.springframework.boot.SpringApplication[] bootstrap ứng dụng, khởi động Spring; đến lượt mình, Spring khởi động Tomcat web server đã được auto-configure.
 Chúng ta cần truyền `MyApplication.class` làm đối số cho method `run` để cho javadoc:org.springframework.boot.SpringApplication[] biết đâu là Spring component chính.
-Mảng `args` cũng được truyền tiếp để cung cấp các đối số dòng lệnh.
+Mảng `args` cũng được truyền tiếp để ứng dụng nhận các command-line argument.
 
 
 
@@ -361,7 +361,7 @@ $ mvn spring-boot:run
 ........ Started MyApplication in 0.906 seconds (process running for 6.514)
 ----
 
-Nếu mở trình duyệt tới `http://localhost:8080`, bạn sẽ thấy output sau:
+Nếu mở trình duyệt và truy cập `http://localhost:8080`, bạn sẽ thấy output sau:
 
 [source]
 ----
@@ -397,7 +397,7 @@ $ gradle bootRun
 ........ Started MyApplication in 0.906 seconds (process running for 6.514)
 ----
 
-Nếu mở trình duyệt tới `http://localhost:8080`, bạn sẽ thấy output sau:
+Nếu mở trình duyệt và truy cập `http://localhost:8080`, bạn sẽ thấy output sau:
 
 [source]
 ----
@@ -411,15 +411,15 @@ Hello World!
 [[getting-started.first-application.executable-jar]]
 == Tạo executable jar
 
-Chúng ta kết thúc ví dụ bằng cách tạo file executable jar hoàn toàn tự chứa, có thể chạy trên production.
+Chúng ta kết thúc ví dụ bằng cách tạo file executable jar hoàn toàn self-contained, có thể chạy trên production.
 Executable jar (đôi khi được gọi là "`uber jar`" hoặc "`fat jar`") là archive chứa các class đã biên dịch cùng tất cả jar dependency cần thiết để code chạy.
 
-.Executable jar và Java
+.Executable jars và Java
 ****
 Java không cung cấp cách tiêu chuẩn để load các jar lồng nhau (file jar nằm bên trong một jar khác).
 Điều này có thể gây khó khăn khi bạn muốn phân phối ứng dụng tự chứa.
 
-Để giải quyết vấn đề, nhiều developer dùng "`uber`" jar.
+Để giải quyết vấn đề, nhiều developer dùng các jar "`uber`".
 Uber jar đóng gói tất cả class từ mọi dependency của ứng dụng vào một archive duy nhất.
 Vấn đề của cách này là khó xác định những thư viện nào có trong ứng dụng.
 Nó cũng có thể gây vấn đề nếu nhiều jar chứa file cùng tên nhưng khác nội dung.
@@ -447,7 +447,7 @@ Hãy chèn các dòng sau ngay bên dưới phần `dependencies`:
 </build>
 ----
 
-NOTE: POM `spring-boot-starter-parent` có cấu hình `<executions>` để bind goal `repackage`.
+NOTE: POM `spring-boot-starter-parent` bao gồm cấu hình `<executions>` để bind goal `repackage`.
 Nếu không sử dụng parent POM, bạn cần tự khai báo cấu hình này.
 Xem xref:maven-plugin:getting-started.adoc[tài liệu plugin] để biết chi tiết.
 

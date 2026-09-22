@@ -1,36 +1,44 @@
 [[build-tool-plugins.other-build-systems]]
-= Hỗ trợ build system khác
+= Hỗ trợ các build system khác
 
-Nếu muốn dùng build tool khác Maven, Gradle hoặc Ant, nhiều khả năng bạn cần tự phát triển plugin riêng.
+Nếu muốn sử dụng một build tool khác ngoài Maven, Gradle hoặc Ant, nhiều khả năng bạn cần tự phát triển plugin riêng.
 Executable jar phải theo một format cụ thể và một số entry phải được ghi ở dạng không nén (xem phần xref:specification:/executable-jar/index.adoc[executable jar format] trong appendix để biết chi tiết).
 
 Maven plugin và Gradle plugin của Spring Boot đều dùng `spring-boot-loader-tools` để tạo jar.
 Nếu cần, bạn có thể dùng trực tiếp library này.
 
-[[build-tool-plugins.other-build-systems.repackaging-archives]]
-== Repackage archive
 
-Để repackage một archive có sẵn thành self-contained executable archive, dùng javadoc:org.springframework.boot.loader.tools.Repackager[].
+
+[[build-tool-plugins.other-build-systems.repackaging-archives]]
+== Repackage các archive
+
+Để repackage một archive có sẵn thành một self-contained executable archive, dùng javadoc:org.springframework.boot.loader.tools.Repackager[].
 Class javadoc:org.springframework.boot.loader.tools.Repackager[] nhận một constructor argument duy nhất trỏ tới jar hoặc war archive có sẵn.
-Dùng một trong hai method `repackage()` khả dụng để thay thế file gốc hoặc ghi ra đích mới.
-Cũng có thể cấu hình nhiều setting khác trên repackager trước khi chạy.
+Dùng một trong hai method `repackage()` có sẵn để thay thế file gốc hoặc ghi vào destination mới.
+Bạn cũng có thể cấu hình các setting khác trên repackager trước khi chạy.
+
+
 
 [[build-tool-plugins.other-build-systems.nested-libraries]]
-== Nested Library
+== Nested Libraries
 
-Khi repackage một archive, bạn có thể include reference tới các file dependency bằng interface javadoc:org.springframework.boot.loader.tools.Libraries[].
+Khi repackage một archive, bạn có thể include các reference tới các file dependency bằng interface javadoc:org.springframework.boot.loader.tools.Libraries[].
 Chúng tôi không cung cấp implementation cụ thể nào của javadoc:org.springframework.boot.loader.tools.Libraries[] ở đây vì chúng thường phụ thuộc vào từng build system.
 
-Nếu archive đã chứa sẵn library, bạn có thể dùng javadoc:org.springframework.boot.loader.tools.Libraries#NONE[].
+Nếu archive đã chứa sẵn các library, bạn có thể dùng javadoc:org.springframework.boot.loader.tools.Libraries#NONE[].
+
+
 
 [[build-tool-plugins.other-build-systems.finding-main-class]]
-== Tìm Main Class
+== Tìm main class
 
-Nếu không dùng `Repackager.setMainClass()` để chỉ định main class, repackager dùng https://asm.ow2.io/[ASM] để đọc class file và cố tìm class phù hợp có method `public static void main(String[] args)`.
-Một exception sẽ được ném ra nếu tìm thấy nhiều hơn một ứng viên.
+Nếu không dùng `Repackager.setMainClass()` để chỉ định main class, repackager dùng https://asm.ow2.io/[ASM] để đọc các class file và cố tìm class phù hợp có method `public static void main(String[] args)`.
+Một exception sẽ được throw nếu tìm thấy nhiều hơn một candidate.
+
+
 
 [[build-tool-plugins.other-build-systems.example-repackage-implementation]]
-== Ví dụ repackage implementation
+== Ví dụ về repackage implementation
 
 Ví dụ sau minh họa một repackage implementation điển hình:
 

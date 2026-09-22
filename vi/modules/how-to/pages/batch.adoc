@@ -1,56 +1,56 @@
 [[howto.batch]]
 = Batch Applications
 
-Một số câu hỏi thường xuất hiện khi dùng Spring Batch bên trong Spring Boot application.
+Khi sử dụng Spring Batch bên trong một Spring Boot application, thường phát sinh một số câu hỏi.
 Phần này giải đáp các câu hỏi đó.
 
 [[howto.batch.specifying-a-data-source]]
 == Chỉ định Batch Data Source
 
-Batch application lưu job detail trong SQL database cần bean javadoc:javax.sql.DataSource[].
-Mặc định cần một bean javadoc:javax.sql.DataSource[].
-Để Spring Batch dùng javadoc:javax.sql.DataSource[] khác main javadoc:javax.sql.DataSource[] của application, khai báo bean javadoc:javax.sql.DataSource[] và annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.batch.jdbc.autoconfigure.BatchDataSource[format=annotation].
-Nếu làm vậy và muốn có hai data source, ví dụ giữ main auto-configured javadoc:javax.sql.DataSource[], set attribute `defaultCandidate` của annotation javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
+Các Batch application lưu job detail trong SQL database cần một bean javadoc:javax.sql.DataSource[].
+Theo mặc định, cần một bean javadoc:javax.sql.DataSource[].
+Để Spring Batch sử dụng một javadoc:javax.sql.DataSource[] khác với javadoc:javax.sql.DataSource[] chính của application, hãy khai báo một bean javadoc:javax.sql.DataSource[] và annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] của bean đó bằng javadoc:org.springframework.boot.batch.jdbc.autoconfigure.BatchDataSource[format=annotation].
+Nếu làm vậy và muốn có hai data source (ví dụ, giữ lại javadoc:javax.sql.DataSource[] chính đã được auto-configure), hãy set attribute `defaultCandidate` của annotation javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
 
 [[howto.batch.specifying-a-transaction-manager]]
 == Chỉ định Batch Transaction Manager
 
-Tương tự xref:batch.adoc#howto.batch.specifying-a-data-source[], có thể define javadoc:org.springframework.transaction.PlatformTransactionManager[] dùng cho batch processing bằng cách annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.batch.autoconfigure.BatchTransactionManager[format=annotation].
-Nếu muốn có hai transaction manager, ví dụ giữ auto-configured javadoc:org.springframework.transaction.PlatformTransactionManager[], set attribute `defaultCandidate` của javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
+Tương tự xref:batch.adoc#howto.batch.specifying-a-data-source[], bạn có thể define một javadoc:org.springframework.transaction.PlatformTransactionManager[] để dùng cho batch processing bằng cách annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] của bean đó bằng javadoc:org.springframework.boot.batch.autoconfigure.BatchTransactionManager[format=annotation].
+Nếu làm vậy và muốn có hai transaction manager (ví dụ, giữ lại javadoc:org.springframework.transaction.PlatformTransactionManager[] chính đã được auto-configure), hãy set attribute `defaultCandidate` của annotation javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
 
 [[howto.batch.specifying-a-task-executor]]
 == Chỉ định Batch Task Executor
 
-Tương tự xref:batch.adoc#howto.batch.specifying-a-data-source[], có thể define javadoc:org.springframework.core.task.TaskExecutor[] dùng cho batch processing bằng cách annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] bằng javadoc:org.springframework.boot.batch.autoconfigure.BatchTaskExecutor[format=annotation].
-Nếu muốn có hai task executor, ví dụ giữ auto-configured javadoc:org.springframework.core.task.TaskExecutor[], set attribute `defaultCandidate` của javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
+Tương tự xref:batch.adoc#howto.batch.specifying-a-data-source[], bạn có thể define một javadoc:org.springframework.core.task.TaskExecutor[] để dùng cho batch processing bằng cách annotate method javadoc:org.springframework.context.annotation.Bean[format=annotation] của bean đó bằng javadoc:org.springframework.boot.batch.autoconfigure.BatchTaskExecutor[format=annotation].
+Nếu làm vậy và muốn có hai task executor (ví dụ, giữ lại javadoc:org.springframework.core.task.TaskExecutor[] chính đã được auto-configure), hãy set attribute `defaultCandidate` của annotation javadoc:org.springframework.context.annotation.Bean[format=annotation] thành `false`.
 
 [[howto.batch.running-from-the-command-line]]
 == Chạy từ Command Line
 
-Spring Boot convert mọi command line argument bắt đầu bằng `--` thành property thêm vào javadoc:org.springframework.core.env.Environment[]; xem xref:reference:features/external-config.adoc#features.external-config.command-line-args[accessing command line properties].
+Spring Boot convert mọi command line argument bắt đầu bằng `--` thành một property được thêm vào javadoc:org.springframework.core.env.Environment[]; xem xref:reference:features/external-config.adoc#features.external-config.command-line-args[truy cập property dòng lệnh].
 Không nên dùng cách này để truyền argument cho batch job.
-Để specify batch argument trên command line, dùng regular format, tức không có `--`:
+Để specify batch argument trên command line, hãy dùng regular format (tức là không có `--`), như trong ví dụ sau:
 
 [source,shell]
 ----
 $ java -jar myapp.jar someParameter=someValue anotherParameter=anotherValue
 ----
 
-Nếu specify property của javadoc:org.springframework.core.env.Environment[] trên command line, job sẽ ignore nó.
-Ví dụ:
+Nếu specify một property của javadoc:org.springframework.core.env.Environment[] trên command line, job sẽ ignore property đó.
+Xét command sau:
 
 [source,shell]
 ----
 $ java -jar myapp.jar --server.port=7070 someParameter=someValue
 ----
 
-Command trên chỉ cung cấp một argument cho batch job: `someParameter=someValue`.
+Command này chỉ cung cấp một argument cho batch job: `someParameter=someValue`.
 
 [[howto.batch.restarting-a-failed-job]]
 == Restart một Stopped hoặc Failed Job
 
-Để restart failed javadoc:org.springframework.batch.core.job.Job[], mọi parameter, cả identifying và non-identifying, phải được specify lại trên command line.
-Non-identifying parameter *không* được copy từ execution trước.
-Điều này cho phép modify hoặc remove chúng.
+Để restart một failed javadoc:org.springframework.batch.core.job.Job[], tất cả parameter (identifying và non-identifying) phải được specify lại trên command line.
+Các non-identifying parameter *không* được copy từ execution trước đó.
+Điều này cho phép modify hoặc remove các parameter đó.
 
-NOTE: Khi dùng custom javadoc:org.springframework.batch.core.job.parameters.JobParametersIncrementer[], phải gather mọi parameter do incrementer manage để restart failed execution.
+NOTE: Khi sử dụng một custom javadoc:org.springframework.batch.core.job.parameters.JobParametersIncrementer[], bạn phải gather tất cả parameter do incrementer manage để restart một failed execution.

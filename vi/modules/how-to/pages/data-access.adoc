@@ -1,21 +1,23 @@
 [[howto.data-access]]
 = Data Access
 
-Spring Boot bao gồm một số starter để làm việc với data source.
-Phần này trả lời các câu hỏi liên quan.
+Spring Boot cung cấp một số starter để làm việc với data source.
+Phần này giải đáp các câu hỏi liên quan đến việc đó.
+
+
 
 [[howto.data-access.configure-custom-datasource]]
-== Configure Custom DataSource
+== Configure một DataSource tùy chỉnh
 
-Để configure javadoc:javax.sql.DataSource[] riêng, define bean javadoc:org.springframework.context.annotation.Bean[format=annotation] type đó trong configuration.
-Spring Boot reuse javadoc:javax.sql.DataSource[] ở mọi nơi cần, gồm database initialization.
-Nếu cần externalize một số setting, có thể bind javadoc:javax.sql.DataSource[] vào environment (xem xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.third-party-configuration[]).
+Để configure javadoc:javax.sql.DataSource[] của riêng mình, hãy define một javadoc:org.springframework.context.annotation.Bean[format=annotation] có type đó trong configuration.
+Spring Boot sẽ reuse javadoc:javax.sql.DataSource[] của bạn ở bất cứ nơi nào cần, bao gồm cả database initialization.
+Nếu cần externalize một số setting, bạn có thể bind javadoc:javax.sql.DataSource[] với environment (xem xref:reference:features/external-config.adoc#features.external-config.typesafe-configuration-properties.third-party-configuration[]).
 
-Ví dụ define data source trong bean:
+Ví dụ sau cho biết cách define một data source trong một bean:
 
 include-code::custom/MyDataSourceConfiguration[]
 
-Ví dụ define data source bằng property:
+Ví dụ sau cho biết cách define một data source bằng cách set các property của nó:
 
 [configprops%novalidate,yaml]
 ----
@@ -26,21 +28,21 @@ app:
     pool-size: 30
 ----
 
-Giả sử `SomeDataSource` có regular JavaBean property cho URL, username và pool size, các setting này tự động bind trước khi javadoc:javax.sql.DataSource[] available cho component khác.
+Giả sử `SomeDataSource` có các JavaBean property thông thường cho URL, username và pool size, các setting này sẽ được bind tự động trước khi javadoc:javax.sql.DataSource[] được cung cấp cho các component khác.
 
-Spring Boot cũng cung cấp utility builder class javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] có thể dùng tạo một trong các standard data source nếu có trên classpath.
-Builder detect loại cần dùng dựa trên thứ available trên classpath.
-Nó cũng auto-detect driver dựa trên JDBC URL.
+Spring Boot cũng cung cấp một utility builder class có tên javadoc:org.springframework.boot.jdbc.DataSourceBuilder[], có thể dùng để tạo một trong các data source tiêu chuẩn (nếu data source đó có trên classpath).
+Builder có thể detect data source nào cần dùng dựa trên những gì có sẵn trên classpath.
+Builder cũng auto-detect driver dựa trên JDBC URL.
 
-Ví dụ tạo data source bằng javadoc:org.springframework.boot.jdbc.DataSourceBuilder[]:
+Ví dụ sau cho biết cách tạo một data source bằng javadoc:org.springframework.boot.jdbc.DataSourceBuilder[]:
 
 include-code::builder/MyDataSourceConfiguration[]
 
-Để chạy app với javadoc:javax.sql.DataSource[] đó, chỉ cần connection information.
-Pool-specific setting cũng có thể cung cấp.
-Xem implementation sẽ dùng tại runtime để biết thêm detail.
+Để chạy app với javadoc:javax.sql.DataSource[] đó, tất cả những gì bạn cần là connection information.
+Bạn cũng có thể cung cấp các pool-specific setting.
+Hãy kiểm tra implementation sẽ được dùng tại runtime để biết thêm chi tiết.
 
-Ví dụ define JDBC data source bằng property:
+Ví dụ sau cho biết cách define một JDBC data source bằng cách set các property:
 
 [configprops%novalidate,yaml]
 ----
@@ -52,15 +54,15 @@ app:
     pool-size: 30
 ----
 
-Tuy nhiên có một vấn đề do return type javadoc:javax.sql.DataSource[] của method.
-Điều này hide actual type của connection pool, nên không generate configuration property metadata cho custom javadoc:javax.sql.DataSource[] và IDE không có auto-completion.
-Để giải quyết, dùng method `type(Class)` của builder để specify type javadoc:javax.sql.DataSource[] cần build và update return type của method.
-Ví dụ tạo javadoc:com.zaxxer.hikari.HikariDataSource[] bằng javadoc:org.springframework.boot.jdbc.DataSourceBuilder[]:
+Tuy nhiên, có một điểm cần lưu ý do return type của method là javadoc:javax.sql.DataSource[].
+Điều này che đi actual type của connection pool, nên không có configuration property metadata nào được generate cho javadoc:javax.sql.DataSource[] tùy chỉnh của bạn và IDE cũng không cung cấp auto-completion.
+Để xử lý vấn đề này, hãy dùng method `type(Class)` của builder để specify type của javadoc:javax.sql.DataSource[] cần được build, đồng thời update return type của method.
+Ví dụ sau cho biết cách tạo javadoc:com.zaxxer.hikari.HikariDataSource[] bằng javadoc:org.springframework.boot.jdbc.DataSourceBuilder[]:
 
 include-code::simple/MyDataSourceConfiguration[]
 
-Tiếc là basic setup này không hoạt động vì Hikari không có property `url`.
-Thay vào đó nó có property `jdbc-url`, nghĩa là phải rewrite configuration:
+Đáng tiếc là basic setup này không hoạt động vì Hikari không có property `url`.
+Thay vào đó, Hikari có property `jdbc-url`, nghĩa là bạn phải rewrite configuration như sau:
 
 [configprops%novalidate,yaml]
 ----
@@ -72,15 +74,15 @@ app:
     pool-size: 30
 ----
 
-Để giải quyết vấn đề này, dùng javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[]; class này handle translation từ `url` sang `jdbc-url`.
-Có thể initialize javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] từ state của bất kỳ object javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] nào bằng method `initializeDataSourceBuilder()`.
-Có thể inject javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] mà Spring Boot tự động tạo, nhưng như vậy configuration bị split giữa `+spring.datasource.*+` và `+app.datasource.*+`.
-Để tránh, define custom javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] với custom configuration property prefix:
+Để xử lý vấn đề này, hãy dùng javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[]; class này sẽ handle việc dịch `url` thành `jdbc-url`.
+Bạn có thể initialize javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] từ state của bất kỳ object javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] nào bằng method `initializeDataSourceBuilder()` của object đó.
+Bạn có thể inject javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] mà Spring Boot tự động tạo, nhưng như vậy configuration của bạn sẽ bị chia giữa `+spring.datasource.*+` và `+app.datasource.*+`.
+Để tránh điều này, hãy define một javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] tùy chỉnh với configuration properties prefix tùy chỉnh, như trong ví dụ sau:
 
 include-code::configurable/MyDataSourceConfiguration[]
 
-Setup này tương đương những gì Spring Boot mặc định làm, ngoại trừ pool type được specify trong code và setting expose thành property `app.datasource.configuration.*`.
-javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] xử lý translation `url` sang `jdbc-url`, nên có thể configure:
+Setup này tương đương với những gì Spring Boot thực hiện cho bạn theo mặc định, ngoại trừ việc type của pool được specify trong code và các setting của nó được expose thành các property `app.datasource.configuration.*`.
+javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] xử lý việc dịch `url` thành `jdbc-url`, nên bạn có thể configure như sau:
 
 [configprops%novalidate,yaml]
 ----
@@ -93,33 +95,35 @@ app:
       maximum-pool-size: 30
 ----
 
-Lưu ý vì custom configuration specify trong code rằng Hikari phải được dùng, `app.datasource.type` không có effect.
+Lưu ý rằng vì custom configuration specify trong code việc phải dùng Hikari, `app.datasource.type` sẽ không có effect.
 
-Như mô tả trong xref:reference:data/sql.adoc#data.sql.datasource.connection-pool[], javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] hỗ trợ nhiều connection pool khác nhau.
-Để dùng pool khác Hikari, thêm nó vào classpath, dùng `type(Class)` để specify pool class và update return type của javadoc:org.springframework.context.annotation.Bean[format=annotation] method cho match.
-Điều này cũng cung cấp configuration property metadata cho specific connection pool được chọn.
+Như được mô tả trong xref:reference:data/sql.adoc#data.sql.datasource.connection-pool[], javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] hỗ trợ một số connection pool khác nhau.
+Để dùng một pool khác Hikari, hãy thêm pool đó vào classpath, dùng method `type(Class)` để specify pool class cần dùng, rồi update return type của javadoc:org.springframework.context.annotation.Bean[format=annotation] method cho phù hợp.
+Việc này cũng cung cấp configuration property metadata cho connection pool cụ thể mà bạn đã chọn.
 
-TIP: Spring Boot expose Hikari-specific setting tại `spring.datasource.hikari`.
-Ví dụ này dùng sub-namespace generic hơn là `configuration` vì ví dụ không hỗ trợ nhiều datasource implementation.
+TIP: Spring Boot sẽ expose các setting dành riêng cho Hikari tại `spring.datasource.hikari`.
+Ví dụ này dùng một sub namespace generic hơn là `configuration` vì ví dụ không hỗ trợ nhiều datasource implementation.
 
-Xem xref:reference:data/sql.adoc#data.sql.datasource[] và class {code-spring-boot-jdbc-src}/autoconfigure/DataSourceAutoConfiguration.java[`DataSourceAutoConfiguration`] để biết thêm.
+Xem xref:reference:data/sql.adoc#data.sql.datasource[] và class {code-spring-boot-jdbc-src}/autoconfigure/DataSourceAutoConfiguration.java[`DataSourceAutoConfiguration`] để biết thêm chi tiết.
+
+
 
 [[howto.data-access.configure-two-datasources]]
-== Configure Two DataSources
+== Configure hai DataSource
 
-Để define additional javadoc:javax.sql.DataSource[], có thể dùng approach tương tự section trước.
-Khác biệt chính là javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:javax.sql.DataSource[] phải declare với `defaultCandidate=false`.
+Để define thêm một javadoc:javax.sql.DataSource[], có thể dùng approach tương tự như section trước.
+Điểm khác biệt chính là javadoc:javax.sql.DataSource[] javadoc:org.springframework.context.annotation.Bean[format=annotation] phải được declare với `defaultCandidate=false`.
 Điều này ngăn auto-configured javadoc:javax.sql.DataSource[] back off.
 
 NOTE: {url-spring-framework-docs}/core/beans/dependencies/factory-autowire.html#beans-factory-autowire-candidate[Spring Framework reference documentation] mô tả feature này chi tiết hơn.
 
-Để additional javadoc:javax.sql.DataSource[] có thể inject ở nơi cần, annotate thêm bằng javadoc:org.springframework.beans.factory.annotation.Qualifier[format=annotation]:
+Để additional javadoc:javax.sql.DataSource[] có thể được inject ở nơi cần, hãy annotate nó thêm bằng javadoc:org.springframework.beans.factory.annotation.Qualifier[format=annotation], như trong ví dụ sau:
 
 include-code::MyAdditionalDataSourceConfiguration[]
 
-Để consume additional javadoc:javax.sql.DataSource[], annotate injection point bằng cùng javadoc:org.springframework.beans.factory.annotation.Qualifier[format=annotation].
+Để consume additional javadoc:javax.sql.DataSource[], hãy annotate injection point bằng cùng javadoc:org.springframework.beans.factory.annotation.Qualifier[format=annotation].
 
-Auto-configured và additional data source có thể configure:
+Auto-configured data source và additional data source có thể được configure như sau:
 
 [configprops%novalidate,yaml]
 ----
@@ -138,63 +142,71 @@ app:
     max-total: 30
 ----
 
-Advanced implementation-specific configuration của auto-configured javadoc:javax.sql.DataSource[] available qua property `spring.datasource.configuration.*`.
-Có thể apply cùng concept cho additional javadoc:javax.sql.DataSource[]:
+Có thể configure nâng cao, phụ thuộc implementation, cho javadoc:javax.sql.DataSource[] được auto-configure thông qua các property `spring.datasource.configuration.*`.
+Bạn cũng có thể áp dụng cùng concept cho additional javadoc:javax.sql.DataSource[], như trong ví dụ sau:
 
 include-code::MyCompleteAdditionalDataSourceConfiguration[]
 
-Ví dụ trên configure additional data source với cùng logic Spring Boot dùng trong auto-configuration.
-Lưu ý property `app.datasource.configuration.*` cung cấp advanced setting dựa trên implementation được chọn.
+Ví dụ trên configure additional data source bằng cùng logic mà Spring Boot sẽ dùng trong auto-configuration.
+Lưu ý rằng các property `app.datasource.configuration.*` cung cấp các setting nâng cao dựa trên implementation được chọn.
 
-Giống xref:how-to:data-access.adoc#howto.data-access.configure-custom-datasource[configure một custom DataSource], type của một hoặc cả hai javadoc:javax.sql.DataSource[] bean có thể customize bằng method `type(Class)` trên javadoc:org.springframework.boot.jdbc.DataSourceBuilder[].
-Xem xref:reference:data/sql.adoc#data.sql.datasource.connection-pool[] để biết supported type.
+Tương tự xref:how-to:data-access.adoc#howto.data-access.configure-custom-datasource[việc configure một javadoc:javax.sql.DataSource[] tùy chỉnh duy nhất], type của một hoặc cả hai javadoc:javax.sql.DataSource[] bean có thể được customize bằng method `type(Class)` trên javadoc:org.springframework.boot.jdbc.DataSourceBuilder[].
+Xem xref:reference:data/sql.adoc#data.sql.datasource.connection-pool[] để biết các type được hỗ trợ.
+
+
 
 [[howto.data-access.spring-data-repositories]]
 == Dùng Spring Data Repositories
 
-Spring Data có thể tạo implementation của interface javadoc:org.springframework.data.repository.Repository[] với nhiều flavor.
-Spring Boot xử lý tất cả miễn các implementation javadoc:org.springframework.data.repository.Repository[] nằm trong một trong các xref:reference:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package], thường là package hoặc sub-package của main application class annotate javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation].
+Spring Data có thể tạo implementation cho các interface javadoc:org.springframework.data.repository.Repository[] thuộc nhiều flavor khác nhau.
+Spring Boot handle tất cả việc đó cho bạn, miễn là các implementation javadoc:org.springframework.data.repository.Repository[] nằm trong một trong các xref:reference:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package], thường là package của main application class (hoặc một sub-package của package đó), nơi được annotate bằng javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation] hoặc javadoc:org.springframework.boot.autoconfigure.EnableAutoConfiguration[format=annotation].
 
-Với nhiều application, chỉ cần đặt đúng Spring Data dependency trên classpath.
-Có `spring-boot-starter-data-jpa` cho JPA, `spring-boot-starter-data-mongodb` cho MongoDB và nhiều starter khác cho supported technology.
-Để bắt đầu, tạo repository interface để handle object javadoc:jakarta.persistence.Entity[format=annotation].
+Với nhiều application, tất cả những gì bạn cần là đặt đúng Spring Data dependency trên classpath.
+Có `spring-boot-starter-data-jpa` cho JPA, `spring-boot-starter-data-mongodb` cho Mongodb và nhiều starter khác cho các technology được hỗ trợ.
+Để bắt đầu, hãy tạo một số repository interface để handle các object javadoc:jakarta.persistence.Entity[format=annotation].
 
-Spring Boot xác định location của javadoc:org.springframework.data.repository.Repository[] implementation bằng cách scan xref:reference:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package].
-Để kiểm soát nhiều hơn, dùng annotation `@Enable…Repositories` từ Spring Data.
+Spring Boot xác định location của các implementation javadoc:org.springframework.data.repository.Repository[] bằng cách scan xref:reference:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package].
+Để kiểm soát nhiều hơn, hãy dùng các annotation `@Enable…Repositories` từ Spring Data.
 
-Để biết thêm về Spring Data, xem {url-spring-data-site}[Spring Data project page].
+Để biết thêm về Spring Data, xem {url-spring-data-site}[trang project Spring Data].
+
+
 
 [[howto.data-access.separate-entity-definitions-from-spring-configuration]]
-== Tách @Entity Definition khỏi Spring Configuration
+== Tách các định nghĩa @Entity khỏi Spring Configuration
 
-Spring Boot xác định location của definition javadoc:jakarta.persistence.Entity[format=annotation] bằng cách scan xref:reference:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package].
-Để kiểm soát nhiều hơn, dùng annotation javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation]:
+Spring Boot xác định location của các definition javadoc:jakarta.persistence.Entity[format=annotation] bằng cách scan xref:reference:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package].
+Để kiểm soát nhiều hơn, hãy dùng annotation javadoc:org.springframework.boot.persistence.autoconfigure.EntityScan[format=annotation], như trong ví dụ sau:
 
 include-code::MyApplication[]
 
-[[howto.data-access.filter-scanned-entity-definitions]]
-== Filter Scanned @Entity Definitions
 
-Có thể filter definition javadoc:jakarta.persistence.Entity[format=annotation] bằng bean javadoc:org.springframework.orm.jpa.persistenceunit.ManagedClassNameFilter[].
-Điều này hữu ích trong test khi chỉ subset entity available cần được xét.
-Ví dụ sau chỉ include entity từ package `com.example.app.customer`:
+
+[[howto.data-access.filter-scanned-entity-definitions]]
+== Filter các định nghĩa @Entity đã scan
+
+Có thể filter các definition javadoc:jakarta.persistence.Entity[format=annotation] bằng một bean javadoc:org.springframework.orm.jpa.persistenceunit.ManagedClassNameFilter[].
+Điều này hữu ích trong test khi chỉ nên xét một subset của các entity hiện có.
+Trong ví dụ sau, chỉ các entity từ package `com.example.app.customer` được include:
 
 include-code::MyEntityScanConfiguration[]
+
+
 
 [[howto.data-access.jpa-properties]]
 == Configure JPA Properties
 
-Spring Data JPA đã cung cấp một số vendor-independent configuration option, như SQL logging, và Spring Boot expose các option đó cùng một số option khác cho Hibernate dưới dạng external configuration property.
-Một số được auto-detect tùy context nên thường không cần set.
+Spring Data JPA đã cung cấp một số configuration option không phụ thuộc vendor (chẳng hạn option cho SQL logging), còn Spring Boot expose các option đó và thêm một số option cho Hibernate dưới dạng external configuration property.
+Một số option được auto-detect tùy theo context, nên bạn thường không cần set chúng.
 
-`spring.jpa.hibernate.ddl-auto` là case đặc biệt vì default khác nhau tùy runtime condition.
-Nếu dùng embedded database và không schema manager nào như Liquibase hoặc Flyway handle javadoc:javax.sql.DataSource[], default là `create-drop`.
-Các case khác default `none`.
+`spring.jpa.hibernate.ddl-auto` là một trường hợp đặc biệt vì nó có các default khác nhau tùy theo điều kiện runtime.
+Nếu dùng embedded database và không có schema manager nào (chẳng hạn Liquibase hoặc Flyway) handle javadoc:javax.sql.DataSource[], property này mặc định là `create-drop`.
+Trong mọi trường hợp khác, property này mặc định là `none`.
 
-Dialect được dùng do JPA provider detect.
-Nếu muốn tự set dialect, set configprop:spring.jpa.database-platform[].
+JPA provider sẽ detect dialect cần dùng.
+Nếu muốn tự set dialect, hãy set configprop:spring.jpa.database-platform[] property.
 
-Common option:
+Các option thường được set nhất được minh họa trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -206,36 +218,38 @@ spring:
     show-sql: true
 ----
 
-Ngoài ra mọi property trong `+spring.jpa.properties.*+` được pass-through như regular JPA property, bỏ prefix, khi local javadoc:jakarta.persistence.EntityManagerFactory[] được tạo.
+Ngoài ra, mọi property trong `+spring.jpa.properties.*+` đều được pass through như các JPA property thông thường (sau khi bỏ prefix) khi local javadoc:jakarta.persistence.EntityManagerFactory[] được tạo.
 
 [WARNING]
 ====
-Cần đảm bảo name define dưới `+spring.jpa.properties.*+` match chính xác những gì JPA provider mong đợi.
-Spring Boot không thực hiện relaxed binding cho các entry này.
+Bạn cần đảm bảo các name được define dưới `+spring.jpa.properties.*+` match chính xác với những name mà JPA provider của bạn mong đợi.
+Spring Boot sẽ không cố thực hiện bất kỳ dạng relaxed binding nào cho các entry này.
 
-Ví dụ nếu muốn configure Hibernate batch size phải dùng `+spring.jpa.properties.hibernate.jdbc.batch_size+`.
-Nếu dùng form khác như `batchSize` hoặc `batch-size`, Hibernate không apply setting.
+Ví dụ, nếu muốn configure batch size của Hibernate, bạn phải dùng `+spring.jpa.properties.hibernate.jdbc.batch_size+`.
+Nếu dùng các form khác, chẳng hạn `batchSize` hoặc `batch-size`, Hibernate sẽ không apply setting đó.
 ====
 
-TIP: Nếu cần advanced customization cho Hibernate property, cân nhắc register bean javadoc:org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer[] được invoke trước khi tạo javadoc:jakarta.persistence.EntityManagerFactory[].
-Nó có precedence hơn mọi thứ auto-configuration apply.
+TIP: Nếu cần advanced customization cho Hibernate property, hãy cân nhắc register một javadoc:org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer[] bean; bean này sẽ được invoke trước khi tạo javadoc:jakarta.persistence.EntityManagerFactory[].
+Customization này được ưu tiên hơn mọi thứ được auto-configuration apply.
+
+
 
 [[howto.data-access.configure-hibernate-naming-strategy]]
 == Configure Hibernate Naming Strategy
 
 Hibernate dùng {url-hibernate-docs}#naming[hai naming strategy khác nhau] để map name từ object model sang database name tương ứng.
-Fully qualified class name của physical và implicit strategy implementation có thể configure bằng property `spring.jpa.hibernate.naming.physical-strategy` và `spring.jpa.hibernate.naming.implicit-strategy`.
-Ngoài ra nếu bean javadoc:org.hibernate.boot.model.naming.ImplicitNamingStrategy[] hoặc javadoc:org.hibernate.boot.model.naming.PhysicalNamingStrategy[] available trong application context, Hibernate tự động configure dùng chúng.
+Có thể configure fully qualified class name của physical strategy implementation và implicit strategy implementation bằng cách set lần lượt các property `spring.jpa.hibernate.naming.physical-strategy` và `spring.jpa.hibernate.naming.implicit-strategy`.
+Ngoài ra, nếu các bean javadoc:org.hibernate.boot.model.naming.ImplicitNamingStrategy[] hoặc javadoc:org.hibernate.boot.model.naming.PhysicalNamingStrategy[] có trong application context, Hibernate sẽ tự động được configure để dùng chúng.
 
-Mặc định Spring Boot configure physical naming strategy bằng javadoc:org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy[].
-Với strategy này, mọi dấu chấm replace bằng underscore và camel casing cũng replace bằng underscore.
-Ngoài ra mặc định mọi table name generate lowercase.
-Ví dụ entity `TelephoneNumber` map tới table `telephone_number`.
-Nếu schema cần mixed-case identifier, define custom bean javadoc:org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy[]:
+Theo mặc định, Spring Boot configure physical naming strategy bằng javadoc:org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy[].
+Với strategy này, mọi dấu chấm đều được thay bằng underscore và camel casing cũng được thay bằng underscore.
+Ngoài ra, theo mặc định, mọi table name đều được generate ở dạng lowercase.
+Ví dụ, một entity `TelephoneNumber` được map tới table `telephone_number`.
+Nếu schema yêu cầu mixed-case identifier, hãy define một javadoc:org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy[] bean tùy chỉnh, như trong ví dụ sau:
 
 include-code::spring/MyHibernateConfiguration[]
 
-Nếu thích default của Hibernate, set property:
+Nếu muốn dùng default của Hibernate, hãy set property sau:
 
 [configprops,yaml]
 ----
@@ -246,126 +260,147 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 ----
 
-Hoặc configure bean:
+Hoặc bạn có thể configure bean sau:
 
 include-code::standard/MyHibernateConfiguration[]
 
-Xem {code-spring-boot-hibernate-src}/autoconfigure/HibernateJpaAutoConfiguration.java[`HibernateJpaAutoConfiguration`] và {code-spring-boot-jpa-src}/autoconfigure/JpaBaseConfiguration.java[`JpaBaseConfiguration`].
+Xem {code-spring-boot-hibernate-src}/autoconfigure/HibernateJpaAutoConfiguration.java[`HibernateJpaAutoConfiguration`] và {code-spring-boot-jpa-src}/autoconfigure/JpaBaseConfiguration.java[`JpaBaseConfiguration`] để biết thêm chi tiết.
+
+
 
 [[howto.data-access.configure-hibernate-second-level-caching]]
 == Configure Hibernate Second-Level Caching
 
-Hibernate {url-hibernate-docs}#caching[second-level cache] có thể configure cho nhiều cache provider.
-Thay vì configure Hibernate lookup cache provider lần nữa, tốt hơn nên cung cấp provider available trong context khi có thể.
+Hibernate {url-hibernate-docs}#caching[second-level cache] có thể được configure cho nhiều cache provider.
+Thay vì configure Hibernate để lookup lại cache provider, tốt hơn là cung cấp cache provider đang có trong context bất cứ khi nào có thể.
 
-Để làm với JCache, trước tiên đảm bảo `org.hibernate.orm:hibernate-jcache` available trên classpath.
-Sau đó thêm bean javadoc:org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer[]:
+Để thực hiện việc này với JCache, trước tiên hãy đảm bảo `org.hibernate.orm:hibernate-jcache` có trên classpath.
+Sau đó, thêm một javadoc:org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer[] bean như trong ví dụ sau:
 
 include-code::MyHibernateSecondLevelCacheConfiguration[]
 
-Customizer này configure Hibernate dùng cùng javadoc:org.springframework.cache.CacheManager[] với application.
-Cũng có thể dùng các javadoc:org.springframework.cache.CacheManager[] instance riêng.
-Chi tiết xem {url-hibernate-docs}#caching-provider-jcache[Hibernate user guide].
+Customizer này sẽ configure Hibernate dùng cùng javadoc:org.springframework.cache.CacheManager[] với application.
+Cũng có thể dùng các instance javadoc:org.springframework.cache.CacheManager[] riêng biệt.
+Để biết chi tiết, xem {url-hibernate-docs}#caching-provider-jcache[Hibernate user guide].
+
+
 
 [[howto.data-access.dependency-injection-in-hibernate-components]]
 == Dùng Dependency Injection trong Hibernate Components
 
-Mặc định Spring Boot register implementation javadoc:org.hibernate.resource.beans.container.spi.BeanContainer[] dùng javadoc:org.springframework.beans.factory.BeanFactory[] để converter và entity listener có thể dùng regular dependency injection.
+Theo mặc định, Spring Boot register một implementation javadoc:org.hibernate.resource.beans.container.spi.BeanContainer[] dùng javadoc:org.springframework.beans.factory.BeanFactory[] để converter và entity listener có thể dùng dependency injection thông thường.
 
-Có thể disable hoặc tune behavior này bằng cách register javadoc:org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer[] remove hoặc change property `hibernate.resource.beans.container`.
+Bạn có thể disable hoặc tune behavior này bằng cách register một javadoc:org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer[] để remove hoặc change property `hibernate.resource.beans.container`.
+
+
 
 [[howto.data-access.use-custom-entity-manager]]
-== Dùng Custom EntityManagerFactory
+== Dùng một Custom EntityManagerFactory
 
-Để kiểm soát hoàn toàn configuration của javadoc:jakarta.persistence.EntityManagerFactory[], cần thêm javadoc:org.springframework.context.annotation.Bean[format=annotation] tên `entityManagerFactory`.
-Spring Boot auto-configuration tắt entity manager của nó khi có bean type đó.
+Để kiểm soát hoàn toàn configuration của javadoc:jakarta.persistence.EntityManagerFactory[], bạn cần thêm một javadoc:org.springframework.context.annotation.Bean[format=annotation] có tên '`entityManagerFactory`'.
+Spring Boot auto-configuration sẽ tắt entity manager của nó khi có một bean có type đó.
 
-NOTE: Khi tự tạo bean javadoc:org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean[], mọi customization được apply khi tạo auto-configured javadoc:org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean[] bị mất.
-Đảm bảo dùng auto-configured javadoc:org.springframework.boot.jpa.EntityManagerFactoryBuilder[] để giữ JPA và vendor property.
-Điều này đặc biệt quan trọng nếu dựa vào property `spring.jpa.*` để configure naming strategy hoặc DDL mode.
+NOTE: Khi tự tạo bean javadoc:org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean[], mọi customization được apply trong quá trình tạo javadoc:org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean[] auto-configured sẽ bị mất.
+Hãy đảm bảo dùng javadoc:org.springframework.boot.jpa.EntityManagerFactoryBuilder[] auto-configured để giữ lại các JPA property và vendor property.
+Điều này đặc biệt quan trọng nếu bạn đang dựa vào các property `spring.jpa.*` để configure những thứ như naming strategy hoặc DDL mode.
+
+
 
 [[howto.data-access.use-multiple-entity-managers]]
 == Dùng Multiple EntityManagerFactories
 
-Nếu cần dùng JPA với nhiều datasource, có thể cần một javadoc:jakarta.persistence.EntityManagerFactory[] cho mỗi datasource.
-javadoc:org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean[] từ Spring ORM cho phép configure javadoc:jakarta.persistence.EntityManagerFactory[] theo nhu cầu.
-Cũng có thể reuse javadoc:org.springframework.boot.jpa.autoconfigure.JpaProperties[] để bind setting cho javadoc:jakarta.persistence.EntityManagerFactory[] thứ hai.
-Dựa trên xref:how-to:data-access.adoc#howto.data-access.configure-two-datasources[ví dụ configure DataSource thứ hai], javadoc:jakarta.persistence.EntityManagerFactory[] thứ hai có thể define:
+Nếu cần dùng JPA với nhiều datasource, có thể bạn sẽ cần một javadoc:jakarta.persistence.EntityManagerFactory[] cho mỗi datasource.
+javadoc:org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean[] từ Spring ORM cho phép bạn configure một javadoc:jakarta.persistence.EntityManagerFactory[] theo nhu cầu.
+Bạn cũng có thể reuse javadoc:org.springframework.boot.jpa.autoconfigure.JpaProperties[] để bind setting cho một javadoc:jakarta.persistence.EntityManagerFactory[] thứ hai.
+Dựa trên xref:how-to:data-access.adoc#howto.data-access.configure-two-datasources[ví dụ configure một javadoc:javax.sql.DataSource[] thứ hai], có thể define một javadoc:jakarta.persistence.EntityManagerFactory[] thứ hai như trong ví dụ sau:
 
 include-code::MyAdditionalEntityManagerFactoryConfiguration[]
 
-Ví dụ trên tạo javadoc:jakarta.persistence.EntityManagerFactory[] dùng javadoc:javax.sql.DataSource[] bean qualified bằng `@Qualifier("second")`.
-Nó scan entity nằm cùng package với `Order`.
-Có thể map additional JPA property bằng namespace `app.jpa`.
-Dùng `@Bean(defaultCandidate=false)` cho phép bean `secondJpaProperties` và `secondEntityManagerFactory` được define mà không interfere auto-configured bean cùng type.
+Ví dụ trên tạo một javadoc:jakarta.persistence.EntityManagerFactory[] bằng javadoc:javax.sql.DataSource[] bean được qualify với `@Qualifier("second")`.
+Bean này scan các entity nằm trong cùng package với `Order`.
+Có thể map thêm các JPA property bằng namespace `app.jpa`.
+Việc dùng `@Bean(defaultCandidate=false)` cho phép define các bean `secondJpaProperties` và `secondEntityManagerFactory` mà không can thiệp vào các bean cùng type được auto-configure.
 
 NOTE: {url-spring-framework-docs}/core/beans/dependencies/factory-autowire.html#beans-factory-autowire-candidate[Spring Framework reference documentation] mô tả feature này chi tiết hơn.
 
-Cần cung cấp configuration tương tự cho mọi additional data source khác cần JPA access.
-Để hoàn thiện, cần configure javadoc:org.springframework.orm.jpa.JpaTransactionManager[] cho mỗi javadoc:jakarta.persistence.EntityManagerFactory[].
-Ngoài ra có thể dùng JTA transaction manager span cả hai.
+Bạn nên cung cấp configuration tương tự cho bất kỳ additional data source nào khác mà bạn cần JPA access.
+Để hoàn thiện configuration, bạn cũng cần configure một javadoc:org.springframework.orm.jpa.JpaTransactionManager[] cho mỗi javadoc:jakarta.persistence.EntityManagerFactory[].
+Ngoài ra, bạn có thể dùng một JTA transaction manager bao phủ cả hai.
 
-Nếu dùng Spring Data, cần configure javadoc:org.springframework.data.jpa.repository.config.EnableJpaRepositories[format=annotation] tương ứng:
+Nếu dùng Spring Data, bạn cần configure javadoc:org.springframework.data.jpa.repository.config.EnableJpaRepositories[format=annotation] tương ứng, như trong các ví dụ sau:
 
 include-code::OrderConfiguration[]
 
 include-code::CustomerConfiguration[]
 
+
+
 [[howto.data-access.use-traditional-persistence-xml]]
-== Dùng Traditional persistence.xml File
+== Dùng một File persistence.xml truyền thống
 
-Spring Boot mặc định không search hoặc dùng `META-INF/persistence.xml`.
-Nếu muốn dùng traditional `persistence.xml`, cần define javadoc:org.springframework.context.annotation.Bean[format=annotation] riêng type javadoc:org.springframework.orm.jpa.LocalEntityManagerFactoryBean[] với ID `entityManagerFactory` và set persistence unit name.
+Theo mặc định, Spring Boot sẽ không search hoặc dùng `META-INF/persistence.xml`.
+Nếu muốn dùng một `persistence.xml` truyền thống, bạn cần define javadoc:org.springframework.context.annotation.Bean[format=annotation] của riêng mình có type javadoc:org.springframework.orm.jpa.LocalEntityManagerFactoryBean[] (với ID '`entityManagerFactory`') và set persistence unit name tại đó.
 
-Xem {code-spring-boot-jpa-src}/autoconfigure/JpaBaseConfiguration.java[`JpaBaseConfiguration`] để biết default setting.
+Xem {code-spring-boot-jpa-src}/autoconfigure/JpaBaseConfiguration.java[`JpaBaseConfiguration`] để biết các default setting.
+
+
 
 [[howto.data-access.use-spring-data-jpa-and-mongo-repositories]]
 == Dùng Spring Data JPA và Mongo Repositories
 
-Spring Data JPA và Spring Data Mongo đều có thể tự động tạo implementation javadoc:org.springframework.data.repository.Repository[].
-Nếu cả hai có trên classpath, có thể cần thêm configuration để nói Spring Boot repository nào cần tạo.
-Cách explicit nhất là dùng standard annotation javadoc:org.springframework.data.jpa.repository.config.EnableJpaRepositories[format=annotation] và javadoc:org.springframework.data.mongodb.repository.config.EnableMongoRepositories[format=annotation], đồng thời cung cấp location của javadoc:org.springframework.data.repository.Repository[] interface.
+Spring Data JPA và Spring Data Mongo đều có thể tự động tạo các implementation javadoc:org.springframework.data.repository.Repository[] cho bạn.
+Nếu cả hai cùng có trên classpath, bạn có thể phải thực hiện thêm configuration để cho Spring Boot biết cần tạo repository nào.
+Cách explicit nhất là dùng các annotation Spring Data chuẩn javadoc:org.springframework.data.jpa.repository.config.EnableJpaRepositories[format=annotation] và javadoc:org.springframework.data.mongodb.repository.config.EnableMongoRepositories[format=annotation], đồng thời cung cấp location của các javadoc:org.springframework.data.repository.Repository[] interface.
 
-Cũng có flag `+spring.data.*.repositories.enabled+` và `+spring.data.*.repositories.type+` để bật/tắt auto-configured repository trong external configuration.
-Ví dụ hữu ích khi muốn tắt Mongo repository nhưng vẫn dùng auto-configured javadoc:org.springframework.data.mongodb.core.MongoTemplate[].
+Ngoài ra còn có các flag (`+spring.data.*.repositories.enabled+` và `+spring.data.*.repositories.type+`) để bạn bật hoặc tắt các repository được auto-configure trong external configuration.
+Việc này hữu ích, chẳng hạn khi bạn muốn tắt Mongo repository nhưng vẫn dùng javadoc:org.springframework.data.mongodb.core.MongoTemplate[] được auto-configure.
 
-Cùng obstacle và feature tồn tại cho các auto-configured Spring Data repository type khác như Elasticsearch, Redis, v.v.
-Để làm việc với chúng, đổi annotation name và flag tương ứng.
+Cùng vấn đề và các feature tương tự cũng tồn tại với những loại Spring Data repository khác được auto-configure (Elasticsearch, Redis và các loại khác).
+Để làm việc với chúng, hãy thay đổi tên annotation và flag tương ứng.
+
+
 
 [[howto.data-access.customize-spring-data-web-support]]
 == Customize Spring Data Web Support
 
-Spring Data cung cấp web support đơn giản hóa việc dùng Spring Data repository trong web application.
-Spring Boot cung cấp property trong namespace `spring.data.web` để customize configuration.
-Lưu ý nếu dùng Spring Data REST, phải dùng property trong namespace `spring.data.rest` thay thế.
+Spring Data cung cấp web support giúp đơn giản hóa việc dùng Spring Data repository trong một web application.
+Spring Boot cung cấp các property trong namespace `spring.data.web` để customize configuration của web support.
+Lưu ý rằng nếu đang dùng Spring Data REST, bạn phải dùng các property trong namespace `spring.data.rest` thay thế.
+
+
 
 [[howto.data-access.exposing-spring-data-repositories-as-rest]]
-== Expose Spring Data Repositories thành REST Endpoint
+== Expose Spring Data Repository thành REST Endpoint
 
-Spring Data REST có thể expose implementation javadoc:org.springframework.data.repository.Repository[] thành REST endpoint nếu Spring MVC đã enable cho application.
+Spring Data REST có thể expose các implementation javadoc:org.springframework.data.repository.Repository[] thành REST endpoint cho bạn,
+miễn là Spring MVC đã được enable cho application.
 
-Spring Boot expose một set property hữu ích từ namespace `spring.data.rest` để customize javadoc:org.springframework.data.rest.core.config.RepositoryRestConfiguration[].
-Nếu cần additional customization, dùng bean javadoc:org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer[].
+Spring Boot expose một tập hợp property hữu ích (từ namespace `spring.data.rest`) để customize javadoc:org.springframework.data.rest.core.config.RepositoryRestConfiguration[].
+Nếu cần cung cấp thêm customization, bạn nên dùng một javadoc:org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer[] bean.
 
-NOTE: Nếu không specify order cho custom javadoc:org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer[], nó chạy sau one Spring Boot dùng nội bộ.
-Nếu cần specify order, đảm bảo cao hơn 0.
+NOTE: Nếu không specify order trên custom javadoc:org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer[] của mình, nó sẽ chạy sau configurer mà Spring Boot dùng internally.
+Nếu cần specify order, hãy đảm bảo order đó lớn hơn 0.
+
+
 
 [[howto.data-access.configure-a-component-that-is-used-by-jpa]]
-== Configure Component được JPA sử dụng
+== Configure một Component được JPA sử dụng
 
-Nếu muốn configure component JPA dùng, cần đảm bảo component initialize trước JPA.
-Khi component auto-configured, Spring Boot xử lý việc này.
-Ví dụ khi Flyway auto-configured, Hibernate được configure depend vào Flyway để Flyway có cơ hội initialize database trước khi Hibernate dùng.
+Nếu muốn configure một component mà JPA sử dụng, bạn cần đảm bảo component đó được initialize trước JPA.
+Khi component được auto-configure, Spring Boot sẽ xử lý việc này cho bạn.
+Ví dụ, khi Flyway được auto-configure, Hibernate được configure để depend on Flyway, nhờ đó Flyway có cơ hội initialize database trước khi Hibernate cố gắng dùng database.
 
-Nếu tự configure component, có thể dùng subclass javadoc:org.springframework.boot.jpa.autoconfigure.EntityManagerFactoryDependsOnPostProcessor[] như cách tiện lợi setup dependency cần thiết.
-Ví dụ nếu dùng Hibernate Search với Elasticsearch làm index manager, mọi bean javadoc:jakarta.persistence.EntityManagerFactory[] phải configure depend vào bean `elasticsearchClient`:
+Nếu tự configure một component, bạn có thể dùng một subclass của javadoc:org.springframework.boot.jpa.autoconfigure.EntityManagerFactoryDependsOnPostProcessor[] như một cách thuận tiện để setup các dependency cần thiết.
+Ví dụ, nếu dùng Hibernate Search với Elasticsearch làm index manager, mọi javadoc:jakarta.persistence.EntityManagerFactory[] bean phải được configure để depend on bean `elasticsearchClient`, như trong ví dụ sau:
 
 include-code::ElasticsearchEntityManagerFactoryDependsOnPostProcessor[]
 
+
+
 [[howto.data-access.configure-jooq-with-multiple-datasources]]
-== Configure jOOQ với Two DataSources
+== Configure jOOQ với hai DataSource
 
-Nếu cần dùng jOOQ với multiple data source, nên tạo javadoc:org.jooq.DSLContext[] riêng cho từng source.
-Xem {code-spring-boot-jooq-src}/autoconfigure/JooqAutoConfiguration.java[`JooqAutoConfiguration`].
+Nếu cần dùng jOOQ với nhiều data source, bạn nên tạo javadoc:org.jooq.DSLContext[] riêng cho từng data source.
+Xem {code-spring-boot-jooq-src}/autoconfigure/JooqAutoConfiguration.java[`JooqAutoConfiguration`] để biết thêm chi tiết.
 
-TIP: Đặc biệt javadoc:org.springframework.boot.jooq.autoconfigure.ExceptionTranslatorExecuteListener[] và javadoc:org.springframework.boot.jooq.autoconfigure.SpringTransactionProvider[] có thể reuse để cung cấp feature tương tự auto-configuration với single javadoc:javax.sql.DataSource[].
+TIP: Cụ thể, javadoc:org.springframework.boot.jooq.autoconfigure.ExceptionTranslatorExecuteListener[] và javadoc:org.springframework.boot.jooq.autoconfigure.SpringTransactionProvider[] có thể được reuse để cung cấp các feature tương tự như auto-configuration khi làm việc với một javadoc:javax.sql.DataSource[] duy nhất.

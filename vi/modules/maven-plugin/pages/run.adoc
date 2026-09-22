@@ -1,34 +1,34 @@
 [[run]]
-= Running your Application with Maven
+= Chạy Application bằng Maven
 
-Plugin có goal `run` dùng launch application từ command line:
+Plugin bao gồm goal `run`, có thể dùng để launch application từ command line, như trong ví dụ sau:
 
 [source,shell]
 ----
 $ mvn spring-boot:run
 ----
 
-Application argument có thể specify bằng parameter `arguments`; xem xref:run.adoc#run.examples.using-application-arguments[using application arguments].
+Application arguments có thể được chỉ định bằng parameter `arguments`; xem xref:run.adoc#run.examples.using-application-arguments[sử dụng application arguments] để biết thêm chi tiết.
 
-Application execute trong forked process nên set property trên command line không ảnh hưởng application.
-Nếu cần specify JVM argument, ví dụ debugging, dùng parameter `jvmArguments`; xem xref:run.adoc#run.examples.debug[Debug the application].
-Cũng có explicit support cho xref:run.adoc#run.examples.system-properties[system properties] và xref:run.adoc#run.examples.environment-variables[environment variables].
+Application chạy trong forked process và việc set properties trên command line sẽ không ảnh hưởng đến application.
+Nếu cần chỉ định một số JVM arguments (tức là cho mục đích debugging), bạn có thể dùng parameter `jvmArguments`; xem xref:run.adoc#run.examples.debug[Debug application] để biết thêm chi tiết.
+Plugin cũng có hỗ trợ riêng cho xref:run.adoc#run.examples.system-properties[system properties] và xref:run.adoc#run.examples.environment-variables[environment variables].
 
-Vì enable profile khá phổ biến, có dedicated property `profiles` là shortcut cho `-Dspring-boot.run.jvmArguments="-Dspring.profiles.active=dev"`; xem xref:run.adoc#run.examples.specify-active-profiles[Specify active profiles].
+Vì việc enable profile khá phổ biến, có một `profiles` property chuyên dụng cung cấp shortcut cho `-Dspring-boot.run.jvmArguments="-Dspring.profiles.active=dev"`; xem xref:run.adoc#run.examples.specify-active-profiles[chỉ định active profiles].
 
-Spring Boot `devtools` là module cải thiện development-time experience khi làm Spring Boot application.
-Để enable, thêm dependency:
+Spring Boot `devtools` là một module cải thiện development-time experience khi làm việc với Spring Boot applications.
+Để enable module này, chỉ cần thêm dependency sau vào project:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$running/devtools-pom.xml[tags=devtools]
 ----
 
-Khi `devtools` chạy, nó detect change khi recompile application và tự động refresh.
-Điều này hoạt động cho cả resource và code.
+Khi `devtools` đang chạy, nó detect các thay đổi khi bạn recompile application và tự động refresh application.
+Điều này áp dụng không chỉ cho resources mà còn cho code.
 
-Devtools cũng có thể configure chỉ refresh browser khi static resource thay đổi, ignore code change.
-Để làm vậy, disable devtools code-change restart bằng property sau:
+Devtools cũng có thể được configure để chỉ refresh browser khi static resources thay đổi và ignore các code changes.
+Để làm vậy, hãy disable devtools code-change restart bằng cách set property sau trong project:
 
 [configprops%novalidate,yaml]
 ----
@@ -38,131 +38,143 @@ spring:
       enabled: false
 ----
 
-Trước `devtools`, plugin mặc định hỗ trợ hot refresh resource; feature này giờ disable để ưu tiên solution trên.
-Có thể restore bất kỳ lúc nào bằng configuration:
+Trước `devtools`, plugin mặc định hỗ trợ hot refresh resources, nhưng hiện đã disable tính năng này để ưu tiên solution được mô tả ở trên.
+Bạn có thể restore tính năng này bất kỳ lúc nào bằng cách configure project:
 
 [source,xml,subs="verbatim,attributes"]
 ----
 include::example$running/hot-refresh-pom.xml[tags=hot-refresh]
 ----
 
-Khi `addResources` enable, mọi directory `src/main/resources` được thêm vào application classpath khi chạy application và duplicate trong classes output bị remove.
-Điều này cho phép hot refresh resource, rất hữu ích khi develop web application.
-Ví dụ có thể làm việc trên HTML, CSS hoặc JavaScript và thấy change ngay mà không recompile application.
-Nó cũng giúp front-end developer làm việc mà không cần download/install Java IDE.
+Khi `addResources` được enable, mọi directory `src/main/resources` sẽ được thêm vào application classpath khi bạn run application và mọi bản duplicate tìm thấy trong classes output sẽ bị remove.
+Điều này cho phép hot refresh resources, có thể rất hữu ích khi develop web applications.
+Ví dụ, bạn có thể làm việc trên các file HTML, CSS hoặc JavaScript và thấy thay đổi ngay lập tức mà không cần recompile application.
+Đây cũng là một cách hữu ích để các front-end developers làm việc mà không cần download và install Java IDE.
 
-NOTE: Side effect của feature này là filtering resource ở build time không hoạt động.
+NOTE: Một side effect của việc sử dụng feature này là resource filtering tại build time sẽ không hoạt động.
 
-Để consistent với goal `repackage`, goal `run` build classpath sao cho dependency bị exclude trong plugin configuration cũng bị exclude khỏi classpath.
-Chi tiết xem xref:packaging.adoc#packaging.examples.exclude-dependency[dedicated example].
+Để nhất quán với goal `repackage`, goal `run` build classpath theo cách mọi dependency bị exclude trong plugin configuration cũng bị exclude khỏi classpath.
+Để biết thêm chi tiết, xem xref:packaging.adoc#packaging.examples.exclude-dependency[ví dụ chuyên dụng].
 
-Đôi khi hữu ích khi chạy test variant của application.
-Ví dụ nếu muốn xref:reference:features/dev-services.adoc#features.dev-services.testcontainers.at-development-time[dùng Testcontainers tại development time] hoặc dùng test stub.
-Dùng goal `test-run` với nhiều feature và configuration option giống `run`.
+Đôi khi việc run một test variant của application là hữu ích.
+Ví dụ, nếu bạn muốn xref:reference:features/dev-services.adoc#features.dev-services.testcontainers.at-development-time[sử dụng Testcontainers tại development time] hoặc dùng một số test stubs.
+Với mục đích này, hãy dùng goal `test-run`, vốn có nhiều feature và configuration options giống như `run`.
 
 include::partial$goals/run.adoc[leveloffset=+1]
 
 include::partial$goals/test-run.adoc[leveloffset=+1]
 
+
+
 [[run.examples]]
-== Examples
+== Ví dụ
+
+
 
 [[run.examples.debug]]
 === Debug Application
 
-Goal `run` và `test-run` chạy application trong forked process.
-Nếu cần debug, thêm JVM argument cần để enable remote debugging.
-Configuration sau suspend process cho tới khi debugger join port 5005:
+Các goal `run` và `test-run` run application trong forked process.
+Nếu cần debug application, bạn nên thêm các JVM arguments cần thiết để enable remote debugging.
+Configuration sau sẽ suspend process cho đến khi một debugger kết nối vào port 5005:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$running/debug-pom.xml[tags=debug]
 ----
 
-Argument này cũng có thể specify trên command line:
+Bạn cũng có thể chỉ định các arguments này trên command line:
 
 [source,shell]
 ----
 $ mvn spring-boot:run -Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 ----
 
-[[run.examples.system-properties]]
-=== Dùng System Properties
 
-System property có thể specify bằng attribute `systemPropertyVariables`.
-Ví dụ set `property1` thành `test` và `property2` thành 42:
+
+[[run.examples.system-properties]]
+=== Sử dụng System Properties
+
+System properties có thể được chỉ định bằng attribute `systemPropertyVariables`.
+Ví dụ sau set `property1` thành `test` và `property2` thành 42:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$running/system-properties-pom.xml[tags=system-properties]
 ----
 
-Nếu value rỗng hoặc không define, tức `<my-property/>`, system property được set với empty String.
-Maven trim value specify trong POM nên không thể specify System property cần bắt đầu hoặc kết thúc bằng space qua mechanism này; dùng `jvmArguments` thay thế.
+Nếu value rỗng hoặc không được define (tức là `<my-property/>`), system property sẽ được set với empty String làm value.
+Maven trim các values được chỉ định trong POM, vì vậy không thể chỉ định bằng mechanism này một System property cần bắt đầu hoặc kết thúc bằng space; hãy cân nhắc dùng `jvmArguments` thay thế.
 
-Mọi Maven variable type String có thể pass làm system property.
-Attempt pass Maven variable type khác, ví dụ `List` hoặc `URL`, khiến variable expression được pass literal, không evaluate.
+Bất kỳ Maven variable kiểu String nào cũng có thể được pass dưới dạng system property.
+Mọi attempt pass Maven variable có kiểu khác (ví dụ một variable kiểu `List` hoặc `URL`) sẽ khiến variable expression được pass literal (chưa được evaluate).
 
-Parameter `jvmArguments` có precedence hơn system property define bằng mechanism trên.
-Ví dụ sau value `property1` là `overridden`:
+Parameter `jvmArguments` được ưu tiên hơn các system properties được define bằng mechanism ở trên.
+Trong ví dụ sau, value của `property1` là `overridden`:
 
 [source,shell]
 ----
 $ mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dproperty1=overridden"
 ----
 
-[[run.examples.environment-variables]]
-=== Dùng Environment Variables
 
-Environment variable có thể specify bằng attribute `environmentVariables`.
-Ví dụ set env variable `ENV1`, `ENV2`, `ENV3`, `ENV4`:
+
+[[run.examples.environment-variables]]
+=== Sử dụng Environment Variables
+
+Environment variables có thể được chỉ định bằng attribute `environmentVariables`.
+Ví dụ sau set các env variables `ENV1`, `ENV2`, `ENV3`, `ENV4`:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$running/environment-variables-pom.xml[tags=environment-variables]
 ----
 
-Nếu value rỗng hoặc không define, tức `<MY_ENV/>`, env variable được set empty String.
-Maven trim value trong POM nên không thể specify env variable cần bắt đầu/kết thúc bằng space.
+Nếu value rỗng hoặc không được define (tức là `<MY_ENV/>`), env variable sẽ được set với empty String làm value.
+Maven trim các values được chỉ định trong POM, vì vậy không thể chỉ định một env variable cần bắt đầu hoặc kết thúc bằng space.
 
-Mọi Maven variable type String có thể pass làm system property.
-Attempt pass type khác như `List` hoặc `URL` khiến variable expression được pass literal, không evaluate.
+Bất kỳ Maven variable kiểu String nào cũng có thể được pass dưới dạng system property.
+Mọi attempt pass Maven variable có kiểu khác (ví dụ một variable kiểu `List` hoặc `URL`) sẽ khiến variable expression được pass literal (chưa được evaluate).
 
-Environment variable define theo cách này có precedence hơn existing value.
+Environment variables được define theo cách này được ưu tiên hơn các values hiện có.
+
+
 
 [[run.examples.using-application-arguments]]
-=== Dùng Application Arguments
+=== Sử dụng Application Arguments
 
-Application argument có thể specify bằng attribute `arguments`.
-Ví dụ set hai argument `property1` và `property2=42`:
+Application arguments có thể được chỉ định bằng attribute `arguments`.
+Ví dụ sau set hai arguments: `property1` và `property2=42`:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$running/application-arguments-pom.xml[tags=application-arguments]
 ----
 
-Trên command line, argument phân tách bằng space giống `jvmArguments`.
-Nếu argument chứa space, nhớ quote.
-Ví dụ sau có hai argument `property1` và `property2=Hello World`:
+Trên command line, các arguments được phân tách bằng space giống như `jvmArguments`.
+Nếu một argument chứa space, hãy bảo đảm quote argument đó.
+Trong ví dụ sau, có hai arguments: `property1` và `property2=Hello World`:
 
 [source,shell]
 ----
 $ mvn spring-boot:run -Dspring-boot.run.arguments="property1 'property2=Hello World'"
 ----
 
+
+
 [[run.examples.specify-active-profiles]]
-=== Specify Active Profiles
+=== Chỉ định Active Profiles
 
-Active profile dùng cho application có thể specify bằng argument `profiles`.
+Các active profiles được dùng cho một application cụ thể có thể được chỉ định bằng argument `profiles`.
 
-Configuration sau enable profile `local` và `dev`:
+Configuration sau enable các profiles `local` và `dev`:
 
 [source,xml,indent=0,subs="verbatim,attributes"]
 ----
 include::example$running/active-profiles-pom.xml[tags=active-profiles]
 ----
 
-Profile enable cũng có thể specify trên command line, phân tách bằng comma:
+Các profiles cần enable cũng có thể được chỉ định trên command line; hãy bảo đảm phân tách chúng bằng comma như trong ví dụ sau:
 
 [source,shell]
 ----

@@ -1,11 +1,13 @@
 [[packaging.native-image.advanced]]
-= Advanced Native Images Topics
+= Các chủ đề nâng cao về Native Image
+
+
 
 [[packaging.native-image.advanced.nested-configuration-properties]]
-== Nested Configuration Properties
+== Configuration Properties lồng nhau
 
-Reflection hint được Spring ahead-of-time engine tự động tạo cho configuration property.
-Tuy nhiên nested configuration property không phải inner class *phải* annotate javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation], nếu không chúng không được detect và không bind được.
+Spring ahead-of-time engine tự động tạo reflection hint cho configuration properties.
+Tuy nhiên, nested configuration properties không phải inner class *phải* được annotate bằng javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation], nếu không chúng sẽ không được detect và không thể bind.
 
 include-code::MyProperties[]
 
@@ -13,51 +15,55 @@ Trong đó `Nested` là:
 
 include-code::Nested[]
 
-Ví dụ trên tạo configuration property cho `my.properties.name` và `my.properties.nested.number`.
-Nếu field `nested` không có annotation javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation], property `my.properties.nested.number` sẽ không bind được trong native image.
-Cũng có thể annotate getter method.
+Ví dụ trên tạo configuration properties cho `my.properties.name` và `my.properties.nested.number`.
+Nếu field `nested` không có annotation javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation], property `my.properties.nested.number` sẽ không thể bind trong native image.
+Bạn cũng có thể annotate getter method.
 
-Khi dùng constructor binding, annotate field bằng javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation]:
+Khi dùng constructor binding, bạn phải annotate field bằng javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation]:
 
 include-code::MyPropertiesCtor[]
 
-Khi dùng record, annotate parameter:
+Khi dùng records, bạn phải annotate parameter bằng javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation]:
 
 include-code::MyPropertiesRecord[]
 
-Khi dùng Kotlin, annotate parameter của data class:
+Khi dùng Kotlin, bạn phải annotate parameter của data class bằng javadoc:org.springframework.boot.context.properties.NestedConfigurationProperty[format=annotation]:
 
 include-code::MyPropertiesKotlin[]
 
-NOTE: Hãy dùng public getter và setter trong mọi trường hợp, nếu không property sẽ không bind được.
+NOTE: Hãy dùng public getters và setters trong mọi trường hợp, nếu không properties sẽ không thể bind.
+
+
 
 [[packaging.native-image.advanced.converting-executable-jars]]
-== Convert Spring Boot Executable Jar
+== Chuyển đổi Spring Boot Executable Jar
 
-Có thể convert Spring Boot xref:specification:executable-jar/index.adoc[executable jar] thành native image miễn là jar chứa AOT-generated asset.
+Có thể chuyển đổi Spring Boot xref:specification:executable-jar/index.adoc[executable jar] thành native image miễn là jar chứa các asset được AOT generate.
 Điều này hữu ích vì:
 
-* Có thể giữ regular JVM pipeline và convert JVM application thành native image trên CI/CD platform.
-* Vì `native-image` https://github.com/oracle/graal/issues/407[không hỗ trợ cross-compilation], có thể giữ OS-neutral deployment artifact rồi convert sau sang OS architecture khác nhau.
+* Bạn có thể giữ regular JVM pipeline và chuyển đổi JVM application thành native image trên CI/CD platform.
+* Vì `native-image` https://github.com/oracle/graal/issues/407[không hỗ trợ cross-compilation], bạn có thể giữ OS-neutral deployment artifact rồi chuyển đổi sau sang các OS architecture khác nhau.
 
-Có thể convert executable jar thành native image bằng Cloud Native Buildpacks hoặc tool `native-image` đi kèm GraalVM.
+Có thể chuyển đổi Spring Boot executable jar thành native image bằng Cloud Native Buildpacks hoặc tool `native-image` đi kèm GraalVM.
 
-NOTE: Executable jar phải include AOT-generated asset như generated class và JSON hint file.
+NOTE: Executable jar phải include các asset được AOT generate, như generated class và JSON hint file.
+
+
 
 [[packaging.native-image.advanced.converting-executable-jars.buildpacks]]
 === Sử dụng Buildpacks
 
-Spring Boot application thường dùng Cloud Native Buildpacks qua Maven (`mvn spring-boot:build-image`) hoặc Gradle (`gradle bootBuildImage`) integration.
-Tuy nhiên cũng có thể dùng {url-buildpacks-docs}/for-platform-operators/how-to/integrate-ci/pack/[`pack`] để chuyển AOT-processed Spring Boot executable jar thành native container image.
+Spring Boot application thường dùng Cloud Native Buildpacks thông qua integration của Maven (`mvn spring-boot:build-image`) hoặc Gradle (`gradle bootBuildImage`).
+Tuy nhiên, bạn cũng có thể dùng {url-buildpacks-docs}/for-platform-operators/how-to/integrate-ci/pack/[`pack`] để chuyển AOT-processed Spring Boot executable jar thành native container image.
 
-NOTE: Phải build application ít nhất bằng JDK 25 vì Buildpacks dùng cùng GraalVM native-image version với Java version dùng compile.
+NOTE: Bạn phải build application bằng ít nhất JDK 25, vì Buildpacks dùng cùng GraalVM native-image version với Java version được dùng để compile.
 
-Trước tiên đảm bảo Docker daemon available, xem https://docs.docker.com/installation/#installation[Get Docker].
-Trên Linux, https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[cấu hình để non-root user có thể dùng].
+Trước tiên, hãy đảm bảo Docker daemon available (xem https://docs.docker.com/installation/#installation[Cài đặt Docker] để biết thêm chi tiết).
+Nếu dùng Linux, hãy https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user[cấu hình Docker để non-root user có thể sử dụng].
 
-Cũng cần install `pack` theo {url-buildpacks-docs}/for-platform-operators/how-to/integrate-ci/pack/#install[installation guide].
+Bạn cũng cần install `pack` theo {url-buildpacks-docs}/for-platform-operators/how-to/integrate-ci/pack/#install[hướng dẫn cài đặt trên buildpacks.io].
 
-Giả sử AOT-processed executable jar `myproject-0.0.1-SNAPSHOT.jar` nằm trong `target`, chạy:
+Giả sử AOT-processed Spring Boot executable jar có tên `myproject-0.0.1-SNAPSHOT.jar` nằm trong thư mục `target`, hãy chạy:
 
 [source,shell]
 ----
@@ -67,23 +73,25 @@ $ pack build --builder paketobuildpacks/builder-noble-java-tiny \
     my-application:0.0.1-SNAPSHOT
 ----
 
-NOTE: Không cần local GraalVM installation để generate image theo cách này.
+NOTE: Bạn không cần local GraalVM installation để generate image theo cách này.
 
-Sau khi `pack` hoàn tất, launch application:
+Sau khi `pack` hoàn tất, bạn có thể launch application bằng `docker run`:
 
 [source,shell]
 ----
 $ docker run --rm -p 8080:8080 docker.io/library/myproject:0.0.1-SNAPSHOT
 ----
 
+
+
 [[packaging.native-image.advanced.converting-executable-jars.native-image]]
 === Sử dụng GraalVM native-image
 
-Một cách khác để convert AOT-processed Spring Boot executable jar thành native executable là dùng tool `native-image` của GraalVM.
-Cần GraalVM distribution trên machine.
-Có thể download từ {url-download-liberica-nik}[Liberica Native Image Kit] hoặc dùng download manager như SDKMAN!.
+Một lựa chọn khác để chuyển AOT-processed Spring Boot executable jar thành native executable là dùng tool `native-image` của GraalVM.
+Để thực hiện việc này, bạn cần một GraalVM distribution trên machine.
+Bạn có thể download thủ công từ {url-download-liberica-nik}[trang Liberica Native Image Kit] hoặc dùng download manager như SDKMAN!.
 
-Giả sử jar `myproject-0.0.1-SNAPSHOT.jar` nằm trong `target`:
+Giả sử AOT-processed Spring Boot executable jar có tên `myproject-0.0.1-SNAPSHOT.jar` nằm trong thư mục `target`, hãy chạy:
 
 [source,shell]
 ----
@@ -95,33 +103,37 @@ $ native-image -H:Name=myproject @META-INF/native-image/argfile -cp .:BOOT-INF/c
 $ mv myproject ../
 ----
 
-NOTE: Các command hoạt động trên Linux hoặc macOS; cần adapt cho Windows.
+NOTE: Các command này hoạt động trên Linux hoặc macOS, nhưng bạn cần adapt chúng cho Windows.
 
 TIP: `@META-INF/native-image/argfile` có thể không được package trong jar.
-Nó chỉ include khi cần reachability metadata override.
+File này chỉ được include khi cần reachability metadata override.
 
 WARNING: Flag `-cp` của `native-image` không accept wildcard.
-Cần đảm bảo mọi jar được liệt kê; command trên dùng `find` và `tr`.
+Bạn phải đảm bảo mọi jar đều được liệt kê (command trên dùng `find` và `tr` để thực hiện việc này).
+
+
 
 [[packaging.native-image.advanced.using-the-tracing-agent]]
 == Sử dụng Tracing Agent
 
-GraalVM native image {url-graal-docs-native-image}/metadata/AutomaticMetadataCollection[tracing agent] cho phép intercept reflection, resource hoặc proxy usage trên JVM để generate hint liên quan.
-Spring sẽ generate phần lớn hint tự động, nhưng tracing agent có thể giúp nhanh chóng identify missing entry.
+GraalVM native image {url-graal-docs-native-image}/metadata/AutomaticMetadataCollection[tracing agent] cho phép intercept việc sử dụng reflection, resources hoặc proxy trên JVM để generate các hint tương ứng.
+Spring sẽ tự động generate phần lớn các hint này, nhưng tracing agent có thể được dùng để nhanh chóng identify các entry còn thiếu.
 
-Có hai cách dùng agent để generate hint:
+Khi dùng agent để generate hint cho native image, có một vài cách tiếp cận:
 
-* Launch application trực tiếp và exercise nó.
+* Launch application trực tiếp và exercise application.
 * Chạy application test để exercise application.
 
-Option đầu hữu ích để identify missing hint khi library hoặc pattern không được Spring nhận biết.
+Lựa chọn đầu tiên hữu ích để identify các hint còn thiếu khi Spring không nhận biết một library hoặc pattern.
 
-Option thứ hai hấp dẫn hơn cho repeatable setup, nhưng mặc định generated hint include mọi thứ test infrastructure cần.
-Một số không cần thiết khi application chạy thật.
-Để giải quyết, agent hỗ trợ access-filter file loại trừ data nhất định khỏi generated output.
+Lựa chọn thứ hai hấp dẫn hơn cho repeatable setup, nhưng theo mặc định generated hint sẽ include mọi thứ mà test infrastructure cần.
+Một số trong đó không cần thiết khi application chạy thực tế.
+Để giải quyết vấn đề này, agent hỗ trợ access-filter file, khiến một số data nhất định bị loại khỏi generated output.
+
+
 
 [[packaging.native-image.advanced.using-the-tracing-agent.launch]]
-=== Launch Application trực tiếp
+=== Khởi chạy Application trực tiếp
 
 Dùng command sau để launch application với native image tracing agent:
 
@@ -132,56 +144,63 @@ $ java -Dspring.aot.enabled=true \
     -jar target/myproject-0.0.1-SNAPSHOT.jar
 ----
 
-Exercise code path cần hint, sau đó stop application bằng `ctrl-c`.
+Bạn có thể exercise các code path cần hint, sau đó stop application bằng `ctrl-c`.
 
-Khi application shutdown, tracing agent ghi hint file vào config output directory.
-Có thể inspect thủ công hoặc dùng chúng làm input cho native image build.
-Để dùng làm input, copy vào `src/main/resources/META-INF/native-image/`.
-Lần build native image tiếp theo, GraalVM sẽ tính đến các file này.
+Khi application shutdown, tracing agent sẽ ghi các hint file vào config output directory.
+Bạn có thể inspect thủ công các file này hoặc dùng chúng làm input cho native image build.
+Để dùng làm input, hãy copy chúng vào `src/main/resources/META-INF/native-image/`.
+Ở lần build native image tiếp theo, GraalVM sẽ tính đến các file này.
 
-Tracing agent có thêm advanced option, ví dụ filter recorded hint theo caller class.
-Xem {url-graal-docs-native-image}/metadata/AutomaticMetadataCollection[official documentation].
+Tracing agent còn có các advanced option, ví dụ filter các hint đã ghi theo caller class.
+Để biết thêm thông tin, hãy xem {url-graal-docs-native-image}/metadata/AutomaticMetadataCollection[tài liệu chính thức].
+
+
 
 [[packaging.native-image.advanced.custom-hints]]
-== Custom Hints
+== Hints tùy chỉnh
 
-Nếu cần cung cấp hint riêng cho reflection, resource, serialization, proxy usage, v.v., dùng API javadoc:org.springframework.aot.hint.RuntimeHintsRegistrar[].
-Tạo class implement interface javadoc:org.springframework.aot.hint.RuntimeHintsRegistrar[] và gọi API phù hợp trên javadoc:org.springframework.aot.hint.RuntimeHints[]:
+Nếu cần cung cấp hint riêng cho reflection, resources, serialization, proxy usage, v.v., bạn có thể dùng API javadoc:org.springframework.aot.hint.RuntimeHintsRegistrar[].
+Tạo một class implement interface javadoc:org.springframework.aot.hint.RuntimeHintsRegistrar[] và sau đó gọi các method phù hợp trên instance javadoc:org.springframework.aot.hint.RuntimeHints[] được cung cấp:
 
 include-code::MyRuntimeHints[]
 
-Sau đó dùng javadoc:org.springframework.context.annotation.ImportRuntimeHints[format=annotation] trên javadoc:org.springframework.context.annotation.Configuration[format=annotation] class bất kỳ, ví dụ application class annotate javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation], để activate hint.
+Sau đó, bạn có thể dùng javadoc:org.springframework.context.annotation.ImportRuntimeHints[format=annotation] trên bất kỳ class nào có annotation javadoc:org.springframework.context.annotation.Configuration[format=annotation] (ví dụ application class có annotation javadoc:org.springframework.boot.autoconfigure.SpringBootApplication[format=annotation]) để activate các hint đó.
 
-Nếu có class cần binding, chủ yếu khi serialize/deserialize JSON, có thể dùng {url-spring-framework-docs}/core/aot.html#aot.hints.register-reflection[`@RegisterReflectionForBinding`] trên bean.
-Phần lớn hint được infer tự động, ví dụ khi nhận hoặc trả data từ method javadoc:org.springframework.web.bind.annotation.RestController[format=annotation].
-Nhưng khi làm việc trực tiếp với javadoc:org.springframework.web.reactive.function.client.WebClient[] hoặc javadoc:org.springframework.web.client.RestClient[], có thể cần javadoc:org.springframework.aot.hint.annotation.RegisterReflectionForBinding[format=annotation].
+Nếu có class cần binding, chủ yếu khi serialize hoặc deserialize JSON, bạn có thể dùng {url-spring-framework-docs}/core/aot.html#aot.hints.register-reflection[`@RegisterReflectionForBinding`] trên bất kỳ bean nào.
+Phần lớn hint được infer tự động, ví dụ khi nhận hoặc trả data từ một method javadoc:org.springframework.web.bind.annotation.RestController[format=annotation].
+Tuy nhiên, khi làm việc trực tiếp với javadoc:org.springframework.web.reactive.function.client.WebClient[] hoặc javadoc:org.springframework.web.client.RestClient[], bạn có thể cần dùng javadoc:org.springframework.aot.hint.annotation.RegisterReflectionForBinding[format=annotation].
+
+
 
 [[packaging.native-image.advanced.custom-hints.testing]]
-=== Test Custom Hints
+=== Test Hints tùy chỉnh
 
-API javadoc:org.springframework.aot.hint.predicate.RuntimeHintsPredicates[] có thể dùng test hint.
-API cung cấp method build javadoc:java.util.function.Predicate[] để test javadoc:org.springframework.aot.hint.RuntimeHints[].
+API javadoc:org.springframework.aot.hint.predicate.RuntimeHintsPredicates[] có thể được dùng để test các hint.
+API này cung cấp các method build một javadoc:java.util.function.Predicate[] có thể dùng để test một instance javadoc:org.springframework.aot.hint.RuntimeHints[].
 
-Nếu dùng AssertJ:
+Nếu dùng AssertJ, test sẽ có dạng như sau:
 
 include-code::MyRuntimeHintsTests[]
 
-[[packaging.native-image.advanced.custom-hints.static]]
-=== Cung cấp Hint tĩnh
 
-Custom hint có thể cung cấp statically trong một hoặc nhiều GraalVM JSON hint file.
-File nên đặt trong `src/main/resources/` dưới directory `+META-INF/native-image/*/*/+`.
-xref:packaging/native-image/introducing-graalvm-native-images.adoc#packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing[Hint generate trong AOT processing] được ghi vào `+META-INF/native-image/{groupId}/{artifactId}/+`.
-Đặt static hint file ở directory không conflict, ví dụ `+META-INF/native-image/{groupId}/{artifactId}-additional-hints/+`.
+
+[[packaging.native-image.advanced.custom-hints.static]]
+=== Cung cấp Hints tĩnh
+Nếu muốn, custom hints có thể được cung cấp statically trong một hoặc nhiều GraalVM JSON hint file.
+Các file này nên được đặt trong `src/main/resources/` bên trong một directory `+META-INF/native-image/*/*/+`.
+Các xref:packaging/native-image/introducing-graalvm-native-images.adoc#packaging.native-image.introducing-graalvm-native-images.understanding-aot-processing[hint được generate trong AOT processing] được ghi vào directory `+META-INF/native-image/{groupId}/{artifactId}/+`.
+Đặt static hint file trong một directory không conflict với vị trí này, chẳng hạn `+META-INF/native-image/{groupId}/{artifactId}-additional-hints/+`.
+
+
 
 [[packaging.native-image.advanced.known-limitations]]
-== Known Limitations
+== Các giới hạn đã biết
 
-GraalVM native image là technology đang phát triển và không phải library nào cũng support.
-GraalVM community cung cấp https://github.com/oracle/graalvm-reachability-metadata[reachability metadata] cho project chưa ship metadata riêng.
-Spring không chứa hint cho third-party library mà dựa vào reachability metadata project.
+GraalVM native images là một technology đang phát triển và không phải library nào cũng support.
+GraalVM community đang hỗ trợ bằng cách cung cấp https://github.com/oracle/graalvm-reachability-metadata[reachability metadata] cho các project chưa tự ship metadata.
+Bản thân Spring không chứa hints cho third-party libraries mà thay vào đó dựa vào reachability metadata project.
 
-Nếu gặp vấn đề khi generate native image cho Spring Boot application, xem {url-github-wiki}/Spring-Boot-with-GraalVM[Spring Boot with GraalVM] trên Spring Boot wiki.
-Cũng có thể contribute issue vào https://github.com/spring-projects/spring-aot-smoke-tests[spring-aot-smoke-tests] trên GitHub, project dùng để xác nhận các common application type hoạt động như mong đợi.
+Nếu gặp vấn đề khi generate native image cho Spring Boot application, hãy xem trang {url-github-wiki}/Spring-Boot-with-GraalVM[Spring Boot with GraalVM] trên Spring Boot wiki.
+Bạn cũng có thể contribute issues cho project https://github.com/spring-projects/spring-aot-smoke-tests[spring-aot-smoke-tests] trên GitHub; project này được dùng để xác nhận các common application types hoạt động như mong đợi.
 
 Nếu tìm thấy library không hoạt động với GraalVM, hãy tạo issue trên https://github.com/oracle/graalvm-reachability-metadata[reachability metadata project].

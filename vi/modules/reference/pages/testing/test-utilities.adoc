@@ -1,32 +1,32 @@
 [[testing.utilities]]
-= Test Utilities
+= Tiện ích test
 
-Một số test utility class thường hữu ích khi test application được đóng gói trong `spring-boot`.
+Một số test utility class thường hữu ích khi test application được đóng gói như một phần của `spring-boot`.
 
 [[testing.utilities.config-data-application-context-initializer]]
 == ConfigDataApplicationContextInitializer
 
-javadoc:org.springframework.boot.test.context.ConfigDataApplicationContextInitializer[] là javadoc:org.springframework.context.ApplicationContextInitializer[] có thể áp dụng cho test để load file Spring Boot `application.properties`.
-Có thể dùng khi không cần đầy đủ feature của javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation]:
+javadoc:org.springframework.boot.test.context.ConfigDataApplicationContextInitializer[] là một javadoc:org.springframework.context.ApplicationContextInitializer[] mà bạn có thể áp dụng cho các test để load các file `application.properties` của Spring Boot.
+Bạn có thể dùng nó khi không cần toàn bộ feature do javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation] cung cấp, như trong ví dụ sau:
 
 include-code::MyConfigFileTests[]
 
-NOTE: Chỉ dùng javadoc:org.springframework.boot.test.context.ConfigDataApplicationContextInitializer[] không hỗ trợ injection `@Value("${...}")`.
-Nhiệm vụ duy nhất của nó là đảm bảo file `application.properties` được load vào javadoc:org.springframework.core.env.Environment[] của Spring.
-Để hỗ trợ javadoc:org.springframework.beans.factory.annotation.Value[format=annotation], cần cấu hình thêm javadoc:org.springframework.context.support.PropertySourcesPlaceholderConfigurer[] hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], vốn auto-configure component này.
+NOTE: Chỉ dùng javadoc:org.springframework.boot.test.context.ConfigDataApplicationContextInitializer[] không cung cấp support cho việc injection `@Value("${...}")`.
+Nhiệm vụ duy nhất của nó là đảm bảo các file `application.properties` được load vào javadoc:org.springframework.core.env.Environment[] của Spring.
+Để có support cho javadoc:org.springframework.beans.factory.annotation.Value[format=annotation], bạn cần cấu hình thêm javadoc:org.springframework.context.support.PropertySourcesPlaceholderConfigurer[] hoặc dùng javadoc:org.springframework.boot.test.context.SpringBootTest[format=annotation], annotation này tự động configure một configurer cho bạn.
 
 [[testing.utilities.test-property-values]]
 == TestPropertyValues
 
-javadoc:org.springframework.boot.test.util.TestPropertyValues[] cho phép nhanh chóng thêm property vào javadoc:org.springframework.core.env.ConfigurableEnvironment[] hoặc javadoc:org.springframework.context.ConfigurableApplicationContext[].
-Có thể gọi bằng chuỗi `key=value`:
+javadoc:org.springframework.boot.test.util.TestPropertyValues[] cho phép bạn nhanh chóng thêm property vào javadoc:org.springframework.core.env.ConfigurableEnvironment[] hoặc javadoc:org.springframework.context.ConfigurableApplicationContext[].
+Bạn có thể gọi nó bằng các chuỗi `key=value`, như sau:
 
 include-code::MyEnvironmentTests[]
 
 [[testing.utilities.output-capture]]
 == OutputCaptureExtension
 
-javadoc:org.springframework.boot.test.system.OutputCaptureExtension[] là JUnit javadoc:org.junit.jupiter.api.extension.Extension[] dùng để capture output javadoc:java.lang.System#out[] và javadoc:java.lang.System#err[].
-Để dùng, thêm `@ExtendWith(OutputCaptureExtension.class)` và inject javadoc:org.springframework.boot.test.system.CapturedOutput[] làm argument cho constructor test class hoặc test method:
+javadoc:org.springframework.boot.test.system.OutputCaptureExtension[] là một JUnit javadoc:org.junit.jupiter.api.extension.Extension[] mà bạn có thể dùng để capture output của javadoc:java.lang.System#out[] và javadoc:java.lang.System#err[].
+Để dùng nó, hãy thêm `@ExtendWith(OutputCaptureExtension.class)` và inject javadoc:org.springframework.boot.test.system.CapturedOutput[] làm argument cho constructor của test class hoặc test method, như sau:
 
 include-code::MyOutputCaptureTests[]

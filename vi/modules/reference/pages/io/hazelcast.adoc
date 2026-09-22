@@ -1,21 +1,21 @@
 [[io.hazelcast]]
 = Hazelcast
 
-Nếu https://hazelcast.com/[Hazelcast] có trên classpath và tìm thấy configuration phù hợp, Spring Boot auto-configure một javadoc:com.hazelcast.core.HazelcastInstance[] để bạn inject vào application.
+Nếu https://hazelcast.com/[Hazelcast] có trên classpath và tìm thấy configuration phù hợp, Spring Boot sẽ auto-configure một javadoc:com.hazelcast.core.HazelcastInstance[] để bạn có thể inject vào application.
 
-Spring Boot trước tiên thử tạo client bằng cách kiểm tra các option sau:
+Spring Boot trước tiên thử tạo một client bằng cách kiểm tra các configuration option sau:
 
-* Có bean javadoc:com.hazelcast.client.config.ClientConfig[].
-* Configuration file được định nghĩa bởi configprop:spring.hazelcast.config[].
+* Có một bean javadoc:com.hazelcast.client.config.ClientConfig[].
+* Một configuration file được định nghĩa bởi configprop:spring.hazelcast.config[].
 * Có system property `hazelcast.client.config`.
-* File `hazelcast-client.xml` trong working directory hoặc root classpath.
-* File `hazelcast-client.yaml` (hoặc `hazelcast-client.yml`) trong working directory hoặc root classpath.
+* Một file `hazelcast-client.xml` trong working directory hoặc tại root của classpath.
+* Một file `hazelcast-client.yaml` (hoặc `hazelcast-client.yml`) trong working directory hoặc tại root của classpath.
 
-Nếu không thể tạo client, Spring Boot thử cấu hình embedded server.
-Nếu bạn định nghĩa bean javadoc:com.hazelcast.config.Config[], Spring Boot dùng nguyên bean đó.
-Nếu configuration định nghĩa instance name, Spring Boot thử tìm existing instance thay vì tạo instance mới.
+Nếu không thể tạo client, Spring Boot sẽ thử configure một embedded server.
+Nếu bạn định nghĩa một bean javadoc:com.hazelcast.config.Config[], Spring Boot dùng nguyên bean đó.
+Nếu configuration của bạn định nghĩa một instance name, Spring Boot sẽ thử tìm một instance hiện có thay vì tạo instance mới.
 
-Bạn cũng có thể chỉ định Hazelcast configuration file qua configuration:
+Bạn cũng có thể chỉ định Hazelcast configuration file cần dùng thông qua configuration, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -24,12 +24,12 @@ spring:
     config: "classpath:config/my-hazelcast.xml"
 ----
 
-Nếu không, Spring Boot tìm Hazelcast configuration tại các location mặc định: `hazelcast.xml` trong working directory hoặc root classpath, hoặc YAML tương ứng tại cùng location.
-Spring Boot cũng kiểm tra system property `hazelcast.config`.
-Xem https://docs.hazelcast.org/docs/latest/manual/html-single/[Hazelcast documentation] để biết thêm.
+Nếu không, Spring Boot thử tìm Hazelcast configuration tại các location mặc định: `hazelcast.xml` trong working directory hoặc tại root của classpath, hoặc YAML tương ứng tại cùng các location đó.
+Ngoài ra, Spring Boot cũng kiểm tra xem system property `hazelcast.config` có được thiết lập hay không.
+Xem https://docs.hazelcast.org/docs/latest/manual/html-single/[Hazelcast documentation] để biết thêm chi tiết.
 
-TIP: Mặc định, javadoc:com.hazelcast.spring.context.SpringAware[format=annotation] trên Hazelcast component được hỗ trợ.
-Có thể override javadoc:com.hazelcast.core.ManagedContext[] bằng cách khai báo bean javadoc:org.springframework.boot.hazelcast.autoconfigure.HazelcastConfigCustomizer[] với javadoc:org.springframework.core.annotation.Order[format=annotation] lớn hơn 0.
+TIP: Mặc định, javadoc:com.hazelcast.spring.context.SpringAware[format=annotation] trên các Hazelcast component được hỗ trợ.
+Có thể override javadoc:com.hazelcast.core.ManagedContext[] bằng cách khai báo một bean javadoc:org.springframework.boot.hazelcast.autoconfigure.HazelcastConfigCustomizer[] với javadoc:org.springframework.core.annotation.Order[format=annotation] có giá trị lớn hơn 0.
 
-NOTE: Spring Boot cũng có xref:io/caching.adoc#io.caching.provider.hazelcast[caching support riêng cho Hazelcast].
-Nếu caching được enable, javadoc:com.hazelcast.core.HazelcastInstance[] tự động được wrap trong implementation javadoc:org.springframework.cache.CacheManager[].
+NOTE: Spring Boot cũng có xref:io/caching.adoc#io.caching.provider.hazelcast[hỗ trợ caching riêng cho Hazelcast].
+Nếu caching được bật, javadoc:com.hazelcast.core.HazelcastInstance[] sẽ tự động được wrap trong một implementation của javadoc:org.springframework.cache.CacheManager[].

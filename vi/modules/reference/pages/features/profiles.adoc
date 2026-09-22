@@ -1,17 +1,17 @@
 [[features.profiles]]
-= Profile
+= Profiles
 
-Spring Profile cho phép tách các phần cấu hình ứng dụng để chúng chỉ được sử dụng trong những môi trường nhất định.
-Bất kỳ javadoc:org.springframework.stereotype.Component[format=annotation], javadoc:org.springframework.context.annotation.Configuration[format=annotation] hoặc javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] nào cũng có thể được đánh dấu bằng javadoc:org.springframework.context.annotation.Profile[format=annotation] để giới hạn thời điểm load, như ví dụ sau:
+Spring Profiles cho phép tách các phần cấu hình ứng dụng để chúng chỉ được sử dụng trong những môi trường nhất định.
+Bất kỳ javadoc:org.springframework.stereotype.Component[format=annotation], javadoc:org.springframework.context.annotation.Configuration[format=annotation] hoặc javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] nào cũng có thể được đánh dấu bằng javadoc:org.springframework.context.annotation.Profile[format=annotation] để giới hạn thời điểm chúng được load, như ví dụ sau:
 
 include-code::ProductionConfiguration[]
 
-NOTE: Nếu bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] được đăng ký qua javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] thay vì scan tự động, annotation javadoc:org.springframework.context.annotation.Profile[format=annotation] phải được đặt trên class javadoc:org.springframework.context.annotation.Configuration[format=annotation] có annotation javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
+NOTE: Nếu các bean javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] được đăng ký qua javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation] thay vì scan tự động, annotation javadoc:org.springframework.context.annotation.Profile[format=annotation] phải được đặt trên class javadoc:org.springframework.context.annotation.Configuration[format=annotation] có annotation javadoc:org.springframework.boot.context.properties.EnableConfigurationProperties[format=annotation].
 Nếu javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] được scan, bạn có thể đặt javadoc:org.springframework.context.annotation.Profile[format=annotation] trên chính class javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation].
 
-Bạn có thể dùng property configprop:spring.profiles.active[] trong javadoc:org.springframework.core.env.Environment[] để chỉ định profile đang hoạt động.
-Có thể chỉ định property bằng bất kỳ cách nào đã mô tả trước đó trong chương này.
-Ví dụ, đưa vào `application.properties` như sau:
+Bạn có thể dùng property configprop:spring.profiles.active[] của javadoc:org.springframework.core.env.Environment[] để chỉ định các profile active.
+Bạn có thể chỉ định property bằng bất kỳ cách nào được mô tả trước đó trong chương này.
+Ví dụ, bạn có thể đặt property này trong `application.properties`, như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -22,8 +22,8 @@ spring:
 
 Bạn cũng có thể chỉ định trên dòng lệnh bằng tùy chọn `--spring.profiles.active=dev,hsqldb`.
 
-Nếu không có profile nào hoạt động, một profile mặc định được bật.
-Tên profile mặc định là `default` và có thể được điều chỉnh bằng property configprop:spring.profiles.default[] trong javadoc:org.springframework.core.env.Environment[], như ví dụ sau:
+Nếu không có profile nào active, một profile mặc định sẽ được bật.
+Tên profile mặc định là `default` và có thể được điều chỉnh bằng property configprop:spring.profiles.default[] của javadoc:org.springframework.core.env.Environment[], như ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -32,7 +32,7 @@ spring:
     default: "none"
 ----
 
-`spring.profiles.active` và `spring.profiles.default` chỉ được dùng trong document không dành riêng cho profile.
+`spring.profiles.active` và `spring.profiles.default` chỉ được dùng trong các document không dành riêng cho profile.
 Điều này nghĩa là chúng không được nằm trong xref:features/external-config.adoc#features.external-config.files.profile-specific[file riêng theo profile] hoặc xref:features/external-config.adoc#features.external-config.files.activation-properties[document được kích hoạt] bằng `spring.config.activate.on-profile`.
 
 Ví dụ, cấu hình trong document thứ hai không hợp lệ:
@@ -53,9 +53,9 @@ spring:
     active: "metrics"
 ----
 
-Property configprop:spring.profiles.active[] tuân theo cùng quy tắc thứ tự như các property khác.
-javadoc:org.springframework.core.env.PropertySource[] có độ ưu tiên cao nhất sẽ thắng.
-Điều này nghĩa là bạn có thể chỉ định active profile trong `application.properties`, rồi *thay thế* chúng bằng tùy chọn dòng lệnh.
+Property configprop:spring.profiles.active[] tuân theo cùng các quy tắc thứ tự như các property khác.
+Giá trị từ javadoc:org.springframework.core.env.PropertySource[] có độ ưu tiên cao nhất sẽ được áp dụng.
+Điều này nghĩa là bạn có thể chỉ định các profile active trong `application.properties`, rồi *thay thế* chúng bằng tùy chọn dòng lệnh.
 
 TIP: Xem phần xref:features/external-config.adoc#features.external-config.order["`Externalized Configuration`"] để biết thêm về thứ tự xét property source.
 
@@ -78,10 +78,10 @@ spring:
 
 
 [[features.profiles.adding-active-profiles]]
-== Thêm active profile
+== Bổ sung active profile
 
-Đôi khi, sẽ hữu ích nếu có property *thêm* active profile thay vì thay thế chúng.
-Property configprop:spring.profiles.include[] có thể bổ sung active profile ngoài các profile được kích hoạt bằng configprop:spring.profiles.active[].
+Đôi khi, sẽ hữu ích nếu có các property để *bổ sung* active profile thay vì thay thế chúng.
+Property configprop:spring.profiles.include[] có thể bổ sung các profile active bên cạnh những profile được kích hoạt bằng configprop:spring.profiles.active[].
 Entry point javadoc:org.springframework.boot.SpringApplication[] cũng có Java API để đặt profile bổ sung.
 Xem method `setAdditionalProfiles()` trong javadoc:org.springframework.boot.SpringApplication[].
 
@@ -96,14 +96,14 @@ spring:
       - "local"
 ----
 
-NOTE: Profile được include được thêm trước mọi profile từ configprop:spring.profiles.active[].
+NOTE: Các profile được include được thêm trước mọi profile từ configprop:spring.profiles.active[].
 
 TIP: Property configprop:spring.profiles.include[] được xử lý cho từng property source, nên xref:features/external-config.adoc#features.external-config.typesafe-configuration-properties.merging-complex-types[quy tắc gộp kiểu phức tạp] thông thường cho list không áp dụng.
 
 WARNING: Tương tự `spring.profiles.active`, `spring.profiles.include` chỉ được dùng trong document không dành riêng cho profile.
 Điều này nghĩa là nó không được nằm trong xref:features/external-config.adoc#features.external-config.files.profile-specific[file riêng theo profile] hoặc xref:features/external-config.adoc#features.external-config.files.activation-properties[document được kích hoạt] bằng `spring.config.activate.on-profile`.
 
-Profile group, được mô tả ở xref:features/profiles.adoc#features.profiles.groups[phần tiếp theo], cũng có thể thêm active profile khi một profile nhất định hoạt động.
+Profile group, được mô tả ở xref:features/profiles.adoc#features.profiles.groups[phần tiếp theo], cũng có thể được dùng để bổ sung active profile khi một profile nhất định active.
 
 
 
@@ -113,7 +113,7 @@ Profile group, được mô tả ở xref:features/profiles.adoc#features.profil
 Đôi khi, các profile được định nghĩa và sử dụng trong ứng dụng quá chi tiết, khiến việc sử dụng trở nên bất tiện.
 Ví dụ, bạn có thể có profile `proddb` và `prodmq` để bật riêng tính năng database và messaging.
 
-Để giải quyết, Spring Boot cho phép định nghĩa profile group.
+Để giải quyết vấn đề này, Spring Boot cho phép định nghĩa profile group.
 Profile group cho phép đặt tên logic cho một nhóm profile liên quan.
 
 Ví dụ, chúng ta có thể tạo group `production` gồm các profile `proddb` và `prodmq`.
@@ -137,7 +137,7 @@ WARNING: Tương tự `spring.profiles.active` và `spring.profiles.include`, `s
 [[features.profiles.programmatically-setting-profiles]]
 == Đặt profile bằng code
 
-Bạn có thể đặt active profile bằng code thông qua `SpringApplication.setAdditionalProfiles(...)` trước khi ứng dụng chạy.
+Bạn có thể đặt active profile bằng cách gọi `SpringApplication.setAdditionalProfiles(...)` trước khi ứng dụng chạy.
 Cũng có thể kích hoạt profile bằng interface javadoc:org.springframework.core.env.ConfigurableEnvironment[] của Spring.
 
 
@@ -145,5 +145,5 @@ Cũng có thể kích hoạt profile bằng interface javadoc:org.springframewor
 [[features.profiles.profile-specific-configuration-files]]
 == File cấu hình riêng theo profile
 
-Các biến thể riêng theo profile của cả `application.properties` (hoặc `application.yaml`) lẫn file được tham chiếu qua javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] đều được xét và load.
+Các biến thể riêng theo profile của cả `application.properties` (hoặc `application.yaml`) lẫn file được tham chiếu qua javadoc:org.springframework.boot.context.properties.ConfigurationProperties[format=annotation] đều được coi là file và được load.
 Xem xref:features/external-config.adoc#features.external-config.files.profile-specific[] để biết chi tiết.

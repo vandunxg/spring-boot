@@ -1,7 +1,7 @@
 [[appendix.executable-jar.property-launcher]]
-= Feature của PropertiesLauncher
+= Các feature của PropertiesLauncher
 
-javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] có một vài feature đặc biệt có thể bật bằng external property (System property, environment variable, manifest entry hoặc `loader.properties`).
+javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] có một vài feature đặc biệt có thể được bật bằng các external properties (System property, environment variable, manifest entry hoặc `loader.properties`).
 Bảng sau mô tả các property này:
 
 |===
@@ -9,18 +9,18 @@ Bảng sau mô tả các property này:
 
 | `loader.path`
 | Classpath phân tách bằng dấu phẩy, chẳng hạn `lib,$\{HOME}/app/lib`.
-  Entry đứng trước có độ ưu tiên cao hơn, giống `-classpath` thông thường trên command line `javac`.
+  Các entry đứng trước có precedence cao hơn, giống `-classpath` thông thường trên command line `javac`.
 
 | `loader.home`
 | Dùng để resolve các relative path trong `loader.path`.
-  Ví dụ, với `loader.path=lib` thì `${loader.home}/lib` là một classpath location (cùng với mọi jar file trong thư mục đó).
-  Property này cũng được dùng để định vị file `loader.properties`, như trong ví dụ `file:///opt/app`. Mặc định là `${user.dir}`.
+  Ví dụ, với `loader.path=lib` thì `${loader.home}/lib` là một classpath location (cùng với mọi jar file trong directory đó).
+  Property này cũng được dùng để locate một file `loader.properties`, như trong ví dụ `file:///opt/app`. Mặc định là `${user.dir}`.
 
 | `loader.args`
-| Argument mặc định cho main method (phân tách bằng dấu cách).
+| Các argument mặc định cho main method (phân tách bằng dấu cách).
 
 | `loader.main`
-| Tên của main class cần khởi chạy (ví dụ, `com.app.Application`).
+| Tên của main class cần launch (ví dụ, `com.app.Application`).
 
 | `loader.config.name`
 | Tên của file properties (ví dụ, `launcher`).
@@ -31,7 +31,7 @@ Bảng sau mô tả các property này:
   Mặc định là `loader.properties`.
 
 | `loader.system`
-| Boolean flag cho biết mọi property có nên được thêm vào System property hay không.
+| Boolean flag cho biết mọi property có được thêm vào System properties hay không.
   Mặc định là `false`.
 |===
 
@@ -65,18 +65,18 @@ Khi được chỉ định dưới dạng environment variable hoặc manifest e
 | `LOADER_SYSTEM`
 |===
 
-TIP: Build plugin tự động chuyển attribute `Main-Class` sang `Start-Class` khi uber jar được build.
-Nếu dùng cách đó, hãy chỉ định tên class cần khởi chạy bằng attribute `Main-Class` và bỏ qua `Start-Class`.
+TIP: Build plugins tự động move attribute `Main-Class` sang `Start-Class` khi uber jar được build.
+Nếu dùng cách đó, hãy chỉ định tên class cần launch bằng attribute `Main-Class` và bỏ `Start-Class`.
 
 Các quy tắc sau áp dụng khi làm việc với javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[]:
 
 * `loader.properties` được tìm trong `loader.home`, rồi tới gốc của classpath, rồi tới `classpath:/BOOT-INF/classes`.
   Location đầu tiên có file mang tên đó sẽ được dùng.
-* `loader.home` là vị trí thư mục của file properties bổ sung (override mặc định) chỉ khi `loader.config.location` không được chỉ định.
-* `loader.path` có thể chứa thư mục (được quét đệ quy để tìm jar và zip file), archive path, một thư mục bên trong archive được quét để tìm jar file (ví dụ, `dependencies.jar!/lib`), hoặc wildcard pattern (theo hành vi mặc định của JVM).
-  Archive path có thể tương đối so với `loader.home` hoặc ở bất kỳ đâu trên file system với prefix `jar:file:`.
-* `loader.path` (nếu rỗng) mặc định là `BOOT-INF/lib` (nghĩa là thư mục local, hoặc thư mục nested nếu chạy từ archive).
-  Vì vậy, javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] hoạt động giống javadoc:org.springframework.boot.loader.launch.JarLauncher[] khi không có configuration bổ sung nào.
-* `loader.path` không thể dùng để cấu hình vị trí của `loader.properties` (classpath dùng để tìm file này là JVM classpath khi javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] được khởi chạy).
-* Việc thay thế placeholder được thực hiện từ System variable, environment variable và chính file properties, áp dụng cho mọi value trước khi dùng.
-* Thứ tự tìm kiếm property (khi có nhiều nơi để tìm) là environment variable, system property, `loader.properties`, manifest của archive đã giải nén, rồi tới manifest của archive.
+* `loader.home` là directory location của một properties file bổ sung (override default) chỉ khi `loader.config.location` không được chỉ định.
+* `loader.path` có thể chứa các directory (được scan đệ quy để tìm jar và zip file), archive path, một directory bên trong archive được scan để tìm jar file (ví dụ, `dependencies.jar!/lib`), hoặc wildcard pattern (theo behavior mặc định của JVM).
+  Archive path có thể relative so với `loader.home` hoặc ở bất kỳ đâu trong file system với prefix `jar:file:`.
+* `loader.path` (nếu empty) mặc định là `BOOT-INF/lib` (nghĩa là một local directory hoặc một nested directory nếu chạy từ archive).
+  Vì vậy, javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] behave như javadoc:org.springframework.boot.loader.launch.JarLauncher[] khi không có additional configuration.
+* `loader.path` không thể được dùng để configure location của `loader.properties` (classpath dùng để search file này là JVM classpath khi javadoc:org.springframework.boot.loader.launch.PropertiesLauncher[] được launch).
+* Placeholder replacement được thực hiện từ System properties và environment variables, cùng với chính properties file, trên mọi value trước khi sử dụng.
+* Thứ tự search properties (khi có nhiều nơi để search) là environment variables, system properties, `loader.properties`, manifest của exploded archive, rồi tới archive manifest.

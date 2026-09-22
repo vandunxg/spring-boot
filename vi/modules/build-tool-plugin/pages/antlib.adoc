@@ -24,7 +24,7 @@ $ ant -lib <directory containing spring-boot-antlib-{version-spring-boot}.jar>
 TIP: Phần "`Using Spring Boot`" có ví dụ đầy đủ hơn về xref:reference:using/build-systems.adoc#using.build-systems.ant[dùng Apache Ant với `spring-boot-antlib`].
 
 [[build-tool-plugins.antlib.tasks]]
-== Spring Boot Ant Task
+== Spring Boot Ant Tasks
 
 Sau khi namespace `spring-boot-antlib` được khai báo, các task bổ sung sau sẽ khả dụng:
 
@@ -46,7 +46,7 @@ Task hỗ trợ các attribute sau:
 | Có
 
 | `classes`
-| Thư mục gốc của các file Java class
+| Thư mục gốc của các class file Java
 | Có
 
 | `start-class`
@@ -70,7 +70,7 @@ Có thể dùng các nested element sau với task:
 [[build-tool-plugins.antlib.tasks.examples]]
 === Ví dụ
 
-Phần này trình bày hai ví dụ về Ant task.
+Phần này trình bày hai ví dụ về các Ant task.
 
 .Chỉ định +start-class+
 [source,xml]
@@ -108,7 +108,7 @@ Các attribute sau được hỗ trợ:
 | Attribute | Mô tả | Bắt buộc
 
 | `classesroot`
-| Thư mục gốc của các file Java class
+| Thư mục gốc của các class file Java
 | Có _(trừ khi `mainclass` được chỉ định)_
 
 | `mainclass`

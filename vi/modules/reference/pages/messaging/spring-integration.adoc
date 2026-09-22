@@ -1,16 +1,16 @@
 [[messaging.spring-integration]]
 = Spring Integration
 
-Spring Boot cung cấp nhiều tiện ích khi làm việc với {url-spring-integration-site}[Spring Integration], gồm starter `spring-boot-starter-integration`.
-Spring Integration cung cấp abstraction trên messaging và các transport khác như HTTP, TCP.
-Nếu Spring Integration có trên classpath, nó được initialize qua annotation javadoc:org.springframework.integration.config.EnableIntegration[format=annotation].
+Spring Boot cung cấp một số tiện ích khi làm việc với {url-spring-integration-site}[Spring Integration], bao gồm starter `spring-boot-starter-integration`.
+Spring Integration cung cấp các abstraction cho messaging cũng như các transport khác như HTTP, TCP và nhiều loại khác.
+Nếu Spring Integration có trên classpath, nó được khởi tạo thông qua annotation javadoc:org.springframework.integration.config.EnableIntegration[format=annotation].
 
-Polling logic của Spring Integration dựa xref:features/task-execution-and-scheduling.adoc[trên auto-configured javadoc:org.springframework.scheduling.TaskScheduler[]].
-Default javadoc:org.springframework.integration.scheduling.PollerMetadata[] (poll không giới hạn số message mỗi giây) có thể customize bằng property `spring.integration.poller.*`.
+Polling logic của Spring Integration dựa vào xref:features/task-execution-and-scheduling.adoc[auto-configured javadoc:org.springframework.scheduling.TaskScheduler[]].
+javadoc:org.springframework.integration.scheduling.PollerMetadata[] mặc định (thực hiện poll không giới hạn số lượng message mỗi giây) có thể được tùy chỉnh bằng các configuration property `spring.integration.poller.*`.
 
-Spring Boot cũng cấu hình một số feature được trigger khi có thêm Spring Integration module.
-Nếu `spring-integration-jmx` có trên classpath, message processing statistic được publish qua JMX.
-Nếu `spring-integration-jdbc` có sẵn, default database schema có thể được tạo khi startup:
+Spring Boot cũng cấu hình một số feature được trigger khi có thêm các Spring Integration module.
+Nếu `spring-integration-jmx` có trên classpath, các statistic về message processing sẽ được publish qua JMX.
+Nếu `spring-integration-jdbc` có sẵn, default database schema có thể được tạo khi startup, như trong dòng sau:
 
 [configprops,yaml]
 ----
@@ -20,14 +20,14 @@ spring:
       initialize-schema: "always"
 ----
 
-Nếu `spring-integration-rsocket` có sẵn, developer có thể cấu hình RSocket server bằng property `spring.rsocket.server.*` và dùng javadoc:org.springframework.integration.rsocket.IntegrationRSocketEndpoint[] hoặc javadoc:org.springframework.integration.rsocket.outbound.RSocketOutboundGateway[] để xử lý incoming RSocket message.
+Nếu `spring-integration-rsocket` có sẵn, developer có thể cấu hình RSocket server bằng các property `spring.rsocket.server.*` và cho phép server sử dụng component javadoc:org.springframework.integration.rsocket.IntegrationRSocketEndpoint[] hoặc javadoc:org.springframework.integration.rsocket.outbound.RSocketOutboundGateway[] để xử lý incoming RSocket message.
 Infrastructure này có thể xử lý Spring Integration RSocket channel adapter và handler javadoc:org.springframework.messaging.handler.annotation.MessageMapping[format=annotation] nếu `spring.integration.rsocket.server.message-mapping-enabled` được cấu hình.
 
-Spring Boot cũng có thể auto-configure javadoc:org.springframework.integration.rsocket.ClientRSocketConnector[] bằng configuration property:
+Spring Boot cũng có thể auto-configure javadoc:org.springframework.integration.rsocket.ClientRSocketConnector[] bằng các configuration property:
 
 [configprops,yaml]
 ----
-# Connecting to a RSocket server over TCP
+# Kết nối đến RSocket server qua TCP
 spring:
   integration:
     rsocket:
@@ -38,7 +38,7 @@ spring:
 
 [configprops,yaml]
 ----
-# Connecting to a RSocket Server over WebSocket
+# Kết nối đến RSocket Server qua WebSocket
 spring:
   integration:
     rsocket:
@@ -46,4 +46,4 @@ spring:
         uri: "ws://example.org"
 ----
 
-Xem {code-spring-boot-integration-src}/autoconfigure/IntegrationAutoConfiguration.java[`IntegrationAutoConfiguration`] và class javadoc:org.springframework.boot.integration.autoconfigure.IntegrationProperties[] để biết thêm.
+Xem {code-spring-boot-integration-src}/autoconfigure/IntegrationAutoConfiguration.java[`IntegrationAutoConfiguration`] và các class javadoc:org.springframework.boot.integration.autoconfigure.IntegrationProperties[] để biết thêm chi tiết.

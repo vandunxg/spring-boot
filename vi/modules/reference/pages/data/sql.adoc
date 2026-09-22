@@ -8,7 +8,7 @@
 == Cấu hình DataSource
 
 Interface javadoc:javax.sql.DataSource[] của Java cung cấp cách chuẩn để làm việc với database connection.
-Thông thường javadoc:javax.sql.DataSource[] dùng một `URL` cùng credential để thiết lập database connection.
+Thông thường javadoc:javax.sql.DataSource[] dùng một `URL` cùng một số credential để thiết lập database connection.
 
 TIP: Xem xref:how-to:data-access.adoc#howto.data-access.configure-custom-datasource[] trong "`How-to Guides`" để biết ví dụ nâng cao hơn khi muốn kiểm soát hoàn toàn DataSource configuration.
 
@@ -16,12 +16,12 @@ TIP: Xem xref:how-to:data-access.adoc#howto.data-access.configure-custom-datasou
 === Hỗ trợ Embedded Database
 
 Dùng in-memory embedded database thường thuận tiện khi phát triển application.
-In-memory database không cung cấp persistent storage.
-Bạn cần populate database khi application khởi động và sẵn sàng bỏ data khi application kết thúc.
+Rõ ràng, in-memory database không cung cấp persistent storage.
+Bạn cần populate database khi application khởi động và sẵn sàng discard data khi application kết thúc.
 
 TIP: "`How-to Guides`" có xref:how-to:data-initialization.adoc[phần hướng dẫn initialize database].
 
-Spring Boot có thể auto-configure embedded https://www.h2database.com[H2], https://hsqldb.org/[HSQL] và https://db.apache.org/derby/[Derby] (deprecated).
+Spring Boot có thể auto-configure embedded https://www.h2database.com[H2], https://hsqldb.org/[HSQL] và https://db.apache.org/derby/[Derby] (deprecated) database.
 Bạn không cần cung cấp connection URL nào.
 Bạn chỉ cần include build dependency tới embedded database muốn dùng.
 Nếu có nhiều embedded database trên classpath, đặt configprop:spring.datasource.embedded-database-connection[] để chọn database.
@@ -33,7 +33,7 @@ Nếu dùng feature này trong test, cùng một database có thể được tá
 Nếu muốn mỗi context có embedded database riêng, đặt `spring.datasource.generate-unique-name` thành `true`.
 ====
 
-Ví dụ POM dependency:
+Ví dụ, POM dependencies thường có dạng như sau:
 
 [source,xml]
 ----
@@ -51,7 +51,7 @@ Ví dụ POM dependency:
 NOTE: Cần dependency `spring-jdbc` để embedded database được auto-configure.
 Trong ví dụ này dependency được kéo transitively qua `spring-boot-starter-data-jpa`.
 
-TIP: Nếu tự cấu hình connection URL cho embedded database, hãy đảm bảo automatic shutdown của database bị disable.
+TIP: Nếu vì bất kỳ lý do gì bạn cấu hình connection URL cho embedded database, hãy đảm bảo automatic shutdown của database bị disable.
 Với H2 dùng `DB_CLOSE_ON_EXIT=FALSE`.
 Với HSQLDB đảm bảo không dùng `shutdown=true`.
 Việc này cho phép Spring Boot kiểm soát thời điểm database đóng sau khi không còn cần truy cập.
@@ -82,7 +82,7 @@ Nếu không, Spring Boot sẽ thử auto-configure embedded database.
 TIP: Spring Boot có thể suy ra JDBC driver class cho hầu hết database từ URL.
 Nếu cần class cụ thể, dùng configprop:spring.datasource.driver-class-name[].
 
-NOTE: Để tạo pooling javadoc:javax.sql.DataSource[], Spring Boot cần xác minh class javadoc:java.sql.Driver[] hợp lệ có sẵn.
+NOTE: Để tạo pooling javadoc:javax.sql.DataSource[], Spring Boot cần xác minh rằng class javadoc:java.sql.Driver[] hợp lệ có sẵn trước khi thực hiện bất kỳ việc gì.
 Nếu đặt `spring.datasource.driver-class-name=com.mysql.jdbc.Driver` thì class đó phải load được.
 
 Xem API documentation của javadoc:org.springframework.boot.jdbc.autoconfigure.DataSourceProperties[] để biết thêm option.
@@ -102,7 +102,7 @@ spring:
       test-on-borrow: true
 ----
 
-Pool sẽ chờ 10000ms trước khi throw exception nếu không có connection, giới hạn tối đa 50 connection và validate connection trước khi borrow.
+Pool sẽ chờ 10000ms trước khi throw exception nếu không có connection, giới hạn tối đa 50 connection và validate connection trước khi borrow nó từ pool.
 
 [[data.sql.datasource.connection-pool]]
 === Connection Pool được hỗ trợ
@@ -128,7 +128,7 @@ javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] hỗ trợ:
 * Tomcat pooling javadoc:javax.sql.DataSource[]
 * Commons DBCP2
 * Oracle UCP & `OracleDataSource`
-* javadoc:org.springframework.jdbc.datasource.SimpleDriverDataSource[]
+* javadoc:org.springframework.jdbc.datasource.SimpleDriverDataSource[] của Spring Framework
 * H2 javadoc:org.h2.jdbcx.JdbcDataSource[]
 * PostgreSQL javadoc:org.postgresql.ds.PGSimpleDataSource[]
 * C3P0
@@ -140,7 +140,7 @@ javadoc:org.springframework.boot.jdbc.DataSourceBuilder[] hỗ trợ:
 Nếu deploy Spring Boot application tới Application Server, có thể cấu hình và quản lý DataSource bằng feature của Application Server và access qua JNDI.
 
 configprop:spring.datasource.jndi-name[] có thể dùng thay configprop:spring.datasource.url[], configprop:spring.datasource.username[] và configprop:spring.datasource.password[] để truy cập javadoc:javax.sql.DataSource[] từ JNDI location cụ thể.
-Ví dụ:
+Ví dụ, section sau trong `application.properties` cho thấy cách truy cập javadoc:javax.sql.DataSource[] được định nghĩa bởi JBoss AS:
 
 [configprops,yaml]
 ----
@@ -152,7 +152,7 @@ spring:
 [[data.sql.datasource.lazy-connection]]
 === Lazy Connection Proxy
 
-Khi pooled `DataSource` được auto-configure, có thể wrap nó bằng proxy lấy JDBC connection muộn nhất có thể bằng configprop:spring.datasource.connection-fetch[] = `lazy`:
+Khi pooled `DataSource` được auto-configure, có thể wrap nó bằng proxy lấy JDBC connection muộn nhất có thể bằng cách đặt configprop:spring.datasource.connection-fetch[] thành `lazy`, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -163,7 +163,7 @@ spring:
 
 Khi bật, JDBC Connection chỉ được lấy từ pool khi thực sự cần.
 JDBC transaction control có thể diễn ra mà chưa lấy Connection hoặc giao tiếp database; connection được lấy lazy khi JDBC Statement đầu tiên được tạo.
-Để truy cập target `DataSource`, dùng `DataSource.unwrap`.
+Để truy cập target `DataSource` đã được auto-configure, dùng `DataSource.unwrap`.
 
 TIP: Nếu wrap target `DataSource` bằng `TransactionAwareDataSourceProxy`, hãy làm bằng `BeanPostProcessor` có positive order.
 
@@ -172,7 +172,7 @@ Xem javadoc:org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy[] 
 [[data.sql.jdbc-template]]
 == Sử dụng JdbcTemplate
 
-javadoc:org.springframework.jdbc.core.JdbcTemplate[] và javadoc:org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate[] được auto-configure và có thể autowire trực tiếp:
+Các class javadoc:org.springframework.jdbc.core.JdbcTemplate[] và javadoc:org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate[] của Spring được auto-configure và có thể autowire trực tiếp vào bean của bạn, như trong ví dụ sau:
 
 include-code::MyBean[]
 
@@ -213,17 +213,17 @@ Nó cung cấp các dependency chính:
 * Spring ORM: Core ORM support từ Spring Framework.
 
 TIP: Phần này không đi sâu vào JPA hoặc {url-spring-data-site}[Spring Data].
-Xem guide https://spring.io/guides/gs/accessing-data-jpa/[Accessing Data with JPA], {url-spring-data-jpa-site}[Spring Data JPA] và https://hibernate.org/orm/documentation/[Hibernate] reference documentation.
+Bạn có thể xem guide https://spring.io/guides/gs/accessing-data-jpa/[Accessing Data with JPA] từ https://spring.io và đọc {url-spring-data-jpa-site}[Spring Data JPA] cùng https://hibernate.org/orm/documentation/[Hibernate] reference documentation.
 
 [[data.sql.jpa-and-spring-data.entity-classes]]
 === Entity Class
 
-Theo truyền thống JPA Entity class được chỉ định trong `persistence.xml`.
+Theo truyền thống, JPA "`Entity`" class được chỉ định trong file `persistence.xml`.
 Với Spring Boot file này không cần thiết; Entity Scanning được dùng thay thế.
-Mặc định xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan.
+Mặc định các xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration packages] được scan.
 
 Mọi class annotate bằng javadoc:jakarta.persistence.Entity[format=annotation], javadoc:jakarta.persistence.Embeddable[format=annotation] hoặc javadoc:jakarta.persistence.MappedSuperclass[format=annotation] đều được xem xét.
-Ví dụ entity:
+Một entity class điển hình có dạng như ví dụ sau:
 
 include-code::City[]
 
@@ -233,23 +233,23 @@ Xem xref:how-to:data-access.adoc#howto.data-access.separate-entity-definitions-f
 [[data.sql.jpa-and-spring-data.repositories]]
 === Spring Data JPA Repository
 
-{url-spring-data-jpa-site}[Spring Data JPA] repository là interface dùng truy cập data.
-JPA query được tự động tạo từ method name.
-Ví dụ `CityRepository` có thể khai báo `findAllByState(String state)`.
+{url-spring-data-jpa-site}[Spring Data JPA] repositories là các interface mà bạn có thể định nghĩa để truy cập data.
+JPA queries được tự động tạo từ method name.
+Ví dụ, interface `CityRepository` có thể khai báo method `findAllByState(String state)` để tìm tất cả city trong một state.
 
-Với query phức tạp hơn, annotate method bằng javadoc:org.springframework.data.jpa.repository.Query[].
+Với query phức tạp hơn, annotate method bằng annotation javadoc:org.springframework.data.jpa.repository.Query[] của Spring Data.
 
-Spring Data repository thường extend javadoc:org.springframework.data.repository.Repository[] hoặc javadoc:org.springframework.data.repository.CrudRepository[].
-Nếu dùng auto-configuration, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan để tìm repository.
+Spring Data repositories thường extend interface javadoc:org.springframework.data.repository.Repository[] hoặc javadoc:org.springframework.data.repository.CrudRepository[].
+Nếu dùng auto-configuration, các xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration packages] được scan để tìm repositories.
 
 TIP: Customize repository location bằng javadoc:org.springframework.data.jpa.repository.config.EnableJpaRepositories[format=annotation].
 
-Ví dụ:
+Ví dụ sau minh họa một định nghĩa Spring Data repository interface điển hình:
 
 include-code::CityRepository[]
 
-Spring Data JPA repository hỗ trợ ba bootstrap mode: default, deferred và lazy.
-Để bật deferred hoặc lazy, đặt configprop:spring.data.jpa.repositories.bootstrap-mode[] tương ứng thành `deferred` hoặc `lazy`.
+Spring Data JPA repositories hỗ trợ ba mode bootstrapping khác nhau: default, deferred và lazy.
+Để bật deferred hoặc lazy bootstrapping, đặt configprop:spring.data.jpa.repositories.bootstrap-mode[] tương ứng thành `deferred` hoặc `lazy`.
 Với deferred bootstrap, auto-configured javadoc:org.springframework.boot.jpa.EntityManagerFactoryBuilder[] cần bootstrap executor và dùng javadoc:org.springframework.core.task.AsyncTaskExecutor[] của context nếu xác định được.
 Nếu có nhiều executor, bean tên `applicationTaskExecutor` được dùng.
 
@@ -257,7 +257,7 @@ Nếu có nhiều executor, bean tên `applicationTaskExecutor` được dùng.
 ====
 Khi dùng deferred hoặc lazy bootstrap, hãy defer mọi access tới JPA infrastructure cho đến sau application context bootstrap phase.
 Có thể dùng javadoc:org.springframework.beans.factory.SmartInitializingSingleton[] để invoke initialization cần JPA infrastructure.
-Với JPA component được tạo thành Spring bean, dùng javadoc:org.springframework.beans.factory.ObjectProvider[] để delay dependency resolution.
+Với JPA component, chẳng hạn converter, được tạo thành Spring bean, dùng javadoc:org.springframework.beans.factory.ObjectProvider[] để delay dependency resolution nếu có.
 ====
 
 TIP: Chúng ta mới chỉ chạm tới bề nổi của Spring Data JPA.
@@ -266,9 +266,9 @@ Xem {url-spring-data-jpa-docs}[Spring Data JPA reference documentation] để bi
 [[data.sql.jpa-and-spring-data.envers-repositories]]
 === Spring Data Envers Repository
 
-Nếu module {url-spring-data-jpa-site}[`spring-data-envers`] có sẵn, JPA repository được auto-configure để hỗ trợ Envers query điển hình.
+Nếu module {url-spring-data-jpa-site}[`spring-data-envers`] của Spring Data JPA có sẵn, JPA repositories được auto-configure để hỗ trợ Envers query điển hình.
 
-Repository cần extend javadoc:org.springframework.data.repository.history.RevisionRepository[]:
+Để dùng Spring Data Envers, repository cần extend javadoc:org.springframework.data.repository.history.RevisionRepository[] như trong ví dụ sau:
 
 include-code::CountryRepository[]
 
@@ -277,9 +277,9 @@ NOTE: Xem {url-spring-data-jpa-docs}/envers.html[Spring Data Envers reference do
 [[data.sql.jpa-and-spring-data.creating-and-dropping]]
 === Tạo và xóa JPA Database
 
-Mặc định JPA database chỉ tự động được tạo nếu dùng embedded database H2, HSQL hoặc Derby (deprecated).
+Mặc định, JPA database chỉ được tự động tạo nếu bạn dùng embedded database, cụ thể là H2, HSQL hoặc Derby (deprecated).
 Có thể cấu hình JPA bằng `+spring.jpa.*+`.
-Ví dụ, để create và drop table bạn có thể thêm dòng sau vào configuration:
+Ví dụ, để create và drop table bạn có thể thêm dòng sau vào `application.properties`:
 
 [configprops,yaml]
 ----
@@ -288,7 +288,7 @@ spring:
     hibernate.ddl-auto: "create-drop"
 ----
 
-NOTE: Internal property của Hibernate là `hibernate.hbm2ddl.auto`.
+NOTE: Tên internal property của Hibernate cho thiết lập này (nếu bạn nhớ tên đó dễ hơn) là `hibernate.hbm2ddl.auto`.
 Có thể đặt property này và Hibernate native property khác bằng `+spring.jpa.properties.*+`; prefix bị bỏ trước khi thêm vào entity manager.
 
 [configprops,yaml]
@@ -300,7 +300,7 @@ spring:
         "globally_quoted_identifiers": "true"
 ----
 
-Ví dụ trên truyền `true` cho `hibernate.globally_quoted_identifiers`.
+Dòng trên minh họa cách đặt JPA property cho Hibernate và truyền giá trị `true` cho property `hibernate.globally_quoted_identifiers` của Hibernate entity manager.
 
 Mặc định DDL execution hoặc validation được defer cho đến khi javadoc:org.springframework.context.ApplicationContext[] đã start.
 
@@ -308,26 +308,26 @@ Mặc định DDL execution hoặc validation được defer cho đến khi java
 === Open EntityManager in View
 
 Với web application, mặc định Spring Boot register javadoc:org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor[] để áp dụng pattern Open EntityManager in View, cho phép lazy loading trong web view.
-Nếu không muốn behavior này, đặt `spring.jpa.open-in-view` thành `false`.
+Nếu không muốn behavior này, đặt `spring.jpa.open-in-view` thành `false` trong `application.properties`.
 
 [[data.sql.jdbc]]
 == Spring Data JDBC
 
-Spring Data hỗ trợ repository cho JDBC và tự động generate SQL cho method trên javadoc:org.springframework.data.repository.CrudRepository[].
+Spring Data bao gồm repository support cho JDBC và tự động generate SQL cho các method trên javadoc:org.springframework.data.repository.CrudRepository[].
 Query nâng cao có thể dùng annotation javadoc:org.springframework.data.jdbc.repository.query.Query[format=annotation].
 
-Spring Boot auto-configure Spring Data JDBC repository khi dependency cần thiết có trên classpath.
-Có thể thêm bằng `spring-boot-starter-data-jdbc`.
+Spring Boot sẽ auto-configure Spring Data JDBC repositories khi các dependency cần thiết có trên classpath.
+Có thể thêm chúng vào project bằng một dependency duy nhất là `spring-boot-starter-data-jdbc`.
 Nếu cần, kiểm soát configuration bằng javadoc:org.springframework.data.jdbc.repository.config.EnableJdbcRepositories[format=annotation] hoặc subclass javadoc:org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration[].
 
 Nếu dùng Spring Data JDBC với xref:packaging/aot.adoc[ahead-of-time processing] (nhắm tới JVM hoặc native image), nên có thêm một số configuration.
 Để tránh phải có DB connection trong quá trình AOT processing, định nghĩa bean `JdbcDialect` phù hợp với database của application.
-Ví dụ với Postgres, định nghĩa `JdbcPostgresDialect`.
+Ví dụ, nếu dùng Postgres, định nghĩa bean `JdbcPostgresDialect`.
 
-TIP: Xem {url-spring-data-relational-docs}[reference documentation].
+TIP: Để biết đầy đủ chi tiết về Spring Data JDBC, xem {url-spring-data-relational-docs}[reference documentation].
 
 [[data.sql.h2-web-console]]
-== Sử dụng H2 Web Console
+== Sử dụng Web Console của H2
 
 https://www.h2database.com[H2] cung cấp https://www.h2database.com/html/quickstart.html#h2_console[browser-based console] mà Spring Boot có thể auto-configure.
 Console được auto-configure khi:
@@ -355,30 +355,30 @@ Nếu dùng Spring Security, cần:
 * disable CSRF protection cho request tới console,
 * đặt header `X-Frame-Options` thành `SAMEORIGIN` trên response từ console.
 
-Xem {url-spring-security-docs}/features/exploits/csrf.html[CSRF] và {url-spring-security-docs}/features/exploits/headers.html#headers-frame-options[X-Frame-Options].
+Bạn có thể xem thêm thông tin về {url-spring-security-docs}/features/exploits/csrf.html[CSRF] và header {url-spring-security-docs}/features/exploits/headers.html#headers-frame-options[X-Frame-Options] trong Spring Security Reference Guide.
 
-Ví dụ javadoc:org.springframework.security.web.SecurityFilterChain[]:
+Trong các setup đơn giản, có thể dùng javadoc:org.springframework.security.web.SecurityFilterChain[] như sau:
 
 include-code::DevProfileSecurityConfiguration[tag=!customizer]
 
 WARNING: H2 console chỉ dành cho development.
-Trong production, disable CSRF protection hoặc cho phép frame có thể tạo rủi ro security nghiêm trọng.
+Trong production, disable CSRF protection hoặc cho phép website dùng frame có thể tạo rủi ro security nghiêm trọng.
 
 TIP: `PathRequest.toH2Console()` trả correct request matcher kể cả khi path đã customize.
 
 [[data.sql.jooq]]
 == Sử dụng jOOQ
 
-jOOQ Object Oriented Querying (https://www.jooq.org/[jOOQ]) là sản phẩm từ https://www.datageekery.com/[Data Geekery] generate Java code từ database và cho phép xây type-safe SQL query qua fluent API.
+jOOQ Object Oriented Querying (https://www.jooq.org/[jOOQ]) là một sản phẩm phổ biến từ https://www.datageekery.com/[Data Geekery], generate Java code từ database và cho phép xây type-safe SQL query qua fluent API.
 Cả commercial và open source edition đều dùng được với Spring Boot.
 jOOQ yêu cầu Java 21 trở lên.
 
 [[data.sql.jooq.codegen]]
 === Code Generation
 
-Để dùng type-safe query của jOOQ, cần generate Java class từ database schema.
+Để dùng type-safe query của jOOQ, cần generate các Java class từ database schema.
 Làm theo {url-jooq-docs}/#jooq-in-7-steps-step3[jOOQ user manual].
-Nếu dùng plugin `jooq-codegen-maven` cùng parent POM `spring-boot-starter-parent`, có thể bỏ tag `<version>`.
+Nếu dùng plugin `jooq-codegen-maven` cùng `spring-boot-starter-parent` "`parent POM`", có thể an toàn bỏ tag `<version>` của plugin.
 Bạn cũng có thể dùng version variable do Spring Boot định nghĩa (chẳng hạn `h2.version`) để khai báo database dependency của plugin.
 Listing sau minh họa một ví dụ:
 
@@ -412,15 +412,15 @@ Listing sau minh họa một ví dụ:
 [[data.sql.jooq.dslcontext]]
 === Sử dụng DSLContext
 
-Fluent API của jOOQ bắt đầu qua javadoc:org.jooq.DSLContext[].
-Spring Boot auto-configure javadoc:org.jooq.DSLContext[] thành Spring Bean và kết nối với javadoc:javax.sql.DataSource[].
-Có thể inject:
+Fluent API do jOOQ cung cấp được khởi tạo thông qua interface javadoc:org.jooq.DSLContext[].
+Spring Boot auto-configure javadoc:org.jooq.DSLContext[] thành một Spring Bean và kết nối nó với javadoc:javax.sql.DataSource[] của application.
+Để dùng javadoc:org.jooq.DSLContext[], bạn có thể inject nó như trong ví dụ sau:
 
 include-code::MyBean[tag=!method]
 
 TIP: jOOQ manual thường dùng variable `create` cho javadoc:org.jooq.DSLContext[].
 
-Sau đó dùng javadoc:org.jooq.DSLContext[] để construct query:
+Sau đó bạn có thể dùng javadoc:org.jooq.DSLContext[] để construct query như trong ví dụ sau:
 
 include-code::MyBean[tag=method]
 
@@ -435,17 +435,17 @@ NOTE: Spring Boot chỉ auto-configure dialect được open source jOOQ hỗ tr
 [[data.sql.jooq.customizing]]
 === Customize jOOQ
 
-Customization nâng cao có thể thực hiện bằng bean javadoc:org.springframework.boot.jooq.autoconfigure.DefaultConfigurationCustomizer[] được invoke trước khi tạo bean javadoc:org.jooq.Configuration[] javadoc:org.springframework.context.annotation.Bean[format=annotation].
+Customization nâng cao có thể thực hiện bằng cách định nghĩa bean javadoc:org.springframework.boot.jooq.autoconfigure.DefaultConfigurationCustomizer[] của riêng bạn; bean này sẽ được invoke trước khi tạo bean javadoc:org.jooq.Configuration[] javadoc:org.springframework.context.annotation.Bean[format=annotation].
 Nó có precedence so với auto-configuration.
 
-Có thể tự tạo javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.jooq.Configuration[] nếu muốn kiểm soát hoàn toàn.
+Có thể tự tạo javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.jooq.Configuration[] nếu muốn kiểm soát hoàn toàn jOOQ configuration.
 
 [[data.sql.r2dbc]]
 == Sử dụng R2DBC
 
-Reactive Relational Database Connectivity (https://r2dbc.io[R2DBC]) đưa reactive programming API tới relational database.
-javadoc:io.r2dbc.spi.Connection[] cung cấp cách chuẩn làm việc với non-blocking database connection.
-Connection được cung cấp qua javadoc:io.r2dbc.spi.ConnectionFactory[], tương tự javadoc:javax.sql.DataSource[] với JDBC.
+Project Reactive Relational Database Connectivity (https://r2dbc.io[R2DBC]) đưa reactive programming APIs tới relational databases.
+javadoc:io.r2dbc.spi.Connection[] cung cấp cách chuẩn làm việc với non-blocking database connections.
+Các connection được cung cấp qua javadoc:io.r2dbc.spi.ConnectionFactory[], tương tự javadoc:javax.sql.DataSource[] với JDBC.
 
 Configuration javadoc:io.r2dbc.spi.ConnectionFactory[] được điều khiển bởi external configuration property trong `+spring.r2dbc.*+`.
 Ví dụ, bạn có thể khai báo phần sau trong `application.properties`:
@@ -464,19 +464,19 @@ TIP: Không cần chỉ định driver class name vì Spring Boot lấy driver t
 NOTE: Ít nhất URL phải được cung cấp.
 Thông tin trong URL có precedence hơn property riêng lẻ: `name`, `username`, `password` và pooling option.
 
-TIP: Xem xref:how-to:data-initialization.adoc#howto.data-initialization.using-basic-sql-scripts[phần initialize database].
+TIP: Phần `How-to Guides` có xref:how-to:data-initialization.adoc#howto.data-initialization.using-basic-sql-scripts[phần hướng dẫn initialize database].
 
-Để customize connection tạo bởi javadoc:io.r2dbc.spi.ConnectionFactory[], dùng javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.boot.r2dbc.autoconfigure.ConnectionFactoryOptionsBuilderCustomizer[].
-Ví dụ override database port:
+Để customize các connection được tạo bởi javadoc:io.r2dbc.spi.ConnectionFactory[], tức là đặt các parameter cụ thể mà bạn không muốn hoặc không thể cấu hình trong database configuration tập trung, dùng javadoc:org.springframework.context.annotation.Bean[format=annotation] javadoc:org.springframework.boot.r2dbc.autoconfigure.ConnectionFactoryOptionsBuilderCustomizer[].
+Ví dụ sau override database port trong khi các option còn lại được lấy từ application configuration:
 
 include-code::MyR2dbcConfiguration[]
 
-Ví dụ PostgreSQL option:
+Các ví dụ sau cho thấy cách đặt một số PostgreSQL connection option:
 
 include-code::MyPostgresR2dbcConfiguration[]
 
 Khi có bean javadoc:io.r2dbc.spi.ConnectionFactory[], JDBC javadoc:javax.sql.DataSource[] auto-configuration sẽ back off.
-Nếu muốn giữ JDBC javadoc:javax.sql.DataSource[] auto-configuration dù có rủi ro dùng blocking JDBC API trong reactive application, thêm `@Import(DataSourceAutoConfiguration.class)` trên class javadoc:org.springframework.context.annotation.Configuration[format=annotation].
+Nếu muốn giữ JDBC javadoc:javax.sql.DataSource[] auto-configuration và chấp nhận rủi ro dùng blocking JDBC API trong reactive application, thêm `@Import(DataSourceAutoConfiguration.class)` trên class javadoc:org.springframework.context.annotation.Configuration[format=annotation] trong application để re-enable nó.
 
 [[data.sql.r2dbc.embedded]]
 === Hỗ trợ Embedded Database
@@ -496,31 +496,31 @@ Bạn chỉ cần include build dependency tới embedded database muốn dùng,
 
 [NOTE]
 ====
-Nếu dùng feature này trong test, cùng database có thể được tái sử dụng cho toàn test suite.
-Để mỗi context có embedded database riêng, đặt `spring.r2dbc.generate-unique-name` thành `true`.
+Nếu dùng feature này trong test, bạn có thể thấy cùng database được tái sử dụng cho toàn bộ test suite bất kể số application context được sử dụng.
+Nếu muốn mỗi context có embedded database riêng, đặt `spring.r2dbc.generate-unique-name` thành `true`.
 ====
 
 [[data.sql.r2dbc.using-database-client]]
 === Sử dụng DatabaseClient
 
-Bean javadoc:org.springframework.r2dbc.core.DatabaseClient[] được auto-configure và có thể autowire:
+Bean javadoc:org.springframework.r2dbc.core.DatabaseClient[] được auto-configure và có thể autowire trực tiếp vào bean của bạn, như trong ví dụ sau:
 
 include-code::MyBean[]
 
 [[data.sql.r2dbc.repositories]]
 === Spring Data R2DBC Repository
 
-https://spring.io/projects/spring-data-relational[Spring Data R2DBC] repository là interface dùng truy cập data.
-Query được tự động tạo từ method name.
-Ví dụ `CityRepository` có thể khai báo `findAllByState(String state)`.
+https://spring.io/projects/spring-data-relational[Spring Data R2DBC] repositories là các interface mà bạn có thể định nghĩa để truy cập data.
+Queries được tự động tạo từ method name.
+Ví dụ, interface `CityRepository` có thể khai báo method `findAllByState(String state)` để tìm tất cả city trong một state.
 
-Với query phức tạp hơn, annotate method bằng javadoc:org.springframework.data.r2dbc.repository.Query[format=annotation].
+Với query phức tạp hơn, annotate method bằng annotation javadoc:org.springframework.data.r2dbc.repository.Query[format=annotation] của Spring Data.
 
-Spring Data repository thường extend javadoc:org.springframework.data.repository.Repository[] hoặc javadoc:org.springframework.data.repository.CrudRepository[].
-Nếu dùng auto-configuration, xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration package] được scan để tìm repository.
+Spring Data repositories thường extend interface javadoc:org.springframework.data.repository.Repository[] hoặc javadoc:org.springframework.data.repository.CrudRepository[].
+Nếu dùng auto-configuration, các xref:using/auto-configuration.adoc#using.auto-configuration.packages[auto-configuration packages] được scan để tìm repositories.
 
-Ví dụ:
+Ví dụ sau minh họa một định nghĩa Spring Data repository interface điển hình:
 
 include-code::CityRepository[]
 
-TIP: Xem {url-spring-data-relational-docs}[Spring Data R2DBC reference documentation] để biết đầy đủ chi tiết.
+TIP: Chúng ta mới chỉ chạm tới bề nổi của Spring Data R2DBC. Để biết đầy đủ chi tiết, xem {url-spring-data-relational-docs}[Spring Data R2DBC reference documentation].

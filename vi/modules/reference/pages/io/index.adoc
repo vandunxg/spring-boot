@@ -1,5 +1,7 @@
 [[io]]
 = IO
 
-Hầu hết application cần xử lý input và output tại một thời điểm nào đó.
-Spring Boot cung cấp utility và integration với nhiều technology để hỗ trợ khi bạn cần khả năng IO.
+Hầu hết application sẽ cần xử lý các vấn đề liên quan đến input và output vào một thời điểm nào đó.
+Spring Boot cung cấp các utility và integration cho nhiều technology để hỗ trợ khi bạn cần khả năng IO.
+Section này đề cập đến các feature IO tiêu chuẩn như caching và validation, cũng như các topic nâng cao hơn như batch, scheduling và distributed transaction.
+Chúng ta cũng sẽ đề cập đến việc gọi các REST hoặc SOAP service từ xa và gửi email.

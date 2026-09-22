@@ -22,7 +22,7 @@ Các build tool sau được hỗ trợ trực tiếp:
 
 
 [[getting-started.system-requirements.servlet-containers]]
-== Servlet Container
+== Servlet Containers
 
 Spring Boot hỗ trợ các embedded servlet container sau:
 
@@ -42,11 +42,11 @@ Bạn cũng có thể deploy ứng dụng Spring Boot lên bất kỳ container 
 
 
 [[getting-started.system-requirements.graal]]
-== GraalVM Native Image
+== GraalVM Native Images
 
 Ứng dụng Spring Boot có thể được xref:reference:packaging/native-image/introducing-graalvm-native-images.adoc[chuyển thành Native Image] bằng GraalVM {version-graal} trở lên.
 
-Image có thể được tạo bằng Gradle/Maven plugin của https://github.com/graalvm/native-build-tools[native build tools] hoặc tool `native-image` do GraalVM cung cấp.
+Native image có thể được tạo bằng Gradle/Maven plugin của https://github.com/graalvm/native-build-tools[native build tools] hoặc tool `native-image` do GraalVM cung cấp.
 Bạn cũng có thể tạo native image bằng https://github.com/paketo-buildpacks/native-image[native-image Paketo buildpack].
 
 Các phiên bản sau được hỗ trợ:

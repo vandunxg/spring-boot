@@ -1,7 +1,7 @@
 [[io.spring-batch]]
 = Spring Batch
 
-Spring Boot cung cấp nhiều tiện ích khi làm việc với {url-spring-batch-site}[Spring Batch], bao gồm chạy Job khi startup.
+Spring Boot cung cấp nhiều tiện ích khi làm việc với {url-spring-batch-site}[Spring Batch], bao gồm cả việc chạy Job khi startup.
 
 Khi xây dựng batch application, các store sau có thể được auto-configure:
 
@@ -10,7 +10,7 @@ Khi xây dựng batch application, các store sau có thể được auto-config
 * MongoDB
 
 Mỗi store có setting bổ sung riêng.
-Ví dụ có thể customize table prefix cho JDBC store:
+Ví dụ, có thể customize table prefix cho JDBC store, như trong ví dụ sau:
 
 [configprops,yaml]
 ----
@@ -20,7 +20,7 @@ spring:
       table-prefix: "CUSTOM_"
 ----
 
-Khi dùng MongoDB store, có thể bật initialization cho Spring Batch job repository schema (collection và index):
+Khi dùng MongoDB store, có thể bật initialization cho Spring Batch job repository schema (các collection và index):
 
 [configprops,yaml]
 ----
@@ -36,24 +36,24 @@ spring:
 Điều này làm auto-configuration back off, bao gồm initialization database schema của Spring Batch (JDBC hoặc MongoDB).
 Sau đó Spring Batch có thể được cấu hình bằng attribute của annotation `@Enable*JobRepository` thay vì các configuration property đã mô tả.
 
-Để tìm hiểu thêm về manual configuration, xem API documentation:
+Để tìm hiểu thêm về việc manual configuration Spring Batch, xem API documentation của:
 
 * javadoc:org.springframework.batch.core.configuration.support.DefaultBatchConfiguration[]
 * javadoc:org.springframework.batch.core.configuration.annotation.EnableBatchProcessing[format=annotation]
 * javadoc:org.springframework.batch.core.configuration.annotation.EnableJdbcJobRepository[format=annotation]
 * javadoc:org.springframework.batch.core.configuration.annotation.EnableMongoJobRepository[format=annotation]
 
-Xem {url-spring-batch-site}[Spring Batch project page] để biết thêm.
+Để biết thêm thông tin về Spring Batch, xem {url-spring-batch-site}[Spring Batch project page].
 
 
 
 [[io.spring-batch.running-jobs-on-startup]]
-== Chạy Spring Batch Job khi Startup
+== Chạy các Spring Batch Job khi startup
 
-Khi Spring Boot auto-configure Spring Batch và chỉ tìm thấy một bean javadoc:org.springframework.batch.core.job.Job[] trong application context, job đó được execute khi startup (xem javadoc:org.springframework.boot.batch.autoconfigure.JobLauncherApplicationRunner[]).
+Khi Spring Boot auto-configure Spring Batch và nếu chỉ tìm thấy một bean javadoc:org.springframework.batch.core.job.Job[] trong application context, Job đó được execute khi startup (xem javadoc:org.springframework.boot.batch.autoconfigure.JobLauncherApplicationRunner[] để biết chi tiết).
 Nếu có nhiều bean javadoc:org.springframework.batch.core.job.Job[], job cần execute phải được chỉ định bằng configprop:spring.batch.job.name[].
 
-Có thể disable việc chạy bean javadoc:org.springframework.batch.core.job.Job[] tìm thấy trong application context:
+Có thể disable việc chạy javadoc:org.springframework.batch.core.job.Job[] được tìm thấy trong application context, như trong ví dụ sau:
 
 [configprops,yaml]
 ----

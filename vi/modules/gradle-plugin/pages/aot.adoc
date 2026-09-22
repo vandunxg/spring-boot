@@ -1,11 +1,11 @@
 [[aot]]
-= Ahead-of-Time Processing
+= Xử lý Ahead-of-Time
 
-Spring AOT là process analyze code tại build-time để generate optimized version.
-Nó thường dùng để hỗ trợ generate GraalVM native image.
+Spring AOT là process phân tích code tại build-time để tạo ra version được optimize.
+Process này thường được dùng để hỗ trợ generate các native image của GraalVM.
 
-Gradle plugin `org.springframework.boot.aot` cung cấp task thực hiện AOT processing trên cả application và test code.
-Plugin được apply tự động khi {url-native-build-tools-docs-gradle-plugin}[GraalVM Native Image plugin] được apply:
+Gradle plugin `org.springframework.boot.aot` cung cấp các task có thể dùng để thực hiện AOT processing trên cả application code và test code.
+Plugin này tự động được apply khi {url-native-build-tools-docs-gradle-plugin}[GraalVM Native Image plugin] được apply:
 
 [tabs]
 ======
@@ -23,7 +23,7 @@ include::example$aot/apply-native-image-plugin.gradle.kts[]
 ----
 ======
 
-Nếu muốn xref:reference:packaging/aot.adoc[chạy AOT-processed application trên JVM] thay vì native image, apply plugin `org.springframework.boot.aot` trực tiếp:
+Nếu muốn xref:reference:packaging/aot.adoc[chạy một application đã được process bằng AOT trên JVM] thay vì dưới dạng native image, hãy apply plugin `org.springframework.boot.aot` trực tiếp:
 
 [tabs]
 ======
@@ -42,25 +42,25 @@ include::example$aot/apply-aot-plugin.gradle.kts[]
 ======
 
 [[aot.processing-applications]]
-== Processing Applications
+== Xử lý application
 
-Dựa trên main class annotate `@SpringBootApplication`, task `processAot` generate persistent view của bean sẽ contribute runtime sao cho bean instantiation straightforward nhất có thể.
-Additional post-processing của factory có thể qua callback.
-Ví dụ chúng dùng để generate reflection configuration cần cho GraalVM initialize context trong native image.
+Dựa trên main class được annotate bằng `@SpringBootApplication`, task `processAot` generate một persistent view của các bean sẽ được contribute tại runtime, để bean instantiation đơn giản nhất có thể.
+Có thể thực hiện post-processing bổ sung trên factory bằng các callback.
+Ví dụ, các callback này được dùng để generate reflection configuration cần thiết để GraalVM initialize context trong native image.
 
-Vì `BeanFactory` fully prepare tại build-time, condition cũng evaluate.
-Điều này khác quan trọng với regular Spring Boot application runtime.
-Ví dụ nếu muốn opt-in/opt-out feature nhất định, cần configure environment dùng tại build time.
-Task `processAot` là {url-gradle-dsl}/org.gradle.api.tasks.JavaExec.html[`JavaExec`] task nên có thể configure environment variable, system property và argument khi cần.
+Vì `BeanFactory` được prepare hoàn toàn tại build-time, các condition cũng được evaluate.
+Điều này tạo ra khác biệt quan trọng so với cách một Spring Boot application thông thường hoạt động tại runtime.
+Ví dụ, nếu muốn opt-in hoặc opt-out một số feature, bạn cần configure environment được sử dụng tại build-time để thực hiện việc đó.
+Để làm điều này, task `processAot` là {url-gradle-dsl}/org.gradle.api.tasks.JavaExec.html[`JavaExec`] task và có thể được configure bằng environment variable, system property và argument khi cần.
 
-Task `nativeCompile` của GraalVM Native Image plugin tự động configure dùng output của task `processAot`.
+Task `nativeCompile` của GraalVM Native Image plugin được tự động configure để sử dụng output của task `processAot`.
 
 [[aot.processing-tests]]
-== Processing Tests
+== Xử lý test
 
-AOT engine có thể apply cho JUnit 5 test dùng Spring Test Context Framework.
-Suitable test được task `processTestAot` process để generate code `ApplicationContextInitializer`.
-Giống application AOT processing, `BeanFactory` fully prepare tại build-time.
-Giống `processAot`, task `processTestAot` là subclass `JavaExec` và có thể configure khi cần để influence processing.
+AOT engine có thể được apply cho các test JUnit 5 sử dụng Spring Test Context Framework.
+Task `processTestAot` sẽ process các test phù hợp để generate code `ApplicationContextInitializer`.
+Cũng như application AOT processing, `BeanFactory` được prepare hoàn toàn tại build-time.
+Cũng như `processAot`, task `processTestAot` là subclass của `JavaExec` và có thể được configure khi cần để tác động đến processing này.
 
-Task `nativeTest` của GraalVM Native Image plugin tự động configure dùng output của task `processAot` và `processTestAot`.
+Task `nativeTest` của GraalVM Native Image plugin được tự động configure để sử dụng output của task `processAot` và `processTestAot`.

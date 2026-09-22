@@ -1,85 +1,85 @@
 [[testing.test-modules]]
-= Test Module
+= Các Test Module
 
-Spring Boot cung cấp nhiều focused, feature-specific module `-test`:
+Spring Boot cung cấp một số module `-test` tập trung, dành riêng cho từng feature:
 
 [cols="1,3"]
 |===
 |Module | Mục đích
 
 |`spring-boot-cache-test`
-|Test application dùng cache abstraction của Spring Framework.
+|Test các application sử dụng cache abstraction của Spring Framework.
 
 |`spring-boot-data-cassandra-test`
-|Test application dùng Spring Data Cassandra. Cung cấp test slice `@DataCassandraTest`.
+|Test các application sử dụng Spring Data Cassandra. Cung cấp test slice `@DataCassandraTest`.
 
 |`spring-boot-data-couchbase-test`
-|Test application dùng Spring Data Couchbase. Cung cấp `@DataCouchbaseTest`.
+|Test các application sử dụng Spring Data Couchbase. Cung cấp test slice `@DataCouchbaseTest`.
 
 |`spring-boot-data-elasticsearch-test`
-|Test application dùng Spring Data Elasticsearch. Cung cấp `@DataElasticsearchTest`.
+|Test các application sử dụng Spring Data Elasticsearch. Cung cấp test slice `@DataElasticsearchTest`.
 
 |`spring-boot-data-jdbc-test`
-|Test application dùng Spring Data JDBC. Cung cấp `@DataJdbcTest`.
+|Test các application sử dụng Spring Data JDBC. Cung cấp test slice `@DataJdbcTest`.
 
 |`spring-boot-data-jpa-test`
-|Test application dùng Spring Data JPA. Cung cấp `@DataJpaTest`.
+|Test các application sử dụng Spring Data JPA. Cung cấp test slice `@DataJpaTest`.
 
 |`spring-boot-data-ldap-test`
-|Test application dùng Spring Data LDAP. Cung cấp `@DataLdapTest`.
+|Test các application sử dụng Spring Data LDAP. Cung cấp test slice `@DataLdapTest`.
 
 |`spring-boot-mongodb-test`
-|Test application dùng Spring Data MongoDB. Cung cấp `@DataMongoTest`.
+|Test các application sử dụng Spring Data MongoDB. Cung cấp test slice `@DataMongoTest`.
 
 |`spring-boot-data-neo4j-test`
-|Test application dùng Spring Data JPA. Cung cấp `@DataNeo4jTest`.
+|Test các application sử dụng Spring Data JPA. Cung cấp test slice `@DataNeo4jTest`.
 
 |`spring-boot-data-r2dbc-test`
-|Test application dùng Spring Data R2DBC. Cung cấp `@DataR2dbcTest`.
+|Test các application sử dụng Spring Data R2DBC. Cung cấp test slice `@DataR2dbcTest`.
 
 |`spring-boot-data-redis-test`
-|Test application dùng Spring Data Redis. Cung cấp `@DataRedisTest`.
+|Test các application sử dụng Spring Data Redis. Cung cấp test slice `@DataRedisTest`.
 
 |`spring-boot-graphql-test`
-|Test application dùng Spring GraphQL. Cung cấp `@GraphQlTest`.
+|Test các application sử dụng Spring GraphQL. Cung cấp test slice `@GraphQlTest`.
 
 |`spring-boot-grpc-test`
-|Test application dùng Spring gRPC.
+|Test các application sử dụng Spring gRPC.
 
 |`spring-boot-jdbc-test`
-|Test application dùng Spring JDBC. Cung cấp `@JdbcTest`.
+|Test các application sử dụng Spring JDBC. Cung cấp test slice `@JdbcTest`.
 
 |`spring-boot-jooq-test`
-|Test application dùng jOOQ. Cung cấp `@JooqTest`.
+|Test các application sử dụng jOOQ. Cung cấp test slice `@JooqTest`.
 
 |`spring-boot-jpa-test`
-|Test application dùng JPA.
+|Test các application sử dụng JPA.
 
 |`spring-boot-micrometer-metrics-test`
-|Test application dùng Micrometer Metrics.
+|Test các application sử dụng Micrometer Metrics.
 
 |`spring-boot-micrometer-tracing-test`
-|Test application dùng Micrometer Tracing.
+|Test các application sử dụng Micrometer Tracing.
 
 |`spring-boot-restclient-test`
-|Test application dùng REST client. Cung cấp `@RestClientTest`.
+|Test các application sử dụng REST client. Cung cấp test slice `@RestClientTest`.
 
 |`spring-boot-security-test`
-|Test application dùng Spring Security.
+|Test các application sử dụng Spring Security.
 
 |`spring-boot-webserver-test`
-|Test application dùng implementation `WebServer`. Cung cấp annotation `@AutoconfigureWebServer`.
+|Test các application sử dụng các implementation của `WebServer`. Cung cấp annotation `@AutoconfigureWebServer`.
 
 |`spring-boot-webclient-test`
-|Test application dùng `WebClient`. Cung cấp `@WebClientTest`.
+|Test các application sử dụng `WebClient`. Cung cấp test slice `@WebClientTest`.
 
 |`spring-boot-webflux-test`
-|Test application dùng Spring WebFlux. Cung cấp `@WebFluxTest`.
+|Test các application sử dụng Spring WebFlux. Cung cấp test slice `@WebFluxTest`.
 
 |`spring-boot-webmvc-test`
-|Test application dùng Spring Web MVC. Cung cấp `@WebMvcTest`.
+|Test các application sử dụng Spring Web MVC. Cung cấp test slice `@WebMvcTest`.
 
 |`spring-boot-webservices-test`
-|Test application dùng Spring Web Services. Cung cấp test slice `@WebServiceClientTest` và `@WebServiceServerTest`.
+|Test các application sử dụng Spring Web Services. Cung cấp test slice `@WebServiceClientTest` và `@WebServiceServerTest`.
 
 |===

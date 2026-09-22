@@ -2,12 +2,14 @@
 = AOT Cache
 :page-aliases: class-data-sharing.adoc
 
-AOT cache là https://openjdk.org/jeps/483[JVM feature] giúp giảm startup time và memory footprint của Java application.
+AOT cache là một https://openjdk.org/jeps/483[tính năng của JVM] có thể giúp giảm startup time và memory footprint của Java application.
 
 Nếu chưa dùng Java 25 trở lên, hãy đọc phần CDS.
 CDS là predecessor của AOT cache nhưng hoạt động tương tự.
 
 NOTE: Spring Boot hỗ trợ cả CDS và AOT cache, tuy nhiên khuyến nghị dùng AOT cache khi có thể.
+
+
 
 [[packaging.aot-cache.aot-cache]]
 == AOT Cache
@@ -15,7 +17,7 @@ NOTE: Spring Boot hỗ trợ cả CDS và AOT cache, tuy nhiên khuyến nghị 
 NOTE: Spring Boot hỗ trợ AOT cache với Java 25 trở lên.
 Nếu dùng Java version cũ hơn, phải dùng CDS.
 
-Để dùng AOT cache, trước tiên thực hiện training run trên application ở extracted form:
+Để dùng tính năng AOT cache, trước tiên bạn nên thực hiện training run trên application ở extracted form:
 
 [source,shell]
 ----
@@ -24,25 +26,27 @@ $ cd application
 $ java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh -jar my-app.jar
 ----
 
-Lệnh tạo file cache `app.aot` có thể reuse miễn là application không update và dùng cùng Java version.
+Thao tác này tạo file cache `app.aot`, có thể được reuse miễn là application không được update và dùng cùng Java version.
 
-Để dùng cache file, thêm parameter khi start application:
+Để dùng cache file, cần thêm một parameter khi start application:
 
 [source,shell]
 ----
 $ java -XX:AOTCache=app.aot -jar my-app.jar
 ----
 
-NOTE: Phải dùng cache file với extracted form của application, nếu không nó không có tác dụng.
+NOTE: Bạn phải dùng cache file với extracted form của application, nếu không cache file sẽ không có tác dụng.
 
-Để biết cách tận dụng AOT Cache với Buildpacks, xem xref:how-to:aot-cache.adoc[AOT Cache How-to guide].
+Để biết cách tận dụng AOT Cache với Buildpacks, xem xref:how-to:aot-cache.adoc[hướng dẫn How-to về AOT Cache].
+
+
 
 [[packaging.aot-cache.cds]]
 == CDS
 
 NOTE: Nếu dùng Java 25 trở lên, hãy dùng AOT cache thay CDS.
 
-Để dùng CDS, trước tiên thực hiện training run trên application ở extracted form:
+Để dùng CDS, trước tiên bạn nên thực hiện training run trên application ở extracted form:
 
 [source,shell]
 ----
@@ -51,15 +55,15 @@ $ cd application
 $ java -XX:ArchiveClassesAtExit=application.jsa -Dspring.context.exit=onRefresh -jar my-app.jar
 ----
 
-Lệnh tạo archive `application.jsa` có thể reuse miễn là application không update.
+Thao tác này tạo archive `application.jsa`, có thể được reuse miễn là application không được update.
 
-Để dùng archive file, thêm parameter:
+Để dùng archive file, cần thêm một parameter khi start application:
 
 [source,shell]
 ----
 $ java -XX:SharedArchiveFile=application.jsa -jar my-app.jar
 ----
 
-NOTE: Phải dùng cache file với extracted form của application, nếu không nó không có tác dụng.
+NOTE: Bạn phải dùng cache file với extracted form của application, nếu không cache file sẽ không có tác dụng.
 
-NOTE: Chi tiết về CDS xem https://docs.oracle.com/en/java/javase/17/vm/class-data-sharing.html[Class Data Sharing documentation của JDK].
+NOTE: Để biết thêm chi tiết về CDS, xem https://docs.oracle.com/en/java/javase/17/vm/class-data-sharing.html[tài liệu Class Data Sharing của JDK].

@@ -1,12 +1,12 @@
 [[messaging.websockets]]
 = WebSockets
 
-Spring Boot cung cấp WebSockets auto-configuration cho embedded Tomcat và Jetty.
-Nếu deploy file war lên standalone container, Spring Boot giả định container chịu trách nhiệm cấu hình WebSocket support.
+Spring Boot cung cấp auto-configuration cho WebSockets trên embedded Tomcat và Jetty.
+Nếu deploy một file war lên standalone container, Spring Boot giả định container chịu trách nhiệm cấu hình WebSocket support.
 
-Spring Framework cung cấp {url-spring-framework-docs}/web/websocket.html[WebSocket support phong phú] cho MVC web application, có thể dùng dễ dàng qua module `spring-boot-starter-websocket`.
+Spring Framework cung cấp {url-spring-framework-docs}/web/websocket.html[WebSocket support phong phú] cho các MVC web application, có thể dễ dàng sử dụng thông qua module `spring-boot-starter-websocket`.
 
-WebSocket support cũng có cho {url-spring-framework-docs}/web/webflux-websocket.html[reactive web application] và cần include WebSocket API cùng `spring-boot-starter-webflux`:
+WebSocket support cũng khả dụng cho {url-spring-framework-docs}/web/webflux-websocket.html[reactive web application] và yêu cầu include WebSocket API cùng với `spring-boot-starter-webflux`:
 
 [source,xml]
 ----

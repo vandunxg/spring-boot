@@ -1,5 +1,5 @@
 [[packaging.native-image]]
 = GraalVM Native Images
 
-https://www.graalvm.org/native-image/[GraalVM Native Images] là standalone executable được tạo bằng cách xử lý compiled Java application ahead-of-time.
-Native Image thường có memory footprint nhỏ hơn và start nhanh hơn JVM counterpart.
+https://www.graalvm.org/native-image/[GraalVM Native Images] là các standalone executable có thể được tạo bằng cách xử lý các compiled Java application theo phương thức ahead-of-time.
+Native Images nhìn chung có memory footprint nhỏ hơn và khởi động nhanh hơn các counterpart tương ứng trên JVM.

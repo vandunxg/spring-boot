@@ -1,10 +1,9 @@
 [[actuator.loggers]]
 = Loggers
 
-Spring Boot Actuator có khả năng xem và cấu hình log level của application tại runtime.
-Có thể xem toàn bộ danh sách hoặc configuration của một logger riêng.
-Configuration gồm explicit logging level và effective logging level do logging framework cung cấp.
-Các level có thể là:
+Spring Boot Actuator cho phép xem và cấu hình các log level của application tại runtime.
+Có thể xem toàn bộ danh sách hoặc configuration của từng logger, bao gồm logging level được cấu hình rõ ràng và effective logging level do logging framework áp dụng cho logger đó.
+Các level này có thể là:
 
 * `TRACE`
 * `DEBUG`
@@ -15,12 +14,14 @@ Các level có thể là:
 * `OFF`
 * `null`
 
-`null` nghĩa là không có explicit configuration.
+`null` cho biết không có explicit configuration.
+
+
 
 [[actuator.loggers.configure]]
-== Configure Logger
+== Cấu hình Logger
 
-Để cấu hình logger cụ thể, gửi `POST` với partial entity tới resource URI:
+Để configure một logger cụ thể, gửi một partial entity bằng `POST` tới URI của resource, như ví dụ sau:
 
 [source,json]
 ----
@@ -29,13 +30,14 @@ Các level có thể là:
 }
 ----
 
-TIP: Để "`reset`" specific level của logger và dùng default configuration, truyền `null` làm `configuredLevel`.
+TIP: Để "`reset`" level cụ thể của logger (và thay vào đó dùng default configuration), có thể truyền giá trị `null` cho `configuredLevel`.
+
+
 
 [[actuator.loggers.opentelemetry]]
 == OpenTelemetry
-
 Mặc định logging qua OpenTelemetry chưa được cấu hình.
-Cần cung cấp location của OpenTelemetry logs endpoint:
+Để configure logging qua OpenTelemetry, cần cung cấp địa chỉ của OpenTelemetry logs endpoint:
 
 [configprops,yaml]
 ----
@@ -47,8 +49,8 @@ management:
           endpoint: "https://otlp.example.com:4318/v1/logs"
 ----
 
-Các property `management.opentelemetry.logging.export.*` dùng cấu hình javadoc:io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor[].
-Ví dụ đổi export interval thành 15 giây:
+Các configuration property `management.opentelemetry.logging.export.*` có thể được dùng để configure javadoc:io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor[].
+Ví dụ, để thay đổi export interval thành 15 giây:
 
 [configprops,yaml]
 ----
@@ -59,8 +61,8 @@ management:
         schedule-delay: "15s"
 ----
 
-Các property `management.opentelemetry.logging.limits.*` dùng cấu hình log record limit.
-Ví dụ giới hạn 64 attribute mỗi log record và max attribute value length 256 character:
+Các configuration property `management.opentelemetry.logging.limits.*` có thể được dùng để configure các limit của log record.
+Ví dụ, để giới hạn số attribute trong mỗi log record ở 64 và độ dài tối đa của attribute value ở 256 ký tự:
 
 [configprops,yaml]
 ----
@@ -72,14 +74,14 @@ management:
         max-attribute-value-length: 256
 ----
 
-Nếu cần kiểm soát hoàn toàn, register custom bean javadoc:io.opentelemetry.sdk.logs.LogLimits[].
+Nếu cần toàn quyền kiểm soát, có thể register một custom bean javadoc:io.opentelemetry.sdk.logs.LogLimits[].
 
 NOTE: OpenTelemetry Logback appender và Log4j appender không thuộc Spring Boot.
-Xem https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library[OpenTelemetry Logback appender] hoặc https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/log4j/log4j-appender-2.17/library[OpenTelemetry Log4j2 appender] trong https://github.com/open-telemetry/opentelemetry-java-instrumentation[OpenTelemetry Java instrumentation GitHub repository].
+Để biết thêm chi tiết, xem https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library[OpenTelemetry Logback appender] hoặc https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/log4j/log4j-appender-2.17/library[OpenTelemetry Log4j2 appender] trong https://github.com/open-telemetry/opentelemetry-java-instrumentation[GitHub repository về OpenTelemetry Java instrumentation].
 
-TIP: Cần cấu hình appender trong `logback-spring.xml` hoặc `log4j2-spring.xml` để OpenTelemetry logging hoạt động.
+TIP: Cần configure appender trong `logback-spring.xml` hoặc `log4j2-spring.xml` để OpenTelemetry logging hoạt động.
 
-`OpenTelemetryAppender` cho cả Logback và Log4j cần access javadoc:io.opentelemetry.api.OpenTelemetry[] instance.
-Instance phải được set programmatically khi application startup:
+`OpenTelemetryAppender` cho cả Logback và Log4j cần access tới một instance javadoc:io.opentelemetry.api.OpenTelemetry[] để hoạt động đúng cách.
+Instance này phải được set programmatically trong lúc application startup, có thể thực hiện như sau:
 
 include-code::OpenTelemetryAppenderInitializer[]

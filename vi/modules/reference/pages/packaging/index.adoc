@@ -1,6 +1,6 @@
 [[packaging]]
-= Đóng gói Spring Boot Application
+= Đóng gói ứng dụng Spring Boot
 
-Spring Boot hỗ trợ nhiều technology để tối ưu application khi deployment, gồm xref:packaging/native-image/index.adoc[GraalVM native images], xref:packaging/aot-cache.adoc[AOT cache] và xref:packaging/checkpoint-restore.adoc[Checkpoint and Restore].
+Spring Boot hỗ trợ một số công nghệ để tối ưu ứng dụng cho việc triển khai, bao gồm xref:packaging/native-image/index.adoc[GraalVM native images], xref:packaging/aot-cache.adoc[AOT cache] và xref:packaging/checkpoint-restore.adoc[Checkpoint and Restore].
 
-Spring Boot application có thể được đóng gói trong Docker container bằng các kỹ thuật mô tả tại xref:packaging/container-images/index.adoc[].
+Các ứng dụng Spring Boot có thể được đóng gói trong Docker container bằng các kỹ thuật được mô tả trong xref:packaging/container-images/index.adoc[].
